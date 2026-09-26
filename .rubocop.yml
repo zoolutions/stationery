@@ -57,6 +57,11 @@ RSpec/DescribeClass:
 
 # Font and image caches are process-global by design and guarded by a Mutex.
 ThreadSafety/MutableClassInstanceVariable:
-  Exclude:
+  Exclude: &caches
     - "lib/stationery/fonts/registry.rb"
-    - "lib/stationery/images/image.rb"
+    - "lib/stationery/images/cache.rb"
+ThreadSafety/ClassInstanceVariable:
+  Exclude: *caches
+ThreadSafety/NewThread:
+  Exclude:
+    - "spec/**/*"
