@@ -16,10 +16,10 @@ module PngFactory
     ihdr = [width, height, bit_depth, color_type, 0, 0, 0].pack("NNCCCCC")
     raw = rows.map do |row|
       bytes = if packed
-        row
-      else
-        (bit_depth == 16) ? row.pack("n*").bytes : row
-      end
+                row
+              else
+                bit_depth == 16 ? row.pack("n*").bytes : row
+              end
       [filter, *apply_filter(filter, bytes, bpp(color_type, bit_depth))].pack("C*")
     end.join
 
@@ -47,9 +47,9 @@ module PngFactory
   def apply_filter(filter, bytes, bpp)
     case filter
     when 0, 2 then bytes
-    when 1 then bytes.each_with_index.map { |v, i| (v - (i >= bpp ? bytes[i - bpp] : 0)) & 0xFF }
+    # Paeth against a zero previous row always predicts the left neighbour.
+    when 1, 4 then bytes.each_with_index.map { |v, i| (v - (i >= bpp ? bytes[i - bpp] : 0)) & 0xFF }
     when 3 then bytes.each_with_index.map { |v, i| (v - ((i >= bpp ? bytes[i - bpp] : 0) >> 1)) & 0xFF }
-    when 4 then bytes.each_with_index.map { |v, i| (v - (i >= bpp ? bytes[i - bpp] : 0)) & 0xFF }
     else raise ArgumentError, "unknown filter #{filter}"
     end
   end
