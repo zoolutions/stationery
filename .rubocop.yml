@@ -29,6 +29,8 @@ Layout/LineLength:
 # their behaviour byte for byte.
 Metrics/AbcSize:
   Max: 40
+  Exclude:
+    - "lib/stationery/canvas/path.rb" # Bezier geometry is arithmetic by nature
 Metrics/CyclomaticComplexity:
   Max: 15
 Metrics/PerceivedComplexity:
@@ -40,10 +42,11 @@ Metrics/ClassLength:
 Metrics/ModuleLength:
   Max: 300
 Metrics/ParameterLists:
+  Max: 6
   CountKeywordArgs: false
 
 Naming/MethodParameterName:
-  AllowedNames: [a, x, y, w, h, r, g, b, c, m, k, io, id, at, to, x1, y1, x2, y2, x3, y3, dx, dy, rx, ry]
+  AllowedNames: [a, cx, cy, op, x, y, w, h, r, g, b, c, m, k, io, id, at, to, x1, y1, x2, y2, x3, y3, dx, dy, rx, ry]
 
 RSpec/ExampleLength:
   Max: 25
