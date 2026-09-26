@@ -43,7 +43,7 @@ Metrics/ParameterLists:
   CountKeywordArgs: false
 
 Naming/MethodParameterName:
-  AllowedNames: [x, y, w, h, r, g, b, c, m, k, io, id, at, to, x1, y1, x2, y2, x3, y3, dx, dy, rx, ry]
+  AllowedNames: [a, x, y, w, h, r, g, b, c, m, k, io, id, at, to, x1, y1, x2, y2, x3, y3, dx, dy, rx, ry]
 
 RSpec/ExampleLength:
   Max: 25
