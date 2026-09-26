@@ -32,7 +32,13 @@ module Stationery
         ops << "#{num(letter_spacing)} Tc" unless letter_spacing.zero?
         ops << "#{num(rise)} Ts" unless rise.zero?
         ops << "2 Tr" if bold
-        ops << "1 0 #{num(skew)} 1 #{num(x)} #{num(@page.height - y)} Tm"
+        # Td from the identity text matrix is an absolute position (and what
+        # text-extraction tools read positions from); Tm only when shearing.
+        ops << if skew.zero?
+                 "#{num(x)} #{num(@page.height - y)} Td"
+               else
+                 "1 0 #{num(skew)} 1 #{num(x)} #{num(@page.height - y)} Tm"
+               end
         ops << "<#{font.encode(string).unpack1("H*").upcase}> Tj"
         ops << "ET"
         ops.join("\n")

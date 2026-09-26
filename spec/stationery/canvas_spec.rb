@@ -77,7 +77,7 @@ RSpec.describe Stationery::Canvas do
     canvas.text("Hi", x: 10, y: 30, font:, size: 12, color: "#333333")
 
     gids = "Hi".chars.map { |c| font.ttf.glyph_id(c.ord) }.pack("n*").unpack1("H*").upcase
-    expect(ops).to include("BT", "/F1 12 Tf", "1 0 0 1 10 70 Tm", "<#{gids}> Tj", "ET")
+    expect(ops).to include("BT", "/F1 12 Tf", "10 70 Td", "<#{gids}> Tj", "ET")
     expect(page.resource_names[:Font]).to eq([:F1])
   end
 

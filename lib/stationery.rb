@@ -26,6 +26,14 @@ require_relative "stationery/canvas/path"
 require_relative "stationery/canvas/text"
 require_relative "stationery/canvas"
 require_relative "stationery/pdf/assembler"
+require_relative "stationery/text/style"
+require_relative "stationery/fonts/font_book"
+require_relative "stationery/text/entities"
+require_relative "stationery/text/markup"
+require_relative "stationery/text/runs_builder"
+require_relative "stationery/text/line"
+require_relative "stationery/text/wrapper"
+require_relative "stationery/text/paragraph"
 
 # Pure-Ruby PDF documents built from Phlex-style components.
 module Stationery
