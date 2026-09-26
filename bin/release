@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Cut a stationery release: bump lib/stationery/version.rb, commit, tag, push,
+# and publish the GitHub Release that triggers the RubyGems publish (trusted
+# publishing — never `gem push` by hand).
+#
+#   bin/release 0.1.0       # explicit version
+#   bin/release --dry-run 0.1.0
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+DRY_RUN=false
+VERSION=""
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run|-n) DRY_RUN=true ;;
+    v[0-9]*|[0-9]*) VERSION="${arg#v}" ;;
+    -h|--help) sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) echo "unknown argument: $arg" >&2; exit 1 ;;
+  esac
+done
+
+[ -n "$VERSION" ] || { echo "usage: bin/release <version>" >&2; exit 1; }
+
+echo "Releasing stationery $VERSION"
+git fetch -q origin main --tags
+git log --oneline "$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)"..origin/main
+
+$DRY_RUN && exit 0
+
+sed -i.bak "s/VERSION = \".*\"/VERSION = \"$VERSION\"/" lib/stationery/version.rb && rm lib/stationery/version.rb.bak
+bundle install --quiet
+git commit -am "chore: release v$VERSION"
+git push origin main
+gh release create "v$VERSION" --generate-notes --title "v$VERSION"

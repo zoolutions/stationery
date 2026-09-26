@@ -1,0 +1,8 @@
+/.bundle/
+/coverage/
+/pkg/
+/tmp/
+/examples/*.pdf
+*.gem
+.rspec_status
+implementation-notes.md
