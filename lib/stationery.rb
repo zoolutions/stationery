@@ -46,6 +46,12 @@ require_relative "stationery/layout/table/widths"
 require_relative "stationery/layout/table/cell"
 require_relative "stationery/layout/table/selection"
 require_relative "stationery/layout/paginator"
+require_relative "stationery/layout/positioned"
+require_relative "stationery/builder"
+require_relative "stationery/elements"
+require_relative "stationery/component"
+require_relative "stationery/page_templates"
+require_relative "stationery/document"
 
 # Pure-Ruby PDF documents built from Phlex-style components.
 module Stationery

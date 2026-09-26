@@ -28,9 +28,14 @@ module Stationery
         def natural_width(context) = node(context).natural_width + horizontal
         def min_width(context) = node(context).min_width + horizontal
 
-        def paint(canvas, context, rect)
+        # Backgrounds overlap the next cell by SEAM so viewers do not show
+        # hairline gaps between neighbouring fills.
+        SEAM = 0.5
+
+        def paint(canvas, context, rect, last_column: true, last_row: true)
           if @options[:background]
-            canvas.fill_rect(rect.x, rect.y, rect.width, rect.height, color: @options[:background])
+            canvas.fill_rect(rect.x, rect.y, rect.width + (last_column ? 0 : SEAM),
+                             rect.height + (last_row ? 0 : SEAM), color: @options[:background])
           end
           paint_content(canvas, context, rect)
           paint_borders(canvas, rect)
