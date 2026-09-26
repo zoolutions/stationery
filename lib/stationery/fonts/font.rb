@@ -20,6 +20,8 @@ module Stationery
         @widths = {}
       end
 
+      def inspect = "#<#{self.class} #{@ttf.postscript_name} used=#{@used.size}>"
+
       def width_of(text, size, letter_spacing: 0)
         units = text.each_char.sum { |char| @widths[char] ||= @ttf.advance(@ttf.glyph_id(char.ord)) }
         scale(units, size) + (letter_spacing * text.length)

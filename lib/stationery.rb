@@ -34,6 +34,18 @@ require_relative "stationery/text/runs_builder"
 require_relative "stationery/text/line"
 require_relative "stationery/text/wrapper"
 require_relative "stationery/text/paragraph"
+require_relative "stationery/layout/node"
+require_relative "stationery/layout/flow"
+require_relative "stationery/layout/box"
+require_relative "stationery/layout/row"
+require_relative "stationery/layout/text"
+require_relative "stationery/layout/image"
+require_relative "stationery/layout/leaves"
+require_relative "stationery/layout/table"
+require_relative "stationery/layout/table/widths"
+require_relative "stationery/layout/table/cell"
+require_relative "stationery/layout/table/selection"
+require_relative "stationery/layout/paginator"
 
 # Pure-Ruby PDF documents built from Phlex-style components.
 module Stationery

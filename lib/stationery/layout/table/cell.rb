@@ -1,0 +1,88 @@
+# frozen_string_literal: true
+
+module Stationery
+  module Layout
+    class Table < Node
+      # One table cell: content (a String, markup String or layout node) and its
+      # options, which selections change until the table is laid out.
+      class Cell
+        TEXT_OPTIONS = { size: :size, color: :color, weight: :weight, style: :style, font: :family,
+                         letter_spacing: :letter_spacing }.freeze
+
+        attr_reader :content, :options
+
+        def initialize(content, options)
+          @content = content
+          @options = options.dup
+        end
+
+        def node(context)
+          @node ||= @content.is_a?(Node) ? @content : text_node(context)
+        end
+
+        def padding = Geometry.box(@options[:padding])
+        def horizontal = padding[1] + padding[3]
+        def vertical = padding[0] + padding[2]
+
+        def measure(context, width) = node(context).measure([width - horizontal, 0].max) + vertical
+        def natural_width(context) = node(context).natural_width + horizontal
+        def min_width(context) = node(context).min_width + horizontal
+
+        def paint(canvas, context, rect)
+          if @options[:background]
+            canvas.fill_rect(rect.x, rect.y, rect.width, rect.height, color: @options[:background])
+          end
+          paint_content(canvas, context, rect)
+          paint_borders(canvas, rect)
+        end
+
+        private
+
+        def text_node(context)
+          style = context.style.with(**TEXT_OPTIONS.filter_map do |key, attr|
+            [attr, @options[key]] if @options.key?(key)
+          end.to_h)
+          source = @content.to_s
+          runs = if @options[:markup]
+                   ::Stationery::Text::Markup.parse(source, style)
+                 else
+                   [::Stationery::Text::Run.new(source, style)]
+                 end
+          Text.new(runs, context: context.with(style:), align: @options[:align] || :left,
+                         leading: @options[:leading] || 0)
+        end
+
+        def paint_content(canvas, context, rect)
+          inner = rect.inset(*padding)
+          content = node(context)
+          used = content.measure(inner.width)
+          valign = { middle: :center, bottom: :right }.fetch(@options[:valign], :left)
+          offset = [Geometry.align_offset(valign, inner.height, used), 0].max
+          own = content.fixed_width(inner.width)
+          left = own ? inner.x + Geometry.align_offset(@options[:align] || :left, inner.width, own) : inner.x
+          content.paint(canvas, left, inner.y + offset, own || inner.width)
+        end
+
+        def paint_borders(canvas, rect)
+          width = @options[:border_width]
+          return if width.nil? || width.zero?
+
+          color = @options[:border_color]
+          Array(@options[:borders]).each do |side|
+            x1, y1, x2, y2 = edge(side, rect)
+            canvas.line(x1, y1, x2, y2, color:, width:)
+          end
+        end
+
+        def edge(side, rect)
+          case side
+          when :top then [rect.x, rect.y, rect.right, rect.y]
+          when :bottom then [rect.x, rect.bottom, rect.right, rect.bottom]
+          when :left then [rect.x, rect.y, rect.x, rect.bottom]
+          else [rect.right, rect.y, rect.right, rect.bottom]
+          end
+        end
+      end
+    end
+  end
+end

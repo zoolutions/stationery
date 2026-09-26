@@ -20,6 +20,8 @@ module Stationery
               "unsupported JPEG colour components: #{@components}"
       end
 
+      def inspect = "#<#{self.class} #{@width}x#{@height}>"
+
       def build(writer)
         dictionary = Images.xobject(@width, @height, COLOR_SPACES.fetch(@components), @bits).merge(Filter: :DCTDecode)
         # Adobe CMYK JPEGs store inverted values.
