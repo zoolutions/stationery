@@ -13,6 +13,8 @@ module Stationery
         @fonts = {}
       end
 
+      def inspect = "#<#{self.class} families=#{@families.keys.inspect}>"
+
       def register(name, **paths)
         @families[name.to_s] = Family.new(name, **paths)
       end

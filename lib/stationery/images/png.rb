@@ -19,6 +19,8 @@ module Stationery
         raise UnsupportedImage, "interlaced PNG images are not supported, save it non-interlaced" if @interlace == 1
       end
 
+      def inspect = "#<#{self.class} #{@width}x#{@height}>"
+
       def build(writer)
         return build_with_alpha(writer) if alpha_channel?
 

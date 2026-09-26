@@ -35,6 +35,8 @@ module Stationery
         @postscript_name = NameTable.postscript_name(self)
       end
 
+      def inspect = "#<#{self.class} #{@postscript_name} glyphs=#{@num_glyphs}>"
+
       def glyph_id(codepoint)
         @cmap.fetch(codepoint, 0)
       end
