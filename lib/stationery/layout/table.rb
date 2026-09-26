@@ -62,10 +62,11 @@ module Stationery
       def paint(canvas, x, y, width, _height = nil, **)
         widths = column_widths(width)
         top = y
-        @cells.zip(row_heights(width)).each do |row, height|
+        @cells.zip(row_heights(width)).each_with_index do |(row, height), row_index|
           left = x
           row.each_with_index do |cell, index|
-            cell.paint(canvas, @context, Rect.new(left, top, widths[index], height))
+            cell.paint(canvas, @context, Rect.new(left, top, widths[index], height),
+                       last_column: index == row.size - 1, last_row: row_index == @cells.size - 1)
             left += widths[index]
           end
           top += height

@@ -63,8 +63,13 @@ ThreadSafety/MutableClassInstanceVariable:
   Exclude: &caches
     - "lib/stationery/fonts/registry.rb"
     - "lib/stationery/images/cache.rb"
+# Document configuration is written while the class body is evaluated and
+# only read afterwards.
 ThreadSafety/ClassInstanceVariable:
-  Exclude: *caches
+  Exclude:
+    - "lib/stationery/fonts/registry.rb"
+    - "lib/stationery/images/cache.rb"
+    - "lib/stationery/document.rb"
 ThreadSafety/NewThread:
   Exclude:
     - "spec/**/*"

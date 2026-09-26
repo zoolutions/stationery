@@ -17,9 +17,11 @@ module Stationery
 
       def runs = Run.merge(@runs)
 
-      def capture(&)
+      # A block taking an argument is called with the builder (so it keeps its
+      # own self and instance variables); one without is evaluated on it.
+      def capture(&block)
         before = @runs.size
-        result = instance_exec(&)
+        result = block.arity == 1 ? yield(self) : instance_exec(&block)
         plain(result) if result.is_a?(String) && @runs.size == before
       end
 
