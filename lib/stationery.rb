@@ -13,6 +13,7 @@ require_relative "stationery/fonts/subset"
 require_relative "stationery/fonts/registry"
 require_relative "stationery/fonts/font"
 require_relative "stationery/fonts/family"
+require_relative "stationery/fonts/bundled"
 require_relative "stationery/images/images"
 require_relative "stationery/images/cache"
 require_relative "stationery/images/scanlines"
@@ -67,4 +68,6 @@ require_relative "stationery/document"
 
 # Pure-Ruby PDF documents built from Phlex-style components.
 module Stationery
+  # Names of the font families shipped inside the gem.
+  def self.bundled_fonts = Fonts::Bundled.names
 end

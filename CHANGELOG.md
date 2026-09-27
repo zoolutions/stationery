@@ -10,6 +10,15 @@
 - Fixed-width children of a flow (`box(width:)`) are measured, split and paginated at their own width, not the flow's.
 - Layout: `split` takes `fresh:` on every node; a flow passes it on to the child that starts a fresh page.
 - `ul` / `ol` / `li` lists: drawn (disc, circle, square) or text bullets (dash, any String), decimal / alpha / roman / Proc numbering, `start:` and `suffix:`, aligned bodies, nested lists with depth-cycled bullets, and items that split across pages keeping the marker with their first line.
+||||||| 56fe3ff
+- Inter (OFL) is bundled: documents render without any `font_family`; `font_family "Inter"` needs no paths; `Stationery.bundled_fonts`. An unknown family name without paths raises.
+- Fixed: fonts without an OS/2 v2 table (including every subset) crashed on a nil cap height.
+- `PDF::Writer` raises when a reserved object is never set instead of writing `null`.
+- Gemspec ships every file under `lib/` and `exe/` when built without git, not only `.rb`.
+- `stationery` executable with a command registry; `stationery render FILE [--out PATH|-] [--class NAME] [--strict] [--debug]` renders the Document a Ruby file defines (through `self.preview` when it needs arguments) and reports pages and bytes.
+||||||| parent of c49dfa8 (fix(layout): lay out fixed-width flow children at their own width)
+||||||| parent of c49dfa8 (fix(layout): lay out fixed-width flow children at their own width)
+||||||| parent of f430413 (refactor(layout): split takes fresh: on every node)
 
 ## 0.1.0 (unreleased)
 

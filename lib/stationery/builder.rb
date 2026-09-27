@@ -72,7 +72,7 @@ module Stationery
 
     def style(options = {})
       options = text_defaults.merge(options)
-      family = options[:font] || @book.families.keys.first || "default"
+      family = options[:font] || @book.families.keys.first || Fonts::Bundled::DEFAULT
       Text::Style.new(family: family.to_s, **options.slice(*STYLE_KEYS))
     end
 
