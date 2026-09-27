@@ -173,7 +173,7 @@ module Stationery
         @strikeout_size ||= @underline_thickness
         @strikeout_position ||= (@ascender * 0.25).round
         @x_height ||= (@ascender * 0.5).round
-        @parse_os2 ||= (@ascender * 0.7).round
+        @cap_height = (@ascender * 0.7).round if @cap_height.nil?
       end
     end
   end

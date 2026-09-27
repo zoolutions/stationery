@@ -5,7 +5,7 @@ module Stationery
   #
   #   class Invoice < Stationery::Document
   #     page size: :a4, margin: 40
-  #     font_family "Inter", regular: "Inter-Regular.ttf", bold: "Inter-Bold.ttf"
+  #     font_family "Brand", regular: "Brand-Regular.ttf", bold: "Brand-Bold.ttf"
   #     default_text font: "Inter", size: 9
   #     metadata title: "Invoice"
   #     page_template { |page| box(at: [40, page.height - 30]) { text "#{page.number}/#{page.count}" } }
@@ -23,7 +23,8 @@ module Stationery
         @config ||= if superclass.respond_to?(:config)
                       superclass.config.transform_values(&:dup)
                     else
-                      { page: { size: :letter, margin: 36 }, families: {}, text: {}, metadata: {}, templates: [] }
+                      { page: { size: :letter, margin: 36 }, families: {}, text: {}, metadata: {}, templates: [],
+                        regions: [], strict: false }
                     end
       end
 
@@ -32,7 +33,7 @@ module Stationery
       end
 
       def font_family(name, **paths)
-        config[:families][name.to_s] = Fonts::Family.new(name, **paths)
+        config[:families][name.to_s] = Fonts::Family.build(name, **paths)
       end
 
       def default_text(**options)
@@ -43,10 +44,27 @@ module Stationery
         config[:metadata] = config[:metadata].merge(info)
       end
 
+      # Raise WarningsError instead of writing a PDF that produced warnings.
+      def strict(value = true) # rubocop:disable Style/OptionalBooleanParameter
+        config[:strict] = value
+      end
+
       # Runs after pagination on every page. `layer: :background` paints under
       # the page's content.
       def page_template(layer: :foreground, &block)
         config[:templates] << [layer, block]
+      end
+
+      # Reserves space at the top of the pages `on:` matches and draws the
+      # block there. Without `height:` the block is measured once, on the
+      # first page that asks; pass `height:` when its content varies per page.
+      def header(height: nil, gap: 8, on: :all, &block)
+        config[:regions] << Region.new(slot: :header, height:, gap:, on: Regions.validate!(on), block:)
+      end
+
+      # Like header, at the bottom of the page; the block is bottom-aligned.
+      def footer(height: nil, gap: 8, on: :all, &block)
+        config[:regions] << Region.new(slot: :footer, height:, gap:, on: Regions.validate!(on), block:)
       end
     end
 
@@ -55,15 +73,20 @@ module Stationery
     def page_options = self.class.config[:page]
     def metadata = self.class.config[:metadata]
 
-    def to_pdf(target = nil)
-      book = Fonts::FontBook.new(self.class.config[:families])
+    def to_pdf(target = nil, strict: self.class.config[:strict], debug: false)
+      warnings = Warnings.new
+      book = Fonts::FontBook.new(self.class.config[:families], warnings:)
       call(builder = Builder.new(book:, text: self.class.config[:text]))
       resources = Resources.new
-      paginator = Layout::Paginator.new(resources:, page: page_options)
+      regions = Regions.new(self.class.config[:regions], measure: region_measure(book))
+      paginator = Layout::Paginator.new(resources:, page: page_options, warnings:, debug:, regions:)
       pages = paginator.paginate(builder.root)
-      @warnings = paginator.warnings
-      PageTemplates.new(self, book:, resources:).apply(pages)
-      write(PDF::Assembler.new(pages:, resources:, info:).render, target)
+      PageTemplates.new(self, book:, resources:, debug:, regions:, warnings:).apply(pages)
+      outline = builder.outline.resolve(Structure.resolve(pages, warnings:, resources:, book:))
+      @warnings = warnings
+      raise WarningsError, warnings if strict && warnings.any?
+
+      write(PDF::Assembler.new(pages:, resources:, info:, outline:).render, target)
     end
 
     # Used by page templates to build nodes into their own root.
@@ -75,7 +98,22 @@ module Stationery
       @_builder = previous
     end
 
+    # Builds a page template or region block into a fresh root node.
+    def template_root(info, book:, &)
+      builder = Builder.new(book:, text: self.class.config[:text])
+      build_with(builder) { instance_exec(info, &) }
+      builder.root
+    end
+
     private
+
+    def region_measure(book)
+      page = Page.new(**page_options)
+      lambda do |region, number|
+        info = PageInfo.new(number, number, page.width, page.height, page.margin, page.margin_box)
+        template_root(info, book:, &region.block).measure(page.margin_box.width)
+      end
+    end
 
     def info
       metadata.to_h do |key, value|

@@ -40,4 +40,16 @@ RSpec.describe Stationery::PDF::Assembler do
     expect(pdf).to include("/URI (https://example.com/a?b=c)")
     expect(link_rects(pdf)).to eq([[10, 819.89, 60, 831.89]])
   end
+
+  it "writes internal links as /Dest arrays pointing at the target page object" do
+    first = page_with { |c| c.link(10, 10, 50, 12, "#b") }
+    second = page_with { |c| c.link(10, 10, 50, 12, "#a") }
+    first.annotations[0] = { rect: first.annotations[0][:rect], dest: Stationery::Structure::Destination.new(1, 700) }
+    second.annotations[0] = { rect: second.annotations[0][:rect], dest: Stationery::Structure::Destination.new(0, 42.5) }
+    pdf = described_class.new(pages: [first, second], resources:).render
+
+    expect(pdf).to match(%r{/Dest \[\d+ 0 R /XYZ null 700 null\]})
+    expect(pdf).not_to include("/URI")
+    expect(link_destinations(pdf)).to eq([[0, 1, 700], [1, 0, 42.5]])
+  end
 end
