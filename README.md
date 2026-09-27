@@ -240,10 +240,10 @@ commands.
 ## Fonts and images
 
 Fonts are TrueType (`.ttf`) or OpenType/CFF (`.otf`, name-keyed or
-CID-keyed) files. A TrueType font embeds only the glyphs a document uses; an
-OpenType/CFF font is embedded whole. Either way a ToUnicode map makes text
-copy and search correctly. A style without its own file (bold, italic) is
-synthesised.
+CID-keyed) files. Only the glyphs a document uses are embedded (a CFF font
+keeps its glyph numbering and subroutines; unused glyphs are blanked), with a
+ToUnicode map so text copies and searches correctly. A style without its own
+file (bold, italic) is synthesised.
 
 Inter (regular, bold, italic, bold italic; SIL Open Font License) is bundled
 and used when a document declares no family. `font_family "Inter"` with no

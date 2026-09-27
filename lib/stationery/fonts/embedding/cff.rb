@@ -3,14 +3,15 @@
 module Stationery
   module Fonts
     module Embedding
-      # A CIDFontType0 over the whole OpenType file (FontFile3 /OpenType, PDF
-      # 1.6). Codes are CIDs: the charset's for a CID-keyed font, glyph ids
-      # for a name-keyed one, so no CIDToGIDMap is needed.
+      # A CIDFontType0 over the font's CFF table with every undrawn glyph
+      # blanked (FontFile3 /CIDFontType0C). Codes are CIDs: the charset's for
+      # a CID-keyed font, glyph ids for a name-keyed one, so no CIDToGIDMap is
+      # needed.
       class CFF < Base
         # Returns [base_font_name, cid_font_reference].
         def build(writer, gids)
-          name = @ttf.postscript_name.to_sym
-          font_file = writer.add(PDF::Stream.new(@ttf.data, { Subtype: :OpenType }))
+          name = :"#{subset_tag(gids)}+#{@ttf.postscript_name}"
+          font_file = writer.add(PDF::Stream.new(CffSubset.build(@ttf.cff, gids), { Subtype: :CIDFontType0C }))
 
           cid_font = writer.add(
             Type: :Font, Subtype: :CIDFontType0, BaseFont: name, CIDSystemInfo: system_info,
