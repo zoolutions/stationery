@@ -394,6 +394,21 @@ that take an argument (`?id=42`); `?debug=1` passes `debug: true` to `to_pdf`
 when the document supports it. Preview files are re-`load`ed on every request,
 so edits show up on refresh.
 
+Anything that must be in effect *while* the document renders (an I18n locale,
+`CurrentAttributes`, a time zone) goes in `around_render`, which wraps both the
+preview method and `to_pdf`:
+
+```ruby
+class FlyerPdfPreview < Stationery::Preview
+  def month(params) = FlyerPdf.new(Event.upcoming)
+
+  def around_render(_name, params) = I18n.with_locale(params.fetch("locale", I18n.default_locale)) { yield }
+end
+```
+
+`/rails/stationery/previews/flyer_pdf/month?locale=de` renders in German.
+`Preview#to_pdf(name, params, debug:)` is the same entry point for your own code.
+
 The gem has no Rails dependency; the Railtie loads only inside a Rails app.
 
 ## CLI
