@@ -1,0 +1,32 @@
+spec/stationery/canvas_spec.rb
+  s_600b6bfbec0b19::t_495b973356af13 37-38
+  s_600b6bfbec0b19::t_6fab2f7e8f8c35 31-34,36,39-79
+  s_600b6bfbec0b19::t_ca69abda2e57c8 35
+lib/stationery/canvas.rb
+  s_600b6bfbec0b19::t_b48506b8145977 34,38-39,41,43
+  s_600b6bfbec0b19::t_be8aec1fe2e79e 57
+  s_600b6bfbec0b19::t_22dd26bf176345 35-37,40,42,44-56,58-59
+README.md
+  s_600b6bfbec0b19::t_6908a793732059 96
+spec/stationery/canvas/marking_spec.rb
+  s_600b6bfbec0b19::t_ae87cc2145d6fd 35-42
+docs/app/views/docs/pages/elements.rb
+  s_600b6bfbec0b19::t_2ca0b3c7c4dccc 273-274,276-286
+  s_600b6bfbec0b19::t_f36a5cb913cf8c 275
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "d215d03e5059d79b7722b2fc3b671426ad25bf1a",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
