@@ -37,6 +37,14 @@ module Stationery
       def message = %(anchor "#{name}" on page #{page} is already defined)
     end
 
+    MissingAlt = Data.define(:kind, :page) do
+      def message = "#{kind} on page #{page} has no alt: text"
+    end
+
+    MissingLanguage = Data.define do
+      def message = "tagged PDF has no language: set metadata lang:"
+    end
+
     def initialize
       @items = []
       @glyphs = Hash.new(0)

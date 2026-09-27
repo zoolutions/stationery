@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Tagged (accessible) PDF: `tagged` at class level or `to_pdf(tagged: true)` writes a structure tree (`/StructTreeRoot` with a `/ParentTree`, `/MarkInfo`, `/StructParents` on pages) and marks every painted leaf as marked content (`/P <</MCID n>> BDC … EMC`). Text is `P`, or `H1`–`H6` with `text(…, heading: 1..6)`; images and SVG drawings are `Figure` with `/Alt` from `alt:` (`alt: false`: decorative) and a `/BBox`; `box(role: :section | :div | :blockquote | :note | :caption | :article | :part)` groups its content. A node split across pages stays one element with marked content on each page. Headers, footers and page templates are `/Pagination` artifacts, other decoration is a layout artifact. `metadata lang:` writes `/Lang` (and is kept out of the document info); a tagged document with a title sets `/DisplayDocTitle`. New warnings `MissingAlt` and `MissingLanguage` let `strict` catch accessibility gaps. Untagged output is byte-for-byte unchanged. `Canvas#tag`, `#structure` and `#artifact`, `Stationery::Tagging::{Tree, Element, Writer}`.
+
 ## 0.3.0 (2026-09-27)
 
 The Limitations page, shortened: TrueType collections, WOFF, ligatures, splittable

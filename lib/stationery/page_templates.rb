@@ -7,8 +7,9 @@ module Stationery
   # Paints a document's headers, footers and page templates on every
   # finished page.
   class PageTemplates
-    def initialize(document, book:, resources:, debug: false, regions: nil, warnings: [])
+    def initialize(document, book:, resources:, debug: false, regions: nil, warnings: [], tagging: nil)
       @document = document
+      @tagging = tagging
       @debug = debug
       @book = book
       @resources = resources
@@ -38,7 +39,7 @@ module Stationery
         reserved = @regions.height_of(region, info.number)
         overflow(info.number, height, reserved)
         y = slot == :header ? box.y : box.bottom - height
-        paint(page, root, Rect.new(box.x, y, box.width, height))
+        paint(page, root, Rect.new(box.x, y, box.width, height), subtype: slot)
       end
     end
 
@@ -50,9 +51,11 @@ module Stationery
 
     def root(info, block) = @document.template_root(info, book: @book, &block)
 
-    def paint(page, root, rect, layer = :foreground)
+    # Everything a template paints is a pagination artifact in a tagged PDF.
+    def paint(page, root, rect, layer = :foreground, subtype: nil)
       mark = page.content.bytesize
-      root.paint(Canvas.new(page, @resources, template: true, debug: @debug), rect.x, rect.y, rect.width)
+      canvas = Canvas.new(page, @resources, template: true, debug: @debug, tagging: @tagging)
+      canvas.artifact(type: :pagination, subtype:) { root.paint(canvas, rect.x, rect.y, rect.width) }
       page.content.prepend(page.content.slice!(mark..)) if layer == :background
     end
   end

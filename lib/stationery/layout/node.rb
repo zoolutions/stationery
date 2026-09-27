@@ -26,6 +26,8 @@ module Stationery
     # - fixed_width(available)    → its own width, or nil when it fills the width
     class Node
       attr_accessor :keep_with_next, :break_inside
+      # The Tagging::Element this node paints into, shared by its fragments.
+      attr_reader :tag
 
       def measure(_width) = raise(NotImplementedError, "#{self.class} must implement measure")
       def paint(_canvas, _x, _y, _width, _height = nil, **) = raise(NotImplementedError, "#{self.class}#paint")

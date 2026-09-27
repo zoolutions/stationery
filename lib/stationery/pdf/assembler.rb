@@ -4,7 +4,11 @@ module Stationery
   module PDF
     # Writes finished pages, their shared resources and document info as PDF.
     class Assembler
-      def initialize(pages:, resources:, info: {}, outline: [], encryption: nil)
+      # `tagging:` (a Tagging::Tree) writes the structure tree of a tagged PDF;
+      # `lang:` is the document's natural language.
+      def initialize(pages:, resources:, info: {}, outline: [], encryption: nil, tagging: nil, lang: nil)
+        @tagging = tagging
+        @lang = lang
         @pages = pages
         @resources = resources
         @info = info
@@ -17,9 +21,10 @@ module Stationery
         tree = writer.reserve
         refs = @resources.build(writer)
         kids = @kids = @pages.map { writer.reserve }
+        @structure = @tagging && Tagging::Writer.new(@tagging, pages: @pages, refs: kids)
         @pages.each_with_index { |page, index| write_page(writer, page, kids[index], tree, refs) }
         writer.set(tree, { Type: :Pages, Kids: kids, Count: kids.size })
-        root = writer.add(catalog(tree, OutlineWriter.new(writer, @outline, kids).write))
+        root = writer.add(catalog(tree, OutlineWriter.new(writer, @outline, kids).write).merge(accessibility(writer)))
         writer.render(root:, info: writer.add(info_dictionary))
       end
 
@@ -30,12 +35,21 @@ module Stationery
         outlines ? catalog.merge(Outlines: outlines, PageMode: :UseOutlines) : catalog
       end
 
+      def accessibility(writer)
+        entries = @lang ? { Lang: PDF::TextString.new(@lang.to_s) } : {}
+        return entries unless @structure
+
+        entries.merge!(@structure.write(writer))
+        @info[:Title] ? entries.merge(ViewerPreferences: { DisplayDocTitle: true }) : entries
+      end
+
       def write_page(writer, page, ref, tree, refs)
         dictionary = {
           Type: :Page, Parent: tree, MediaBox: [0, 0, *page.size],
           Contents: writer.add(Stream.new(page.content)), Resources: page_resources(page, refs)
         }
         dictionary[:Annots] = page.annotations.map { |link| writer.add(annotation(link)) } if page.annotations.any?
+        dictionary.merge!(@structure.page_entries(page)) if @structure
         writer.set(ref, dictionary)
       end
 

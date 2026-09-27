@@ -24,7 +24,7 @@ module Stationery
                       superclass.config.transform_values(&:dup)
                     else
                       { page: { size: :letter, margin: 36 }, families: {}, fallbacks: [], text: {}, metadata: {},
-                        templates: [], regions: [], strict: false }
+                        templates: [], regions: [], strict: false, tagged: false }
                     end
       end
 
@@ -53,6 +53,13 @@ module Stationery
       # Raise WarningsError instead of writing a PDF that produced warnings.
       def strict(value = true) # rubocop:disable Style/OptionalBooleanParameter
         config[:strict] = value
+      end
+
+      # Writes a tagged (accessible) PDF: a structure tree of headings,
+      # paragraphs and figures, and headers and footers marked as artifacts.
+      # Set `metadata lang:` and give images `alt:` text.
+      def tagged(value = true) # rubocop:disable Style/OptionalBooleanParameter
+        config[:tagged] = value
       end
 
       # Encrypts every render with the standard security handler; see
@@ -85,21 +92,22 @@ module Stationery
     def page_options = self.class.config[:page]
     def metadata = self.class.config[:metadata]
 
-    def to_pdf(target = nil, strict: self.class.config[:strict], debug: false, encrypt: self.class.config[:encrypt])
+    def to_pdf(target = nil, strict: self.class.config[:strict], debug: false, encrypt: self.class.config[:encrypt],
+               tagged: self.class.config[:tagged])
       encryption = encrypt && PDF::Encryption::StandardSecurity.new(**encrypt)
+      tagging = Tagging::Tree.new if tagged
       warnings = Warnings.new
       book = Fonts::FontBook.new(self.class.config[:families], fallbacks: self.class.config[:fallbacks], warnings:)
       call(builder = Builder.new(book:, text: self.class.config[:text]))
       resources = Resources.new
-      regions = Regions.new(self.class.config[:regions], measure: region_measure(book))
-      paginator = Layout::Paginator.new(resources:, page: page_options, warnings:, debug:, regions:)
-      pages = paginator.paginate(builder.root)
-      PageTemplates.new(self, book:, resources:, debug:, regions:, warnings:).apply(pages)
-      outline = builder.outline.resolve(Structure.resolve(pages, warnings:, resources:, book:))
+      pages = paginate(builder.root, book:, resources:, warnings:, debug:, tagging:)
+      outline = builder.outline.resolve(Structure.resolve(pages, warnings:, resources:, book:, tagging:))
+      tagging&.audit(pages, warnings, lang: metadata[:lang])
       @warnings = warnings
       raise WarningsError, warnings if strict && warnings.any?
 
-      write(PDF::Assembler.new(pages:, resources:, info:, outline:, encryption:).render, target)
+      assembler = PDF::Assembler.new(pages:, resources:, info:, outline:, encryption:, tagging:, lang: metadata[:lang])
+      write(assembler.render, target)
     end
 
     # Used by page templates to build nodes into their own root.
@@ -120,6 +128,14 @@ module Stationery
 
     private
 
+    def paginate(root, book:, resources:, warnings:, debug:, tagging:)
+      regions = Regions.new(self.class.config[:regions], measure: region_measure(book))
+      paginator = Layout::Paginator.new(resources:, page: page_options, warnings:, debug:, regions:, tagging:)
+      paginator.paginate(root).tap do |pages|
+        PageTemplates.new(self, book:, resources:, debug:, regions:, warnings:, tagging:).apply(pages)
+      end
+    end
+
     def region_measure(book)
       page = Page.new(**page_options)
       lambda do |region, number|
@@ -129,7 +145,7 @@ module Stationery
     end
 
     def info
-      metadata.to_h do |key, value|
+      metadata.except(:lang).to_h do |key, value|
         [INFO_KEYS.fetch(key.to_sym) { key.to_sym }, value.is_a?(Array) ? value.join(", ") : value]
       end
     end

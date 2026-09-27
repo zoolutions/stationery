@@ -249,6 +249,37 @@ InvoicePdf.new(invoice).to_pdf(encrypt: nil) # plain
   `:aes_128` for older viewers; `:rc4_128` only for legacy readers that need it.
 - Every string and stream is encrypted, the document info included.
 
+### Accessibility (tagged PDF)
+
+```ruby
+class ReportPdf < Stationery::Document
+  tagged                                   # or to_pdf(tagged: true) for one render
+  metadata title: "Q3 report", lang: "en-US"
+
+  def view_template
+    text "Quarterly report", size: 20, heading: 1
+    text "Revenue grew in every region."
+    image "chart.png", width: 300, alt: "Revenue by region, Q1 to Q3"
+    box(role: :note, padding: 8) { text "Figures are unaudited." }
+  end
+end
+```
+
+A tagged PDF carries a structure tree screen readers and reflowing viewers follow, in paint order
+and across page breaks: a paragraph continued on the next page stays one `P`.
+
+- `text` is a `P`; `heading: 1..6` makes it `H1`–`H6` (the HTML/Markdown renderer sets it for headings).
+- `image`/`svg` are a `Figure` with `/Alt` from `alt:` and a bounding box; `alt: false` marks one
+  decorative (an artifact, not announced).
+- `box(role:)` groups its content: `:section` (`Sect`), `:div`, `:blockquote`, `:note`, `:caption`,
+  `:article` (`Art`), `:part`. Boxes without a role, rows, columns, groups and wraps add no element.
+- Headers, footers and page templates are pagination artifacts; backgrounds, borders and rules drawn
+  outside any element are layout artifacts.
+- `metadata lang:` writes the catalog's `/Lang`; the title is shown instead of the file name.
+- An image or drawing without `alt:` (`Warnings::MissingAlt`) and a missing `lang`
+  (`Warnings::MissingLanguage`) are warnings, so `strict` catches them.
+- Untagged documents (the default) are written exactly as before.
+
 ### Debugging
 
 `to_pdf(debug: true)` outlines every layout rectangle on top of the content: boxes (red, padding dashed),

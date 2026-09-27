@@ -6,8 +6,9 @@ module Stationery
     class Text < Node
       attr_reader :runs
 
-      def initialize(runs, context:, align: :left, leading: 0, paragraph: nil)
+      def initialize(runs, context:, align: :left, leading: 0, paragraph: nil, tag: Tagging::Element.new(:P))
         super()
+        @tag = tag
         @runs = context.book.fallback(runs)
         @context = context
         @align = align
@@ -21,7 +22,7 @@ module Stationery
       def measure(width) = paragraph(width).height
 
       def paint(canvas, x, y, width, _height = nil, **)
-        paragraph(width).draw(canvas, x, y)
+        canvas.tag(@tag) { paragraph(width).draw(canvas, x, y) }
       end
 
       def split(width, height, **)
@@ -57,7 +58,7 @@ module Stationery
       end
 
       def from(paragraph)
-        self.class.new(@runs, context: @context, align: @align, leading: @leading, paragraph:)
+        self.class.new(@runs, context: @context, align: @align, leading: @leading, paragraph:, tag: @tag)
       end
     end
   end

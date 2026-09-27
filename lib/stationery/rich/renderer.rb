@@ -86,7 +86,7 @@ module Stationery
         return unless source
 
         loaded = Images.load(source)
-        @component.image(loaded, **dimensions(node, loaded))
+        @component.image(loaded, alt: node.alt, **dimensions(node, loaded))
       rescue UnsupportedImage => e
         skip(node.src, e.message)
       end
