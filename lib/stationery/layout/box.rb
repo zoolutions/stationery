@@ -8,16 +8,21 @@ module Stationery
     # `:avoid` never). A fragment's cut sides are `open`: `decoration: :slice`
     # drops their padding and border, `:clone` keeps the padding. A
     # fixed-height box can truncate or shrink text that does not fit
-    # (`overflow:`) and never splits.
+    # (`overflow:`) and never splits. `min_height:` is a floor that does split:
+    # the first fragment keeps as much of it as the page holds and the next
+    # one carries only what is left of it.
     class Box < Node
       BORDER = { width: 1, color: "#000000", sides: %i[top right bottom left] }.freeze
 
       attr_reader :content, :width_spec
 
       def initialize(content = Flow.new, padding: 0, background: nil, border: nil, radius: 0, width: nil,
-                     height: nil, overflow: :visible, valign: :top, opacity: nil, link: nil, outset: 0,
+                     height: nil, min_height: nil, overflow: :visible, valign: :top, opacity: nil, link: nil, outset: 0,
                      open: [], decoration: :slice)
+        raise ArgumentError, "pass height: or min_height:, not both" if height && min_height
+
         super()
+        @min_height = min_height
         @open = open
         @decoration = decoration
         @link = link
@@ -58,17 +63,20 @@ module Stationery
         available = height - vertical(cut)
         head, tail = @content.split(inner_width(width), available, fresh:)
         return [nil, self] unless head
-        return [with_content(head), nil] unless tail
+        return [with_content(head), nil] unless tail || @min_height.to_f > height + EPSILON
 
-        [with_content(head, cut).tap { |part| part.keep_with_next = nil }, with_content(tail, @open | [:top])]
+        fragments(width, height, head, tail || Flow.new, cut)
       end
+
+      # An empty continuation: open at the top, without a floor.
+      def continued = fragment(Flow.new, @open | [:top], nil)
 
       # A copy holding other content and open sides, every option kept.
       def with_content(content, open = @open) = dup.reopen(content, open)
       def with_open(*sides) = with_content(@content, @open | sides)
 
       def measure(width)
-        @height || memoize_by_width(width) { @content.measure(inner_width(width)) + vertical }
+        @height || memoize_by_width(width) { [@content.measure(inner_width(width)) + vertical, @min_height || 0].max }
       end
 
       def paint(canvas, x, y, width, height = nil, valign: nil, debug_kind: :box, **)
@@ -82,13 +90,22 @@ module Stationery
 
       protected
 
-      def reopen(content, open)
+      def reopen(content, open, min_height = @min_height)
         @content = content
         @open = open
+        @min_height = min_height
         self
       end
 
       private
+
+      def fragment(content, open, min_height) = dup.reopen(content, open, min_height)
+
+      def fragments(width, height, head, tail, cut)
+        first = fragment(head, cut, @min_height && [@min_height, height].min).tap { |part| part.keep_with_next = nil }
+        rest = @min_height.to_f - first.measure(width)
+        [first, fragment(tail, @open | [:top], rest.positive? ? rest : nil)]
+      end
 
       def insets(open = @open)
         border = @border ? @border[:width] : 0
