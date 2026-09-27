@@ -2,10 +2,6 @@
 
 ## 0.2.0 (unreleased)
 
-- Documentation site at https://stationery.zoolutions.llc, a docs-kit app under `docs/` (not part of the gem): getting started, every element with its options, layout rules, pages and regions, links and bookmarks, fonts, images and SVG, Rails, testing, the CLI, warnings, a cookbook built from `examples/`, performance, limitations and this changelog, rendered from the README and CHANGELOG where they overlap.
-- Examples: `examples/report.rb` (multi-page annual report: header/footer regions, contents, bookmarks, lists, tables, a split callout, internal links, SVG icons), `examples/letter.rb` (one-page letter with a vector letterhead) and `examples/packing_slip.rb` (landscape, 120-row table with split rows, canvas barcode), each covered by an integration spec and rendered in CI by `rake examples`.
-- Font packs: `stationery fonts list` and `stationery fonts install noto_sans liberation_serif [--into DIR] [--force] [--from PATH]` copy pinned, SHA-256-verified Noto Sans/Serif/Sans Mono, Liberation Sans/Serif/Mono and Inter files (plus their OFL license) into `vendor/fonts/<pack>/`, atomically and offline-capable. `font_family "Noto Sans"` with no paths finds an installed pack through `Stationery.font_paths`, as does an unregistered family name at render time. Ruby API `Stationery::Fonts.install`/`catalog`/`paths`, Rails generator `stationery:fonts`, and `rake fonts:verify`. No runtime downloads.
-- `html` and `markdown` elements: ActionText/Trix HTML and CommonMark (GFM tables and strikethrough) rendered as paragraphs, headings, lists, blockquotes, code blocks, rules, tables and images with inline bold/italic/underline/strike/code/links/sub/sup. `styles:` deep-merges per-block defaults, `images:` resolves image sources (or `base_path:`), missing/remote images are skipped with a `SkippedImage` warning and never fetched, `bookmarks: true` outlines h1–h3. Parsers load on first use.
 Everything from the three planned milestones ("works out of the box", "typography and layout",
 "documents, Rails and testing") shipped together.
 
@@ -66,6 +62,7 @@ Everything from the three planned milestones ("works out of the box", "typograph
 
 ### Warnings
 
+- An unregistered family name draws with the first registered family (else bundled Inter) and reports an `UnknownFamily` warning once.
 - `Stationery::Warnings`: one collector per render, deduplicated, with `#message` on every entry (`Overflow`, `MissingGlyph`, `UnknownFamily`, `UnsupportedSvg`, `SkippedImage`, `UnresolvedLink`, `DuplicateAnchor`). `document.warnings` now includes warnings raised while page templates draw.
 - Strict mode: `to_pdf(strict: true)` or class-level `strict` raises `Stationery::WarningsError` when a render produced warnings.
 
@@ -76,6 +73,7 @@ Everything from the three planned milestones ("works out of the box", "typograph
 
 ### Tooling
 
+- Documentation site at https://stationery.zoolutions.llc, a docs-kit app under `docs/` (not part of the gem): getting started, every element with its options, layout rules, pages and regions, links and bookmarks, fonts, images and SVG, Rails, testing, the CLI, warnings, a cookbook built from `examples/`, performance, limitations and this changelog, rendered from the README and CHANGELOG where they overlap.
 - `stationery` executable with a command registry; `stationery render FILE [--out PATH|-] [--class NAME] [--strict] [--debug]` renders the Document a Ruby file defines (through `self.preview` when it needs arguments) and reports pages and bytes.
 - `require "stationery/rspec"` matchers (`have_pdf_text`, `have_pdf_text_on_page`, `have_page_count`, `have_pdf_link`, `have_image_count`, `have_bookmark`, `have_no_warnings`) and `require "stationery/minitest"` assertions, built on `Stationery::Testing::Inspector`. Needs `pdf-reader` in the test group.
 - `rake bench`: reproducible benchmarks against Prawn + prawn-table (one-page invoice, 1,500-row table) and a StackProf profile script under `benchmark/`.

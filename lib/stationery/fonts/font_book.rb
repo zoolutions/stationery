@@ -37,7 +37,15 @@ module Stationery
       # Registered by name, bundled by name, an installed pack by name, then
       # the first registered family, then the bundled default.
       def family(name)
-        @families[name.to_s] || bundled(name) || pack(name) || @families.values.first || bundled(Bundled::DEFAULT)
+        @families[name.to_s] || bundled(name) || pack(name) || substitute(name)
+      end
+
+      # An unknown name draws with the first registered family, else bundled
+      # Inter, and says so once.
+      def substitute(name)
+        used = @families.values.first || bundled(Bundled::DEFAULT)
+        @warnings << Warnings::UnknownFamily.new(requested: name.to_s, used: used.name)
+        used
       end
 
       def bundled(name)

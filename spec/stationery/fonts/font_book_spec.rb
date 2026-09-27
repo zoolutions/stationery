@@ -12,8 +12,20 @@ RSpec.describe Stationery::Fonts::FontBook do
     expect(face.path).to end_with("OpenSans-Bold.ttf")
   end
 
-  it "falls back to the first registered family for an unknown name" do
-    expect(open_sans_book.resolve(base_style(family: "Nope")).last.path).to end_with("OpenSans-Regular.ttf")
+  it "falls back to the first registered family for an unknown name and warns once" do
+    book = open_sans_book
+    2.times { book.resolve(base_style(family: "Nope")) }
+
+    expect(book.resolve(base_style(family: "Nope")).last.path).to end_with("OpenSans-Regular.ttf")
+    expect(book.warnings.to_a).to eq([Stationery::Warnings::UnknownFamily.new(requested: "Nope", used: "Open Sans")])
+  end
+
+  it "does not warn for registered, bundled or default families" do
+    book = open_sans_book
+    book.resolve(base_style(family: "Open Sans"))
+    book.resolve(base_style(family: "Inter"))
+
+    expect(book.warnings.to_a).to be_empty
   end
 
   it "resolves a bundled family by name without registering it" do
