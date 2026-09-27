@@ -1,0 +1,41 @@
+spec/stationery/layout/table/grid_spec.rb
+  s_832305fd821824::t_74dfcd2fee77bf 1-47,49-60,65-68
+  s_832305fd821824::t_ea7fd075b681c1 48
+  s_832305fd821824::t_7db9440ff814c7 61-64
+lib/stationery/layout/table/selection.rb
+  s_832305fd821824::t_9723dd996e6af9 27
+CHANGELOG.md
+  s_832305fd821824::t_b631cf3cc05579 10
+lib/stationery/layout/table/grid.rb
+  s_832305fd821824::t_b8893a6e6ce8d3 1-73
+lib/stationery/layout/table/cell.rb
+  s_832305fd821824::t_6655fb100bc835 12,14,17-18
+lib/stationery.rb
+  s_832305fd821824::t_8c627ef03a0499 47
+lib/stationery/layout/table.rb
+  s_832305fd821824::t_b98d716e5cfafc 18-19,24-25,43-46,71-76,86,95-113,128,132
+  s_832305fd821824::t_3a7cb11b743d59 87
+README.md
+  s_832305fd821824::t_1441e8387d74be 74
+spec/stationery/layout/table_spans_spec.rb
+  s_832305fd821824::t_3a7cb11b743d59 3
+  s_832305fd821824::t_ff2c742d89efd1 1-2,4-58,60-64,67-86
+  s_832305fd821824::t_ea7fd075b681c1 65-66
+  s_832305fd821824::t_f6eeea0033337d 59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "233b80d6a45c93174cffa480e3edaacce181078c",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
