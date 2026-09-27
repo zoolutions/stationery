@@ -70,7 +70,7 @@ InvoicePdf.new(invoice).to_pdf          # => "%PDF-1.7…" (binary String)
 InvoicePdf.new(invoice).to_pdf("a.pdf") # also writes a path or an IO
 ```
 
-`examples/` has a complete, runnable invoice, annual report, letter and packing slip; `bundle exec rake examples`
+`examples/` has a complete, runnable invoice, annual report, letter, packing slip and fillable form; `bundle exec rake examples`
 renders them all, or render one with `stationery render examples/report.rb`.
 
 ## Elements
@@ -94,6 +94,11 @@ renders them all, or render one with `stationery render examples/report.rb`.
 | `keep_with_next: true \| points` | On `text`, `box` or `group`: never end a page with this node; with a number, keep at least that many points of what follows with it. |
 | `text_style(**style) { }` | Default text style for a block. |
 | `canvas(height:) { \|canvas, rect\| }` | Draw directly: rectangles, rounded rectangles, circles, lines, Bézier paths, clipping, images, links. |
+| `text_field(name, value:, width:, height:, multiline:, max_length:, comb:, read_only:, required:, font_size:, border:, background:, radius:, at:)` | An interactive text input (AcroForm). `width:` is `:full` or points; dotted names (`"address.city"`) group fields. See [Forms](#forms). |
+| `checkbox(name, checked:, size:, label:, at:)` | An interactive check box, with an optional label drawn to its right. |
+| `radio(name, value, checked:, size:, label:, at:)` | One choice of a radio group: radios sharing `name` form one field whose value is the checked `value`. |
+| `select(name, options:, value:, width:, height:, editable:, at:)` | A drop-down (combo box); `editable: true` also accepts typed values. |
+| `signature_field(name, width:, height:, label:, at:)` | An empty signature field for the signer to fill, drawn as a rule over the label. |
 | `html(source, styles:, gap:, images:, base_path:, bookmarks:)` | Rich text from HTML (ActionText/Trix, CMS output): paragraphs, headings, lists, quotes, code, rules, tables, images, inline marks and links. See [HTML and Markdown](#html-and-markdown). |
 | `markdown(source, styles:, gap:, images:, base_path:, bookmarks:)` | The same from CommonMark (plus GFM tables and strikethrough). |
 
@@ -173,6 +178,34 @@ Options: `levels:` (a Range, or an Integer maximum depth), `leader:` (`:dots`, `
 the width of "0000") plus any text style. Numbers are right-aligned in a fixed slot and filled in after
 pagination, so a long contents list paginates without reflowing. An entry whose target never paints
 keeps its title, with no number and no link.
+
+### Forms
+
+Form fields are interactive widgets (an AcroForm) that lay out like boxes, or sit at a fixed page
+position with `at: [x, y]`. They work inside boxes, rows and table cells.
+
+```ruby
+text "Name"
+text_field "applicant.name", value: @applicant.name, required: true
+text_field "applicant.notes", multiline: true, height: 60
+text_field "applicant.pin", comb: 6                      # six cells; sets max_length
+select "applicant.country", options: %w[Sweden Norway Denmark], value: "Sweden"
+radio "plan", "basic", label: "Basic"                    # radios sharing a name form one group
+radio "plan", "pro", checked: true, label: "Pro"
+checkbox "terms", checked: false, label: "I accept the terms"
+signature_field "signature", label: "Signature of the applicant"
+```
+
+- Every widget carries its own appearance (drawn in Helvetica, ZapfDingbats for the check mark), so
+  the form looks the same in every viewer; `NeedAppearances` is set too, so viewers redraw edited
+  values. Values are Unicode (`/V`); the drawn appearance covers the Windows-1252 range.
+- Dotted names build the field hierarchy viewers show as groups; widgets sharing a name are one field
+  with several widgets. A name used as both a field and a group raises `ArgumentError`.
+- `read_only:`, `required:`, `multiline:`, `max_length:` and `comb:` set the matching field flags.
+- A radio group's value is its checked choice's `value` (`Off` when none is checked); a select box
+  lists its `options:` and draws the chosen `value`; a signature field is left unsigned for the signer.
+- `document.fields` returns `{ name => value }` for the last render (a check box's value is `true` or
+  `false`, an unchecked radio group's and a signature field's `nil`). Encrypted documents keep their fields fillable.
 
 ## Components
 
@@ -546,7 +579,7 @@ larger file. `PROFILE=1 bundle exec ruby -Ilib benchmark/profile.rb` prints the
 
 No variable fonts (including CFF2) or
 WOFF2 (it needs Brotli; convert to `.ttf` or `.woff`); SVG covers the shapes icon sets use
-(no patterns or masks); no forms or
+(no patterns or masks); no
 tagged PDF. A box with a fixed `height:` never splits (use
 `min_height:` for a floor that can); a row splits only when every column can.
 

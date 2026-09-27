@@ -18,20 +18,23 @@ module Stationery
 
       def render
         writer = Writer.new(encryption: @encryption)
+        @form = Forms::AcroForm.new(writer)
         tree = writer.reserve
         refs = @resources.build(writer)
         kids = @kids = @pages.map { writer.reserve }
         @structure = @tagging && Tagging::Writer.new(@tagging, pages: @pages, refs: kids)
         @pages.each_with_index { |page, index| write_page(writer, page, kids[index], tree, refs) }
         writer.set(tree, { Type: :Pages, Kids: kids, Count: kids.size })
-        root = writer.add(catalog(tree, OutlineWriter.new(writer, @outline, kids).write).merge(accessibility(writer)))
+        outlines = OutlineWriter.new(writer, @outline, kids).write
+        root = writer.add(catalog(tree, outlines, @form.write).merge(accessibility(writer)))
         writer.render(root:, info: writer.add(info_dictionary))
       end
 
       private
 
-      def catalog(tree, outlines)
+      def catalog(tree, outlines, form)
         catalog = { Type: :Catalog, Pages: tree }
+        catalog[:AcroForm] = form if form
         outlines ? catalog.merge(Outlines: outlines, PageMode: :UseOutlines) : catalog
       end
 
@@ -48,7 +51,9 @@ module Stationery
           Type: :Page, Parent: tree, MediaBox: [0, 0, *page.size],
           Contents: writer.add(Stream.new(page.content)), Resources: page_resources(page, refs)
         }
-        dictionary[:Annots] = page.annotations.map { |link| write_annotation(writer, link) } if page.annotations.any?
+        if page.annotations.any?
+          dictionary[:Annots] = page.annotations.map { |annot| annotation_ref(writer, annot, ref) }
+        end
         dictionary.merge!(@structure.page_entries(page)) if @structure
         writer.set(ref, dictionary)
       end
@@ -59,9 +64,13 @@ module Stationery
         end
       end
 
-      def write_annotation(writer, link)
+      def annotation_ref(writer, annotation, page)
+        return @form.add(annotation[:widget], annotation[:rect], page) if annotation[:widget]
+
         ref = writer.reserve
-        writer.set(ref, @structure ? annotation(link).merge(@structure.annotation(link, ref)) : annotation(link))
+        dictionary = annotation(annotation)
+        dictionary = dictionary.merge(@structure.annotation(annotation, ref)) if @structure
+        writer.set(ref, dictionary)
       end
 
       def annotation(link)
