@@ -317,7 +317,13 @@ already present are kept unless `--force`. `--from` takes a directory or a
 ## Fonts and images
 
 Fonts are TrueType (`.ttf`) or OpenType/CFF (`.otf`, name-keyed or
-CID-keyed) files. Only the glyphs a document uses are embedded (a CFF font
+CID-keyed) files, or faces of a TrueType collection (`.ttc`): a `#N` suffix
+on the path picks face N, counted from 0 (face 0 without a suffix):
+
+```ruby
+font_family "Brand", regular: "Brand.ttc#0", bold: "Brand.ttc#2"
+```
+ Only the glyphs a document uses are embedded (a CFF font
 keeps its glyph numbering and subroutines; unused glyphs are blanked), with a
 ToUnicode map so text copies and searches correctly. A style without its own
 file (bold, italic) is synthesised.
@@ -466,7 +472,7 @@ larger file. `PROFILE=1 bundle exec ruby -Ilib benchmark/profile.rb` prints the
 
 ## Limitations
 
-No ligatures, no TrueType collections, variable fonts (including CFF2) or
+No ligatures, no variable fonts (including CFF2) or
 WOFF; SVG covers the shapes icon sets use
 (no text, gradients, patterns, masks or CSS stylesheets); no encryption,
 forms or tagged PDF; fixed-height boxes, and rows holding one,

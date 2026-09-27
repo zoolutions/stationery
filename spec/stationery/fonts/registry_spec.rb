@@ -16,4 +16,17 @@ RSpec.describe Stationery::Fonts::Registry do
 
     expect(results.uniq(&:object_id).size).to eq(1)
   end
+
+  it "loads the face a #N suffix selects from a collection, face 0 without one" do
+    path = font_path("OpenSans-Collection.ttc")
+
+    expect(described_class.load("#{path}#1").postscript_name).to eq("OpenSans-Bold")
+    expect(described_class.load("#{path}#0").postscript_name).to eq("OpenSans-Regular")
+    expect(described_class.load(path)).to equal(described_class.load("#{path}#0"))
+  end
+
+  it "names the file, not the suffix, when a collection is missing" do
+    expect { described_class.load("/nope/Missing.ttc#1") }
+      .to raise_error(Stationery::UnsupportedFont, %r{not found: /nope/Missing.ttc\z})
+  end
 end

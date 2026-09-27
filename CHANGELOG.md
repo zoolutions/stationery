@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fonts
+
+- TrueType collections (`.ttc`): `font_family "Brand", regular: "Brand.ttc#0", bold: "Brand.ttc#2"` picks a face by a `#N` suffix (face 0 without one); each face is parsed, cached, subset and embedded on its own. `TrueType.new(data, index:)`, `TrueType.collection?` and `TrueType.faces`; an index out of range raises `ArgumentError` naming the face count.
+
 ## 0.2.0 (2026-09-27)
 
 Everything from the three planned milestones ("works out of the box", "typography and layout",
