@@ -27,6 +27,7 @@ module Stationery
         @open = open
         @decoration = decoration
         @link = link
+        @link_tag = link && Tagging::Element.new(:Link)
         @outset = Geometry.box(outset)
         @content = content
         @padding = Geometry.box(padding)
@@ -83,11 +84,13 @@ module Stationery
       def paint(canvas, x, y, width, height = nil, valign: nil, debug_kind: :box, **)
         height ||= measure(width)
         canvas.structure(@tag) do
-          paint_background(canvas, x, y, width, height)
-          paint_border(canvas, x, y, width, height)
-          paint_content(canvas, x, y, width, height, valign || @valign)
+          canvas.structure(@link_tag) do
+            paint_background(canvas, x, y, width, height)
+            paint_border(canvas, x, y, width, height)
+            paint_content(canvas, x, y, width, height, valign || @valign)
+          end
         end
-        canvas.link(x, y, width, height, @link) if @link
+        canvas.link(x, y, width, height, @link, tag: @link_tag) if @link
         paint_debug(canvas, Rect.new(x, y, width, height), debug_kind) if canvas.debug?
       end
 

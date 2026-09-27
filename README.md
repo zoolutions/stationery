@@ -268,11 +268,21 @@ end
 A tagged PDF carries a structure tree screen readers and reflowing viewers follow, in paint order
 and across page breaks: a paragraph continued on the next page stays one `P`.
 
-- `text` is a `P`; `heading: 1..6` makes it `H1`–`H6` (the HTML/Markdown renderer sets it for headings).
+- `text` is a `P`; `heading: 1..6` makes it `H1`–`H6`.
 - `image`/`svg` are a `Figure` with `/Alt` from `alt:` and a bounding box; `alt: false` marks one
   decorative (an artifact, not announced).
 - `box(role:)` groups its content: `:section` (`Sect`), `:div`, `:blockquote`, `:note`, `:caption`,
   `:article` (`Art`), `:part`. Boxes without a role, rows, columns, groups and wraps add no element.
+- Lists are `L` (with `/ListNumbering` from the bullet shape or number format) > `LI` > `Lbl` (a text
+  marker; drawn bullets are artifacts) and `LBody`.
+- Tables are `Table` > `TR` > `TH` (header rows, `/Scope /Column`) or `TD`, with `/ColSpan` and
+  `/RowSpan`. A table split across pages stays one `Table`; its repeated header rows are artifacts.
+- Linked text is a `Link` inside its paragraph holding the link annotation (`/OBJR`, `/StructParent`);
+  `box(link:)` groups its content in a `Link`.
+- `table_of_contents` is `TOC` > `TOCI` > `Link` (the title and its annotation) and `Reference` (the
+  page number).
+- `html`/`markdown` tag headings `H1`–`H6` (with or without `bookmarks: true`) and block quotes
+  `BlockQuote`, and give images their `alt`.
 - Headers, footers and page templates are pagination artifacts; backgrounds, borders and rules drawn
   outside any element are layout artifacts.
 - `metadata lang:` writes the catalog's `/Lang`; the title is shown instead of the file name.

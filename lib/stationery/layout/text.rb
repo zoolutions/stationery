@@ -22,7 +22,7 @@ module Stationery
       def measure(width) = paragraph(width).height
 
       def paint(canvas, x, y, width, _height = nil, **)
-        canvas.tag(@tag) { paragraph(width).draw(canvas, x, y) }
+        paragraph(width).draw(canvas, x, y, tag: @tag)
       end
 
       def split(width, height, **)

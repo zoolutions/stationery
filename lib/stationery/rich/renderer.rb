@@ -31,7 +31,7 @@ module Stationery
         when Paragraph then paragraph(block.inlines, **@styles[:p])
         when Heading then heading(block)
         when List then list(block)
-        when Blockquote then @component.box(**@styles[:blockquote]) { render(block.blocks) }
+        when Blockquote then @component.box(role: :blockquote, **@styles[:blockquote]) { render(block.blocks) }
         when CodeBlock then code(block)
         when Rule then @component.rule(**@styles[:hr])
         when Table then table(block)
@@ -47,7 +47,7 @@ module Stationery
         style = @styles[:"h#{heading.level}"]
         size = style[:size] || (@builder.style.size * style.fetch(:scale, 1))
         bookmark = heading_bookmark(heading)
-        paragraph(heading.inlines, **style.except(:scale), size:, **({ bookmark: } if bookmark))
+        paragraph(heading.inlines, **style.except(:scale), size:, heading: heading.level, **({ bookmark: } if bookmark))
       end
 
       def heading_bookmark(heading)

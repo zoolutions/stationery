@@ -9,7 +9,7 @@ module Stationery
         TEXT_OPTIONS = { size: :size, color: :color, weight: :weight, style: :style, font: :family,
                          letter_spacing: :letter_spacing }.freeze
 
-        attr_reader :content, :options, :colspan, :rowspan
+        attr_reader :content, :options, :colspan, :rowspan, :tag, :row_tag
 
         def initialize(content, options, colspan: 1, rowspan: 1)
           @content = content
@@ -23,7 +23,15 @@ module Stationery
         end
 
         # The same cell holding another node, as a row split into two parts needs.
-        def with_content(node) = Cell.new(node, @options, colspan:, rowspan:)
+        def with_content(node) = Cell.new(node, @options, colspan:, rowspan:).tagged(@tag, @row_tag)
+
+        # Its TH or TD and its row's TR in a tagged PDF; set once, by the
+        # table the cell is first laid out in.
+        def tagged(tag, row_tag)
+          @tag ||= tag
+          @row_tag ||= row_tag
+          self
+        end
 
         # Changes an option and forgets the node built from the old ones.
         def []=(name, value)

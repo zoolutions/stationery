@@ -43,17 +43,32 @@ module Stationery
         shrink(max_height)
       end
 
-      def draw(canvas, x, y)
-        top = y
-        @lines.each do |line|
-          offset = x + Geometry.align_offset(@align, @width, line.width)
-          extra = word_spacing(line)
-          spaces = 0
-          line.fragments.each do |fragment|
-            draw_fragment(canvas, fragment, offset + (extra * spaces), top, line, extra)
-            spaces += fragment.text.count(" ")
+      # `tag` is the structure element the text belongs to in a tagged PDF;
+      # linked runs become Link elements inside it.
+      def draw(canvas, x, y, tag: nil)
+        links = Links.new
+        canvas.tag_runs(tag) do |mark|
+          top = y
+          @lines.each do |line|
+            offset = x + Geometry.align_offset(@align, @width, line.width)
+            extra = word_spacing(line)
+            spaces = 0
+            line.fragments.each do |fragment|
+              link = links.for(fragment.style.link)
+              mark.call(link) { draw_fragment(canvas, fragment, offset + (extra * spaces), top, line, extra, link:) }
+              spaces += fragment.text.count(" ")
+            end
+            top += line.height + @leading
           end
-          top += line.height + @leading
+        end
+      end
+
+      # One Link element per run of fragments with the same link target.
+      class Links
+        def for(target)
+          @element = nil unless target == @target
+          @target = target
+          @element = target && (@element || Tagging::Element.new(:Link))
         end
       end
 
@@ -94,7 +109,7 @@ module Stationery
         [(@width - line.width) / line.space_count, 0].max
       end
 
-      def draw_fragment(canvas, fragment, offset, top, line, word_spacing)
+      def draw_fragment(canvas, fragment, offset, top, line, word_spacing, link: nil)
         style = fragment.style
         count_missing(fragment)
         x = offset + fragment.x
@@ -105,7 +120,7 @@ module Stationery
                                            ligatures: style.ligatures,
                                            synthetic_bold: fragment.face.synthetic_bold,
                                            synthetic_oblique: fragment.face.synthetic_oblique, word_spacing:)
-        canvas.link(x, top, width, line.height, style.link) if style.link
+        canvas.link(x, top, width, line.height, style.link, tag: link) if style.link
       end
 
       def count_missing(fragment)

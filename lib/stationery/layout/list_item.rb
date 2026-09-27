@@ -9,8 +9,12 @@ module Stationery
     class ListItem < Node
       attr_reader :marker, :body, :indent, :marker_gap
 
-      def initialize(marker, body, indent:, marker_gap:)
+      # `tag` and `body_tag` are the item's LI and LBody; a Text marker carries its own Lbl.
+      def initialize(marker, body, indent:, marker_gap:, tag: Tagging::Element.new(:LI),
+                     body_tag: Tagging::Element.new(:LBody))
         super()
+        @tag = tag
+        @body_tag = body_tag
         @marker = marker
         @body = body
         @indent = indent
@@ -31,11 +35,13 @@ module Stationery
       end
 
       def paint(canvas, x, y, width, _height = nil, **)
-        if @marker
-          own = @marker.width_in(column)
-          @marker.paint(canvas, x + column - own, y, own)
+        canvas.structure(@tag) do
+          if @marker
+            own = @marker.width_in(column)
+            @marker.paint(canvas, x + column - own, y, own)
+          end
+          canvas.structure(@body_tag) { @body.paint(canvas, x + @indent, y, body_width(width)) }
         end
-        @body.paint(canvas, x + @indent, y, body_width(width))
       end
 
       def split(width, height, fresh: false)
@@ -51,7 +57,10 @@ module Stationery
 
       def column = [@indent - @marker_gap, 0].max
       def body_width(width) = [width - @indent, 0].max
-      def with(marker, body) = self.class.new(marker, body, indent: @indent, marker_gap: @marker_gap)
+
+      def with(marker, body)
+        self.class.new(marker, body, indent: @indent, marker_gap: @marker_gap, tag: @tag, body_tag: @body_tag)
+      end
     end
 
     # A drawn bullet (:disc, :circle or :square) sized to the text style and

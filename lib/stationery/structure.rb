@@ -61,18 +61,21 @@ module Stationery
       style = slot.style
       width = font.width_of(label, style.render_size, letter_spacing: style.letter_spacing)
       canvas = Canvas.new(page, @resources, tagging: @tagging)
-      canvas.link(*slot.link, "##{slot.anchor}") if slot.link
-      canvas.text(label, x: slot.x + slot.width - width, y: slot.baseline, font:,
-                         size: style.render_size, color: style.color,
-                         letter_spacing: style.letter_spacing, opacity: style.opacity,
-                         synthetic_bold: face.synthetic_bold, synthetic_oblique: face.synthetic_oblique)
+      link, number = slot.tags
+      canvas.link(*slot.link, "##{slot.anchor}", tag: link) if slot.link
+      canvas.tag(number) do
+        canvas.text(label, x: slot.x + slot.width - width, y: slot.baseline, font:,
+                           size: style.render_size, color: style.color,
+                           letter_spacing: style.letter_spacing, opacity: style.opacity,
+                           synthetic_bold: face.synthetic_bold, synthetic_oblique: face.synthetic_oblique)
+      end
     end
 
     def link_to(link, index)
       return link unless link.key?(:dest)
 
       destination = @destinations[link[:dest]]
-      return { rect: link[:rect], dest: destination } if destination
+      return link.merge!(dest: destination) if destination
 
       @warnings << Warnings::UnresolvedLink.new(name: link[:dest], page: index + 1)
       nil

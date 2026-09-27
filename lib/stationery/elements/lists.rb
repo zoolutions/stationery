@@ -4,6 +4,9 @@ module Stationery
   # Bulleted and numbered lists.
   module Elements
     BULLETS = %i[disc circle square].freeze
+    # ListNumbering for tagged PDF, by bullet shape and number format.
+    NUMBERING = { disc: :Disc, circle: :Circle, square: :Square, decimal: :Decimal, alpha: :LowerAlpha,
+                  upper_alpha: :UpperAlpha, roman: :LowerRoman, upper_roman: :UpperRoman }.freeze
 
     # A bulleted list. `style:` is :disc, :circle, :square, :dash or any
     # String; unstyled nested lists cycle disc → circle → square. Every node
@@ -11,7 +14,8 @@ module Stationery
     def ul(style: nil, gap: 4, indent: nil, marker_gap: 6, marker_color: nil, &)
       shape = style || BULLETS[@_builder.list_depth % BULLETS.size]
       marker_style = @_builder.style({ color: marker_color }.compact)
-      list(marker_style, gap:, indent:, marker_gap:, marker: ->(_) { list_bullet(shape, marker_style) }, &)
+      list(marker_style, gap:, indent:, marker_gap:, marker: ->(_) { list_bullet(shape, marker_style) },
+                         numbering: shape, &)
     end
 
     # A numbered list. `format:` is :decimal, :alpha, :upper_alpha, :roman,
@@ -19,7 +23,7 @@ module Stationery
     def ol(format: :decimal, start: 1, suffix: ".", gap: 4, indent: nil, marker_gap: 6, marker_color: nil, &)
       marker_style = @_builder.style({ color: marker_color }.compact)
       label = ->(index) { list_label(ListMarkers.label(format, start + index, suffix), marker_style) }
-      list(marker_style, gap:, indent:, marker_gap:, marker: label, &)
+      list(marker_style, gap:, indent:, marker_gap:, marker: label, numbering: format, &)
     end
 
     # A list item: a String becomes a paragraph (taking every text option),
@@ -32,7 +36,7 @@ module Stationery
 
     private
 
-    def list(marker_style, gap:, indent:, marker_gap:, marker:, &)
+    def list(marker_style, gap:, indent:, marker_gap:, marker:, numbering:, &)
       items = Builder::Items.new
       @_builder.nested_list { @_builder.within(items) { yield_content(&) } }
       markers = items.nodes.each_index.map(&marker)
@@ -40,7 +44,12 @@ module Stationery
       entries = items.nodes.zip(markers).map do |node, mark|
         Layout::ListItem.new(mark, node.is_a?(Layout::Flow) ? node : Layout::Flow.new([node]), indent:, marker_gap:)
       end
-      @_builder.add(Layout::Flow.new(entries, gap:))
+      @_builder.add(Layout::Flow.new(entries, gap:, tag: list_tag(numbering)))
+    end
+
+    def list_tag(numbering)
+      numbering = NUMBERING[numbering] if numbering.is_a?(Symbol)
+      Tagging::Element.new(:L, attributes: numbering ? { List: { ListNumbering: numbering } } : {})
     end
 
     def list_bullet(shape, style)
@@ -52,7 +61,8 @@ module Stationery
     end
 
     def list_label(label, style)
-      Layout::Text.new([Text::Run.new(label, style)], context: @_builder.context(style), align: :right)
+      Layout::Text.new([Text::Run.new(label, style)], context: @_builder.context(style), align: :right,
+                                                      tag: Tagging::Element.new(:Lbl))
     end
   end
 end

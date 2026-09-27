@@ -48,7 +48,7 @@ module Stationery
           Type: :Page, Parent: tree, MediaBox: [0, 0, *page.size],
           Contents: writer.add(Stream.new(page.content)), Resources: page_resources(page, refs)
         }
-        dictionary[:Annots] = page.annotations.map { |link| writer.add(annotation(link)) } if page.annotations.any?
+        dictionary[:Annots] = page.annotations.map { |link| write_annotation(writer, link) } if page.annotations.any?
         dictionary.merge!(@structure.page_entries(page)) if @structure
         writer.set(ref, dictionary)
       end
@@ -57,6 +57,11 @@ module Stationery
         page.resource_names.to_h do |category, names|
           [category, names.to_h { |name| [name, refs.fetch(category).fetch(name)] }]
         end
+      end
+
+      def write_annotation(writer, link)
+        ref = writer.reserve
+        writer.set(ref, @structure ? annotation(link).merge(@structure.annotation(link, ref)) : annotation(link))
       end
 
       def annotation(link)

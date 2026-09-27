@@ -8,7 +8,8 @@ module TaggingHelpers
   end
 
   # [[type, alt, [kid, …]], …] from the Document element down; a kid is a
-  # nested element or [page index, MCID] for marked content.
+  # nested element, [page index, MCID] for marked content or [page index,
+  # :OBJR] for an annotation.
   def struct_tree(pdf)
     objects = reader_for(pdf).objects
     root = objects.deref(catalog_of(pdf)[:StructTreeRoot])
@@ -20,7 +21,7 @@ module TaggingHelpers
     kids = Array(objects.deref(elem[:K])).map do |kid|
       case kid
       when Integer then [objects.page_references.index(page), kid]
-      when Hash then [objects.page_references.index(kid[:Pg]), kid[:MCID]]
+      when Hash then [objects.page_references.index(kid[:Pg] || page), kid[:MCID] || kid[:Type]]
       else struct_element(objects, objects.deref(kid))
       end
     end
@@ -35,12 +36,14 @@ module TaggingHelpers
     nested.empty? ? type : [type, nested.map { |kid| types_of(kid) }]
   end
 
-  # { StructParents key => [element types by MCID] } from the parent tree.
+  # { StructParents key => [element types by MCID] } from the parent tree; an
+  # annotation's /StructParent key maps to its element's type.
   def parent_tree(pdf)
     objects = reader_for(pdf).objects
     nums = objects.deref(objects.deref(catalog_of(pdf)[:StructTreeRoot])[:ParentTree])[:Nums]
     nums.each_slice(2).to_h do |key, value|
-      [key, Array(objects.deref(value)).map { |ref| objects.deref(ref)[:S] }]
+      value = objects.deref(value)
+      [key, value.is_a?(Array) ? value.map { |ref| objects.deref(ref)[:S] } : value[:S]]
     end
   end
 end
