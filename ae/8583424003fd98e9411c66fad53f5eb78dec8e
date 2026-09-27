@@ -1,0 +1,42 @@
+spec/fixtures/previews/invoice_pdf_preview.rb
+  s_832305fd821824::t_3a58c8fe278016 1-13
+lib/stationery/preview.rb
+  s_832305fd821824::t_6b6f52722ba04d 1-19,21-25,27-31,33-44,46-48,51-64
+  s_832305fd821824::t_25a30dad68e9ed 49-50
+  s_832305fd821824::t_d4793a92d7faeb 20,26,45
+  s_832305fd821824::t_842f4e712f9bfa 32
+spec/rails/previews_spec.rb
+  s_832305fd821824::t_c2c64e0921082f 1-28,30-46
+  s_832305fd821824::t_8380c53be07d4d 29
+spec/stationery/preview_spec.rb
+  s_832305fd821824::t_5df5bdde760058 1-82
+README.md
+  s_832305fd821824::t_eaefd59c03978b 136-157
+lib/stationery/rails/previews_controller.rb
+  s_832305fd821824::t_dfc9504ef1db32 55
+  s_832305fd821824::t_f8bf55ffb327dc 1-13,16-54,56-61
+Rakefile
+  s_832305fd821824::t_749801b94751b6 11
+spec/rails/spec_helper.rb
+  s_832305fd821824::t_6c59c87d5ae03b 16-17
+lib/stationery/railtie.rb
+  s_832305fd821824::t_c8f2d0afa7a6a2 9-10,15-16,26-29,37-43
+CHANGELOG.md
+  s_832305fd821824::t_ec791d886940e1 11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "ae8583424003fd98e9411c66fad53f5eb78dec8e",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
