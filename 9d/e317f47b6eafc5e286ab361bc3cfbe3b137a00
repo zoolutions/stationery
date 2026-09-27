@@ -1,0 +1,25 @@
+lib/stationery/fonts/font.rb
+  s_832305fd821824::t_03a0a882880185 23-24,30-31,33,36,94-101
+lib/stationery/fonts/font_book.rb
+  s_832305fd821824::t_03a0a882880185 18,25,29,31-34
+  s_832305fd821824::t_b5c7280e999d84 19,37-43
+spec/stationery/fonts/font_book_spec.rb
+  s_832305fd821824::t_ef48096a22ab49 46-59,61-62
+  s_832305fd821824::t_58cba410f8de39 60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "9de317f47b6eafc5e286ab361bc3cfbe3b137a00",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
