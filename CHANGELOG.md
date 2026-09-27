@@ -9,6 +9,7 @@
 - `group(align:)`.
 - Fixed-width children of a flow (`box(width:)`) are measured, split and paginated at their own width, not the flow's.
 - Layout: `split` takes `fresh:` on every node; a flow passes it on to the child that starts a fresh page.
+- `ul` / `ol` / `li` lists: drawn (disc, circle, square) or text bullets (dash, any String), decimal / alpha / roman / Proc numbering, `start:` and `suffix:`, aligned bodies, nested lists with depth-cycled bullets, and items that split across pages keeping the marker with their first line.
 
 ## 0.1.0 (unreleased)
 
