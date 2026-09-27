@@ -91,6 +91,24 @@ RSpec.describe Stationery::Layout::Row do
       expect(paginator.warnings.size).to eq(1)
     end
 
+    it "splits columns with min_height, each keeping its floor on the first page" do
+      row = described_class.new([column(text_node("a"), min_height: 300, background: "#EEEEEE"),
+                                 column(text_node("b"), min_height: 300)])
+      pdf, paginator = render_layout(row)
+
+      expect(page_count(pdf)).to eq(2)
+      expect(paginator.warnings).to be_empty
+      expect(rect_heights(page_contents(pdf)[0])).to eq([160])
+      expect(rect_heights(page_contents(pdf)[1])).to eq([140])
+    end
+
+    it "continues a column whose floor fits on the first page without its floor" do
+      row = described_class.new([column(text_node("a"), min_height: 50), column(lines_of(20))])
+      _, tail = row.split(260, 100)
+
+      expect(tail.columns.first.measure(130)).to eq(0)
+    end
+
     it "never splits with break_inside: :avoid" do
       pdf, paginator = render_layout(tall_row.tap { |row| row.break_inside = :avoid })
 

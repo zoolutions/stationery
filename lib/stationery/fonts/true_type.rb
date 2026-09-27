@@ -3,9 +3,9 @@
 module Stationery
   module Fonts
     # Reads the sfnt tables of a static font needed to measure text and to
-    # embed it: TrueType outlines (.ttf) or CFF outlines (.otf). Variable CFF2
-    # fonts, font collections and web font wrappers are rejected with a named
-    # reason.
+    # embed it: TrueType outlines (.ttf) or CFF outlines (.otf), alone or as one
+    # face of a collection (.ttc), or unwrapped from a WOFF web font. Variable
+    # CFF2 fonts and WOFF2 are rejected with a named reason.
     class TrueType
       include SfntMetrics
 
@@ -13,10 +13,9 @@ module Stationery
       OUTLINE_TABLES = { "OTTO" => ["CFF "] }.freeze
       GLYF_TABLES = %w[loca glyf].freeze
       SFNT_VERSIONS = ["\x00\x01\x00\x00".b, "true", "OTTO"].freeze
+      COLLECTION = "ttcf"
       SIGNATURES = {
-        "ttcf" => "TrueType collections (.ttc) are not supported, use a single TrueType (.ttf) font",
-        "wOFF" => "WOFF web fonts are not supported, use the TrueType (.ttf) file",
-        "wOF2" => "WOFF2 web fonts are not supported, use the TrueType (.ttf) file"
+        "wOF2" => "WOFF2 needs Brotli; convert to .ttf or .woff"
       }.freeze
 
       attr_reader :data, :tables, :units_per_em, :bbox, :ascender, :descender, :line_gap, :num_glyphs,
@@ -24,9 +23,12 @@ module Stationery
                   :strikeout_position, :strikeout_size, :cap_height, :x_height, :weight, :postscript_name
 
       # A subset embedded in a PDF carries no cmap (the PDF maps glyphs itself),
-      # so reading one back passes `cmap: false`.
-      def initialize(data, cmap: true)
+      # so reading one back passes `cmap: false`. `index:` picks a face of a
+      # collection, face 0 by default.
+      def initialize(data, cmap: true, index: nil)
         @data = data.b
+        @data = WOFF.unpack(@data) if @data.start_with?(WOFF::SIGNATURE)
+        @sfnt = face_offset(index || 0)
         check_signature
         read_table_directory(cmap)
         parse_head
@@ -38,6 +40,12 @@ module Stationery
         parse_post
         parse_os2
         @postscript_name = NameTable.postscript_name(self)
+      end
+
+      def self.collection?(data) = data.byteslice(0, 4) == COLLECTION
+
+      def self.faces(data)
+        collection?(data) ? data.byteslice(8, 4).unpack1("N") : 1
       end
 
       def inspect = "#<#{self.class} #{@postscript_name} glyphs=#{@num_glyphs}>"
@@ -111,8 +119,19 @@ module Stationery
 
       private
 
+      # Table offsets in a collection are already absolute, so a face is read
+      # from the shared data at its own table directory.
+      def face_offset(index)
+        count = self.class.faces(@data)
+        unless index.between?(0, count - 1)
+          raise ArgumentError, "font face #{index} is out of range (numFonts #{count})"
+        end
+
+        self.class.collection?(@data) ? u32(12 + (index * 4)) : 0
+      end
+
       def check_signature
-        signature = @data.byteslice(0, 4)
+        signature = @data.byteslice(@sfnt, 4)
         return if SFNT_VERSIONS.include?(signature)
 
         raise UnsupportedFont, SIGNATURES.fetch(signature, "not a TrueType font")
@@ -120,13 +139,13 @@ module Stationery
 
       def read_table_directory(cmap)
         @tables = {}
-        u16(4).times do |i|
-          record = 12 + (i * 16)
+        u16(@sfnt + 4).times do |i|
+          record = @sfnt + 12 + (i * 16)
           @tables[@data.byteslice(record, 4)] = [u32(record + 8), u32(record + 12)]
         end
         raise UnsupportedFont, "variable CFF2 fonts are not supported" if @tables.key?("CFF2")
 
-        required = REQUIRED_TABLES + OUTLINE_TABLES.fetch(@data.byteslice(0, 4), GLYF_TABLES)
+        required = REQUIRED_TABLES + OUTLINE_TABLES.fetch(@data.byteslice(@sfnt, 4), GLYF_TABLES)
         required += ["cmap"] if cmap
         missing = required.reject { |tag| @tables.key?(tag) }
         raise UnsupportedFont, "font is missing the #{missing.map(&:strip).join(", ")} table" if missing.any?

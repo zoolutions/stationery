@@ -4,6 +4,13 @@
 
 - Standard ligatures from the font's GSUB `liga` feature (LigatureSubst lookups, also behind Extension lookups), **on by default**: "office" in Open Sans draws the ffi ligature, so widths of affected words change slightly. `ligatures: false` on `text`/`text_style` or in `default_text` opts out; any `letter_spacing` turns them off. Text extraction and copy still yield the source characters (ToUnicode maps a ligature glyph to all of them). Fonts without `liga` ligatures, such as the bundled Inter, are unaffected.
 
+### Fonts
+
+- TrueType collections (`.ttc`): `font_family "Brand", regular: "Brand.ttc#0", bold: "Brand.ttc#2"` picks a face by a `#N` suffix (face 0 without one); each face is parsed, cached, subset and embedded on its own. `TrueType.new(data, index:)`, `TrueType.collection?` and `TrueType.faces`; an index out of range raises `ArgumentError` naming the face count.
+- WOFF 1.0 web fonts (`.woff`): `font_family "Web", regular: "Brand.woff"`. Tables are inflated with zlib into an in-memory sfnt (`Fonts::WOFF.unpack`), then measured, subset and embedded like the `.ttf`. WOFF2 is still rejected: it needs Brotli, so convert to `.ttf` or `.woff`.
+
+- `box(min_height:)` and `column(min_height:)`: a height floor that, unlike `height:`, still splits across pages. The first fragment keeps as much of the floor as the page holds and the next carries the rest, so a row of equal-height cards or an empty signature area can span a page break. Passing both `height:` and `min_height:` raises `ArgumentError`.
+
 ## 0.2.0 (2026-09-27)
 
 Everything from the three planned milestones ("works out of the box", "typography and layout",

@@ -64,6 +64,17 @@ RSpec.describe Stationery::Fonts::FontBook do
       .to eq([book.resolve(base_style(family: "Inter")).last.path, font_path("OpenSans-Regular.ttf")])
   end
 
+  it "resolves faces of a collection by their #N suffix, one Font per face" do
+    book = described_class.new
+    book.register("Collection", regular: font_path("OpenSans-Collection.ttc"),
+                                bold: "#{font_path("OpenSans-Collection.ttc")}#1")
+    regular, = book.resolve(base_style(family: "Collection"))
+    bold, face = book.resolve(base_style(family: "Collection", weight: :bold))
+
+    expect([regular.ttf.postscript_name, bold.ttf.postscript_name]).to eq(%w[OpenSans-Regular OpenSans-Bold])
+    expect(face).to have_attributes(path: end_with(".ttc#1"), synthetic_bold: false)
+  end
+
   it "returns runs it already split for fallback as they are" do
     book = open_sans_book
     split = book.fallback([Stationery::Text::Run.new("a → b", base_style)])
