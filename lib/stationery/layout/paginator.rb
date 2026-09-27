@@ -7,10 +7,10 @@ module Stationery
     class Paginator
       attr_reader :warnings
 
-      def initialize(resources:, page: {})
+      def initialize(resources:, page: {}, warnings: Warnings.new)
         @resources = resources
         @page_options = page
-        @warnings = []
+        @warnings = warnings
       end
 
       def paginate(root)

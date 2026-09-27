@@ -61,6 +61,16 @@ RSpec.describe Stationery::SVG::Document do
     expect(page.content).to include("0 197.5 m\n10 197.5 l")
   end
 
+  it "lists the elements it cannot draw, ignoring descriptive ones" do
+    source = <<~SVG
+      <svg viewBox="0 0 10 10"><title>t</title><desc>d</desc><metadata/><defs><path d="M0 0"/></defs>
+        <g><text>Hi</text><use href="#a"/><svg/></g><text>again</text><rect width="1" height="1"/></svg>
+    SVG
+
+    expect(described_class.parse(source).unsupported).to eq(%w[defs text use])
+    expect(described_class.parse(check).unsupported).to eq([])
+  end
+
   it "refuses documents it cannot read" do
     expect { described_class.parse("<html></html>") }.to raise_error(Stationery::SVG::Error, /svg/)
   end

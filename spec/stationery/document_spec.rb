@@ -90,6 +90,48 @@ RSpec.describe Stationery::Document do
     expect(doc.warnings.map(&:page)).to eq([1])
   end
 
+  describe "strict mode" do
+    let(:overflowing) { Class.new(SpecDocument) { def view_template = box { 40.times { |i| text "row #{i}" } } } }
+
+    it "raises WarningsError listing the warnings when asked per render" do
+      doc = overflowing.new
+
+      expect { doc.to_pdf(strict: true) }.to raise_error(Stationery::WarningsError) { |error|
+        expect(error.warnings.map(&:page)).to eq([1])
+        expect(error.message).to start_with("1 warning:\n  content")
+      }
+    end
+
+    it "raises when the class is strict, and a render can opt out" do
+      strict_class = Class.new(overflowing) { strict }
+
+      expect { strict_class.new.to_pdf }.to raise_error(Stationery::WarningsError)
+      expect(strict_class.new.to_pdf(strict: false)).to start_with("%PDF")
+      expect(overflowing.config[:strict]).to be(false)
+    end
+
+    it "does not write the target when it raises" do
+      io = StringIO.new(+"".b)
+
+      expect { overflowing.new.to_pdf(io, strict: true) }.to raise_error(Stationery::WarningsError)
+      expect(io.string).to be_empty
+    end
+
+    it "renders a clean document" do
+      expect(SpecDocument.build { text "fine" }.to_pdf(strict: true)).to start_with("%PDF")
+    end
+  end
+
+  it "keeps warnings raised while page templates draw" do
+    doc = Class.new(SpecDocument) do
+      page_template { @_builder.warnings << Stationery::Warnings::SkippedImage.new(source: "x", reason: "y") }
+      def view_template = text("x")
+    end.new
+    doc.to_pdf
+
+    expect(doc.warnings.to_a).to eq([Stationery::Warnings::SkippedImage.new(source: "x", reason: "y")])
+  end
+
   it "explains a missing font family" do
     bare = Class.new(described_class) { def view_template = text("x") }
 

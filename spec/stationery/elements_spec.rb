@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "tmpdir"
+
 RSpec.describe Stationery::Elements do
   def render(&) = SpecDocument.build(&).to_pdf
 
@@ -85,6 +87,27 @@ RSpec.describe Stationery::Elements do
     pdf = render { svg source, width: 16, color: "#FF0000", align: :center }
 
     expect(page_contents(pdf).first).to include("1 0 0 RG")
+  end
+
+  it "warns about SVG elements it cannot draw, naming the file or inline markup" do
+    file = File.expand_path("../fixtures/svg/check.svg", __dir__)
+    doc = SpecDocument.build do
+      svg '<svg viewBox="0 0 10 10"><text>Hi</text><use href="#a"/><rect width="5" height="5"/></svg>', width: 10
+      svg file, width: 10
+    end
+    doc.to_pdf
+
+    expect(doc.warnings.to_a).to eq([Stationery::Warnings::UnsupportedSvg.new(elements: %w[text use],
+                                                                              source: "inline")])
+  end
+
+  it "names the file of an SVG with unsupported elements" do
+    path = File.join(Dir.mktmpdir, "logo.svg")
+    File.write(path, '<svg viewBox="0 0 10 10"><text>Hi</text></svg>')
+    doc = SpecDocument.build { svg path, width: 10 }
+    doc.to_pdf
+
+    expect(doc.warnings.map(&:message)).to eq(['SVG "logo.svg" uses unsupported elements: text'])
   end
 
   it "wraps chips and centres groups" do

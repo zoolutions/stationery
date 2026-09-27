@@ -49,6 +49,7 @@ module Stationery
     end
 
     def text_defaults = @text.last
+    def warnings = @book.warnings
 
     def style(options = {})
       options = text_defaults.merge(options)
