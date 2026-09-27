@@ -42,6 +42,53 @@ RSpec.describe Stationery::Canvas do
     expect(ops).to include("5 100 m") # radius clamped to half the height
   end
 
+  describe "per-corner radii" do
+    def path_ops(radius, w: 50, h: 50)
+      Stationery::Canvas::Path.new(canvas).rounded_rect(0, 0, w, h, radius).to_s
+    end
+
+    it "rounds only the corners given a radius and draws the rest straight" do
+      out = path_ops([10, 10, 0, 0])
+
+      expect(out.scan(/ c$/).size).to eq(2)
+      expect(out).to include("50 50 l\n0 50 l") # bottom-right, then bottom-left, both square
+    end
+
+    it "draws a plain rectangle when every radius is zero" do
+      expect(path_ops([0, 0, 0, 0])).to eq("0 50 50 50 re")
+    end
+
+    it "matches the single-radius form when all four are equal" do
+      expect(path_ops([10, 10, 10, 10])).to eq(path_ops(10))
+    end
+
+    it "scales radii down proportionally so adjacent corners fit their side" do
+      out = path_ops([100, 100, 0, 0])
+
+      expect(out).to start_with("25 100 m\n25 100 l\n") # both top corners scaled to 25
+      expect(out).to include("50 75 c") # top-right corner ends 25 down the right side
+    end
+  end
+
+  it "dashes the stroke of a rounded rectangle" do
+    canvas.rounded_rect(0, 0, 20, 10, radius: 2, stroke: "#000", dash: [2, 2])
+
+    expect(ops).to include("[2 2] 0 d")
+  end
+
+  it "leaves rounded rectangles solid without a dash" do
+    canvas.rounded_rect(0, 0, 20, 10, radius: 2, stroke: "#000")
+
+    expect(ops).not_to match(/ d$/)
+  end
+
+  it "clips to a rectangle with per-corner radii" do
+    canvas.clip(0, 0, 50, 20, radius: [5, 0, 5, 0]) { canvas.fill_rect(0, 0, 200, 100, color: "#000") }
+
+    expect(ops.scan(/ c$/).size).to eq(2)
+    expect(ops).to include("W n")
+  end
+
   it "fills and strokes a circle" do
     canvas.circle(50, 50, 10, fill: "#000", stroke: "#FFF", line_width: 1)
 

@@ -34,8 +34,8 @@ module Stationery
       shape(fill: color, opacity:) { |p| p.rect(x, y, w, h) }
     end
 
-    def rounded_rect(x, y, w, h, radius:, fill: nil, stroke: nil, line_width: 1, opacity: nil)
-      shape(fill:, stroke:, line_width:, opacity:) { |p| p.rounded_rect(x, y, w, h, radius) }
+    def rounded_rect(x, y, w, h, radius:, fill: nil, stroke: nil, line_width: 1, dash: nil, opacity: nil)
+      shape(fill:, stroke:, line_width:, dash:, opacity:) { |p| p.rounded_rect(x, y, w, h, radius) }
     end
 
     def circle(cx, cy, r, fill: nil, stroke: nil, line_width: 1, opacity: nil)
