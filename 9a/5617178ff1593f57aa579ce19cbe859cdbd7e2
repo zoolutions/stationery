@@ -1,0 +1,56 @@
+stationery.gemspec
+  s_832305fd821824::t_fc161bfaba20cc 46-47
+spec/fixtures/cli/two.rb
+  s_832305fd821824::t_2b6d66fb48cc49 1-15
+spec/fixtures/cli/no_debug.rb
+  s_832305fd821824::t_6cd50910157d33 1-14
+lib/stationery/cli.rb
+  s_832305fd821824::t_bab0e0206fd367 1-39,41-55,61-73
+  s_832305fd821824::t_f43b966a5c8a0b 40,56-60
+spec/stationery/cli/render_spec.rb
+  s_832305fd821824::t_abb71fc584306b 15-16,18,28-30,32-33,43,52,57,85,102,109
+  s_832305fd821824::t_19d6b47d913dd9 10
+  s_832305fd821824::t_373851ae6d2098 1-9,11-14,17,19-27,31,34-42,44-51,53-56,58-84,86-101,103-108,110-131
+spec/fixtures/cli/overflow.rb
+  s_832305fd821824::t_5957397ebc5db7 1-11
+CHANGELOG.md
+  s_832305fd821824::t_84a349e54634e1 13
+README.md
+  s_832305fd821824::t_5481d41affb2b0 120-133
+examples/invoice.rb
+  s_832305fd821824::t_645eeee2358b2c 6,33-38,152
+spec/fixtures/cli/empty.rb
+  s_832305fd821824::t_8ae1a90d300680 1-4
+spec/stationery/cli_spec.rb
+  s_832305fd821824::t_647d20753bd78d 1-47,50-54
+  s_832305fd821824::t_19d6b47d913dd9 48-49
+.rubocop.yml
+  s_832305fd821824::t_19d6b47d913dd9 75
+lib/stationery/cli/render.rb
+  s_832305fd821824::t_81834abd532aee 41-44
+  s_832305fd821824::t_7646605889fb3f 1-40,45-137
+spec/fixtures/cli/debug.rb
+  s_832305fd821824::t_62f8feb6db4914 1-17
+spec/fixtures/cli/one.rb
+  s_832305fd821824::t_5606b7e727c74b 1-13
+exe/stationery
+  s_832305fd821824::t_bbf394ab3cdf9e 1-6
+spec/fixtures/cli/needs_args.rb
+  s_832305fd821824::t_21294dd7729af8 1-15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "9a5617178ff1593f57aa579ce19cbe859cdbd7e2",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
