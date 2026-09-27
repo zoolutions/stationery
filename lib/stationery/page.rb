@@ -2,14 +2,21 @@
 
 module Stationery
   # One page: its size and margins, the drawing operators written to it, the
-  # resources those operators reference and its link annotations.
+  # resources those operators reference, its link annotations and the named
+  # anchors painted on it (PDF-space tops) and the page-number slots waiting
+  # for their anchors' pages.
   class Page
+    # Room for the page number of `anchor`, right-aligned in `width` from `x`
+    # on `baseline` (top-left coordinates), drawn in `style`. `link` is an
+    # [x, y, w, h] area linked to the anchor only once it resolves.
+    Slot = Data.define(:anchor, :x, :baseline, :width, :style, :link)
+
     SIZES = {
       a3: [841.89, 1190.55], a4: [595.28, 841.89], a5: [419.53, 595.28],
       letter: [612, 792], legal: [612, 1008], tabloid: [792, 1224]
     }.freeze
 
-    attr_reader :size, :margin, :content, :annotations, :resource_names
+    attr_reader :size, :margin, :content, :annotations, :anchors, :template_anchors, :slots, :resource_names
 
     def initialize(size: :letter, layout: :portrait, margin: 0)
       @size = dimensions(size)
@@ -17,6 +24,9 @@ module Stationery
       @margin = Geometry.box(margin)
       @content = String.new(encoding: Encoding::BINARY)
       @annotations = []
+      @anchors = []
+      @template_anchors = []
+      @slots = []
       @resource_names = Hash.new { |hash, key| hash[key] = [] }
     end
 

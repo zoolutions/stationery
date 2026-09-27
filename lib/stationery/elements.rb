@@ -7,7 +7,8 @@ module Stationery
 
     # A paragraph. Plain strings are always literal; pass `markup: true` to
     # read inline tags, or a block to build styled runs in Ruby.
-    def text(content = nil, markup: false, keep_with_next: nil, break_inside: nil, **options, &)
+    def text(content = nil, markup: false, keep_with_next: nil, break_inside: nil, anchor: nil, bookmark: nil,
+             **options, &)
       settings = PARAGRAPH_DEFAULTS.merge(@_builder.text_defaults.slice(:align, :leading)).merge(options)
       style = @_builder.style(options)
       runs = text_runs(content, style, markup, &)
@@ -15,36 +16,46 @@ module Stationery
                                     leading: settings[:leading])
       node.keep_with_next = keep_with_next
       node.break_inside = break_inside
-      @_builder.add(node)
+      @_builder.add(mark(node, anchor, bookmark))
     end
 
     # A container with padding, background, border and radius. `at: [x, y]`
     # places it at a fixed page position outside the flow.
-    def box(at: nil, align: nil, gap: 0, width: nil, keep_with_next: nil, **, &)
+    # `break_inside: :auto` splits it at any page break, `:avoid` never; by
+    # default it splits only when it does not fit on a page of its own.
+    def box(at: nil, align: nil, gap: 0, width: nil, keep_with_next: nil, break_inside: nil, anchor: nil, bookmark: nil,
+            **, &)
       node = Layout::Box.new(container(align:, gap:, &), width:, **)
       node.keep_with_next = keep_with_next
+      node.break_inside = break_inside
+      node = mark(node, anchor, bookmark)
       @_builder.add(at ? Layout::Positioned.new(node, x: at[0], y: at[1], width:) : node)
     end
 
-    def row(gap: 0, align: :top)
+    # Columns side by side; splits across pages like a box (`break_inside:`).
+    def row(gap: 0, align: :top, break_inside: nil)
       columns = Builder::Columns.new
       @_builder.within(columns) { yield if block_given? }
-      @_builder.add(Layout::Row.new(columns.nodes, gap:, align:))
+      node = Layout::Row.new(columns.nodes, gap:, align:)
+      node.break_inside = break_inside
+      @_builder.add(node)
     end
 
     # A row column: `width:` in points, as a fraction (0.5), :auto or nil for
     # an equal share. Takes every box option.
-    def column(width: nil, align: nil, gap: 0, **, &)
-      @_builder.add(Layout::Box.new(container(align:, gap:, &), width:, **))
+    def column(width: nil, align: nil, gap: 0, break_inside: nil, **, &)
+      node = Layout::Box.new(container(align:, gap:, &), width:, **)
+      node.break_inside = break_inside
+      @_builder.add(node)
     end
 
     # Children kept in one vertical group; `keep_together: true` moves the
     # whole group to the next page rather than splitting it.
-    def group(gap: 0, align: nil, keep_together: false, keep_with_next: nil, &)
+    def group(gap: 0, align: nil, keep_together: false, keep_with_next: nil, anchor: nil, bookmark: nil, &)
       flow = container(align:, gap:, &)
       flow.break_inside = :avoid if keep_together
       flow.keep_with_next = keep_with_next
-      @_builder.add(flow)
+      @_builder.add(mark(flow, anchor, bookmark))
     end
 
     # Children side by side at their own widths, wrapping onto new rows.
@@ -56,14 +67,28 @@ module Stationery
     # An SVG drawing: markup String, or a path to a .svg file. `currentColor`
     # takes `color:`.
     def svg(source, width: nil, height: nil, color: "#000000", align: nil)
-      source = File.read(source.to_s) unless source.to_s.lstrip.start_with?("<")
-      node = Layout::Svg.new(SVG::Document.parse(source), width:, height:, color:)
+      name = source.to_s.lstrip.start_with?("<") ? "inline" : File.basename(source.to_s)
+      source = File.read(source.to_s) unless name == "inline"
+      document = SVG::Document.parse(source)
+      if document.unsupported.any?
+        @_builder.warnings << Warnings::UnsupportedSvg.new(elements: document.unsupported, source: name)
+      end
+      node = Layout::Svg.new(document, width:, height:, color:)
       @_builder.add(align ? Layout::Flow.new([node], align:) : node)
     end
 
-    def table(rows, widths: nil, width: :auto, header: false, split_rows: false, cell: {}, &)
-      @_builder.add(Layout::Table.new(rows, context: @_builder.context, widths:, width:, header:, split_rows:,
-                                            cell:, &))
+    def table(rows, widths: nil, width: :auto, header: false, split_rows: false, cell: {}, anchor: nil, bookmark: nil, &)
+      node = Layout::Table.new(rows, context: @_builder.context, widths:, width:, header:, split_rows:, cell:, &)
+      @_builder.add(mark(node, anchor, bookmark))
+    end
+
+    # The document's bookmarks with their page numbers, one linked row each.
+    # `levels:` is a Range (or an Integer maximum depth); `leader:` is :dots,
+    # :line or nil; text options style the rows.
+    def table_of_contents(levels: 1.., leader: :dots, indent: 12, number_width: nil, gap: 4, **options)
+      node = Layout::TableOfContents.new(@_builder.outline, context: @_builder.context(@_builder.style(options)),
+                                                            levels:, leader:, indent:, number_width:, gap:)
+      @_builder.add(node)
     end
 
     def image(source, align: nil, **)
@@ -74,6 +99,16 @@ module Stationery
     def rule(**) = @_builder.add(Layout::Rule.new(**))
     def spacer(height) = @_builder.add(Layout::Spacer.new(height))
     def page_break = @_builder.add(Layout::PageBreak.new)
+
+    # A named link target (`link: "#name"`) at this point; it moves to the
+    # next page with whatever follows it.
+    def anchor(name) = @_builder.add(Layout::Mark.standalone(name))
+
+    # An outline entry (PDF bookmark) at this point; like a standalone anchor
+    # it moves to the next page with whatever follows it.
+    def bookmark(title, level: 1, open: false)
+      @_builder.add(Layout::Mark.standalone(@_builder.outline.add(title, level:, open:).anchor))
+    end
 
     # Draw directly: the block receives the canvas and the reserved rectangle.
     def canvas(height:, at: nil, width: nil, &)
@@ -87,6 +122,20 @@ module Stationery
     end
 
     private
+
+    # `bookmark:` is a title, or { title:, level:, open: }.
+    def mark(node, anchor, bookmark)
+      names = [anchor&.to_s]
+      names << outline_entry(bookmark).anchor if bookmark
+      names.compact!
+      names.empty? ? node : Layout::Mark.new(node, names)
+    end
+
+    def outline_entry(bookmark)
+      return @_builder.outline.add(bookmark) unless bookmark.is_a?(Hash)
+
+      @_builder.outline.add(bookmark.fetch(:title), **bookmark.slice(:level, :open))
+    end
 
     def container(align: nil, gap: 0, &)
       flow = Layout::Flow.new([], gap:, align: align || :left)
