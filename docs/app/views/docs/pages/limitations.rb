@@ -17,7 +17,7 @@ class Views::Docs::Pages::Limitations < DocsUI::Page
         | --- | --- |
         | Fonts | Ligatures and other GSUB shaping, TrueType collections (`.ttc`), variable fonts (including CFF2), WOFF/WOFF2 |
         | SVG | `use`, `textPath`, patterns, masks, stylesheet selectors with combinators; gradient `reflect`/`repeat` spreads, per-stop opacity and gradient strokes, and rotated or skewed text are approximated |
-        | PDF features | Tagged (accessible) PDF; form fields draw their appearance in Helvetica (Windows-1252), not the document's fonts |
+        | PDF features | Tagged PDF is not labelled PDF/UA (no XMP identification); form fields draw their appearance in Helvetica (Windows-1252), not the document's fonts |
         | Layout | Fixed-height boxes, and rows holding one, never split across pages |
         | Images | Formats other than JPEG and PNG; remote URLs are never fetched |
 

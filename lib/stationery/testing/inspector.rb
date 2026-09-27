@@ -3,6 +3,7 @@
 require "pathname"
 require "stringio"
 require "stationery"
+require_relative "structure_reader"
 
 module Stationery
   module Testing
@@ -61,6 +62,20 @@ module Stationery
       def bookmarks
         outlines = objects.deref!(objects.trailer[:Root])[:Outlines]
         outlines ? titles(outlines[:First]) : []
+      end
+
+      # The structure tree of a tagged PDF as nested arrays; see StructureReader.
+      def structure = @structure ||= StructureReader.new(reader).tree
+
+      # Whether the catalog marks the PDF as tagged and holds a structure tree.
+      def tagged?
+        catalog = objects.deref!(objects.trailer[:Root])
+        catalog.dig(:MarkInfo, :Marked) == true && !catalog[:StructTreeRoot].nil?
+      end
+
+      # Text shown outside any marked content (neither tagged nor an artifact).
+      def untagged_text
+        @untagged_text ||= reader.pages.flat_map { |page| MarkedText.read(page).unmarked }
       end
 
       private

@@ -48,4 +48,13 @@ RSpec.describe Stationery::Testing::Assertions do
     expect(host.calls.map(&:first)).to eq([true, true, true, true, true, false])
     expect(host.calls.last.last).to start_with("expected PDF to have no warnings, got:")
   end
+
+  it "asserts the structure tree and tagged content" do
+    tagged = SpecDocument.build { text "Hi" }.to_pdf(tagged: true)
+    host.assert_pdf_structure(tagged, [[:Document, [[:P, "Hi"]]]])
+    host.assert_tagged_content(tagged)
+    host.assert_tagged_content(pdf)
+
+    expect(host.calls.map(&:first)).to eq([true, true, false])
+  end
 end

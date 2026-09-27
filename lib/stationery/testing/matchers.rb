@@ -111,6 +111,29 @@ module Stationery
         def actual = messages.empty? ? "got none" : "got:\n#{messages.map { |m| "  - #{m}" }.join("\n")}"
       end
 
+      class HaveStructure < Base
+        def description = "have structure #{@expected.inspect}"
+
+        private
+
+        def match?(pdf) = pdf.structure == @expected
+        def actual = "got #{@inspector.structure.inspect}"
+      end
+
+      class HaveTaggedContent < Base
+        def description = "be tagged with every text in marked content"
+
+        private
+
+        def match?(pdf) = pdf.tagged? && pdf.untagged_text.empty?
+
+        def actual
+          return "but it is not tagged" unless @inspector.tagged?
+
+          "got untagged text #{@inspector.untagged_text.inspect}"
+        end
+      end
+
       def have_pdf_text(expected) = HaveText.new(expected)
       def have_pdf_text_on_page(page, expected) = HaveTextOnPage.new(page, expected)
       def have_page_count(expected) = HavePageCount.new(expected)
@@ -118,6 +141,8 @@ module Stationery
       def have_image_count(expected) = HaveImageCount.new(expected)
       def have_bookmark(title) = HaveBookmark.new(title)
       def have_no_warnings = HaveNoWarnings.new
+      def have_structure(expected) = HaveStructure.new(expected)
+      def have_tagged_content = HaveTaggedContent.new
     end
   end
 end

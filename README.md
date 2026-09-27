@@ -323,6 +323,19 @@ and across page breaks: a paragraph continued on the next page stays one `P`.
   (`Warnings::MissingLanguage`) are warnings, so `strict` catches them.
 - Untagged documents (the default) are written exactly as before.
 
+Check the tree in tests with `have_structure` and `have_tagged_content` (see [Testing](#testing)):
+
+```ruby
+expect(ReportPdf.new).to have_tagged_content # tagged, and no text outside marked content
+expect(ReportPdf.new).to have_structure(
+  [[:Document, [[:H1, "Quarterly report"], [:P, "Revenue grew in every region."],
+                [:Figure, "Revenue by region, Q1 to Q3"], [:Note, [[:P, "Figures are unaudited."]]]]]]
+)
+```
+
+The PDF is not labelled PDF/UA (no XMP `pdfuaid` metadata), and nothing checks colour contrast or
+reading order you build out of positioned boxes (`box(at:)` joins the reading order where it paints).
+
 ### Debugging
 
 `to_pdf(debug: true)` outlines every layout rectangle on top of the content: boxes (red, padding dashed),
@@ -521,6 +534,8 @@ RSpec.describe InvoicePdf do
   it { is_expected.to have_pdf_link("mailto:hello@acme.test") }
   it { is_expected.to have_image_count(1) }
   it { is_expected.to have_no_warnings }
+  it { is_expected.to have_tagged_content } # a tagged PDF with every text tagged or an artifact
+  it { is_expected.to have_structure([[:Document, [[:H1, "Invoice"], [:P, "INV-7"]]]]) }
 end
 ```
 
@@ -539,6 +554,8 @@ class InvoicePdfTest < Minitest::Test
     assert_page_count pdf, 2
     assert_pdf_link pdf, /acme\.test/
     assert_no_pdf_warnings pdf
+    assert_tagged_content pdf
+    assert_pdf_structure pdf, [[:Document, [[:H1, "Invoice"], [:P, "INV-7"]]]]
   end
 end
 ```
@@ -547,7 +564,11 @@ The matcher names carry a `pdf_` prefix so they never clash with Capybara's
 `have_text` and `have_link`. `have_bookmark` / `assert_bookmark` match outline
 titles. For anything else, `Stationery::Testing::Inspector.new(subject)`
 exposes `text`, `page_texts`, `page_count`, `links`, `internal_links`,
-`image_count`, `bookmarks`, `metadata` and `warnings`.
+`image_count`, `bookmarks`, `metadata`, `warnings`, `tagged?`, `untagged_text` and
+`structure` — a tagged PDF's structure tree as nested arrays, each element's text
+read from its marked content: `[type, "text"]`, `[type, [children]]` (its own text
+between the children, as for a `P` holding a `Link`) or `[type]` when empty; a
+`Figure` reads as its alt text.
 
 ## Why not Prawn, Chrome or Typst?
 
@@ -579,8 +600,7 @@ larger file. `PROFILE=1 bundle exec ruby -Ilib benchmark/profile.rb` prints the
 
 No variable fonts (including CFF2) or
 WOFF2 (it needs Brotli; convert to `.ttf` or `.woff`); SVG covers the shapes icon sets use
-(no patterns or masks); no
-tagged PDF. A box with a fixed `height:` never splits (use
+(no patterns or masks). A box with a fixed `height:` never splits (use
 `min_height:` for a floor that can); a row splits only when every column can.
 
 ## License
