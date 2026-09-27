@@ -16,18 +16,20 @@ module Stationery
 
         def initialize(rows)
           @row_count = rows.size
-          @slots = {}
+          @slots = Array.new(@row_count) { [] }
           @placements = rows.each_with_index.flat_map { |row, r| place(row, r) }
           @column_count = @placements.map { |p| p.columns.end }.max || 0
         end
 
-        def at(row, column) = @slots[[row, column]]&.cell
+        def at(row, column) = row.negative? || column.negative? ? nil : @slots.dig(row, column)&.cell
 
         # Row indexes a horizontal cut can fall before without splitting a rowspan.
         def boundaries
           @boundaries ||= begin
             inside = Array.new(row_count + 1, false)
-            @placements.each { |p| ((p.row + 1)...p.rows.end).each { |r| inside[r] = true } }
+            @placements.each do |p|
+              ((p.row + 1)...p.rows.end).each { |r| inside[r] = true } if p.rowspan > 1
+            end
             (0..row_count).reject { |r| inside[r] }.freeze
           end
         end
@@ -37,7 +39,10 @@ module Stationery
         def column_metric
           values = Array.new(column_count, 0)
           single, spanning = @placements.partition { |p| p.colspan == 1 }
-          single.each { |p| values[p.column] = [values[p.column], yield(p)].max }
+          single.each do |p|
+            value = yield(p)
+            values[p.column] = value if value > values[p.column]
+          end
           spanning.each do |p|
             excess = yield(p) - values[p.columns].sum
             p.columns.each { |c| values[c] += excess.fdiv(p.colspan) } if excess.positive?
@@ -50,7 +55,10 @@ module Stationery
         def row_heights(widths)
           heights = Array.new(row_count, 0)
           single, spanning = @placements.partition { |p| p.rowspan == 1 }
-          single.each { |p| heights[p.row] = [heights[p.row], yield(p, widths[p.columns].sum)].max }
+          single.each do |p|
+            height = yield(p, p.colspan == 1 ? widths[p.column] : widths[p.columns].sum)
+            heights[p.row] = height if height > heights[p.row]
+          end
           spanning.each do |p|
             excess = yield(p, widths[p.columns].sum) - heights[p.rows].sum
             heights[p.rows.end - 1] += excess if excess.positive?
@@ -62,13 +70,21 @@ module Stationery
 
         def place(row, r)
           column = 0
+          slots = @slots[r]
           row.map do |cell|
-            column += 1 while @slots.key?([r, column])
-            placement = Placement.new(cell:, row: r, column:, colspan: cell.colspan,
-                                      rowspan: cell.rowspan.clamp(1, row_count - r))
-            placement.rows.each { |pr| placement.columns.each { |pc| @slots[[pr, pc]] = placement } }
+            column += 1 while slots[column]
+            placement = Placement.new(cell, r, column, cell.colspan, cell.rowspan.clamp(1, row_count - r))
+            occupy(placement)
             column += cell.colspan
             placement
+          end
+        end
+
+        def occupy(placement)
+          if placement.colspan == 1 && placement.rowspan == 1
+            @slots[placement.row][placement.column] = placement
+          else
+            placement.rows.each { |pr| placement.columns.each { |pc| @slots[pr][pc] = placement } }
           end
         end
       end

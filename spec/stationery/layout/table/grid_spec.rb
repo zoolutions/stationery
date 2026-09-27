@@ -20,6 +20,7 @@ RSpec.describe Stationery::Layout::Table::Grid do
     expect(placed.at(0, 1).content).to eq("a")
     expect(placed.at(0, 2).content).to eq("b")
     expect(placed.at(1, 2).content).to eq("e")
+    expect([placed.at(-1, 0), placed.at(0, -1), placed.at(2, 0)]).to eq([nil, nil, nil])
   end
 
   it "skips slots a rowspan from above covers" do
