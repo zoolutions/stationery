@@ -1,0 +1,51 @@
+CHANGELOG.md
+  s_832305fd821824::t_19a43c443230c4 7
+lib/stationery/svg/stylesheet.rb
+  s_832305fd821824::t_e7f890886da796 1-47
+spec/stationery/svg/stylesheet_spec.rb
+  s_832305fd821824::t_d18a782da14706 1-37
+docs/app/views/docs/pages/images_and_svg.rb
+  s_832305fd821824::t_19a43c443230c4 59-61,72-73
+spec/fixtures/svg/styled.svg
+  s_832305fd821824::t_f3bb0b2ed72202 1-25
+spec/stationery/svg/document_draw_stylesheet_spec.rb
+  s_832305fd821824::t_ad48546c9c2cb7 1-69
+lib/stationery/svg/selector.rb
+  s_832305fd821824::t_78458247b94b90 1-30,32-37
+  s_832305fd821824::t_f4583ac5882e2f 31
+README.md
+  s_832305fd821824::t_19a43c443230c4 87,471
+lib/stationery/svg/style.rb
+  s_832305fd821824::t_1278219acf6361 6-7,10,35-36,40-41,44-46,54,57-58
+lib/stationery.rb
+  s_832305fd821824::t_127454fea3f0cc 80-81
+spec/stationery/svg/selector_spec.rb
+  s_832305fd821824::t_921486da062274 1-27
+lib/stationery/svg/gradient.rb
+  s_832305fd821824::t_1278219acf6361 15-16,18,20,25-26,98
+lib/stationery/svg/document.rb
+  s_832305fd821824::t_f4583ac5882e2f 12-13
+  s_832305fd821824::t_127454fea3f0cc 8-9,27-28,41,58-63,73-74,77-79,81,86-87,90,98-99
+lib/stationery/svg/text.rb
+  s_832305fd821824::t_1278219acf6361 38
+docs/app/views/docs/pages/limitations.rb
+  s_832305fd821824::t_19a43c443230c4 19
+lib/stationery/svg/parser.rb
+  s_832305fd821824::t_1278219acf6361 9-10,14,16-18,25-26,37-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "5a1effc79a0b87d4099a026aef255672c55121c3",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
