@@ -84,7 +84,7 @@ RSpec.describe Stationery::Document do
   end
 
   it "exposes overflow warnings instead of raising" do
-    doc = SpecDocument.build { box { 40.times { |i| text "row #{i}" } } }
+    doc = SpecDocument.build { box(break_inside: :avoid) { 40.times { |i| text "row #{i}" } } }
     doc.to_pdf
 
     expect(doc.warnings.map(&:page)).to eq([1])

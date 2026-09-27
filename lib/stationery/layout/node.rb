@@ -31,6 +31,9 @@ module Stationery
       def paint(_canvas, _x, _y, _width, _height = nil, **) = raise(NotImplementedError, "#{self.class}#paint")
 
       def splittable? = false
+      # Moves whole to a fresh page before splitting; splits only when it does
+      # not fit there either.
+      def prefer_whole? = false
       def natural_width = 0
       def min_width = 0
       def fixed_width(_available) = nil
