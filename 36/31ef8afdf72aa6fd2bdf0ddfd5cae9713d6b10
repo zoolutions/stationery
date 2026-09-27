@@ -1,0 +1,9 @@
+spec/support/pdf_helpers.rb
+  ai_agent 27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "3631ef8afdf72aa6fd2bdf0ddfd5cae9713d6b10",
+  "prompts": {}
+}
