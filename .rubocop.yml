@@ -48,7 +48,7 @@ Metrics/ParameterLists:
     - "lib/stationery/svg/**/*" # arcs take the SVG spec's seven arguments
 
 Naming/MethodParameterName:
-  AllowedNames: [a, d, cx, cy, op, qx, qy, ux, uy, x, y, w, h, r, g, b, c, m, k, io, id, at, to, x1, y1, x2, y2, x3, y3, dx, dy, rx, ry]
+  AllowedNames: [a, d, "on", cx, cy, op, qx, qy, ux, uy, x, y, w, h, r, g, b, c, m, k, io, id, at, to, x1, y1, x2, y2, x3, y3, dx, dy, rx, ry]
 
 # RSpec matcher builders read as `have_…` by convention.
 Naming/PredicatePrefix:
@@ -77,6 +77,7 @@ ThreadSafety/ClassInstanceVariable:
     - "lib/stationery/fonts/registry.rb"
     - "lib/stationery/images/cache.rb"
     - "lib/stationery/document.rb"
+    - "lib/stationery/cli.rb" # commands register while their files load
 ThreadSafety/NewThread:
   Exclude:
     - "spec/**/*"

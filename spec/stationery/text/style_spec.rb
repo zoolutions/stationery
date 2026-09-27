@@ -5,7 +5,8 @@ RSpec.describe Stationery::Text::Style do
     style = described_class.new(family: "Open Sans")
 
     expect(style).to have_attributes(size: 10, weight: :regular, style: :normal, color: "#000000", letter_spacing: 0,
-                                     underline: false, strikethrough: false, script: nil, link: nil)
+                                     underline: false, strikethrough: false, script: nil, link: nil,
+                                     kerning: true)
   end
 
   it "scales sub- and superscript and raises or lowers the baseline" do

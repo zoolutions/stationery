@@ -24,7 +24,7 @@ module Stationery
         paragraph(width).draw(canvas, x, y)
       end
 
-      def split(width, height)
+      def split(width, height, **)
         head, tail = paragraph(width).split(height)
         [head && from(head), tail && from(tail)]
       end
@@ -39,9 +39,10 @@ module Stationery
 
       def min_width
         @min_width ||= @runs.flat_map do |run|
-          font = @context.book.resolve(run.style).first
+          style = run.style
+          font = @context.book.resolve(style).first
           run.text.split(/[ \t\n]+/).map do |word|
-            font.width_of(word, run.style.render_size, letter_spacing: run.style.letter_spacing)
+            font.width_of(word, style.render_size, letter_spacing: style.letter_spacing, kerning: style.kerning)
           end
         end.max || 0
       end
