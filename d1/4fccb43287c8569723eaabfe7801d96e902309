@@ -1,0 +1,31 @@
+lib/stationery/fonts/true_type.rb
+  s_832305fd821824::t_8fa821721be570 170
+CHANGELOG.md
+  s_832305fd821824::t_8f543c100da4c0 10-12
+stationery.gemspec
+  s_832305fd821824::t_0697984533a544 39,44
+spec/stationery/fonts/true_type_spec.rb
+  s_832305fd821824::t_b6cf6820325b83 31-39
+spec/spec_helper.rb
+  s_832305fd821824::t_d1e96ebd34ee0e 6
+spec/stationery/pdf/writer_spec.rb
+  s_832305fd821824::t_35d097c4ec17cf 29-34
+lib/stationery/pdf/writer.rb
+  s_832305fd821824::t_6658e7a201698f 33-36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "d14fccb43287c8569723eaabfe7801d96e902309",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
