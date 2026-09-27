@@ -1,0 +1,9 @@
+lib/stationery/pdf/assembler.rb
+  ai_agent 21,28-29,35,37,54-56,67-69,71-73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "f4f1f0feede8b2156de08cf79dc17f01b8c32cc1",
+  "prompts": {}
+}
