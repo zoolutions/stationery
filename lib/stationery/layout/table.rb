@@ -3,25 +3,29 @@
 module Stationery
   module Layout
     # Rows of cells with column widths, per-cell styling through selections,
-    # header rows repeated after a page break, and splitting between rows.
+    # header rows repeated after a page break, and splitting between rows. A
+    # row taller than a fresh page, or any row with split_rows: true, is cut
+    # through its cells and continues below the repeated header.
     class Table < Node
       DEFAULT_CELL = { padding: 5, borders: %i[top right bottom left], border_width: 0.5,
                        border_color: "#000000" }.freeze
 
-      def initialize(rows, context:, widths: nil, width: :auto, header: false, cell: {})
+      def initialize(rows, context:, widths: nil, width: :auto, header: false, split_rows: false, cell: {})
         super()
+        @split_rows = split_rows
         @context = context
         @widths = widths
         @width = width
         @header = header == true ? 1 : (header || 0).to_i
         defaults = DEFAULT_CELL.merge(cell)
-        @cells = rows.map { |row| row.map { |content| content.is_a?(Cell) ? content : Cell.new(content, defaults) } }
+        @cells = rows.map { |row| row.map { |content| build_cell(content, defaults) } }
+        check_header
         yield self if block_given?
       end
 
       def row_count = @cells.size
-      def column_count = @cells.map(&:size).max || 0
-      def cell(row, column) = @cells.dig(row, column)
+      def column_count = grid.column_count
+      def cell(row, column) = grid.at(row, column)
 
       def rows(spec) = Selection.new(self, Selection.indexes(spec, row_count), (0...column_count).to_a)
       alias row rows
@@ -39,7 +43,10 @@ module Stationery
       def splittable? = true
 
       # Forgets measurements taken before a selection restyled cells.
-      def invalidate! = @column_widths = nil
+      def invalidate!
+        @column_widths = nil
+        @grid = nil
+      end
 
       def natural_width = column_metric(:natural_width).sum
       def min_width = column_metric(:min_width).sum
@@ -64,30 +71,65 @@ module Stationery
 
       def paint(canvas, x, y, width, _height = nil, **)
         widths = column_widths(width)
-        top = y
-        @cells.zip(row_heights(width)).each_with_index do |(row, height), row_index|
-          left = x
-          row.each_with_index do |cell, index|
-            cell.paint(canvas, @context, Rect.new(left, top, widths[index], height),
-                       last_column: index == row.size - 1, last_row: row_index == @cells.size - 1)
-            left += widths[index]
-          end
-          top += height
+        heights = row_heights(width)
+        grid.placements.each do |p|
+          rect = Rect.new(x + widths[0...p.column].sum, y + heights[0...p.row].sum,
+                          widths[p.columns].sum, heights[p.rows].sum)
+          p.cell.paint(canvas, @context, rect, last_column: p.columns.end == column_count,
+                                               last_row: p.rows.end == row_count)
         end
       end
 
-      def split(width, height)
+      def split(width, height, **options)
         heights = row_heights(width)
         used = heights.first(@header).sum
         count = @header
         count += 1 while count < row_count && used + heights[count] <= height + EPSILON && (used += heights[count])
         return [self, nil] if count == row_count
+
+        count = grid.boundaries.grep(@header..count).max
+        split_row(count, width, height - heights.first(count).sum, fresh: options[:fresh]) || split_before(count)
+      end
+
+      private
+
+      def grid = @grid ||= Grid.new(@cells)
+
+      def split_before(count)
         return [nil, self] if count == @header
 
         [with_rows(@cells.first(count)), with_rows(@cells.first(@header) + @cells.drop(count))]
       end
 
-      private
+      def split_row(row, width, space, fresh:)
+        return unless @split_rows || (fresh && row == @header)
+        return unless grid.boundaries.include?(row + 1)
+
+        widths = column_widths(width)
+        placements = grid.placements.select { |p| p.row == row }
+        heads, tails = RowSplitter.new(placements, widths:, context: @context).call(space)
+        return unless heads
+
+        [with_rows(@cells.first(row) + [heads], widths:),
+         with_rows(@cells.first(@header) + [tails] + @cells.drop(row + 1), widths:)]
+      end
+
+      def build_cell(content, defaults)
+        case content
+        when Cell then content
+        when Hash
+          options = content.except(:content, :colspan, :rowspan)
+          Cell.new(content[:content], defaults.merge(options),
+                   colspan: content.fetch(:colspan, 1), rowspan: content.fetch(:rowspan, 1))
+        else Cell.new(content, defaults)
+        end
+      end
+
+      def check_header
+        return if @header.zero? || grid.boundaries.include?([@header, row_count].min)
+
+        raise ArgumentError, "a rowspan crosses the end of the #{@header} header row(s)"
+      end
 
       def target(available)
         case @width
@@ -103,18 +145,15 @@ module Stationery
       end
 
       def column_metric(metric)
-        Array.new(column_count) do |c|
-          @cells.filter_map { |row| row[c]&.public_send(metric, @context) }.max || 0
-        end
+        grid.column_metric { |p| p.cell.public_send(metric, @context) }
       end
 
       def row_heights(width)
-        widths = column_widths(width)
-        @cells.map { |row| row.each_with_index.map { |cell, i| cell.measure(@context, widths[i]) }.max || 0 }
+        grid.row_heights(column_widths(width)) { |p, span| p.cell.measure(@context, span) }
       end
 
-      def with_rows(rows)
-        self.class.new(rows, context: @context, widths: @widths, width: @width, header: @header)
+      def with_rows(rows, widths: @widths)
+        self.class.new(rows, context: @context, widths:, width: @width, header: @header, split_rows: @split_rows)
       end
     end
   end

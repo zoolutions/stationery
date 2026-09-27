@@ -9,16 +9,21 @@ module Stationery
         TEXT_OPTIONS = { size: :size, color: :color, weight: :weight, style: :style, font: :family,
                          letter_spacing: :letter_spacing }.freeze
 
-        attr_reader :content, :options
+        attr_reader :content, :options, :colspan, :rowspan
 
-        def initialize(content, options)
+        def initialize(content, options, colspan: 1, rowspan: 1)
           @content = content
           @options = options.dup
+          @colspan = colspan
+          @rowspan = rowspan
         end
 
         def node(context)
           @node ||= @content.is_a?(Node) ? @content : text_node(context)
         end
+
+        # The same cell holding another node, as a row split into two parts needs.
+        def with_content(node) = Cell.new(node, @options, colspan:, rowspan:)
 
         # Changes an option and forgets the node built from the old ones.
         def []=(name, value)
@@ -46,6 +51,7 @@ module Stationery
           end
           paint_content(canvas, context, rect)
           paint_borders(canvas, rect)
+          paint_debug(canvas, rect) if canvas.debug?
         end
 
         private
@@ -73,6 +79,12 @@ module Stationery
           own = content.fixed_width(inner.width)
           left = own ? inner.x + Geometry.align_offset(@options[:align] || :left, inner.width, own) : inner.x
           content.paint(canvas, left, inner.y + offset, own || inner.width)
+        end
+
+        def paint_debug(canvas, rect)
+          canvas.debug_rect(rect.x, rect.y, rect.width, rect.height, :cell)
+          inner = rect.inset(*padding)
+          canvas.debug_rect(inner.x, inner.y, inner.width, inner.height, :cell_padding)
         end
 
         def paint_borders(canvas, rect)

@@ -9,9 +9,28 @@ RSpec.describe Stationery::Fonts::FontBook do
     expect(face.path).to end_with("OpenSans-Bold.ttf")
   end
 
-  it "falls back to the first registered family and explains when there is none" do
+  it "falls back to the first registered family for an unknown name" do
     expect(open_sans_book.resolve(base_style(family: "Nope")).last.path).to end_with("OpenSans-Regular.ttf")
-    expect { described_class.new.resolve(base_style) }.to raise_error(Stationery::Error, /font_family/)
+  end
+
+  it "resolves a bundled family by name without registering it" do
+    expect(open_sans_book.resolve(base_style(family: "Inter")).last.path).to end_with("data/Inter-Regular.ttf")
+    expect(open_sans_book.resolve(base_style(family: "Inter", weight: :bold)).last.path).to end_with("Inter-Bold.ttf")
+  end
+
+  it "uses bundled Inter when no family is registered at all" do
+    font, face = described_class.new.resolve(base_style(family: "default"))
+
+    expect(face.path).to end_with("data/Inter-Regular.ttf")
+    expect(font.ttf.postscript_name).to eq("Inter-Regular")
+  end
+
+  it "registers a bundled family by name alone and rejects unknown names without paths" do
+    book = described_class.new
+    book.register("Inter")
+
+    expect(book.families.fetch("Inter").paths[:italic]).to end_with("Inter-Italic.ttf")
+    expect { book.register("Nope") }.to raise_error(ArgumentError, /regular face.*bundled: Inter/)
   end
 
   it "inherits families from a parent book without sharing its Font objects" do
