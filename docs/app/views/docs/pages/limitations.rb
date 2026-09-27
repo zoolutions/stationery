@@ -17,7 +17,7 @@ class Views::Docs::Pages::Limitations < DocsUI::Page
         | --- | --- |
         | Fonts | Ligatures and other GSUB shaping, TrueType collections (`.ttc`), variable fonts (including CFF2), WOFF/WOFF2 |
         | SVG | `text`, `use`, gradients, patterns, masks, CSS stylesheets (inline `style` attributes work) |
-        | PDF features | Encryption, forms, tagged (accessible) PDF |
+        | PDF features | Forms, tagged (accessible) PDF |
         | Layout | Fixed-height boxes, and rows holding one, never split across pages |
         | Images | Formats other than JPEG and PNG; remote URLs are never fetched |
 

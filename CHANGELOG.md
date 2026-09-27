@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Encryption with the standard security handler: `to_pdf(encrypt: { owner_password:, user_password:, permissions:, algorithm: })` or `encrypt …` at class level (`to_pdf(encrypt: nil)` opts out). AES-256 (R6, default), AES-128 (R4) and RC4-128 (R3); every string and stream, document info included, is encrypted.
+
 ## 0.2.0 (2026-09-27)
 
 Everything from the three planned milestones ("works out of the box", "typography and layout",

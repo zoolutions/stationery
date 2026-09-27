@@ -228,6 +228,27 @@ render Callout.new(color: "#F3F4F6") { text "Amount due" }
   (with `#warnings`) instead of writing a PDF that produced any; `to_pdf(strict: false)` opts one
   render out again.
 
+### Encryption
+
+```ruby
+class InvoicePdf < Stationery::Document
+  encrypt owner_password: "s3cret", permissions: [:print] # every render
+end
+
+InvoicePdf.new(invoice).to_pdf(encrypt: { user_password: "1234", owner_password: "s3cret",
+                                          permissions: %i[print copy] }) # override for one render
+InvoicePdf.new(invoice).to_pdf(encrypt: nil) # plain
+```
+
+- `owner_password:` is required (`ArgumentError` when missing or empty); it opens the file with every
+  right. `user_password:` defaults to `""`: the file opens without a prompt, but viewers enforce the
+  permissions.
+- `permissions:` is a subset of `%i[print modify copy annotate fill_forms extract_accessible assemble
+  print_high]` (default: all).
+- `algorithm:` picks the standard security handler. `:aes_256` (default, PDF 2.0 / Acrobat X+);
+  `:aes_128` for older viewers; `:rc4_128` only for legacy readers that need it.
+- Every string and stream is encrypted, the document info included.
+
 ### Debugging
 
 `to_pdf(debug: true)` outlines every layout rectangle on top of the content: boxes (red, padding dashed),
@@ -468,8 +489,8 @@ larger file. `PROFILE=1 bundle exec ruby -Ilib benchmark/profile.rb` prints the
 
 No ligatures, no TrueType collections, variable fonts (including CFF2) or
 WOFF; SVG covers the shapes icon sets use
-(no text, gradients, patterns, masks or CSS stylesheets); no encryption,
-forms or tagged PDF; fixed-height boxes, and rows holding one,
+(no text, gradients, patterns, masks or CSS stylesheets); no forms or
+tagged PDF; fixed-height boxes, and rows holding one,
 never split across pages.
 
 ## License
