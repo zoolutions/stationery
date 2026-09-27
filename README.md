@@ -131,7 +131,7 @@ Options: `levels:` (a Range, or an Integer maximum depth), `leader:` (`:dots`, `
 `indent:` per level (points), `gap:` between rows and before the number, `number_width:` (defaults to
 the width of "0000") plus any text style. Numbers are right-aligned in a fixed slot and filled in after
 pagination, so a long contents list paginates without reflowing. An entry whose target never paints
-keeps its title and leaves the number blank.
+keeps its title, with no number and no link.
 
 ## Components
 

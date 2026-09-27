@@ -95,6 +95,22 @@ RSpec.describe Stationery::Layout::TableOfContents do
     expect(toc.measure(200)).to eq(line_height)
   end
 
+  it "keeps a row for a bookmark that never painted, without number, link or warning" do
+    doc = SpecDocument.build do
+      table_of_contents
+      box(height: 20, overflow: :hidden) do
+        spacer 30
+        text "clipped", bookmark: "Lost"
+      end
+      text "Kept", bookmark: "Kept"
+    end
+    pdf = doc.to_pdf
+
+    expect(page_text(pdf)).to start_with("Lost Kept 1 ")
+    expect(link_destinations(pdf).map { |from, to, _| [from, to] }).to eq([[0, 0]])
+    expect(doc.warnings).to be_empty
+  end
+
   it "renders nothing for an empty outline" do
     toc = described_class.new(Stationery::Outline.new, context: ctx)
 

@@ -5,7 +5,7 @@ module Stationery
     class TableOfContents
       # One contents row. The title wraps within the room the number slot
       # leaves; the leader and the number sit on its last line, and the whole
-      # row links to the entry's anchor.
+      # row links to the entry's anchor once that anchor has painted.
       class Entry < Node
         LEADERS = { dots: { dash: [0, 3], cap: :round, width: 1 }, line: { width: 0.5 } }.freeze
 
@@ -28,8 +28,8 @@ module Stationery
           baseline = y + text.height - last.height + last.ascent
           slot_x = x + width - @slot
           draw_leader(canvas, x + offset + last.width + 2, slot_x, baseline)
-          canvas.number_slot(@entry.anchor, x: slot_x, baseline:, width: @slot, style: @context.style)
-          canvas.link(x + offset, y, width - offset, text.height, "##{@entry.anchor}")
+          canvas.number_slot(@entry.anchor, x: slot_x, baseline:, width: @slot, style: @context.style,
+                                            link: [x + offset, y, width - offset, text.height])
         end
 
         private

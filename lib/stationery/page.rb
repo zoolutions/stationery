@@ -7,8 +7,9 @@ module Stationery
   # for their anchors' pages.
   class Page
     # Room for the page number of `anchor`, right-aligned in `width` from `x`
-    # on `baseline` (top-left coordinates), drawn in `style`.
-    Slot = Data.define(:anchor, :x, :baseline, :width, :style)
+    # on `baseline` (top-left coordinates), drawn in `style`. `link` is an
+    # [x, y, w, h] area linked to the anchor only once it resolves.
+    Slot = Data.define(:anchor, :x, :baseline, :width, :style, :link)
 
     SIZES = {
       a3: [841.89, 1190.55], a4: [595.28, 841.89], a5: [419.53, 595.28],

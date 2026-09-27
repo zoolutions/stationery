@@ -78,9 +78,10 @@ module Stationery
       (@template ? @page.template_anchors : @page.anchors) << [name.to_s, num_value(@page.height - y)]
     end
 
-    # Leaves room for the page number `anchor` lands on; Structure fills it in.
-    def number_slot(anchor, x:, baseline:, width:, style:)
-      @page.slots << Page::Slot.new(anchor.to_s, x, baseline, width, style)
+    # Leaves room for the page number `anchor` lands on; Structure fills it in
+    # and adds the `link:` area ([x, y, w, h]) when the anchor exists.
+    def number_slot(anchor, x:, baseline:, width:, style:, link: nil)
+      @page.slots << Page::Slot.new(anchor.to_s, x, baseline, width, style, link)
     end
 
     def num(value) = PDF::Serializer.number(num_value(value))

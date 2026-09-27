@@ -25,8 +25,8 @@ module Stationery
       collect
       collect_templates
       @pages.each_with_index do |page, index|
-        page.annotations.replace(page.annotations.filter_map { |link| link_to(link, index) })
         page.slots.each { |slot| fill(page, slot) }
+        page.annotations.replace(page.annotations.filter_map { |link| link_to(link, index) })
       end
       @destinations
     end
@@ -57,11 +57,12 @@ module Stationery
       font, face = @book.resolve(slot.style)
       style = slot.style
       width = font.width_of(label, style.render_size, letter_spacing: style.letter_spacing)
-      Canvas.new(page, @resources).text(label, x: slot.x + slot.width - width, y: slot.baseline, font:,
-                                               size: style.render_size, color: style.color,
-                                               letter_spacing: style.letter_spacing, opacity: style.opacity,
-                                               synthetic_bold: face.synthetic_bold,
-                                               synthetic_oblique: face.synthetic_oblique)
+      canvas = Canvas.new(page, @resources)
+      canvas.link(*slot.link, "##{slot.anchor}") if slot.link
+      canvas.text(label, x: slot.x + slot.width - width, y: slot.baseline, font:,
+                         size: style.render_size, color: style.color,
+                         letter_spacing: style.letter_spacing, opacity: style.opacity,
+                         synthetic_bold: face.synthetic_bold, synthetic_oblique: face.synthetic_oblique)
     end
 
     def link_to(link, index)
