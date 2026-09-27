@@ -40,6 +40,40 @@ module PdfHelpers
     pdf.scan(%r{/Rect \[([-\d.\s]+)\]}).flatten.map { |rect| rect.split.map(&:to_f) }
   end
 
+  # Every internal link as [page index it sits on, target page index, target top].
+  def link_destinations(pdf)
+    reader = reader_for(pdf)
+    objects = reader.objects
+    pages = objects.page_references
+    reader.pages.each_with_index.flat_map do |page, index|
+      Array(objects.deref(page.attributes[:Annots])).filter_map do |ref|
+        dest = objects.deref(ref)[:Dest]
+        dest && [index, pages.index(dest[0]), dest[3]]
+      end
+    end
+  end
+
+  # The document outline as nested hashes (title, target page index, top,
+  # count, children), or nil when the catalog has none.
+  def outline_of(pdf)
+    objects = reader_for(pdf).objects
+    root = objects.deref(objects.deref(objects.trailer[:Root])[:Outlines])
+    root && outline_children(objects, root)
+  end
+
+  def outline_children(objects, parent)
+    ref = parent[:First]
+    items = []
+    while ref
+      node = objects.deref(ref)
+      dest = node[:Dest]
+      items << { title: node[:Title], page: objects.page_references.index(dest[0]), top: dest[3],
+                 count: node[:Count], children: outline_children(objects, node) }
+      ref = node[:Next]
+    end
+    items
+  end
+
   # Decompressed content stream of every page, for operator-level assertions.
   def page_contents(pdf)
     reader_for(pdf).pages.map(&:raw_content)

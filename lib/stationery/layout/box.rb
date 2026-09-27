@@ -2,17 +2,24 @@
 
 module Stationery
   module Layout
-    # A container with padding, background, border and corner radius. Boxes
-    # move to the next page whole. A fixed-height box can truncate or shrink
-    # text that does not fit (`overflow:`).
+    # A container with padding, background, border and corner radius. A box
+    # moves to the next page whole when it fits there and continues across
+    # pages when it does not (`break_inside: :auto` splits at any break,
+    # `:avoid` never). A fragment's cut sides are `open`: `decoration: :slice`
+    # drops their padding and border, `:clone` keeps the padding. A
+    # fixed-height box can truncate or shrink text that does not fit
+    # (`overflow:`) and never splits.
     class Box < Node
       BORDER = { width: 1, color: "#000000", sides: %i[top right bottom left] }.freeze
 
       attr_reader :content, :width_spec
 
       def initialize(content = Flow.new, padding: 0, background: nil, border: nil, radius: 0, width: nil,
-                     height: nil, overflow: :visible, valign: :top, opacity: nil, link: nil, outset: 0)
+                     height: nil, overflow: :visible, valign: :top, opacity: nil, link: nil, outset: 0,
+                     open: [], decoration: :slice)
         super()
+        @open = open
+        @decoration = decoration
         @link = link
         @outset = Geometry.box(outset)
         @content = content
@@ -41,30 +48,58 @@ module Stationery
         end
       end
 
+      def splittable? = @height.nil? && @overflow == :visible && @content.splittable?
+      def prefer_whole? = break_inside.nil? && splittable?
+
+      def split(width, height, fresh: false)
+        return [self, nil] if measure(width) <= height + EPSILON
+
+        cut = @open | [:bottom]
+        available = height - vertical(cut)
+        head, tail = @content.split(inner_width(width), available, fresh:)
+        return [nil, self] unless head
+        return [with_content(head), nil] unless tail
+
+        [with_content(head, cut).tap { |part| part.keep_with_next = nil }, with_content(tail, @open | [:top])]
+      end
+
+      # A copy holding other content and open sides, every option kept.
+      def with_content(content, open = @open) = dup.reopen(content, open)
+      def with_open(*sides) = with_content(@content, @open | sides)
+
       def measure(width)
         @height || (@content.measure(inner_width(width)) + vertical)
       end
 
-      def paint(canvas, x, y, width, height = nil, valign: nil, **)
+      def paint(canvas, x, y, width, height = nil, valign: nil, debug_kind: :box, **)
         height ||= measure(width)
         paint_background(canvas, x, y, width, height)
         paint_border(canvas, x, y, width, height)
         paint_content(canvas, x, y, width, height, valign || @valign)
         canvas.link(x, y, width, height, @link) if @link
+        paint_debug(canvas, Rect.new(x, y, width, height), debug_kind) if canvas.debug?
+      end
+
+      protected
+
+      def reopen(content, open)
+        @content = content
+        @open = open
+        self
       end
 
       private
 
-      def insets
+      def insets(open = @open)
         border = @border ? @border[:width] : 0
-        top, right, bottom, left = @padding
-        sides = @border ? @border[:sides] : []
-        [top + (sides.include?(:top) ? border : 0), right + (sides.include?(:right) ? border : 0),
-         bottom + (sides.include?(:bottom) ? border : 0), left + (sides.include?(:left) ? border : 0)]
+        sides = @border ? @border[:sides] - open : []
+        Geometry::SIDES.keys.zip(@padding).map do |side, padding|
+          (open.include?(side) && @decoration == :slice ? 0 : padding) + (sides.include?(side) ? border : 0)
+        end
       end
 
       def horizontal = insets[1] + insets[3]
-      def vertical = insets[0] + insets[2]
+      def vertical(open = @open) = insets(open).values_at(0, 2).sum
       def inner_width(width) = [width - horizontal, 0].max
 
       # The outset paints the background past the box's own edges (a band that
@@ -72,21 +107,40 @@ module Stationery
       def paint_background(canvas, x, y, width, height)
         return unless @background
 
-        top, right, bottom, left = @outset
-        canvas.rounded_rect(x - left, y - top, width + left + right, height + top + bottom,
-                            radius: @radius, fill: @background, opacity: @opacity)
+        top, right, bottom, left = @outset.each_with_index.map { |v, i| open?(i) ? 0 : v }
+        area = Rect.new(x - left, y - top, width + left + right, height + top + bottom)
+        cut(canvas, area, area) do |shape|
+          canvas.rounded_rect(*shape.to_h.values, radius: @radius, fill: @background, opacity: @opacity)
+        end
       end
 
       def paint_border(canvas, x, y, width, height)
         return unless @border
 
         stroke = @border[:width]
+        area = Rect.new(x, y, width, height)
         if @border[:sides].size == 4 && @radius.positive?
           half = stroke / 2.0
-          canvas.rounded_rect(x + half, y + half, width - stroke, height - stroke,
-                              radius: @radius, stroke: @border[:color], line_width: stroke)
+          cut(canvas, area, area.inset(half, half, half, half)) do |shape|
+            canvas.rounded_rect(*shape.to_h.values, radius: @radius, stroke: @border[:color], line_width: stroke)
+          end
         else
-          @border[:sides].each { |side| border_side(canvas, side, Rect.new(x, y, width, height), stroke) }
+          (@border[:sides] - @open).each { |side| border_side(canvas, side, area, stroke) }
+        end
+      end
+
+      def open?(index) = @open.include?(Geometry::SIDES.key(index))
+
+      # Cut edges are square: the rounded shape runs past them by its radius
+      # and stroke, clipped to the fragment.
+      def cut(canvas, area, shape)
+        return yield(shape) if @open.empty? || !@radius.positive?
+
+        reach = @radius + (@border ? @border[:width] : 0)
+        top = @open.include?(:top) ? reach : 0
+        bottom = @open.include?(:bottom) ? reach : 0
+        canvas.clip(area.x, area.y, area.width, area.height) do
+          yield Rect.new(shape.x, shape.y - top, shape.width, shape.height + top + bottom)
         end
       end
 
@@ -120,6 +174,14 @@ module Stationery
             paint_inner.call
           end
         end
+      end
+
+      def paint_debug(canvas, rect, kind)
+        canvas.debug_rect(rect.x, rect.y, rect.width, rect.height, kind)
+        return if insets.all?(&:zero?)
+
+        inner = rect.inset(*insets)
+        canvas.debug_rect(inner.x, inner.y, inner.width, inner.height, :padding)
       end
 
       def fitted(inner)
