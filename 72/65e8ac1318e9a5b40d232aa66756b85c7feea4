@@ -1,0 +1,30 @@
+Rakefile
+  s_832305fd821824::t_487fbc1e768a36 43-48
+  s_832305fd821824::t_afad83e6d7e494 42,49-243
+bin/release
+  s_832305fd821824::t_afad83e6d7e494 2-6,8-14,19,21-24,27-29,31-33,39-105,107-111
+docs/Gemfile.lock
+  ai_agent 4,496
+.github/workflows/release.yml
+  s_832305fd821824::t_afad83e6d7e494 13,30,33-35,38,41,43,53-165
+docs/Dockerfile
+  s_832305fd821824::t_afad83e6d7e494 26,52-55
+.rubocop.yml
+  ai_agent 41-43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "7265e8ac1318e9a5b40d232aa66756b85c7feea4",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
