@@ -1,0 +1,309 @@
+lib/stationery/layout/wrap.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 49,56
+lib/stationery/regions.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-67
+spec/stationery/page_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 21-28
+spec/stationery/fonts/true_type_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 31-39,45-80,82-83
+lib/stationery/layout/flow.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 7-9,31,38-43,85,111,115,122-123,133-142
+spec/stationery/layout/box_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 65-189
+lib/stationery/layout/box.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 5-11,18-19,21-22,51-69,74,80-88,93,95-98,102,110-114,121,124-126,128-143,179-184
+lib/stationery/layout/mark.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-58
+spec/stationery/elements_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 3-4,40,65-80,108-128,138-240
+spec/stationery/text/entities_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-45
+spec/support/outline_pdf.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-36
+lib/stationery/layout/table.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 6-8,13,15,21-22,27-28,45-50,74-79,83,89-98,104-132,148,152,155-156
+lib/stationery/fonts/gpos/coverage.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-20
+.gitignore
+  s_832305fd821824::t_6a5ed5cd1fac6c 10
+spec/stationery/fonts/bundled_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-40
+lib/stationery/elements/lists.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-58
+lib/stationery/minitest.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-33
+lib/stationery/layout/table_of_contents.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-43
+spec/stationery/fonts/cff_subset_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-74
+spec/fixtures/fonts/README.md
+  s_832305fd821824::t_6a5ed5cd1fac6c 4,6-11,14-39
+lib/stationery/cli/render.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-137
+lib/stationery/pdf/serializer.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 44-48
+spec/stationery/pdf/assembler_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 43-54
+spec/fixtures/cli/overflow.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-11
+lib/stationery/document.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 8,26-27,36,47-51,57-68,76-78,81-82,84-89,101-107,110-116
+lib/stationery/fonts/gpos/class_def.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-25
+lib/stationery/layout/positioned.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 20-22
+spec/stationery/gemspec_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-22
+lib/stationery/layout/image.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 33
+spec/stationery/text/style_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 8-9
+spec/stationery/pdf/serializer_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 16-22
+lib/stationery/fonts/true_type.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 5-8,10-15,36,65-79,111,122-125,127
+lib/stationery/fonts/gpos/pair_pos.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-83
+spec/stationery/bookmarks_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-69
+lib/stationery/list_markers.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-47
+lib/stationery/canvas/path.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 34-35,37-38,40-48,72-78
+spec/stationery/layout/mark_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-66
+spec/stationery/svg/document_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 64-73
+spec/stationery/fonts/cff_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-62
+lib/stationery/fonts/glyph_run.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-38
+lib/stationery/fonts/cff_subset.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-145
+examples/invoice.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 6,33-38,152
+lib/stationery/structure.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-78
+lib/stationery/layout/text.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 27,42-43,45
+lib/stationery/fonts/gpos.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-62
+spec/stationery/cli_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-54
+lib/stationery/fonts/font_book.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 9,11,13,20,31-32,34-39
+spec/stationery/warnings_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-71
+spec/stationery/testing/inspector_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-99
+lib/stationery/layout/paginator.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 10,12,14-15,23-25,33-57,64-66
+spec/stationery/layout/table_row_split_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-122
+spec/stationery/text/markup_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 57-60
+lib/stationery/svg/document.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 11,20,25,49-50
+spec/stationery/text/wrapper_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 12,67-83
+spec/stationery/pdf/outline_writer_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-86
+spec/fixtures/cli/debug.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-17
+lib/stationery/text/entities.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 17,21-24
+spec/stationery/layout/table_spans_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-86
+spec/stationery/structure_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-63
+spec/fixtures/cli/one.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-13
+lib/stationery.rb
+  ai_agent 9,11-12,15-20,23-27,30,42,44,55,62-64,68,70,82-84,87,89,91,102-103
+lib/stationery/fonts/kerning.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-17
+lib/stationery/fonts/to_unicode.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-36
+lib/stationery/canvas/debug.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-26
+spec/integration/open_type_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-46
+lib/stationery/fonts/font.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 5-7,9-11,21-22,27,29-33,40,51-55,59-61,68-78,80-81,85,91-93
+lib/stationery/layout/table_of_contents/entry.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-56
+spec/stationery/fonts/gpos_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-91
+spec/stationery/outline_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-34
+lib/stationery/fonts/family.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 15-22
+stationery.gemspec
+  s_832305fd821824::t_6a5ed5cd1fac6c 39,44,46-47
+lib/stationery/fonts/data/README.md
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-14
+lib/stationery/fonts/embedding/true_type.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-35
+lib/stationery/layout/table/cell.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 12,14,17-18,25-35,54,84-87
+lib/stationery/fonts/cff.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-140
+spec/fixtures/cli/needs_args.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-15
+lib/stationery/pdf/outline_writer.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-72
+lib/stationery/text/entities/html4.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-49
+lib/stationery/fonts/kern_table.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-52
+spec/stationery/fonts/font_book_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 12,14-33
+lib/stationery/fonts/data/OFL.txt
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-92
+spec/stationery/fonts/glyph_run_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-64
+spec/stationery/regions_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-121
+lib/stationery/layout/table/selection.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 27,36-37
+lib/stationery/pdf/writer.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 33-36
+spec/stationery/anchors_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-77
+spec/stationery/layout/flow_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 67,113-180
+lib/stationery/text/style.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 9,11
+spec/stationery/layout/table_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 39-63,78,117,119-129,131-132
+spec/stationery/text/paragraph_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 35-58,105-169
+spec/stationery/layout/table/grid_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-68
+spec/stationery/debug_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-44
+spec/spec_helper.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 6,12
+spec/fixtures/cli/two.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-15
+lib/stationery/text/wrapper.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 94,127-128
+spec/stationery/document_regions_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-143
+spec/stationery/testing/matchers_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-112
+spec/stationery/fonts/font_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 18-38,68,73-82
+lib/stationery/fonts/embedding/base.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-56
+spec/stationery/canvas_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 45-91,149-163,177-234
+spec/stationery/testing/assertions_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-51
+lib/stationery/text/paragraph.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 50-55,90-97,100-106
+spec/stationery/fonts/kern_table_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-40
+lib/stationery/canvas.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 9,16-17,20-21,41-42,69-86
+lib/stationery/testing/matchers.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-123
+lib/stationery/rspec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-6
+spec/stationery/text/line_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-23
+.rubocop.yml
+  s_832305fd821824::t_6a5ed5cd1fac6c 51-56,84
+lib/stationery/page.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 5-7,9-13,19,21,25,28-30,37,42-43
+lib/stationery/fonts/embedding/cff.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-35
+lib/stationery/layout/table/grid.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-73
+lib/stationery/cli.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-73
+lib/stationery/fonts/bundled.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-25
+lib/stationery/layout/node.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 22-24,34-36,40-41,44
+lib/stationery/layout/row.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 7-11,25-44,53,68-72
+spec/stationery/list_markers_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-35
+spec/stationery/pdf/writer_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 29-34
+spec/stationery/cli/render_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-131
+spec/stationery/document_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 45-57,100,106-163,165-166
+spec/support/gpos_builder.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-89
+lib/stationery/outline.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-37
+spec/fixtures/cli/no_debug.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-14
+spec/stationery/fonts/kerning_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-34
+lib/stationery/errors.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 6,11-22
+CHANGELOG.md
+  s_832305fd821824::t_6a5ed5cd1fac6c 5-7,14-58
+lib/stationery/builder.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 7,22-34,41-48,72-73,77
+spec/fixtures/cli/empty.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-4
+spec/stationery/layout/row_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 11,20,24,45-127
+spec/stationery/layout/list_item_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-101
+lib/stationery/layout/list_item.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-89
+lib/stationery/testing/inspector.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-98
+lib/stationery/text/line.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 10-11,15,17,26-29
+spec/stationery/layout/table_of_contents_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-121
+lib/stationery/elements.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 10-11,19,24-27,30-31,35-36,39-41,46-49,54,58,70-76,80-95,107-116,130-143,151-155
+spec/stationery/layout/text_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 8-10
+lib/stationery/layout/table/row_splitter.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-36
+lib/stationery/pdf/assembler.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 7,11,18-19,21,27-32,38,48-53
+exe/stationery
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-6
+lib/stationery/layout/svg.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 30
+lib/stationery/page_templates.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 7-8,10,12,15-16,23-24,30-53,55
+lib/stationery/warnings.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-65
+spec/stationery/layout/paginator_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-46
+lib/stationery/canvas/text.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 12-13,17-19,23,32,45
+spec/integration/invoice_spec.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 26-27,37,47,55
+spec/support/pdf_helpers.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 4,13-14,24-26,28-30,38-69
+lib/stationery/fonts/sfnt_metrics.rb
+  s_832305fd821824::t_6a5ed5cd1fac6c 1-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "17cba60c7cb5f3b68fa57b03b1f27e8f9a222244",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
