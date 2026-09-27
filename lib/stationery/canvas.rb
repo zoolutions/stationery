@@ -31,6 +31,32 @@ module Stationery
       emit("Q")
     end
 
+    # Paints the block with the affine `matrix` [a, b, c, d, e, f] applied,
+    # given in top-left space (x' = ax + cy + e, y' = bx + dy + f with y
+    # growing downwards). Annotations (`link`, `widget`) keep their
+    # untransformed page rectangles.
+    def transform(matrix)
+      a, b, c, d, e, f = matrix
+      height = @page.height
+      pdf_matrix = [a, -b, -c, d, (c * height) + e, height - (d * height) - f]
+      save do
+        emit("#{pdf_matrix.map { |v| num(v) }.join(" ")} cm")
+        yield self
+      end
+    end
+
+    # Paints the block rotated `degrees` clockwise around the page point
+    # `around` ([x, y]), as CSS `rotate()` turns an element. Zero just yields.
+    def rotate(degrees, around:, &)
+      return yield self if degrees.zero?
+
+      radians = degrees * Math::PI / 180
+      cos = Math.cos(radians)
+      sin = Math.sin(radians)
+      cx, cy = around
+      transform([cos, sin, -sin, cos, cx - (cx * cos) + (cy * sin), cy - (cx * sin) - (cy * cos)], &)
+    end
+
     def clip(x, y, w, h, radius: 0)
       save do
         emit(Path.new(self).rounded_rect(x, y, w, h, radius).to_s, "W n")

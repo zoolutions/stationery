@@ -270,6 +270,20 @@ class Views::Docs::Pages::Elements < DocsUI::Page
           end
         end
         ```
+
+        `rotate(degrees, around: [x, y]) { … }` paints the block turned clockwise around a page point,
+        as CSS `rotate()` does; `transform([a, b, c, d, e, f]) { … }` applies any affine matrix given in
+        the same top-left space. Shapes, images and text inside follow the transform. Link and form
+        widget rectangles are annotations in untransformed page space, so a `link` inside a rotated
+        block keeps its unrotated rectangle.
+
+        ```ruby
+        canvas(height: 120) do |canvas, rect|
+          canvas.rotate(-3, around: [rect.x + 60, rect.y + 60]) do
+            canvas.image(photo, x: rect.x, y: rect.y, width: 120, height: 120)
+          end
+        end
+        ```
       MD
     end
   end
