@@ -5,9 +5,13 @@ require "strscan"
 module Stationery
   module SVG
     # A minimal XML reader for SVG documents: elements, attributes and nesting.
-    # Comments, processing instructions, doctypes and text content are skipped.
+    # Comments, processing instructions and doctypes are skipped; text content
+    # is kept only inside text and tspan, as String children with entities
+    # decoded and each run of whitespace collapsed to one space.
     module Parser
       Element = Data.define(:name, :attributes, :children)
+
+      TEXT = %w[text tspan].freeze
 
       IGNORED = /<!--.*?-->|<\?.*?\?>|<!DOCTYPE[^>]*>|<!\[CDATA\[.*?\]\]>/m
       TAG = %r{<(/?)([a-zA-Z][\w:.-]*)((?:\s+[\w:.-]+\s*=\s*(?:"[^"]*"|'[^']*'))*)\s*(/?)>}m
@@ -19,11 +23,18 @@ module Stationery
         scanner = StringScanner.new(source.to_s.gsub(IGNORED, ""))
         root = Element.new("document", {}, [])
         stack = [root]
-        while scanner.skip_until(/(?=<)/)
+        while (content = scanner.scan_until(/(?=<)/))
+          keep(stack.last, content)
           tag = scanner.scan(TAG) or (scanner.getch && next)
           handle(stack, *tag.match(TAG).captures)
         end
         root.children.first
+      end
+
+      def keep(element, content)
+        return if content.empty? || !TEXT.include?(element.name)
+
+        element.children << Stationery::Text::Entities.decode(content).gsub(/\s+/, " ")
       end
 
       def handle(stack, closing, name, attributes, self_closing)

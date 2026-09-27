@@ -31,6 +31,17 @@ module Stationery
         multiply(multiply([1, 0, 0, 1, cx, cy], rotation), [1, 0, 0, 1, -cx, -cy])
       end
 
+      def apply(matrix, x, y)
+        a, b, c, d, e, f = matrix
+        [(a * x) + (c * y) + e, (b * x) + (d * y) + f]
+      end
+
+      # The uniform scale a matrix applies to areas, as a length factor.
+      def scale(matrix)
+        a, b, c, d, = matrix
+        Math.sqrt(((a * d) - (b * c)).abs)
+      end
+
       # The transform that applies `inner` first, then `outer`.
       def multiply(outer, inner)
         a, b, c, d, e, f = outer

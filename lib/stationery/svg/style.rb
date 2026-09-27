@@ -6,7 +6,7 @@ module Stationery
     # transform it draws with.
     class Style
       INHERITED = %w[fill stroke stroke-width stroke-linecap stroke-linejoin fill-rule opacity fill-opacity
-                     stroke-opacity].freeze
+                     stroke-opacity font-family font-size font-weight font-style text-anchor].freeze
       NAMED = { "black" => "#000000", "white" => "#FFFFFF", "red" => "#FF0000", "green" => "#008000",
                 "blue" => "#0000FF", "gray" => "#808080", "grey" => "#808080" }.freeze
       DEFAULTS = { "fill" => "black", "stroke" => "none", "stroke-width" => "1" }.freeze
@@ -56,10 +56,7 @@ module Stationery
       def join = @values["stroke-linejoin"]&.to_sym
 
       # Stroke width scales with the drawing, by the transform's area factor.
-      def line_width
-        a, b, c, d, = @matrix
-        @values["stroke-width"].to_f * Math.sqrt(((a * d) - (b * c)).abs)
-      end
+      def line_width = @values["stroke-width"].to_f * Transform.scale(@matrix)
 
       def opacity
         %w[opacity fill-opacity stroke-opacity].filter_map { |key| @values[key]&.to_f }.reduce(1.0, :*)

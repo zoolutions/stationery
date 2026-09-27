@@ -16,7 +16,7 @@ class Views::Docs::Pages::Limitations < DocsUI::Page
         | Area | Not supported |
         | --- | --- |
         | Fonts | Ligatures and other GSUB shaping, TrueType collections (`.ttc`), variable fonts (including CFF2), WOFF/WOFF2 |
-        | SVG | `text`, `use`, patterns, masks, CSS stylesheets (inline `style` attributes work); gradient `reflect`/`repeat` spreads, per-stop opacity and gradient strokes are approximated |
+        | SVG | `use`, `textPath`, patterns, masks, CSS stylesheets (inline `style` attributes work); gradient `reflect`/`repeat` spreads, per-stop opacity and gradient strokes, and rotated or skewed text are approximated |
         | PDF features | Encryption, forms, tagged (accessible) PDF |
         | Layout | Fixed-height boxes, and rows holding one, never split across pages |
         | Images | Formats other than JPEG and PNG; remote URLs are never fetched |

@@ -57,20 +57,23 @@ class Views::Docs::Pages::ImagesAndSvg < DocsUI::Page
         **Supported:** `path` (every command, including arcs), `rect` (with `rx`/`ry`), `circle`, `ellipse`,
         `line`, `polyline`, `polygon` and `g`, with fill, stroke, line caps and joins, `fill-rule`, opacity,
         inline `style` attributes, `transform` (`matrix`, `translate`, `scale`, `rotate`, `skewX`, `skewY`),
-        `currentColor`, and `linearGradient`/`radialGradient` fills (stops, `href` chains, both gradient units,
-        `gradientTransform`).
+        `currentColor`, `linearGradient`/`radialGradient` fills (stops, `href` chains, both gradient units,
+        `gradientTransform`), and `text`/`tspan` (`x`, `y`, `dx`, `dy`, `font-family`, `font-size`, `font-weight`,
+        `font-style`, `text-anchor`, `fill`, `opacity`). SVG text uses the document's fonts: the first
+        `font-family` the document knows (registered, bundled or an installed pack), otherwise its default family.
 
         Gradients are approximated in three ways: `reflect` and `repeat` spreads are drawn as `pad`, a gradient
         whose stops differ in opacity uses the first stop's for all of it, and a gradient stroke is drawn in the
-        gradient's middle colour.
+        gradient's middle colour. Text glyphs stay upright: a transform moves the text's origin and scales its size
+        uniformly, so rotated or skewed text is approximated, and `dominant-baseline` is ignored.
 
-        **Not supported:** text, `use`, patterns, masks and CSS stylesheets.
+        **Not supported:** `use`, `textPath`, patterns, masks and CSS stylesheets.
       MD
     end
 
     DocsUI::Section("Warnings", description: "Nothing is fetched, nothing silently vanishes.") do
       md <<~'MD'
-        - An SVG using elements that cannot be drawn (`text`, `use`, …) still renders what it can; the
+        - An SVG using elements that cannot be drawn (`use`, `pattern`, …) still renders what it can; the
           elements are listed in `SVG::Document#unsupported` and reported as an `UnsupportedSvg` warning, as
           are references to missing gradients (`url(#id)`) and gradient spreads drawn as `pad`.
         - In `html` and `markdown`, images come from `images:` or from files under `base_path:`. Sources that

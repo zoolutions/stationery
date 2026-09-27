@@ -34,6 +34,9 @@ module Stationery
         end
       end
 
+      # Whether `name` is registered, bundled or an installed pack.
+      def known?(name) = !(@families[name.to_s] || bundled(name) || pack(name)).nil?
+
       # The runs split so every character is drawn by a font that has it. Runs
       # this book already split come back as they are.
       def fallback(runs)

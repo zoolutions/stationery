@@ -113,17 +113,17 @@ RSpec.describe Stationery::Elements do
     end
     doc.to_pdf
 
-    expect(doc.warnings.to_a).to eq([Stationery::Warnings::UnsupportedSvg.new(elements: %w[text use],
+    expect(doc.warnings.to_a).to eq([Stationery::Warnings::UnsupportedSvg.new(elements: %w[use],
                                                                               source: "inline")])
   end
 
   it "names the file of an SVG with unsupported elements" do
     path = File.join(Dir.mktmpdir, "logo.svg")
-    File.write(path, '<svg viewBox="0 0 10 10"><text>Hi</text></svg>')
+    File.write(path, '<svg viewBox="0 0 10 10"><use href="#a"/></svg>')
     doc = SpecDocument.build { svg path, width: 10 }
     doc.to_pdf
 
-    expect(doc.warnings.map(&:message)).to eq(['SVG "logo.svg" uses unsupported elements: text'])
+    expect(doc.warnings.map(&:message)).to eq(['SVG "logo.svg" uses unsupported elements: use'])
   end
 
   it "wraps chips and centres groups" do
