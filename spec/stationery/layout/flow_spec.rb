@@ -64,7 +64,7 @@ RSpec.describe Stationery::Layout::Flow do
   end
 
   it "places a child taller than a page anyway and records a warning" do
-    tall = Stationery::Layout::Box.new(flow(lines_of(40)))
+    tall = Stationery::Layout::Box.new(flow(lines_of(40))).tap { |b| b.break_inside = :avoid }
     pdf, paginator = render_layout(flow(tall, text_node("after")))
 
     expect(page_count(pdf)).to eq(2)
@@ -109,6 +109,25 @@ RSpec.describe Stationery::Layout::Flow do
 
     expect(page_count(pdf)).to eq(2)
     expect(reader_for(pdf).pages[1].text).to include("after")
+  end
+
+  it "moves a default box below other content to a fresh page before splitting it" do
+    tall = Stationery::Layout::Box.new(flow(lines_of(20)))
+    pdf, paginator = render_layout(flow(text_node("above"), tall))
+    pages = reader_for(pdf).pages
+
+    expect(pages.size).to eq(3)
+    expect(pages[0].text.strip).to eq("above")
+    expect(pages[1].text).to include("line 1")
+    expect(paginator.warnings).to be_empty
+  end
+
+  it "keeps a child with a next one that avoids breaking inside and moves" do
+    heading = text_node("Heading").tap { |t| t.keep_with_next = true }
+    kept = lines_of(5, prefix: "kept").tap { |t| t.break_inside = :avoid }
+    pdf, = render_layout(flow(spacer(100), heading, kept))
+
+    expect(reader_for(pdf).pages[1].text).to include("Heading", "kept 1")
   end
 
   describe "a fixed-width child" do

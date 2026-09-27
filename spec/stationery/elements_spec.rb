@@ -96,4 +96,24 @@ RSpec.describe Stationery::Elements do
     expect(strings_of(pdf)).to eq(%w[one two])
     expect(page_contents(pdf).first).to include("20 0 0 15 140")
   end
+
+  it "continues a tall box on the next page, or keeps it whole with break_inside: :avoid" do
+    split = render { box(background: "#EEEEEE") { 30.times { |i| text "row #{i}" } } }
+    kept = SpecDocument.build { box(break_inside: :avoid) { 30.times { |i| text "row #{i}" } } }
+    kept.to_pdf
+
+    expect(page_count(split)).to be > 1
+    expect(strings_of(split).size).to eq(30)
+    expect(kept.warnings.size).to eq(1)
+  end
+
+  it "sets break_inside on a column" do
+    boxes = []
+    allow(Stationery::Layout::Box).to receive(:new).and_wrap_original do |original, *args, **options|
+      original.call(*args, **options).tap { |box| boxes << box }
+    end
+    render { row { column(break_inside: :avoid) { text "a" } } }
+
+    expect(boxes.map(&:break_inside)).to eq([:avoid])
+  end
 end

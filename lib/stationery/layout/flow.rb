@@ -4,8 +4,9 @@ module Stationery
   module Layout
     # Children stacked top to bottom: the document body and every box's
     # content. Splits across pages: a splittable child continues on the next
-    # page, anything else moves there whole, a spacer at the break is dropped
-    # and a child marked keep_with_next moves with its successor.
+    # page (one that prefers staying whole only from the top of a fresh page),
+    # anything else moves there whole, a spacer at the break is dropped and a
+    # child marked keep_with_next moves with its successor.
     class Flow < Node
       attr_reader :children, :gap, :align
 
@@ -105,7 +106,7 @@ module Stationery
         def strand?(child, left_after, rest)
           want = child.keep_with_next
           return false unless want && rest.any? && !@placed.empty?
-          return rest.first.split(rest.first.width_in(@width), left_after).first.nil? unless want.is_a?(Numeric)
+          return !starts?(rest.first, left_after) unless want.is_a?(Numeric)
 
           following = 0
           rest.each do |node|
@@ -116,7 +117,7 @@ module Stationery
         end
 
         def split_or_move(child, remaining, rest)
-          unless child.avoid_break?
+          if may_split?(child)
             head, tail = child.split(child.width_in(@width), remaining, fresh: @fresh && @placed.empty?)
             # A nested flow can finish on this page (its trailing spacer
             # dropped at the break) and hand back no remainder.
@@ -125,6 +126,18 @@ module Stationery
           return [part([child]), part(rest)] if @placed.empty? && @fresh
 
           @placed.empty? ? [nil, part([child, *rest])] : [part(@placed), part([child, *rest])]
+        end
+
+        def may_split?(child, top: @placed.empty? && @fresh)
+          !child.avoid_break? && (!child.prefer_whole? || top)
+        end
+
+        # Whether any of `node` would be placed in `height` below other content.
+        def starts?(node, height)
+          width = node.width_in(@width)
+          return !node.split(width, height).first.nil? if may_split?(node, top: false)
+
+          node.measure(width) <= height + EPSILON
         end
 
         def part(children)

@@ -69,7 +69,7 @@ InvoicePdf.new(invoice).to_pdf("a.pdf") # also writes a path or an IO
 | `text(string, **style)` | A paragraph. Plain strings are literal. |
 | `text(string, markup: true)` | Reads `<b> <i> <u> <strikethrough> <sub> <sup> <br> <color rgb=""> <font size="" name=""> <link href="">`. |
 | `text { b "Total"; plain " due" }` | Styled runs in Ruby. Take a block argument (`{ \|t\| t.b @x }`) to keep your own `self`. |
-| `box(padding:, background:, border:, radius:, width:, height:, overflow:, at:, link:, outset:) { }` | A container. Moves to the next page whole. `overflow: :truncate` or `:shrink_to_fit` for fixed heights. `at: [x, y]` pins it to a page position. `link:` makes the whole box clickable. `outset:` bleeds the background past the box (e.g. into the page margins). |
+| `box(padding:, background:, border:, radius:, width:, height:, overflow:, at:, link:, outset:, break_inside:, decoration:) { }` | A container. Moves to the next page whole when it fits there and continues across pages when it does not; `break_inside: :auto` splits it at any page break, `:avoid` never splits it. At a cut, `decoration: :slice` (default) drops the padding and border, `:clone` keeps the padding. `overflow: :truncate` or `:shrink_to_fit` for fixed heights. `at: [x, y]` pins it to a page position. `link:` makes the whole box clickable. `outset:` bleeds the background past the box (e.g. into the page margins). |
 | `row(gap:, align:) { column(width:) { } }` | Columns side by side. `width:` is points, a fraction (`0.5`), `:auto` or `nil` (equal share). |
 | `table(rows, widths:, width:, header:, cell:) { \|t\| }` | Tables. Style with `t.row(0)`, `t.rows(-1)`, `t.column(1)`, `t.columns(1..)`, chained, plus `t.zebra`. Header rows repeat after a page break. |
 | `image(path_or_io, width:, height:, fit:, align:)` | JPEG or PNG, aspect preserved. |
@@ -140,7 +140,8 @@ mask). Parsed fonts and images are cached per process.
 No kerning or ligatures, no OpenType/CFF, TrueType collections, variable
 fonts or WOFF; no full justification; SVG covers the shapes icon sets use
 (no text, gradients, patterns, masks or CSS stylesheets); no encryption,
-outlines, forms or tagged PDF; boxes and rows do not split across pages.
+outlines, forms or tagged PDF; rows do not split across pages; fixed-height
+boxes never split.
 
 ## License
 
