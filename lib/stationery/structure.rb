@@ -2,18 +2,22 @@
 
 module Stationery
   # Resolves internal links (`#name`) against the anchors painted on the
-  # finished pages. Anchors drawn by page templates repeat on every page, so
-  # they resolve to their first page and never count as duplicates.
+  # finished pages and fills page-number slots with the pages their anchors
+  # landed on. Anchors drawn by page templates repeat on every page, so they
+  # resolve to their first page and never count as duplicates.
   class Structure
     # Where a named anchor sits: a zero-based page index and a PDF-space top.
     Destination = Data.define(:page, :top)
 
     # Returns the destinations by name; unresolved links are dropped.
-    def self.resolve(pages, warnings:) = new(pages, warnings).resolve
+    # Runs before resources are written, so slot digits join the font subset.
+    def self.resolve(pages, warnings:, resources: nil, book: nil) = new(pages, warnings, resources, book).resolve
 
-    def initialize(pages, warnings)
+    def initialize(pages, warnings, resources, book)
       @pages = pages
       @warnings = warnings
+      @resources = resources
+      @book = book
       @destinations = {}
     end
 
@@ -22,6 +26,7 @@ module Stationery
       collect_templates
       @pages.each_with_index do |page, index|
         page.annotations.replace(page.annotations.filter_map { |link| link_to(link, index) })
+        page.slots.each { |slot| fill(page, slot) }
       end
       @destinations
     end
@@ -44,6 +49,19 @@ module Stationery
       @pages.each_with_index do |page, index|
         page.template_anchors.each { |name, top| @destinations[name] ||= Destination.new(index, top) }
       end
+    end
+
+    def fill(page, slot)
+      destination = @destinations[slot.anchor] or return
+      label = (destination.page + 1).to_s
+      font, face = @book.resolve(slot.style)
+      style = slot.style
+      width = font.width_of(label, style.render_size, letter_spacing: style.letter_spacing)
+      Canvas.new(page, @resources).text(label, x: slot.x + slot.width - width, y: slot.baseline, font:,
+                                               size: style.render_size, color: style.color,
+                                               letter_spacing: style.letter_spacing, opacity: style.opacity,
+                                               synthetic_bold: face.synthetic_bold,
+                                               synthetic_oblique: face.synthetic_oblique)
     end
 
     def link_to(link, index)

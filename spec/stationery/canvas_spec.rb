@@ -126,4 +126,12 @@ RSpec.describe Stationery::Canvas do
     expect(page.anchors).to eq([["intro", 70]])
     expect(page.template_anchors).to eq([["header", 90]])
   end
+
+  it "records a page-number slot to fill once destinations are known" do
+    style = Stationery::Text::Style.new(family: "Open Sans")
+    canvas.number_slot("intro", x: 150, baseline: 40, width: 30, style:)
+
+    expect(page.slots).to eq([Stationery::Page::Slot.new("intro", 150, 40, 30, style)])
+    expect(ops).to be_empty
+  end
 end

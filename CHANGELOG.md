@@ -11,6 +11,7 @@
 - Strict mode: `to_pdf(strict: true)` or class-level `strict` raises `Stationery::WarningsError` when a render produced warnings.
 - Named anchors and internal links: `anchor:` on `text`, `box`, `group` and `table`, a standalone `anchor` element, and `link: "#name"` / `<a href="#name">` / `box(link: "#name")` written as PDF `/Dest` GoTo links. Unknown targets are dropped with an `UnresolvedLink` warning; duplicate names warn with `DuplicateAnchor`.
 - Bookmarks and document outline: `bookmark:` on `text`, `box`, `group` and `table` (a title, or `{ title:, level:, open: }`) and a standalone `bookmark` element write a nested PDF `/Outlines` tree; the document opens with the outline panel. Bookmarks in page templates are ignored.
+- `table_of_contents` element: one linked row per bookmark with its title indented by level, a dotted/solid leader and a right-aligned page number filled in after pagination (`levels:`, `leader:`, `indent:`, `gap:`, `number_width:`, text style). Paginates across pages.
 - SVG: elements that cannot be drawn (`text`, `use`, …) are listed in `SVG::Document#unsupported` and reported as an `UnsupportedSvg` warning.
 
 ## 0.1.0 (unreleased)
