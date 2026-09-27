@@ -124,8 +124,10 @@ embedded, with a ToUnicode map so text copies and searches correctly. A style
 without its own file (bold, italic) is synthesised. There is no built-in
 font: declare at least one `font_family`.
 
-Text is pair-kerned from the font's `kern` table (`kerning: false` on an
-element or in `default_text` turns it off). Pairs that straddle a style or
+Text is pair-kerned from the font's GPOS `kern` feature (PairPos lookups,
+including class-based pairs and Extension lookups), falling back to the
+legacy `kern` table (`kerning: false` on an element or in `default_text`
+turns it off). Pairs that straddle a style or
 font change are not kerned. Kerning only tightens in practice, so a kerned
 line is never wider than the same line unkerned.
 

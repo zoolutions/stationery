@@ -10,7 +10,8 @@ module Stationery
         def self.adjust(_left, _right) = 0
       end
 
-      def self.for(ttf) = KernTable.parse(ttf) || NONE
+      # A GPOS `kern` feature takes precedence over the legacy `kern` table.
+      def self.for(ttf) = Gpos.parse(ttf) || KernTable.parse(ttf) || NONE
     end
   end
 end
