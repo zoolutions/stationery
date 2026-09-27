@@ -143,6 +143,19 @@ RSpec.describe Stationery::Text::Paragraph do
       expect(width).to be_within(0.001).of(para.lines.last.width)
     end
 
+    it "stretches the spaces after ligatures, not the ligatures" do
+      source = Array.new(12, "office fit").join(" ")
+      para = paragraph(source, align: :justify)
+      calls = draws(para)
+      content = page_contents(render_alone(paragraph(source, align: :justify))).first
+
+      expect(para.lines.size).to be > 1
+      expect(calls.first.sum).to be_within(0.01).of(210)
+      stretched = content.scan(/<(\h+)> -[\d.]+/).flatten
+      expect(stretched.size).to be >= 10
+      expect(stretched).to all(end_with("0003"))
+    end
+
     it "leaves lines without spaces alone" do
       para = paragraph("Supercalifragilisticexpialidocious", width: 60, align: :justify)
       calls = draws(para)

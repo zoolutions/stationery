@@ -48,7 +48,7 @@ RSpec.describe Stationery::Fonts::GlyphRun do
   end
 
   it "adds word spacing after space glyphs only" do
-    run = font.glyph_run("a b c").with_word_spacing("a b c", 2, 10)
+    run = font.glyph_run("a b c").with_word_spacing(2, 10)
 
     expect(run.adjust).to eq([0, 200, 0, 200, 0])
     expect(run.to_operator).to eq("[<#{hex("a ")}> -200 <#{hex("b ")}> -200 <#{hex("c")}>] TJ")

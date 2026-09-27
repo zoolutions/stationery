@@ -98,7 +98,7 @@ renders them all, or render one with `stationery render examples/report.rb`.
 | `markdown(source, styles:, gap:, images:, base_path:, bookmarks:)` | The same from CommonMark (plus GFM tables and strikethrough). |
 
 Text style options: `font`, `size`, `weight` (`:regular`, `:bold`), `style` (`:italic`), `color`,
-`letter_spacing`, `underline`, `strikethrough`, `link`, `opacity`, `kerning` (default `true`), `align` (`:left`, `:center`, `:right`, `:justify`), `leading`.
+`letter_spacing`, `underline`, `strikethrough`, `link`, `opacity`, `kerning` (default `true`), `ligatures` (default `true`), `align` (`:left`, `:center`, `:right`, `:justify`), `leading`.
 `align: :justify` stretches the spaces of wrapped lines to the full width; the last line, lines
 ending in a newline and lines without spaces stay left-aligned (tabs are never stretched).
 Colours are `"#RRGGBB"`, `"RRGGBB"`, `"#RGB"`, `[r, g, b]` (0-255) or `[c, m, y, k]` (0-100).
@@ -386,6 +386,15 @@ turns it off). Pairs that straddle a style or
 font change are not kerned. Kerning only tightens in practice, so a kerned
 line is never wider than the same line unkerned.
 
+Standard ligatures (fi, fl, ffi, …) come from the font's GSUB `liga` feature
+(LigatureSubst lookups, also behind Extension lookups) and are on by default;
+`ligatures: false` on an element or in `default_text` turns them off. Only
+`liga` applies, not `clig` or `dlig`. Ligatures form within a run of one
+style and font, never across a line break, and letter spacing turns them off.
+The PDF's ToUnicode map sends a ligature glyph back to all of its
+characters, so copied and extracted text still reads "office". Fonts
+without a `liga` feature (such as the bundled Inter) are unaffected.
+
 Images are JPEG (grey, RGB, CMYK) and PNG (every colour type, alpha as a soft
 mask). Parsed fonts and images are cached per process.
 
@@ -473,7 +482,7 @@ larger file. `PROFILE=1 bundle exec ruby -Ilib benchmark/profile.rb` prints the
 
 ## Limitations
 
-No ligatures, no variable fonts (including CFF2) or
+No variable fonts (including CFF2) or
 WOFF2 (it needs Brotli; convert to `.ttf` or `.woff`); SVG covers the shapes icon sets use
 (no text, gradients, patterns, masks or CSS stylesheets); no encryption,
 forms or tagged PDF. A box with a fixed `height:` never splits (use

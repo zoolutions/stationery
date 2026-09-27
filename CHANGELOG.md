@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Standard ligatures from the font's GSUB `liga` feature (LigatureSubst lookups, also behind Extension lookups), **on by default**: "office" in Open Sans draws the ffi ligature, so widths of affected words change slightly. `ligatures: false` on `text`/`text_style` or in `default_text` opts out; any `letter_spacing` turns them off. Text extraction and copy still yield the source characters (ToUnicode maps a ligature glyph to all of them). Fonts without `liga` ligatures, such as the bundled Inter, are unaffected.
+
 ### Fonts
 
 - TrueType collections (`.ttc`): `font_family "Brand", regular: "Brand.ttc#0", bold: "Brand.ttc#2"` picks a face by a `#N` suffix (face 0 without one); each face is parsed, cached, subset and embedded on its own. `TrueType.new(data, index:)`, `TrueType.collection?` and `TrueType.faces`; an index out of range raises `ArgumentError` naming the face count.

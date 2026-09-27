@@ -76,6 +76,11 @@ module Stationery
         @kerning ||= Kerning.for(self)
       end
 
+      # Standard ligatures, read on first use and shared like #kerning.
+      def ligatures
+        @ligatures ||= Ligatures.for(self)
+      end
+
       def cff?
         @tables.key?("CFF ")
       end
