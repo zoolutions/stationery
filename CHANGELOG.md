@@ -7,6 +7,7 @@
 - `box(link:)` makes the whole box clickable; `box(outset:)` bleeds its background past its edges.
 - `keep_with_next:` accepts a number of points of following content to keep.
 - `group(align:)`.
+- Rails: a Railtie adds `render pdf: document` (`filename:`, `disposition:`) and `config.stationery` (`renderer`, `font_paths`); `Stationery.font_paths`. A `spec:rails` lane tests it against Rails 8 without adding a dependency.
 
 ## 0.1.0 (unreleased)
 
