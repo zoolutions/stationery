@@ -11,6 +11,7 @@
 - Layout: `split` takes `fresh:` on every node; a flow passes it on to the child that starts a fresh page.
 - **Behaviour change:** boxes taller than a page now continue on the next page instead of overflowing; pass `break_inside: :avoid` for the old behaviour. A box that fits on a page still moves there whole; `break_inside: :auto` splits it at any page break. `box(decoration: :slice | :clone)` chooses whether padding repeats at a cut; borders are left open and rounded corners cut square.
 - `box(break_inside:)` and `column(break_inside:)`.
+- Rows split across pages like boxes, every column at the same break; a column that ends early continues as an empty fragment so backgrounds stay aligned. `row(break_inside:)`.
 - `keep_with_next` now moves with a following node that avoids breaking inside and would not start on the page.
 - `ul` / `ol` / `li` lists: drawn (disc, circle, square) or text bullets (dash, any String), decimal / alpha / roman / Proc numbering, `start:` and `suffix:`, aligned bodies, nested lists with depth-cycled bullets, and items that split across pages keeping the marker with their first line.
 ||||||| 56fe3ff

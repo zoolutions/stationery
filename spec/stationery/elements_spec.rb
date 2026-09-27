@@ -117,6 +117,15 @@ RSpec.describe Stationery::Elements do
     expect(boxes.map(&:break_inside)).to eq([:avoid])
   end
 
+  it "splits a tall row across pages unless it avoids breaking inside" do
+    split = render { row { 2.times { column { 30.times { |i| text "row #{i}" } } } } }
+    kept = SpecDocument.build { row(break_inside: :avoid) { column { 30.times { |i| text "row #{i}" } } } }
+    kept.to_pdf
+
+    expect(page_count(split)).to be > 1
+    expect(kept.warnings.size).to eq(1)
+  end
+
   describe "lists" do
     def curves(content) = content.scan(/ c$/).size
 

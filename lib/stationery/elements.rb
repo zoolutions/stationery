@@ -29,10 +29,13 @@ module Stationery
       @_builder.add(at ? Layout::Positioned.new(node, x: at[0], y: at[1], width:) : node)
     end
 
-    def row(gap: 0, align: :top)
+    # Columns side by side; splits across pages like a box (`break_inside:`).
+    def row(gap: 0, align: :top, break_inside: nil)
       columns = Builder::Columns.new
       @_builder.within(columns) { yield if block_given? }
-      @_builder.add(Layout::Row.new(columns.nodes, gap:, align:))
+      node = Layout::Row.new(columns.nodes, gap:, align:)
+      node.break_inside = break_inside
+      @_builder.add(node)
     end
 
     # A row column: `width:` in points, as a fraction (0.5), :auto or nil for
