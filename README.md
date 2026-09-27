@@ -3,7 +3,7 @@
 Pure-Ruby PDF documents built from Phlex-style components. Describe the page
 with rows, columns, boxes, tables, text and images; a box-layout engine
 measures, places and paginates them; a small PDF writer embeds subsetted
-TrueType fonts and JPEG/PNG images.
+TrueType and OpenType fonts, JPEG/PNG images and SVG drawings.
 
 - **No runtime dependencies.** Standard library only.
 - **No native extensions and no other processes.** No Prawn, no headless
@@ -35,15 +35,10 @@ declare a `font_family`.
 ```ruby
 class InvoicePdf < Stationery::Document
   page size: :a4, margin: [40, 44, 56, 44]
-  font_family "Inter", regular: "fonts/Inter-Regular.ttf", bold: "fonts/Inter-Bold.ttf"
-  default_text font: "Inter", size: 9, color: "#1F2937"
+  default_text size: 9, color: "#1F2937"          # bundled Inter; font_family "Brand", regular: "…" for your own
   metadata title: "Invoice"
 
-  page_template do |page|
-    box(at: [44, page.height - 34], width: page.content_box.width) do
-      text "Page #{page.number} of #{page.count}", size: 7, align: :right
-    end
-  end
+  footer { |page| text "Page #{page.number} of #{page.count}", size: 7, align: :right }
 
   def initialize(invoice)
     super()
@@ -471,7 +466,7 @@ larger file. `PROFILE=1 bundle exec ruby -Ilib benchmark/profile.rb` prints the
 No ligatures, no TrueType collections, variable fonts (including CFF2) or
 WOFF; SVG covers the shapes icon sets use
 (no text, gradients, patterns, masks or CSS stylesheets); no encryption,
-outlines, forms or tagged PDF; fixed-height boxes, and rows holding one,
+forms or tagged PDF; fixed-height boxes, and rows holding one,
 never split across pages.
 
 ## License
