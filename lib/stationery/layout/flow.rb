@@ -93,13 +93,26 @@ module Stationery
         end
 
         def fits(child, consumed, left_after, rest)
-          if child.keep_with_next && rest.any? && !@placed.empty? && rest.first.split(@width, left_after).first.nil?
-            return [part(@placed), part([child, *rest])]
-          end
+          return [part(@placed), part([child, *rest])] if strand?(child, left_after, rest)
 
           @placed << child
           @used += consumed
           nil
+        end
+
+        # keep_with_next: true needs the start of the next child on this page; a
+        # number needs that many points of what follows (or all of it, if less).
+        def strand?(child, left_after, rest)
+          want = child.keep_with_next
+          return false unless want && rest.any? && !@placed.empty?
+          return rest.first.split(@width, left_after).first.nil? unless want.is_a?(Numeric)
+
+          following = 0
+          rest.each do |node|
+            following += node.measure(@width)
+            break if following >= want
+          end
+          left_after + EPSILON < [want, following].min
         end
 
         def split_or_move(child, remaining, rest)

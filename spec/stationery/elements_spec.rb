@@ -79,4 +79,21 @@ RSpec.describe Stationery::Elements do
     expect(floating.first).to eq(200)
     expect(in_flow.first).to eq(20)
   end
+
+  it "draws SVG icons from a string, sized and coloured, with currentColor replaced" do
+    source = File.read(File.expand_path("../fixtures/svg/check.svg", __dir__))
+    pdf = render { svg source, width: 16, color: "#FF0000", align: :center }
+
+    expect(page_contents(pdf).first).to include("1 0 0 RG")
+  end
+
+  it "wraps chips and centres groups" do
+    pdf = render do
+      wrap(gap: 4, align: :center) { %w[one two].each { |label| box(width: :auto, padding: 2) { text label } } }
+      group(align: :center) { image File.expand_path("../fixtures/images/rgb.jpg", __dir__), width: 20 }
+    end
+
+    expect(strings_of(pdf)).to eq(%w[one two])
+    expect(page_contents(pdf).first).to include("20 0 0 15 140")
+  end
 end

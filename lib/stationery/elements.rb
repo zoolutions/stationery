@@ -40,11 +40,25 @@ module Stationery
 
     # Children kept in one vertical group; `keep_together: true` moves the
     # whole group to the next page rather than splitting it.
-    def group(gap: 0, keep_together: false, keep_with_next: nil, &)
-      flow = container(gap:, &)
+    def group(gap: 0, align: nil, keep_together: false, keep_with_next: nil, &)
+      flow = container(align:, gap:, &)
       flow.break_inside = :avoid if keep_together
       flow.keep_with_next = keep_with_next
       @_builder.add(flow)
+    end
+
+    # Children side by side at their own widths, wrapping onto new rows.
+    def wrap(gap: 0, row_gap: nil, align: :left, &)
+      flow = container(&)
+      @_builder.add(Layout::Wrap.new(flow.children, gap:, row_gap: row_gap || gap, align:))
+    end
+
+    # An SVG drawing: markup String, or a path to a .svg file. `currentColor`
+    # takes `color:`.
+    def svg(source, width: nil, height: nil, color: "#000000", align: nil)
+      source = File.read(source.to_s) unless source.to_s.lstrip.start_with?("<")
+      node = Layout::Svg.new(SVG::Document.parse(source), width:, height:, color:)
+      @_builder.add(align ? Layout::Flow.new([node], align:) : node)
     end
 
     def table(rows, widths: nil, width: :auto, header: false, cell: {}, &)
