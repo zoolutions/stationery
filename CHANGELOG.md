@@ -16,6 +16,8 @@
 - OpenType fonts with CFF outlines (`.otf`), name-keyed and CID-keyed: embedded whole as a CIDFontType0
   (`FontFile3 /OpenType`), CID-keyed text written as CIDs with the font's ROS. Variable CFF2 fonts are rejected
   with a named reason.
+- CFF fonts are subset: undrawn glyphs become a bare `endchar` (glyph ids, charset, FDSelect, Private DICTs and
+  Subrs kept), embedded as `FontFile3 /CIDFontType0C` with a subset tag.
 - Internal: `Fonts::GlyphRun` carries per-glyph advance adjustments (Tj/TJ emission) for upcoming kerning and justification; output unchanged.
 
 ## 0.1.0 (unreleased)

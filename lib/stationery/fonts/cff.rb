@@ -8,11 +8,13 @@ module Stationery
     class CFF
       STANDARD_STRINGS = 391
       CHARSET = 15
+      ENCODING = 16
       CHARSTRINGS = 17
       PRIVATE = 18
       ROS = 1230
       FD_ARRAY = 1236
       FD_SELECT = 1237
+      SUBRS = 19
       REAL_NIBBLES = [*"0".."9", ".", "E", "E-", nil, "-"].freeze
 
       # An INDEX from `start` to `stop` (exclusive); items are [offset, length].
@@ -22,12 +24,12 @@ module Stationery
 
       def initialize(data)
         @data = data.b
-        @name_index = read_index(@data.getbyte(2))
-        @top_index = read_index(@name_index.stop)
-        @string_index = read_index(@top_index.stop)
-        @global_subrs = read_index(@string_index.stop)
+        @name_index = index_at(@data.getbyte(2))
+        @top_index = index_at(@name_index.stop)
+        @string_index = index_at(@top_index.stop)
+        @global_subrs = index_at(@string_index.stop)
         @top = self.class.parse_dict(item(@top_index, 0))
-        @charstrings = read_index(@top.fetch(CHARSTRINGS).first)
+        @charstrings = index_at(@top.fetch(CHARSTRINGS).first)
         @num_glyphs = @charstrings.items.size
         @charset = self.class.parse_charset(@data, @top.fetch(CHARSET).first, @num_glyphs) if cid_keyed?
       end
@@ -55,23 +57,27 @@ module Stationery
 
       class << self
         # { operator => operands }; two-byte operators are 1200 + the second byte.
-        def parse_dict(bytes)
-          dict = {}
+        def parse_dict(bytes) = dict_entries(bytes).to_h { |op, operands, _| [op, operands] }
+
+        # [operator, operands, raw bytes of operands and operator] in order.
+        def dict_entries(bytes)
+          entries = []
           operands = []
-          pos = 0
+          start = pos = 0
           while pos < bytes.bytesize
             b0 = bytes.getbyte(pos)
             if b0 <= 21
               op = b0 == 12 ? 1200 + bytes.getbyte(pos + 1) : b0
               pos += b0 == 12 ? 2 : 1
-              dict[op] = operands
+              entries << [op, operands, bytes.byteslice(start, pos - start)]
               operands = []
+              start = pos
             else
               value, pos = operand(bytes, pos)
               operands << value
             end
           end
-          dict
+          entries
         end
 
         # The SID (name-keyed) or CID (CID-keyed) of every glyph, by glyph id.
@@ -118,9 +124,7 @@ module Stationery
         end
       end
 
-      private
-
-      def read_index(offset)
+      def index_at(offset)
         count = @data.byteslice(offset, 2).unpack1("n")
         return Index.new(offset, [], offset + 2) if count.zero?
 

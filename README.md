@@ -120,10 +120,11 @@ def show = send_pdf(InvoicePdf.new(@invoice), filename: "invoice.pdf")
 ## Fonts and images
 
 Fonts are TrueType (`.ttf`) or OpenType/CFF (`.otf`, name-keyed or
-CID-keyed) files. A TrueType font embeds only the glyphs a document uses; an
-OpenType/CFF font is embedded whole. Either way a ToUnicode map makes text
-copy and search correctly. A style without its own file (bold, italic) is
-synthesised. There is no built-in font: declare at least one `font_family`.
+CID-keyed) files. Only the glyphs a document uses are embedded (a CFF font
+keeps its glyph numbering and subroutines; unused glyphs are blanked), with a
+ToUnicode map so text copies and searches correctly. A style without its own
+file (bold, italic) is synthesised. There is no built-in font: declare at
+least one `font_family`.
 
 Text is pair-kerned from the font's GPOS `kern` feature (PairPos lookups,
 including class-based pairs and Extension lookups), falling back to the
