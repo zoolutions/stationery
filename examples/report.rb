@@ -22,7 +22,8 @@ class ExampleReport < Stationery::Document
 
   page size: :a4, margin: [48, 56, 40, 56]
   default_text size: 10.5, color: INK
-  metadata title: "Annual report 2026", author: "Northwind Freight AB", creator: "stationery example"
+  metadata title: "Annual report 2026", author: "Northwind Freight AB", creator: "stationery example", lang: "en"
+  tagged
 
   header(on: :rest, gap: 18) do |page|
     row(align: :bottom) do
@@ -55,7 +56,7 @@ class ExampleReport < Stationery::Document
   def view_template
     cover
     page_break
-    text "Contents", size: 20, weight: :bold, bookmark: "Contents"
+    text "Contents", size: 20, weight: :bold, bookmark: "Contents", heading: 2
     spacer 14
     table_of_contents(levels: 1..2, size: 10, color: INK, gap: 6, indent: 16)
     page_break
@@ -76,7 +77,7 @@ class ExampleReport < Stationery::Document
     spacer 150
     text "NORTHWIND FREIGHT AB", size: 9, weight: :bold, color: ACCENT, letter_spacing: 1.5
     spacer 10
-    text "Annual report 2026", size: 36, weight: :bold
+    text "Annual report 2026", size: 36, weight: :bold, heading: 1
     spacer 6
     text "Moving more with less: a year of growth, electrification and on-time delivery", size: 13, color: MUTED
     spacer 28
@@ -98,14 +99,14 @@ class ExampleReport < Stationery::Document
 
   def heading(title, bookmark:, anchor: nil)
     spacer 18
-    text title, size: 16, weight: :bold, color: ACCENT, bookmark:, anchor:, keep_with_next: 60
+    text title, size: 16, weight: :bold, color: ACCENT, bookmark:, anchor:, keep_with_next: 60, heading: 2
     spacer 8
   end
 
   def subheading(title)
     spacer 10
     text title, size: 11.5, weight: :bold, bookmark: { title: title.sub(/\A[\d.]+ /, ""), level: 2 },
-                keep_with_next: 40
+                keep_with_next: 40, heading: 3
     spacer 4
   end
 
@@ -151,7 +152,7 @@ class ExampleReport < Stationery::Document
      ["Customer satisfaction", "Net promoter score rose from 41 to 52 in every business area."]].each do |title, body|
       spacer 6
       row(gap: 10) do
-        column(width: 16) { svg CHECK, width: 14, color: ACCENT }
+        column(width: 16) { svg CHECK, width: 14, color: ACCENT, alt: false }
         column { text "<b>#{title}.</b> #{body}", markup: true, align: :left }
       end
     end

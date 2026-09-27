@@ -94,6 +94,10 @@ class Views::Docs::Pages::Pages < DocsUI::Page
       MD
     end
 
+    DocsUI::Section("Accessibility (tagged PDF)", description: "A structure tree for screen readers.") do
+      md SourceMarkdown.readme_section("Accessibility (tagged PDF)")
+    end
+
     DocsUI::Section("Debug outlines", description: "See every layout rectangle.") do
       md SourceMarkdown.readme_section("Debugging")
       md <<~'MD'

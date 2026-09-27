@@ -103,6 +103,36 @@ RSpec.describe Stationery::Testing::Matchers do
     expect(matcher.failure_message_when_negated).to start_with("expected PDF not to have no warnings")
   end
 
+  describe "tagged PDF" do
+    let(:tagged) do
+      Class.new(SpecDocument) do
+        tagged
+        metadata lang: "en"
+        def view_template = text("Title", heading: 1)
+      end.new
+    end
+
+    it "matches the structure tree" do
+      expect(tagged).to have_structure([[:Document, [[:H1, "Title"]]]])
+      matcher = have_structure([[:Document, [[:P, "Title"]]]])
+
+      expect(matcher.matches?(tagged)).to be(false)
+      expect(matcher.description).to eq("have structure [[:Document, [[:P, \"Title\"]]]]")
+      expect(matcher.failure_message).to end_with("got [[:Document, [[:H1, \"Title\"]]]]")
+    end
+
+    it "matches when every text is tagged or an artifact" do
+      matcher = have_tagged_content
+
+      expect(tagged).to have_tagged_content
+      expect(matcher.matches?(document)).to be(false)
+      expect(matcher.description).to eq("be tagged with every text in marked content")
+      expect(matcher.failure_message).to end_with("but it is not tagged")
+      expect(matcher.matches?(document.to_pdf(tagged: true))).to be(true)
+      expect(matcher.failure_message_when_negated).to end_with("got untagged text []")
+    end
+  end
+
   it "reuses an inspector passed as the subject" do
     inspector = Stationery::Testing::Inspector.new(pdf)
     have_page_count(2).matches?(inspector)

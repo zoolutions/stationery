@@ -33,6 +33,8 @@ module Stationery
     # it with every fragment a split produces, so content continued on the
     # next page stays one element. It joins the tree where it first paints.
     class Element
+      CELLS = %i[TD TH].freeze
+
       attr_reader :type, :alt, :kind, :kids, :parent, :attributes
 
       # `alt` is a Figure's alternate text; `kind` names what drew it in
@@ -63,7 +65,14 @@ module Stationery
       def bbox = @attributes.dig(:Layout, :BBox)
       def marked_content = @kids.grep(MarkedContent)
       def elements = @kids.grep(Element)
-      def empty? = @kids.none?(MarkedContent) && @kids.none?(ObjectRef) && elements.all?(&:empty?)
+
+      # Holds no content, so the writer leaves it out; an empty table cell
+      # stays, keeping its row's columns in place.
+      def empty?
+        return false if CELLS.include?(@type)
+
+        @kids.none?(MarkedContent) && @kids.none?(ObjectRef) && elements.all?(&:empty?)
+      end
     end
   end
 end
