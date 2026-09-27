@@ -4,6 +4,8 @@
 - `Inter-Regular.ttf` — Inter by Rasmus Andersson, SIL Open Font License 1.1 (an older build than the one shipped in `lib/stationery/fonts/data`; kept as a format 12 cmap fixture).
 - `OpenSans-Collection.ttc` — Open Sans Regular (face 0) and Bold (face 1)
   subset to printable ASCII and packed into one TrueType collection.
+- `OpenSans-Regular.woff` — the same ASCII subset of Open Sans Regular as face 0
+  of the collection, wrapped as WOFF 1.0 (some tables zlib-compressed, some stored).
 - `not-a-ttf.woff2` — a WOFF2 file, used to prove unsupported formats are rejected.
 - `SourceSans3-Latin.otf` — Source Sans 3 by Adobe, SIL Open Font License 1.1.
   A name-keyed CFF font with a GPOS `kern` feature, subset to Basic Latin and
@@ -40,7 +42,7 @@ The glyph-id-to-CID values in `cff_spec.rb` come from
 `TTFont("NotoSansJP-Subset.otf")["CFF "].cff.topDictIndex[0].charset`
 (glyph names `cid01566`, … are the CIDs).
 
-## How the .ttc fixture was made
+## How the .ttc and .woff fixtures were made
 
 With the same fontTools, from the `OpenSans-*.ttf` files here:
 
@@ -52,4 +54,8 @@ python3 -c 'from fontTools.ttLib import TTCollection, TTFont
 c = TTCollection()
 c.fonts = [TTFont("OpenSans-Regular-ASCII.ttf"), TTFont("OpenSans-Bold-ASCII.ttf")]
 c.save("OpenSans-Collection.ttc")'
+python3 -c 'from fontTools.ttLib import TTFont
+f = TTFont("OpenSans-Regular-ASCII.ttf")
+f.flavor = "woff"
+f.save("OpenSans-Regular.woff")'
 ```

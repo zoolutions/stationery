@@ -317,7 +317,8 @@ already present are kept unless `--force`. `--from` takes a directory or a
 ## Fonts and images
 
 Fonts are TrueType (`.ttf`) or OpenType/CFF (`.otf`, name-keyed or
-CID-keyed) files, or faces of a TrueType collection (`.ttc`): a `#N` suffix
+CID-keyed) files, WOFF 1.0 web fonts (`.woff`, unwrapped in memory), or
+faces of a TrueType collection (`.ttc`): a `#N` suffix
 on the path picks face N, counted from 0 (face 0 without a suffix):
 
 ```ruby
@@ -473,7 +474,7 @@ larger file. `PROFILE=1 bundle exec ruby -Ilib benchmark/profile.rb` prints the
 ## Limitations
 
 No ligatures, no variable fonts (including CFF2) or
-WOFF; SVG covers the shapes icon sets use
+WOFF2 (it needs Brotli; convert to `.ttf` or `.woff`); SVG covers the shapes icon sets use
 (no text, gradients, patterns, masks or CSS stylesheets); no encryption,
 forms or tagged PDF. A box with a fixed `height:` never splits (use
 `min_height:` for a floor that can); a row splits only when every column can.
