@@ -10,8 +10,26 @@ module Stationery
       NAMED = { "black" => "#000000", "white" => "#FFFFFF", "red" => "#FF0000", "green" => "#008000",
                 "blue" => "#0000FF", "gray" => "#808080", "grey" => "#808080" }.freeze
       DEFAULTS = { "fill" => "black", "stroke" => "none", "stroke-width" => "1" }.freeze
+      URL = /\Aurl\(\s*['"]?#([^'")\s]+)['"]?\s*\)\s*(.*)\z/
 
-      attr_reader :values, :matrix
+      # A paint server reference, `url(#id)`, with its fallback colour (or nil).
+      Reference = Data.define(:id, :fallback)
+
+      def self.color(value, current)
+        value = value.to_s.strip
+        return current if value == "currentColor"
+
+        NAMED.fetch(value.downcase, value)
+      end
+
+      def self.declarations(style)
+        style.to_s.split(";").filter_map do |declaration|
+          key, value = declaration.split(":", 2).map(&:strip)
+          [key, value] if key && value
+        end.to_h
+      end
+
+      attr_reader :values, :matrix, :color
 
       def initialize(values = DEFAULTS, matrix = [1, 0, 0, 1, 0, 0], color: "#000000")
         @values = values
@@ -20,7 +38,7 @@ module Stationery
       end
 
       def child(attributes)
-        own = attributes.merge(declarations(attributes["style"]))
+        own = attributes.merge(Style.declarations(attributes["style"]))
         values = @values.merge(own.slice(*INHERITED))
         matrix = if attributes["transform"]
                    Transform.multiply(@matrix,
@@ -52,16 +70,10 @@ module Stationery
       def paint(key)
         value = @values[key].to_s.strip
         return nil if value.empty? || %w[none transparent].include?(value)
-        return @color if value == "currentColor"
+        return Style.color(value, @color) unless (url = value.match(URL))
 
-        NAMED.fetch(value.downcase, value)
-      end
-
-      def declarations(style)
-        style.to_s.split(";").filter_map do |declaration|
-          key, value = declaration.split(":", 2).map(&:strip)
-          [key, value] if key && value
-        end.to_h
+        fallback = url[2]
+        Reference.new(url[1], fallback.empty? || fallback == "none" ? nil : Style.color(fallback, @color))
       end
     end
   end

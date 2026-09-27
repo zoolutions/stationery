@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 
 module Stationery
-  # Document-wide names for fonts, images and graphics states, so each is
+  # Document-wide names for fonts, images, graphics states and shadings, so each is
   # embedded once however many pages use it.
   class Resources
     def initialize
       @fonts = {}
       @images = {}
       @states = {}
+      @shadings = {}
     end
 
     def font(font)
@@ -22,12 +23,17 @@ module Stationery
       @states[value.to_f.round(3)] ||= :"GS#{@states.size + 1}"
     end
 
+    def shading(dictionary)
+      @shadings[dictionary] ||= :"Sh#{@shadings.size + 1}"
+    end
+
     # Writes every resource once; returns { category => { name => ref } }.
     def build(writer)
       {
         Font: @fonts.to_h { |font, name| [name, font.build(writer)] },
         XObject: @images.to_h { |image, name| [name, image.build(writer)] },
-        ExtGState: @states.to_h { |alpha, name| [name, writer.add({ Type: :ExtGState, ca: alpha, CA: alpha })] }
+        ExtGState: @states.to_h { |alpha, name| [name, writer.add({ Type: :ExtGState, ca: alpha, CA: alpha })] },
+        Shading: @shadings.to_h { |dictionary, name| [name, writer.add(dictionary)] }
       }
     end
   end

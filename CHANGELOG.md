@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- SVG: `linearGradient` and `radialGradient` fills (`fill="url(#id)"`, also in `style`), with stops, `href`/`xlink:href` inheritance, `objectBoundingBox` and `userSpaceOnUse` units and `gradientTransform`, drawn as PDF axial/radial shadings clipped to the shape. Approximations: `reflect`/`repeat` spreads are drawn as `pad` (reported in `unsupported`), stop opacity is the first stop's for the whole gradient, and a gradient stroke is drawn in the gradient's middle colour. A reference to a missing gradient paints its fallback colour or nothing and is reported as `url(#id)`. `Canvas#shade` paints a shading dictionary inside a path.
+
 - Encryption with the standard security handler: `to_pdf(encrypt: { owner_password:, user_password:, permissions:, algorithm: })` or `encrypt …` at class level (`to_pdf(encrypt: nil)` opts out). AES-256 (R6, default), AES-128 (R4) and RC4-128 (R3); every string and stream, document info included, is encrypted.
 
 - Standard ligatures from the font's GSUB `liga` feature (LigatureSubst lookups, also behind Extension lookups), **on by default**: "office" in Open Sans draws the ffi ligature, so widths of affected words change slightly. `ligatures: false` on `text`/`text_style` or in `default_text` opts out; any `letter_spacing` turns them off. Text extraction and copy still yield the source characters (ToUnicode maps a ligature glyph to all of them). Fonts without `liga` ligatures, such as the bundled Inter, are unaffected.
