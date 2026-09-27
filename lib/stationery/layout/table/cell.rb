@@ -20,6 +20,12 @@ module Stationery
           @node ||= @content.is_a?(Node) ? @content : text_node(context)
         end
 
+        # Changes an option and forgets the node built from the old ones.
+        def []=(name, value)
+          @options[name] = value
+          @node = nil
+        end
+
         def padding = Geometry.box(@options[:padding])
         def horizontal = padding[1] + padding[3]
         def vertical = padding[0] + padding[2]

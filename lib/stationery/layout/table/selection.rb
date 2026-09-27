@@ -33,7 +33,8 @@ module Stationery
 
         ATTRIBUTES.each do |name|
           define_method(:"#{name}=") do |value|
-            cells.each { |cell| cell.options[name] = value }
+            cells.each { |cell| cell[name] = value }
+            @table.invalidate!
           end
         end
 
