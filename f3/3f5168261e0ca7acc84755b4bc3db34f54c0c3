@@ -1,0 +1,38 @@
+lib/stationery/fonts/cff_subset.rb
+  s_832305fd821824::t_edb15ce650f23e 1-16,19,21-22,24-27,38-145
+  s_832305fd821824::t_a121e1682c5899 17-18,20,23,28-37
+README.md
+  s_832305fd821824::t_f5ad8148d3965e 123-124
+  s_832305fd821824::t_b79eeee4962828 125-127
+lib/stationery/fonts/embedding/cff.rb
+  s_832305fd821824::t_734c86780b5d2c 6-9,13-14
+spec/integration/open_type_spec.rb
+  s_832305fd821824::t_b610d8b04640c0 13-19,22,24,27,38-44
+spec/stationery/fonts/cff_subset_spec.rb
+  s_832305fd821824::t_48a51b7dfd4db1 12,14
+  s_832305fd821824::t_abde5b1f217caf 1-11,13,15-29,31-74
+  s_832305fd821824::t_9bd4d6c4f4ab57 30
+lib/stationery.rb
+  s_832305fd821824::t_59704c498f84fe 12
+CHANGELOG.md
+  s_832305fd821824::t_f5ad8148d3965e 19-20
+lib/stationery/fonts/cff.rb
+  s_832305fd821824::t_7c1e89b5e3be27 11,17,27-30,32,127
+  s_832305fd821824::t_2b2f849ca3e415 60-64,66,72,74,80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "f33f5168261e0ca7acc84755b4bc3db34f54c0c3",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
