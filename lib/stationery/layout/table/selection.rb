@@ -24,7 +24,7 @@ module Stationery
         def columns(spec) = Selection.new(@table, @rows, @columns & Selection.indexes(spec, @table.column_count))
         alias column columns
 
-        def cells = @rows.flat_map { |r| @columns.filter_map { |c| @table.cell(r, c) } }
+        def cells = @rows.flat_map { |r| @columns.filter_map { |c| @table.cell(r, c) } }.uniq
 
         def set(**attributes)
           attributes.each { |name, value| public_send(:"#{name}=", value) }

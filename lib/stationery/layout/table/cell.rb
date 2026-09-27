@@ -9,11 +9,13 @@ module Stationery
         TEXT_OPTIONS = { size: :size, color: :color, weight: :weight, style: :style, font: :family,
                          letter_spacing: :letter_spacing }.freeze
 
-        attr_reader :content, :options
+        attr_reader :content, :options, :colspan, :rowspan
 
-        def initialize(content, options)
+        def initialize(content, options, colspan: 1, rowspan: 1)
           @content = content
           @options = options.dup
+          @colspan = colspan
+          @rowspan = rowspan
         end
 
         def node(context)
