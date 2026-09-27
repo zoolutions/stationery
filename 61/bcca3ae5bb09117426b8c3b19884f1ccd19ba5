@@ -1,0 +1,27 @@
+CHANGELOG.md
+  ai_agent 10
+lib/stationery/elements.rb
+  s_832305fd821824::t_c67508ac0ea31d 64-65,67,100-104
+spec/stationery/elements_spec.rb
+  s_832305fd821824::t_7ba3310d6d0bb7 67,69
+  s_832305fd821824::t_160678d6365c58 63-66,68,70-75,77-78
+  s_832305fd821824::t_c67508ac0ea31d 76
+README.md
+  ai_agent 74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "61bcca3ae5bb09117426b8c3b19884f1ccd19ba5",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
