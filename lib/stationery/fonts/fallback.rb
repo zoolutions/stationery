@@ -6,11 +6,13 @@ module Stationery
     # run's family, then the book's fallbacks in order, then bundled Inter. A
     # glyph no font has stays in the run's family and draws as .notdef.
     #
-    # Whitespace, joiners, variation selectors and combining marks carry the
-    # family of the character before them (or after them at the start of a
-    # run) so words are not chopped and marks stay with their base.
+    # Whitespace (any Unicode White_Space), joiners, variation selectors and
+    # combining marks carry the family of the character before them (or
+    # after them at the start of a run) so words are not chopped and marks
+    # stay with their base; whitespace a font lacks draws as a blank of the
+    # right width (see Font::WHITESPACE).
     class Fallback
-      CARRIED = /[\s‌‍︀-️\p{M}]/
+      CARRIED = /[\p{Space}‌‍︀-️\p{M}]/
 
       def self.carried?(char) = CARRIED.match?(char)
 

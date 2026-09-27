@@ -74,8 +74,10 @@ class Views::Docs::Pages::Fonts < DocsUI::Page
         end
         ```
 
-        Spaces, joiners, variation selectors and combining marks stay with the character before them. A glyph
-        no font has is drawn as the family's `.notdef` and reported as a `Warnings::MissingGlyph` counting each
+        Spaces, joiners, variation selectors and combining marks stay with the character before them.
+        Whitespace no font has (an ideographic space U+3000, a figure space, a narrow no-break space, …) is
+        drawn as a blank of the character's conventional width, never as `.notdef`. Any other glyph no font
+        has is drawn as the family's `.notdef` and reported as a `Warnings::MissingGlyph` counting each
         drawn occurrence (so `strict` raises on it). Fallback covers every text element, table cell, list
         marker, table of contents entry and page template text; direct `canvas.text` calls draw with the font
         they are given.

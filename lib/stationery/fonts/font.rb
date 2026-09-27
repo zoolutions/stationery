@@ -12,6 +12,18 @@ module Stationery
     class Font
       OBLIQUE_SKEW = Math.tan(12 * Math::PI / 180)
 
+      # Whitespace the font lacks draws as its space glyph advanced to the
+      # character's conventional width: a fraction of the em for the fixed
+      # spaces, a digit's or a period's advance for the figure and
+      # punctuation spaces, the space's own width for the rest (no-break,
+      # line and paragraph separators, ogham mark, …). Nothing is painted,
+      # nothing is .notdef.
+      WHITESPACE = /\A\p{Space}\z/
+      SPACE_FRACTIONS = { 0x2000 => 0.5, 0x2001 => 1.0, 0x2002 => 0.5, 0x2003 => 1.0, 0x2004 => 1.0 / 3,
+                          0x2005 => 0.25, 0x2006 => 1.0 / 6, 0x2009 => 0.2, 0x200A => 0.125, 0x205F => 4.0 / 18,
+                          0x3000 => 1.0 }.freeze
+      SPACE_LIKE = { 0x2007 => "0", 0x2008 => "." }.freeze
+
       attr_reader :ttf
 
       def initialize(ttf)
@@ -19,6 +31,7 @@ module Stationery
         @used = {}
         @pairs = {}
         @glyphs = {}
+        @blanks = {}
         @shapes = { true => {}, false => {} }
         @advances = { true => {}, false => {} }
         @kerns = { true => {}, false => {} }
@@ -59,10 +72,18 @@ module Stationery
       # `ligatures:` substitutes the font's standard ligatures; `kerning:`
       # then fills the adjustments with pair kerning between the glyphs.
       def glyph_run(text, kerning: false, ligatures: true)
-        gids, chars = shape(text, ligatures)
-        gids.each_with_index { |gid, i| @used[gid] ||= chars[i] }
-        adjust = gids.each_with_index.map { |gid, i| kerning && i + 1 < gids.size ? pair(gid, gids[i + 1]) : 0 }
+        gids, chars, blanks = shape(text, ligatures)
+        gids.each_with_index { |gid, i| @used[gid] ||= blanks[i] ? " " : chars[i] }
+        adjust = gids.each_with_index.map do |gid, i|
+          kern = kerning && i + 1 < gids.size ? pair(gid, gids[i + 1]) : 0
+          blanks[i] ? kern + (blanks[i] * 1000.0 / @ttf.units_per_em) : kern
+        end
         GlyphRun.new(font: self, gids:, adjust:, chars:)
+      end
+
+      # Whether a character the font lacks is drawn as a blank (see WHITESPACE).
+      def blank?(char)
+        @blanks.fetch(char) { @blanks[char] = WHITESPACE.match?(char) && !glyph?(char) && glyph?(" ") }
       end
 
       def used?
@@ -93,11 +114,13 @@ module Stationery
 
       private
 
-      # [gids, source text of each glyph], remembered per string.
+      # [gids, source text of each glyph, extra advance in font units after
+      # each blank or nil], remembered per string.
       def shape(text, ligatures)
         @shapes[ligatures][text] ||= begin
-          gids = text.each_char.map { |char| @ttf.glyph_id(char.ord) }
-          ligatures ? ligate(gids, text) : [gids, text.chars].each(&:freeze).freeze
+          gids = text.each_char.map { |char| glyph_for(char) }
+          gids, chars = ligatures ? ligate(gids, text) : [gids, text.chars]
+          [gids, chars, chars.map { |char| blank_units(char) }].each(&:freeze).freeze
         end
       end
 
@@ -105,11 +128,31 @@ module Stationery
         start = 0
         glyphs = @ttf.ligatures.substitute(gids)
         chars = glyphs.map { |_gid, count| text[start, count].tap { start += count } }
-        [glyphs.map(&:first), chars].each(&:freeze).freeze
+        [glyphs.map(&:first), chars]
+      end
+
+      def glyph_for(char)
+        blank?(char) ? @ttf.glyph_id(" ".ord) : @ttf.glyph_id(char.ord)
+      end
+
+      # How much wider (or narrower) than a space a blank's advance is.
+      def blank_units(char)
+        return unless blank?(char)
+
+        space = @ttf.advance(@ttf.glyph_id(" ".ord))
+        like = SPACE_LIKE[char.ord]
+        width = if (fraction = SPACE_FRACTIONS[char.ord]) then @ttf.units_per_em * fraction
+                elsif like && glyph?(like) then @ttf.advance(@ttf.glyph_id(like.ord))
+                else space
+                end
+        width - space
       end
 
       def advance_units(text, ligatures)
-        @advances[ligatures][text] ||= shape(text, ligatures).first.sum { |gid| @ttf.advance(gid) }
+        @advances[ligatures][text] ||= begin
+          gids, _, blanks = shape(text, ligatures)
+          gids.sum { |gid| @ttf.advance(gid) } + blanks.sum { |units| units || 0 }
+        end
       end
 
       def kerning_units(text, ligatures)
