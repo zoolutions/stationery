@@ -24,7 +24,7 @@ module Stationery
                       superclass.config.transform_values(&:dup)
                     else
                       { page: { size: :letter, margin: 36 }, families: {}, text: {}, metadata: {}, templates: [],
-                        strict: false }
+                        regions: [], strict: false }
                     end
       end
 
@@ -54,6 +54,18 @@ module Stationery
       def page_template(layer: :foreground, &block)
         config[:templates] << [layer, block]
       end
+
+      # Reserves space at the top of the pages `on:` matches and draws the
+      # block there. Without `height:` the block is measured once, on the
+      # first page that asks; pass `height:` when its content varies per page.
+      def header(height: nil, gap: 8, on: :all, &block)
+        config[:regions] << Region.new(slot: :header, height:, gap:, on: Regions.validate!(on), block:)
+      end
+
+      # Like header, at the bottom of the page; the block is bottom-aligned.
+      def footer(height: nil, gap: 8, on: :all, &block)
+        config[:regions] << Region.new(slot: :footer, height:, gap:, on: Regions.validate!(on), block:)
+      end
     end
 
     attr_reader :warnings
@@ -66,8 +78,10 @@ module Stationery
       book = Fonts::FontBook.new(self.class.config[:families], warnings:)
       call(builder = Builder.new(book:, text: self.class.config[:text]))
       resources = Resources.new
-      pages = Layout::Paginator.new(resources:, page: page_options, warnings:, debug:).paginate(builder.root)
-      PageTemplates.new(self, book:, resources:, debug:).apply(pages)
+      regions = Regions.new(self.class.config[:regions], measure: region_measure(book))
+      paginator = Layout::Paginator.new(resources:, page: page_options, warnings:, debug:, regions:)
+      pages = paginator.paginate(builder.root)
+      PageTemplates.new(self, book:, resources:, debug:, regions:, warnings:).apply(pages)
       outline = builder.outline.resolve(Structure.resolve(pages, warnings:, resources:, book:))
       @warnings = warnings
       raise WarningsError, warnings if strict && warnings.any?
@@ -84,7 +98,22 @@ module Stationery
       @_builder = previous
     end
 
+    # Builds a page template or region block into a fresh root node.
+    def template_root(info, book:, &)
+      builder = Builder.new(book:, text: self.class.config[:text])
+      build_with(builder) { instance_exec(info, &) }
+      builder.root
+    end
+
     private
+
+    def region_measure(book)
+      page = Page.new(**page_options)
+      lambda do |region, number|
+        info = PageInfo.new(number, number, page.width, page.height, page.margin, page.margin_box)
+        template_root(info, book:, &region.block).measure(page.margin_box.width)
+      end
+    end
 
     def info
       metadata.to_h do |key, value|

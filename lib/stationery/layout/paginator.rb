@@ -7,10 +7,11 @@ module Stationery
     class Paginator
       attr_reader :warnings
 
-      def initialize(resources:, page: {}, warnings: Warnings.new, debug: false)
+      def initialize(resources:, page: {}, warnings: Warnings.new, debug: false, regions: nil)
         @resources = resources
         @debug = debug
         @page_options = page
+        @regions = regions
         @warnings = warnings
       end
 
@@ -19,7 +20,7 @@ module Stationery
         pages = []
         remaining = root
         while remaining
-          page = Page.new(**@page_options)
+          page = new_page(pages.size + 1)
           head, remaining = remaining.split(page.content_box.width, page.content_box.height, fresh: true)
           place(page, head, pages.size + 1)
           pages << page
@@ -28,6 +29,13 @@ module Stationery
       end
 
       private
+
+      def new_page(number)
+        page = Page.new(**@page_options, reserve: @regions ? @regions.reserve(number) : [0, 0])
+        return page if page.reserve.sum < page.margin_box.height
+
+        raise ArgumentError, "header and footer leave no room for content on page #{number}"
+      end
 
       def place(page, head, number)
         return unless head
