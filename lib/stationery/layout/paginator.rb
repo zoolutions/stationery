@@ -7,8 +7,9 @@ module Stationery
     class Paginator
       attr_reader :warnings
 
-      def initialize(resources:, page: {}, warnings: Warnings.new, debug: false, regions: nil)
+      def initialize(resources:, page: {}, warnings: Warnings.new, debug: false, regions: nil, tagging: nil)
         @resources = resources
+        @tagging = tagging
         @debug = debug
         @page_options = page
         @regions = regions
@@ -61,7 +62,7 @@ module Stationery
         box = page.content_box
         height = head.measure(box.width)
         @warnings << Overflow.new(page: number, height:, available: box.height) if height > box.height + EPSILON
-        canvas = Canvas.new(page, @resources, debug: @debug)
+        canvas = Canvas.new(page, @resources, debug: @debug, tagging: @tagging)
         head.paint(canvas, box.x, box.y, box.width)
         canvas.debug_rect(box.x, box.y, box.width, box.height, :page)
       end

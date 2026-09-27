@@ -18,10 +18,11 @@ module Stationery
 
       def initialize(content = Flow.new, padding: 0, background: nil, border: nil, radius: 0, width: nil,
                      height: nil, min_height: nil, overflow: :visible, valign: :top, opacity: nil, link: nil, outset: 0,
-                     open: [], decoration: :slice)
+                     open: [], decoration: :slice, role: nil)
         raise ArgumentError, "pass height: or min_height:, not both" if height && min_height
 
         super()
+        @tag = role && Tagging::Element.new(Tagging.role(role))
         @min_height = min_height
         @open = open
         @decoration = decoration
@@ -81,9 +82,11 @@ module Stationery
 
       def paint(canvas, x, y, width, height = nil, valign: nil, debug_kind: :box, **)
         height ||= measure(width)
-        paint_background(canvas, x, y, width, height)
-        paint_border(canvas, x, y, width, height)
-        paint_content(canvas, x, y, width, height, valign || @valign)
+        canvas.structure(@tag) do
+          paint_background(canvas, x, y, width, height)
+          paint_border(canvas, x, y, width, height)
+          paint_content(canvas, x, y, width, height, valign || @valign)
+        end
         canvas.link(x, y, width, height, @link) if @link
         paint_debug(canvas, Rect.new(x, y, width, height), debug_kind) if canvas.debug?
       end

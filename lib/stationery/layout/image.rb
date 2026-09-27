@@ -6,8 +6,10 @@ module Stationery
     # preserved), never wider than the space it is given. One pixel is one
     # point when no size is given.
     class Image < Node
-      def initialize(source, width: nil, height: nil, fit: nil, opacity: nil)
+      # `alt:` describes the image in a tagged PDF; `alt: false` marks it decorative.
+      def initialize(source, width: nil, height: nil, fit: nil, opacity: nil, alt: nil)
         super()
+        @tag = alt == false ? nil : Tagging::Element.new(:Figure, alt:, kind: :image)
         @image = source.respond_to?(:build) ? source : Images.load(source)
         @width = width
         @height = height
@@ -29,7 +31,7 @@ module Stationery
 
       def paint(canvas, x, y, width, _height = nil, **)
         w, h = size(width)
-        canvas.image(@image, x:, y:, width: w, height: h, opacity: @opacity)
+        canvas.tag(@tag, bbox: [x, y, w, h]) { canvas.image(@image, x:, y:, width: w, height: h, opacity: @opacity) }
         canvas.debug_rect(x, y, w, h, :image)
       end
 

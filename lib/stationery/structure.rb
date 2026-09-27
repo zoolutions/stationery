@@ -11,10 +11,13 @@ module Stationery
 
     # Returns the destinations by name; unresolved links are dropped.
     # Runs before resources are written, so slot digits join the font subset.
-    def self.resolve(pages, warnings:, resources: nil, book: nil) = new(pages, warnings, resources, book).resolve
+    def self.resolve(pages, warnings:, resources: nil, book: nil, tagging: nil)
+      new(pages, warnings, resources, book, tagging).resolve
+    end
 
-    def initialize(pages, warnings, resources, book)
+    def initialize(pages, warnings, resources, book, tagging = nil)
       @pages = pages
+      @tagging = tagging
       @warnings = warnings
       @resources = resources
       @book = book
@@ -57,7 +60,7 @@ module Stationery
       font, face = @book.resolve(slot.style)
       style = slot.style
       width = font.width_of(label, style.render_size, letter_spacing: style.letter_spacing)
-      canvas = Canvas.new(page, @resources)
+      canvas = Canvas.new(page, @resources, tagging: @tagging)
       canvas.link(*slot.link, "##{slot.anchor}") if slot.link
       canvas.text(label, x: slot.x + slot.width - width, y: slot.baseline, font:,
                          size: style.render_size, color: style.color,

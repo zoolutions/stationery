@@ -6,21 +6,23 @@ module Stationery
     PARAGRAPH_DEFAULTS = { align: :left, leading: 0 }.freeze
 
     # A paragraph. Plain strings are always literal; pass `markup: true` to
-    # read inline tags, or a block to build styled runs in Ruby.
+    # read inline tags, or a block to build styled runs in Ruby. `heading: 1..6`
+    # tags it as a heading in a tagged PDF.
     def text(content = nil, markup: false, keep_with_next: nil, break_inside: nil, anchor: nil, bookmark: nil,
-             **options, &)
+             heading: nil, **options, &)
       settings = PARAGRAPH_DEFAULTS.merge(@_builder.text_defaults.slice(:align, :leading)).merge(options)
       style = @_builder.style(options)
       runs = text_runs(content, style, markup, &)
       node = Layout::Text.new(runs, context: @_builder.context(style), align: settings[:align],
-                                    leading: settings[:leading])
+                                    leading: settings[:leading], tag: Tagging::Element.new(Tagging.heading(heading)))
       node.keep_with_next = keep_with_next
       node.break_inside = break_inside
       @_builder.add(mark(node, anchor, bookmark))
     end
 
     # A container with padding, background, border and radius. `at: [x, y]`
-    # places it at a fixed page position outside the flow.
+    # places it at a fixed page position outside the flow. `role:` (:section,
+    # :blockquote, :note, :caption, …) groups its content in a tagged PDF.
     # `break_inside: :auto` splits it at any page break, `:avoid` never; by
     # default it splits only when it does not fit on a page of its own.
     def box(at: nil, align: nil, gap: 0, width: nil, keep_with_next: nil, break_inside: nil, anchor: nil, bookmark: nil,
@@ -65,15 +67,15 @@ module Stationery
     end
 
     # An SVG drawing: markup String, or a path to a .svg file. `currentColor`
-    # takes `color:`.
-    def svg(source, width: nil, height: nil, color: "#000000", align: nil)
+    # takes `color:`. `alt:` describes it in a tagged PDF (false: decorative).
+    def svg(source, width: nil, height: nil, color: "#000000", align: nil, alt: nil)
       name = source.to_s.lstrip.start_with?("<") ? "inline" : File.basename(source.to_s)
       source = File.read(source.to_s) unless name == "inline"
       document = SVG::Document.parse(source)
       if document.unsupported.any?
         @_builder.warnings << Warnings::UnsupportedSvg.new(elements: document.unsupported, source: name)
       end
-      node = Layout::Svg.new(document, width:, height:, color:, context: @_builder.context)
+      node = Layout::Svg.new(document, width:, height:, color:, context: @_builder.context, alt:)
       @_builder.add(align ? Layout::Flow.new([node], align:) : node)
     end
 
@@ -95,6 +97,7 @@ module Stationery
       @_builder.add(node)
     end
 
+    # `alt:` describes the image in a tagged PDF (false: decorative).
     def image(source, align: nil, **)
       node = Layout::Image.new(source, **)
       @_builder.add(align ? Layout::Flow.new([node], align:) : node)

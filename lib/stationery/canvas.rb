@@ -7,6 +7,7 @@ module Stationery
   class Canvas
     include Text
     include Debug
+    include Marking
 
     CAPS = { butt: 0, round: 1, square: 2 }.freeze
     JOINS = { miter: 0, round: 1, bevel: 2 }.freeze
@@ -14,11 +15,14 @@ module Stationery
     attr_reader :page
 
     # `template: true` records anchors apart, for canvases page templates draw on.
-    def initialize(page, resources, template: false, debug: false)
+    # `tagging:` (a Tagging::Tree) marks content for a tagged PDF.
+    def initialize(page, resources, template: false, debug: false, tagging: nil)
       @page = page
       @resources = resources
       @template = template
       @debug = debug
+      @tagging = tagging
+      @marked = 0
     end
 
     def save
@@ -147,7 +151,7 @@ module Stationery
       ops = []
       ops << "/#{@page.use(:ExtGState, @resources.opacity(opacity))} gs" if opacity && opacity < 1
       yield ops
-      emit("q", *ops, "Q")
+      artifact { emit("q", *ops, "Q") }
     end
 
     def emit(*ops)

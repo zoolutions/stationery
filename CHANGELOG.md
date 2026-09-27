@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Tagged (accessible) PDF: `tagged` at class level or `to_pdf(tagged: true)` writes a structure tree (`/StructTreeRoot` with a `/ParentTree`, `/MarkInfo`, `/StructParents` on pages) and marks every painted leaf as marked content (`/P <</MCID n>> BDC … EMC`). Text is `P`, or `H1`–`H6` with `text(…, heading: 1..6)`; images and SVG drawings are `Figure` with `/Alt` from `alt:` (`alt: false`: decorative) and a `/BBox`; `box(role: :section | :div | :blockquote | :note | :caption | :article | :part)` groups its content. A node split across pages stays one element with marked content on each page. Headers, footers and page templates are `/Pagination` artifacts, other decoration is a layout artifact. `metadata lang:` writes `/Lang` (and is kept out of the document info); a tagged document with a title sets `/DisplayDocTitle`. New warnings `MissingAlt` and `MissingLanguage` let `strict` catch accessibility gaps. Untagged output is byte-for-byte unchanged. `Canvas#tag`, `#structure` and `#artifact`, `Stationery::Tagging::{Tree, Element, Writer}`.
+
+## Unreleased
+
 - Interactive forms (AcroForm): `text_field` (multiline, `max_length:`, `comb:`, `read_only:`, `required:`) and `checkbox` (with `label:`) lay out like boxes or sit at `at: [x, y]`, also inside table cells. Each widget ships its own appearance stream (Helvetica / ZapfDingbats from the standard 14, listed in the AcroForm `/DR`), so forms render in every viewer; `NeedAppearances` is set so edits redraw. Dotted names (`"address.city"`) build parent fields; widgets sharing a name become one field's kids. Values are Unicode text strings and survive encryption. `Document#fields` returns `{ name => value }` after a render; `Canvas#widget` places a field widget; `to_pdf(debug: [:field])` outlines fields.
 - Forms: `radio` groups (radios sharing a name form one `/Btn` field with the radio flag; `/V` is the checked value), `select` combo boxes (`/Ch` with `/Opt`, `editable:` adds the Edit flag) and `signature_field` (an empty `/Sig` field drawn as a rule over its label). `examples/form.rb` is a one-page application form using every field type.
 
