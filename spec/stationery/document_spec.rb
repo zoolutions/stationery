@@ -91,7 +91,9 @@ RSpec.describe Stationery::Document do
   end
 
   describe "strict mode" do
-    let(:overflowing) { Class.new(SpecDocument) { def view_template = box { 40.times { |i| text "row #{i}" } } } }
+    let(:overflowing) do
+      Class.new(SpecDocument) { def view_template = box(break_inside: :avoid) { 40.times { |i| text "row #{i}" } } }
+    end
 
     it "raises WarningsError listing the warnings when asked per render" do
       doc = overflowing.new
@@ -132,8 +134,6 @@ RSpec.describe Stationery::Document do
     expect(doc.warnings.to_a).to eq([Stationery::Warnings::SkippedImage.new(source: "x", reason: "y")])
   end
 
-  it "explains a missing font family" do
-    bare = Class.new(described_class) { def view_template = text("x") }
   it "renders with bundled Inter when no font family is declared" do
     bare = Class.new(described_class) { def view_template = text("zero config") }
     pdf = bare.new.to_pdf
