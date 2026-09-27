@@ -6,15 +6,19 @@ module Stationery
   # settings never leak into the next one.
   class Canvas
     include Text
+    include Debug
 
     CAPS = { butt: 0, round: 1, square: 2 }.freeze
     JOINS = { miter: 0, round: 1, bevel: 2 }.freeze
 
     attr_reader :page
 
-    def initialize(page, resources)
+    # `template: true` records anchors apart, for canvases page templates draw on.
+    def initialize(page, resources, template: false, debug: false)
       @page = page
       @resources = resources
+      @template = template
+      @debug = debug
     end
 
     def save
@@ -34,8 +38,8 @@ module Stationery
       shape(fill: color, opacity:) { |p| p.rect(x, y, w, h) }
     end
 
-    def rounded_rect(x, y, w, h, radius:, fill: nil, stroke: nil, line_width: 1, opacity: nil)
-      shape(fill:, stroke:, line_width:, opacity:) { |p| p.rounded_rect(x, y, w, h, radius) }
+    def rounded_rect(x, y, w, h, radius:, fill: nil, stroke: nil, line_width: 1, dash: nil, opacity: nil)
+      shape(fill:, stroke:, line_width:, dash:, opacity:) { |p| p.rounded_rect(x, y, w, h, radius) }
     end
 
     def circle(cx, cy, r, fill: nil, stroke: nil, line_width: 1, opacity: nil)
@@ -62,11 +66,24 @@ module Stationery
       end
     end
 
-    # A clickable area opening `url`. Annotation rectangles live in absolute,
-    # untransformed page space, so they ignore clips and path transforms.
-    def link(x, y, w, h, url)
-      @page.annotations << { rect: [x, @page.height - y - h, x + w, @page.height - y].map { |v| num_value(v) },
-                             url: url.to_s }
+    # A clickable area opening `target`: a URL, or `#name` for an anchor in
+    # this document. Annotation rectangles live in absolute, untransformed
+    # page space, so they ignore clips and path transforms.
+    def link(x, y, w, h, target)
+      target = target.to_s
+      rect = [x, @page.height - y - h, x + w, @page.height - y].map { |v| num_value(v) }
+      @page.annotations << (target.start_with?("#") ? { rect:, dest: target[1..] } : { rect:, url: target })
+    end
+
+    # Names the point `y` on this page as a link target.
+    def anchor(name, y)
+      (@template ? @page.template_anchors : @page.anchors) << [name.to_s, num_value(@page.height - y)]
+    end
+
+    # Leaves room for the page number `anchor` lands on; Structure fills it in
+    # and adds the `link:` area ([x, y, w, h]) when the anchor exists.
+    def number_slot(anchor, x:, baseline:, width:, style:, link: nil)
+      @page.slots << Page::Slot.new(anchor.to_s, x, baseline, width, style, link)
     end
 
     def num(value) = PDF::Serializer.number(num_value(value))
