@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 (2026-09-27)
+
+The Limitations page, shortened: TrueType collections, WOFF, ligatures, splittable
+`min_height:` boxes, SVG gradients, text and stylesheets, and encryption.
 
 - SVG: `linearGradient` and `radialGradient` fills (`fill="url(#id)"`, also in `style`), with stops, `href`/`xlink:href` inheritance, `objectBoundingBox` and `userSpaceOnUse` units and `gradientTransform`, drawn as PDF axial/radial shadings clipped to the shape. Approximations: `reflect`/`repeat` spreads are drawn as `pad` (reported in `unsupported`), stop opacity is the first stop's for the whole gradient, and a gradient stroke is drawn in the gradient's middle colour. A reference to a missing gradient paints its fallback colour or nothing and is reported as `url(#id)`. `Canvas#shade` paints a shading dictionary inside a path.
 - SVG: `text` and `tspan` (`x`/`y`/`dx`/`dy`, first value each; `font-family`, first family the font book knows — registered, bundled or an installed pack — else the document's default; `font-size`, `font-weight`, `font-style`, `text-anchor`, `fill`, `opacity`, transforms), drawn through the document's fonts so they subset and extract like any text. Whitespace collapses as in browsers. Glyphs stay upright: a transform moves the baseline origin and scales the size uniformly, so rotated or skewed text is approximated; `dominant-baseline` is ignored and a gradient fill uses its middle colour. `Layout::Svg` takes `context:`, `SVG::Document#draw` takes `book:` and `family:`, and `FontBook#known?` tells whether a family resolves without substitution.
