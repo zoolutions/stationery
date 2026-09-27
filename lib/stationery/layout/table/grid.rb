@@ -25,7 +25,11 @@ module Stationery
 
         # Row indexes a horizontal cut can fall before without splitting a rowspan.
         def boundaries
-          (0..row_count).reject { |r| @placements.any? { |p| p.row < r && r < p.rows.end } }
+          @boundaries ||= begin
+            inside = Array.new(row_count + 1, false)
+            @placements.each { |p| ((p.row + 1)...p.rows.end).each { |r| inside[r] = true } }
+            (0..row_count).reject { |r| inside[r] }.freeze
+          end
         end
 
         # A metric per column: the largest single-column value, then the excess
