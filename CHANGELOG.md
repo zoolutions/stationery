@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Internal: `Stationery::Rich` block model (paragraphs, headings, lists, quotes, code, rules, tables, images; inlines with marks) with lenient `HTML.parse` (implied end tags, browser whitespace collapsing, Trix/ActionText output) and CommonMark-subset `Markdown.parse` (GFM tables and strikethrough, reference links). Loaded on demand; `html`/`markdown` elements follow.
 - SVG: path (every command, including arcs), rect, circle, ellipse, line, polyline, polygon and g, with fill, stroke, caps, joins, fill-rule, opacity, inline styles, transforms and `currentColor`. `svg` element.
 - `wrap` element: children at their own widths, wrapping onto rows; splits between rows.
 - `box(link:)` makes the whole box clickable; `box(outset:)` bleeds its background past its edges.
