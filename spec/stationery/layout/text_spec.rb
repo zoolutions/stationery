@@ -10,6 +10,12 @@ RSpec.describe Stationery::Layout::Text do
     expect(node.min_width).to be_within(0.01).of(widest)
   end
 
+  it "measures a fallback glyph with the fallback font" do
+    inter = open_sans_book.resolve(base_style(family: "Inter")).first
+
+    expect(text_node("→→→").min_width).to be_within(0.01).of(inter.width_of("→→→", 10, kerning: true))
+  end
+
   it "splits by lines" do
     head, tail = lines_of(4).split(200, (line_height * 2) + 1)
 
