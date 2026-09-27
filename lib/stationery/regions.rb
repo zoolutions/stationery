@@ -10,7 +10,7 @@ module Stationery
   # the pages they match; a region without a height is measured once, at the
   # first page that asks for it.
   class Regions
-    SELECTORS = %i[all first rest odd even].freeze
+    SELECTORS = %i[all first rest odd even last].freeze
     SLOTS = %i[header footer].freeze
 
     def self.validate!(on)
@@ -20,13 +20,14 @@ module Stationery
                            "got #{on.inspect}"
     end
 
-    def self.matches?(on, number)
+    def self.matches?(on, number, last: false)
       case on
       when :all then true
       when :first then number == 1
       when :rest then number > 1
       when :odd then number.odd?
       when :even then number.even?
+      when :last then last
       when Integer then number == on
       when Range then on.cover?(number)
       else on.call(number)
@@ -37,20 +38,24 @@ module Stationery
       @entries = entries
       @measure = measure
       @heights = {}.compare_by_identity
+      @last = entries.any? { |entry| entry.on == :last }
     end
 
-    def entry_for(slot, number)
-      @entries.reverse_each.find { |entry| entry.slot == slot && self.class.matches?(entry.on, number) }
+    def entry_for(slot, number, last: false)
+      @entries.reverse_each.find { |entry| entry.slot == slot && self.class.matches?(entry.on, number, last:) }
     end
 
     # [top, bottom] points taken from the body on page `number`.
-    def reserve(number)
+    def reserve(number, last: false)
       SLOTS.map do |slot|
-        entry = entry_for(slot, number)
+        entry = entry_for(slot, number, last:)
         height = entry ? height_of(entry, number) : 0
         height.positive? ? height + entry.gap : 0
       end
     end
+
+    # Whether page `number` would reserve different space as the last page.
+    def last_sensitive?(number) = @last && reserve(number, last: true) != reserve(number)
 
     def height_of(entry, number)
       return entry.height if entry.height

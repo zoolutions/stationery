@@ -92,6 +92,43 @@ RSpec.describe Stationery::Document do
     expect { doc.new.to_pdf }.to raise_error(ArgumentError, /no room.*page 1/)
   end
 
+  describe "on: :last" do
+    def totals(lines)
+      Class.new(SpecDocument) do
+        footer(height: 10) { text "f", size: 6 }
+        footer(on: :last, height: 60) { text "TOTAL" }
+        define_method(:view_template) { lines.times { |i| text("line #{i}") } }
+      end
+    end
+
+    def body_bottom(page) = page.filter_map { |text, y| y if text.start_with?("line") }.min
+
+    it "ends the last page's body above the taller last footer" do
+      pages = runs(totals(30))
+
+      expect(pages.last.assoc("TOTAL")).not_to be_nil
+      expect(pages[0...-1].flatten).not_to include("TOTAL")
+      expect(body_bottom(pages.last)).to be > 20 + 60 + 8
+      expect(body_bottom(pages.first)).to be < 20 + 60
+    end
+
+    it "moves content that only fits a normal page onto an extra last page" do
+      pages = runs(totals(8))
+
+      expect(pages.size).to eq(2)
+      expect(pages.first.assoc("f")).not_to be_nil
+      expect(pages.last.assoc("TOTAL")).not_to be_nil
+    end
+
+    it "uses the last footer on a single page" do
+      pages = runs(totals(4))
+
+      expect(pages.size).to eq(1)
+      expect(pages.first.assoc("TOTAL")).not_to be_nil
+      expect(pages.first.assoc("f")).to be_nil
+    end
+  end
+
   it "rejects an unknown on: selector" do
     expect { document { header(on: :sometimes) { nil } } }.to raise_error(ArgumentError, /on:/)
   end

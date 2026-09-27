@@ -18,9 +18,14 @@ RSpec.describe Stationery::Regions do
     end
   end
 
+  it "matches :last only on the last page" do
+    expect(described_class.matches?(:last, 3)).to be(false)
+    expect(described_class.matches?(:last, 3, last: true)).to be(true)
+  end
+
   describe ".validate!" do
     it "accepts every selector form" do
-      [:all, :first, :rest, :odd, :even, 2, (1..3), ->(n) { n > 1 }].each do |on|
+      [:all, :first, :rest, :odd, :even, :last, 2, (1..3), ->(n) { n > 1 }].each do |on|
         expect(described_class.validate!(on)).to eq(on)
       end
     end
@@ -76,6 +81,41 @@ RSpec.describe Stationery::Regions do
       measure = ->(*) { raise "measured" }
 
       expect(regions(region(height: 30), measure:).reserve(1)).to eq([30, 0])
+    end
+
+    it "uses :last declarations only for the last page" do
+      set = regions(region(:footer, height: 10), region(:footer, on: :last, height: 40))
+
+      expect(set.reserve(2)).to eq([0, 10])
+      expect(set.reserve(2, last: true)).to eq([0, 40])
+      expect(set.entry_for(:footer, 2, last: true).height).to eq(40)
+    end
+  end
+
+  describe "#last_sensitive?" do
+    it "is true when a :last declaration changes the page's reserve" do
+      set = regions(region(:footer, height: 10), region(:footer, on: :last, height: 40))
+
+      expect(set.last_sensitive?(1)).to be(true)
+    end
+
+    it "is false when the last page reserves the same space" do
+      set = regions(region(:footer, height: 10), region(:footer, on: :last, height: 10))
+
+      expect(set.last_sensitive?(1)).to be(false)
+    end
+
+    it "is false without :last declarations" do
+      set = regions(region(:footer, height: 10))
+
+      expect(set.last_sensitive?(1)).to be(false)
+    end
+
+    it "is false where a later declaration overrides :last" do
+      set = regions(region(:footer, on: :last, height: 40), region(:footer, on: 1, height: 10))
+
+      expect(set.last_sensitive?(1)).to be(false)
+      expect(set.last_sensitive?(2)).to be(true)
     end
   end
 end

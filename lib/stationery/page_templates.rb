@@ -30,7 +30,7 @@ module Stationery
     def paint_regions(page, info)
       box = page.margin_box
       Regions::SLOTS.each do |slot|
-        region = @regions.entry_for(slot, info.number)
+        region = @regions.entry_for(slot, info.number, last: info.number == info.count)
         next unless region&.block
 
         root = root(info, region.block)
