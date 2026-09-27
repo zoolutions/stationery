@@ -5,9 +5,11 @@ module Stationery
     # A vector drawing at a fixed size: `width:` and/or `height:` (the other
     # follows the viewBox's aspect ratio), never wider than the space given.
     class Svg < Node
-      def initialize(document, width: nil, height: nil, color: "#000000")
+      # `context` gives SVG text its font book and default family.
+      def initialize(document, width: nil, height: nil, color: "#000000", context: nil)
         super()
         @document = document
+        @context = context
         @width = width
         @height = height
         @color = color
@@ -26,7 +28,8 @@ module Stationery
 
       def paint(canvas, x, y, width, _height = nil, **)
         w, h = size(width)
-        @document.draw(canvas, x:, y:, width: w, height: h, color: @color)
+        @document.draw(canvas, x:, y:, width: w, height: h, color: @color, book: @context&.book,
+                               family: @context&.style&.family)
         canvas.debug_rect(x, y, w, h, :image)
       end
 

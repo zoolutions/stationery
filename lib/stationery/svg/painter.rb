@@ -6,6 +6,8 @@ module Stationery
     # gradient fill is a shading clipped to the shape, drawn under the
     # stroke. A gradient stroke is drawn in the gradient's middle colour.
     class Painter
+      def self.translucent(opacity) = opacity < 1 ? opacity : nil
+
       def initialize(canvas, gradients, viewport)
         @canvas = canvas
         @gradients = gradients
@@ -14,8 +16,7 @@ module Stationery
 
       def paint(element, style)
         fill = resolve(style.fill)
-        stroke = resolve(style.stroke)
-        stroke = stroke.color_at(0.5, style.color) if stroke.is_a?(Gradient)
+        stroke = color(style.stroke, style)
         if fill.is_a?(Gradient)
           shade(element, style, fill)
           fill = nil
@@ -23,8 +24,14 @@ module Stationery
         return if fill.nil? && stroke.nil?
 
         @canvas.path(fill:, stroke:, line_width: style.line_width, cap: style.cap || :butt, join: style.join || :miter,
-                     even_odd: style.even_odd?, opacity: translucent(style.opacity),
+                     even_odd: style.even_odd?, opacity: Painter.translucent(style.opacity),
                      transform: style.matrix) { |path| Shapes.trace(path, element) }
+      end
+
+      # A paint as one colour: a gradient's middle colour, nil for none.
+      def color(paint, style)
+        paint = resolve(paint)
+        paint.is_a?(Gradient) ? paint.color_at(0.5, style.color) : paint
       end
 
       private
@@ -41,8 +48,8 @@ module Stationery
 
       # Stops with differing opacities are approximated by the first one's.
       def shade(element, style, gradient)
-        opacity = translucent(style.opacity * gradient.stops.first.opacity)
-        return solid(element, style, gradient, opacity) if gradient.stops.one?
+        opacity = Painter.translucent(style.opacity * gradient.stops.first.opacity)
+        return single_stop(element, style, gradient, opacity) if gradient.stops.one?
 
         box = Bounds.new.tap { |bounds| Shapes.trace(bounds, element) }.box
         return if gradient.bounding_box? && box.nil?
@@ -54,12 +61,10 @@ module Stationery
         end
       end
 
-      def solid(element, style, gradient, opacity)
+      def single_stop(element, style, gradient, opacity)
         @canvas.path(fill: gradient.color_at(0, style.color), even_odd: style.even_odd?, opacity:,
                      transform: style.matrix) { |path| Shapes.trace(path, element) }
       end
-
-      def translucent(opacity) = opacity < 1 ? opacity : nil
     end
   end
 end

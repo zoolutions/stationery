@@ -67,7 +67,7 @@ RSpec.describe Stationery::SVG::Document do
         <g><text>Hi</text><use href="#a"/><svg/></g><text>again</text><rect width="1" height="1"/></svg>
     SVG
 
-    expect(described_class.parse(source).unsupported).to eq(%w[text use])
+    expect(described_class.parse(source).unsupported).to eq(%w[use])
     expect(described_class.parse(check).unsupported).to eq([])
   end
 

@@ -73,7 +73,7 @@ module Stationery
       if document.unsupported.any?
         @_builder.warnings << Warnings::UnsupportedSvg.new(elements: document.unsupported, source: name)
       end
-      node = Layout::Svg.new(document, width:, height:, color:)
+      node = Layout::Svg.new(document, width:, height:, color:, context: @_builder.context)
       @_builder.add(align ? Layout::Flow.new([node], align:) : node)
     end
 
