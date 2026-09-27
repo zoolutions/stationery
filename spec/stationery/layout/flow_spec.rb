@@ -142,4 +142,22 @@ RSpec.describe Stationery::Layout::Flow do
       expect(reader_for(pdf).pages[1].text).to include("Heading", "word")
     end
   end
+
+  describe "fresh: on nested splits" do
+    let(:inner) { flow(lines_of(30, prefix: "inner")) }
+
+    before { allow(inner).to receive(:split).and_call_original }
+
+    it "tells a child at the top of a fresh page that it is fresh" do
+      render_layout(flow(inner))
+
+      expect(inner).to have_received(:split).with(260, 160, fresh: true)
+    end
+
+    it "tells a child below placed content that it is not fresh" do
+      render_layout(flow(text_node("above"), inner))
+
+      expect(inner).to have_received(:split).with(260, a_value < 160, fresh: false)
+    end
+  end
 end

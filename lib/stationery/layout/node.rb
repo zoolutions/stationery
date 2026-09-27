@@ -19,7 +19,9 @@ module Stationery
     #
     # - measure(width)            → its height at that width
     # - paint(canvas, x, y, width, height = nil, **)
-    # - split(width, height)      → [part that fits, remainder] (nil for an empty side)
+    # - split(width, height, fresh: false)
+    #                             → [part that fits, remainder] (nil for an empty side);
+    #                               fresh: true when nothing is above it on a new page
     # - natural_width / min_width → its preferred and narrowest widths
     # - fixed_width(available)    → its own width, or nil when it fills the width
     class Node
@@ -36,7 +38,7 @@ module Stationery
       def width_in(available) = fixed_width(available) || available
       def page_break? = false
 
-      def split(width, height)
+      def split(width, height, **)
         measure(width) <= height + EPSILON ? [self, nil] : [nil, self]
       end
 
