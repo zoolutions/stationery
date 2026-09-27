@@ -47,6 +47,58 @@ RSpec.describe "Stationery::Rich::Renderer" do
     expect(pdf).to have_pdf_link("https://example.test")
   end
 
+  describe "link schemes" do
+    let(:source) do
+      %(<a href="javascript:alert(1)">js</a> <a href="/relative">rel</a> <a href="page.html">page</a>
+        <a href="HTTPS://x.test/?a=1&amp;b=2">ok</a> <a href="mailto:hi@x.test">mail</a>
+        <a href="tel:+123">call</a> <a href="#top">anchor</a> <a href="data:text/html,x">data</a>)
+    end
+
+    it "keeps http, https, mailto, tel and #anchor links and drops the rest, keeping their text" do
+      html_source = source
+      doc = document do
+        anchor "top"
+        html html_source
+      end
+      pdf = doc.to_pdf
+
+      expect(inspect_pdf(pdf).links).to eq(["HTTPS://x.test/?a=1&b=2", "mailto:hi@x.test", "tel:+123"])
+      expect(inspect_pdf(pdf).internal_links).to eq([1])
+      expect(text_of(pdf)).to eq("js rel page ok mail call anchor data")
+      expect(doc.warnings.map(&:href)).to eq(["javascript:alert(1)", "/relative", "page.html", "data:text/html,x"])
+      expect(doc.warnings.first.message).to eq(%(link "javascript:alert(1)" dropped: scheme not allowed))
+    end
+
+    it "draws dropped links as plain text, without the a: style" do
+      pdf = render { html %(<a href="javascript:alert(1)">js</a>) }
+
+      expect(page_contents(pdf).first).not_to include("0.1451 0.3882 0.9216 rg")
+    end
+
+    it "takes a custom allow-list through links:" do
+      doc = document { html %(<a href="ftp://x.test/f">ftp</a> <a href="https://x.test">web</a>), links: %w[ftp] }
+      pdf = doc.to_pdf
+
+      expect(inspect_pdf(pdf).links).to eq(["ftp://x.test/f"])
+      expect(doc.warnings.map(&:href)).to eq(["https://x.test"])
+    end
+
+    it "writes every link as-is with links: :all" do
+      doc = document { markdown "[js](javascript:alert(1)) [rel](/relative)", links: :all }
+      pdf = doc.to_pdf
+
+      expect(inspect_pdf(pdf).links).to eq(["javascript:alert(1)", "/relative"])
+      expect(doc.warnings).to be_empty
+    end
+
+    it "filters markdown links too" do
+      doc = document { markdown "[js](javascript:alert(1)) [ok](https://x.test)" }
+
+      expect(inspect_pdf(doc.to_pdf).links).to eq(["https://x.test"])
+      expect(doc.warnings.to_a).to eq([Stationery::Warnings::DroppedLink.new(href: "javascript:alert(1)")])
+    end
+  end
+
   it "renders ordered, bulleted and nested lists with markers" do
     pdf = render { markdown "3. three\n4. four\n   - inner\n" }
 

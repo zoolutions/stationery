@@ -99,8 +99,8 @@ renders them all, or render one with `stationery render examples/report.rb`.
 | `radio(name, value, checked:, size:, label:, at:)` | One choice of a radio group: radios sharing `name` form one field whose value is the checked `value`. |
 | `select(name, options:, value:, width:, height:, editable:, at:)` | A drop-down (combo box); `editable: true` also accepts typed values. |
 | `signature_field(name, width:, height:, label:, at:)` | An empty signature field for the signer to fill, drawn as a rule over the label. |
-| `html(source, styles:, gap:, images:, base_path:, bookmarks:)` | Rich text from HTML (ActionText/Trix, CMS output): paragraphs, headings, lists, quotes, code, rules, tables, images, inline marks and links. See [HTML and Markdown](#html-and-markdown). |
-| `markdown(source, styles:, gap:, images:, base_path:, bookmarks:)` | The same from CommonMark (plus GFM tables and strikethrough). |
+| `html(source, styles:, gap:, images:, base_path:, bookmarks:, links:)` | Rich text from HTML (ActionText/Trix, CMS output): paragraphs, headings, lists, quotes, code, rules, tables, images, inline marks and links. See [HTML and Markdown](#html-and-markdown). |
+| `markdown(source, styles:, gap:, images:, base_path:, bookmarks:, links:)` | The same from CommonMark (plus GFM tables and strikethrough). |
 
 Text style options: `font`, `size`, `weight` (`:regular`, `:bold`), `style` (`:italic`), `color`,
 `letter_spacing`, `underline`, `strikethrough`, `link`, `opacity`, `kerning` (default `true`), `ligatures` (default `true`), `align` (`:left`, `:center`, `:right`, `:justify`), `leading`.
@@ -130,6 +130,10 @@ end
   `blockquote` (box options), `hr` (rule options), `table` (`cell:` options, `header:` text style),
   `ul` and `ol` (list options: `gap:`, `indent:`, `marker_gap:`, `marker_color:`, plus `style:` for
   `ul` and `format:`/`suffix:` for `ol`), `li` (text style) and `img` (`max_width:`).
+- Links are written only for `http`, `https`, `mailto` and `tel` hrefs (and `#anchor`); anything
+  else (`javascript:`, `data:`, a relative path) keeps its text without a link and is reported as a
+  `DroppedLink` warning. `links: %w[http https]` changes the list, `links: :all` keeps every href
+  from a trusted source.
 - `gap:` spaces the blocks (default 6); `bookmarks: true` adds h1–h3 to the PDF outline.
 
 ### Links, bookmarks and table of contents
