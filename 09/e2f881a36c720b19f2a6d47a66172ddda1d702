@@ -1,0 +1,60 @@
+spec/integration/open_type_spec.rb
+  s_832305fd821824::t_e4cedf17545c4c 1-26,28-31
+  s_832305fd821824::t_7cb37cd8893e13 27
+spec/stationery/fonts/true_type_spec.rb
+  s_832305fd821824::t_148c9a07318948 36-62,64-65
+lib/stationery/fonts/glyph_run.rb
+  s_832305fd821824::t_fc91d134d6a0c2 35
+  s_832305fd821824::t_e6da87b7b96a6d 7-8
+lib/stationery/fonts/embedding/true_type.rb
+  s_832305fd821824::t_32c8d0b4f0a696 1-35
+lib/stationery/fonts/embedding/cff.rb
+  s_832305fd821824::t_53813de57c9626 1-34
+lib/stationery.rb
+  s_832305fd821824::t_de730b3a54434f 9,11,23-26
+lib/stationery/fonts/embedding/base.rb
+  s_832305fd821824::t_c342a8f95fb02d 1-56
+lib/stationery/fonts/font.rb
+  s_832305fd821824::t_0c8e7bfd0b1f15 5-7,9-11,22,50,67-71,73-75,78-80,83-84,88
+spec/stationery/fonts/cff_spec.rb
+  s_832305fd821824::t_cc377aeaa10b94 1-62
+lib/stationery/fonts/sfnt_metrics.rb
+  s_832305fd821824::t_d542b0bf96b65c 1-51
+spec/fixtures/fonts/README.md
+  s_832305fd821824::t_3101aace0d94e2 6-11,14-39
+lib/stationery/fonts/cff.rb
+  s_832305fd821824::t_f9daaeec354ef5 1-136
+lib/stationery/fonts/to_unicode.rb
+  s_832305fd821824::t_2ba442333d44ba 1-36
+README.md
+  s_832305fd821824::t_f809bcdd40bda4 125-126
+  s_832305fd821824::t_30c83037064e22 122-124,148-149
+CHANGELOG.md
+  s_832305fd821824::t_30c83037064e22 16-18
+lib/stationery/fonts/true_type.rb
+  s_832305fd821824::t_b38842fcf2f4e9 122-125,127
+  s_832305fd821824::t_c52a962da5ab2c 5-8,10-15
+  s_832305fd821824::t_cdf451e8066795 36
+  s_832305fd821824::t_dff24894aeb4fa 71-79
+  s_832305fd821824::t_a753dad29521f7 111
+spec/stationery/fonts/font_spec.rb
+  s_832305fd821824::t_a6d670613bc443 68,73-82
+lib/stationery/errors.rb
+  s_832305fd821824::t_30c83037064e22 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "09e2f881a36c720b19f2a6d47a66172ddda1d702",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
