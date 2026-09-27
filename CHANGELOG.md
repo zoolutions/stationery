@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.5.0 (2026-09-27)
+
+Rotated, overlapping, cropped photos (the collage look), and fixes from the first weeks of use.
+
+- `stack { … }` and `layer(top:, right:, bottom:, left:, width:, height:, **box) { … }`: overlapping content. The stack's ordinary children set its height; each layer is a box placed with CSS-inset semantics relative to the stack (points, or fractions of the stack's width/height; negative insets overhang) and takes no flow height. A stack moves to the next page whole. `examples/postcard.rb` shows the collage: a cover photo with two tilted, framed, shadowed photos over its corners.
+- `box(rotate:)` turns a box clockwise around its centre without moving its layout rectangle (a rotated box never splits); `box(shadow: true | { offset:, blur:, color:, opacity: })` paints a soft drop shadow as stacked rounded rectangles at fading opacity, an artifact taking no space; `box(overflow: :hidden)` clips the content to the rounded outline. `column` takes the same options.
+- `image(fit: :cover, width:, height:)` scales up to fill the box and clips the excess around the centre; `image(radius:)` clips to rounded corners; `image(rotate:)` turns the painted image around its centre. Sizing, measuring and the tagged `Figure` bbox are unchanged; plain images are byte-for-byte as before.
+- `Canvas#rotate(degrees, around: [x, y]) { … }` and `Canvas#transform([a, b, c, d, e, f]) { … }` wrap a block in a `cm` transform given in top-left space, clockwise like CSS `rotate()`. Link and form-widget rectangles are annotations in page space, so they stay unrotated.
+- `html`/`markdown` write link annotations only for `http`, `https`, `mailto` and `tel` hrefs (and `#anchor`); anything else (`javascript:`, `data:`, a relative path) keeps its text without a link and is reported as a `Warnings::DroppedLink`. `links: %w[http https]` changes the list, `links: :all` keeps every href from a trusted source.
+- `html`/`markdown` `styles:` take `ul:` and `ol:` (`gap:`, `indent:`, `marker_gap:`, `marker_color:`, plus `style:` for `ul` and `format:`/`suffix:` for `ol`), passed straight to the list elements, so dense documents can tighten the 4pt item gap.
+- Whitespace no font has (an ideographic space U+3000, a figure space U+2007, a narrow no-break space U+202F, thin and hair spaces, …) is drawn as a blank of the character's conventional width instead of `.notdef`, and no longer reports `MissingGlyph`; font fallback keeps every Unicode White_Space character with its neighbours.
+- Testing: the RSpec matchers include `RSpec::Matchers::Composable`, so `have_pdf_text(…).and have_bookmark(…)`, `.or` and use inside `all`/`include` work. `Inspector#lang` reads the catalog `/Lang`; `have_pdf_language("de")` and `assert_pdf_language` assert it.
+- Previews: `Stationery::Preview#around_render(name, params)` wraps both the preview method and `to_pdf`, for an I18n locale or `CurrentAttributes` that must be in effect while the document renders (`?locale=de`); `Preview#to_pdf(name, params, debug:)` is the entry point the previews controller uses.
+
 ## 0.4.0 (2026-09-27)
 
 Interactive forms and tagged (accessible) PDF.
