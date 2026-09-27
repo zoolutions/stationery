@@ -1,0 +1,48 @@
+.github/workflows/main.yml
+  s_832305fd821824::t_71053c975f81a1 50-65
+.rspec
+  s_832305fd821824::t_71053c975f81a1 3
+lib/stationery.rb
+  s_832305fd821824::t_71053c975f81a1 67-72
+.rubocop.yml
+  s_832305fd821824::t_1215f117b1b769 62-64,69
+spec/stationery_spec.rb
+  s_832305fd821824::t_63bca58a6b418a 7-10
+gemfiles/rails.gemfile
+  s_832305fd821824::t_5c7df97d2e3898 1-6
+CHANGELOG.md
+  s_832305fd821824::t_062de3f984d8d6 10
+README.md
+  s_832305fd821824::t_062de3f984d8d6 115-124,126,129-137
+.gitignore
+  s_832305fd821824::t_71053c975f81a1 8
+lib/stationery/rails.rb
+  s_832305fd821824::t_1215f117b1b769 22
+  s_832305fd821824::t_71053c975f81a1 21
+Rakefile
+  s_832305fd821824::t_71053c975f81a1 8-14
+spec/rails/spec_helper.rb
+  s_832305fd821824::t_5d4ab6ff7dede7 42
+  s_832305fd821824::t_53532165c09872 1-41,43-49
+lib/stationery/railtie.rb
+  s_832305fd821824::t_2fe2d632f9eb8a 1-42
+spec/rails/railtie_spec.rb
+  s_832305fd821824::t_e171ab07697ed6 1-46,49-67,69-72
+  s_832305fd821824::t_66a7b9bbe99ec0 47-48,68
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "5a9710a5c04778819f99471d18b369228c549e97",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
