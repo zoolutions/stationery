@@ -18,7 +18,7 @@ class Views::Docs::Pages::ImagesAndSvg < DocsUI::Page
 
     DocsUI::Section("Sizing and fit") do
       md <<~'MD'
-        `image(source, width: nil, height: nil, fit: nil, align: nil, opacity: nil)`
+        `image(source, width: nil, height: nil, fit: nil, align: nil, opacity: nil, radius: 0, rotate: 0)`
 
         | Given | Result |
         | --- | --- |
@@ -26,6 +26,9 @@ class Views::Docs::Pages::ImagesAndSvg < DocsUI::Page
         | `width:` or `height:` | the other side follows the aspect ratio |
         | both | exactly that size |
         | `fit: [w, h]` | scaled to fit inside the box, aspect preserved |
+        | `fit: :cover` with `width:` and `height:` | scaled to fill the box, aspect preserved, the excess cropped around the centre (CSS `object-fit: cover`) |
+        | `radius:` | corners rounded by that many points (the image is clipped) |
+        | `rotate:` | turned that many degrees clockwise around its centre; the space it takes up does not change (CSS `transform: rotate`) |
 
         An image is never wider than the space it is given; it scales down to the column. `align:`
         (`:left`, `:center`, `:right`) positions a narrower image.
@@ -33,7 +36,12 @@ class Views::Docs::Pages::ImagesAndSvg < DocsUI::Page
         ```ruby
         image "logo.png", height: 34, align: :right
         image StringIO.new(product.photo.download), fit: [120, 80]
+        # a tilted, rounded snapshot cropped to 4:3
+        image photo, width: 160, height: 120, fit: :cover, radius: 8, rotate: -3
         ```
+
+        A rotated image paints outside its rectangle at the corners, so leave room around it (a
+        `box(padding:)`).
       MD
     end
 
