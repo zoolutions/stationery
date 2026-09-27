@@ -1,0 +1,24 @@
+spec/stationery/outline_spec.rb
+  s_832305fd821824::t_329d8274876b3c 8-9,15-20,31
+spec/stationery/bookmarks_spec.rb
+  s_832305fd821824::t_329d8274876b3c 44-57
+lib/stationery/outline.rb
+  s_832305fd821824::t_c7c7721d623978 26-27
+  s_832305fd821824::t_329d8274876b3c 5-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "6817c0d954ec005bf913146f7c4a975d1b7b5030",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
