@@ -23,7 +23,7 @@ WORKDIR /rails/docs
 ARG BUN_VERSION=1.3.2
 ENV BUN_INSTALL="/usr/local/bun" \
     PATH="/usr/local/bun/bin:$PATH" \
-    BUNDLE_DEPLOYMENT="1" \
+    BUNDLE_DEPLOYMENT="0" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development:test" \
     RAILS_ENV="production"
@@ -49,7 +49,10 @@ RUN curl -fsSL https://bun.sh/install | bash -s -- "bun-v${BUN_VERSION}"
 COPY stationery.gemspec /rails/
 COPY lib/stationery/version.rb /rails/lib/stationery/
 COPY docs/Gemfile docs/Gemfile.lock ./
-RUN bundle install && \
+# Frozen is off: the path gem's version (and its gemspec file list) moves with
+# every release, and a frozen bundle refuses to re-resolve it; the lock still
+# pins every other gem. Same call as the other docs-kit sites.
+RUN bundle config set frozen false && bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git
 
 # Install JS deps (the Tailwind/daisyUI CLI), then the app.
