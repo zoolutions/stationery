@@ -17,7 +17,9 @@ module Stationery
       def measure(_width) = 0
 
       def paint(canvas, _x, _y, width, _height = nil, **)
-        @node.paint(canvas, @x, @y, @width || @node.fixed_width(width) || width)
+        width = @width || @node.fixed_width(width) || width
+        @node.paint(canvas, @x, @y, width)
+        canvas.debug_rect(@x, @y, width, @node.measure(width), :positioned) if canvas.debug?
       end
     end
   end
