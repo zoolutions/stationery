@@ -7,6 +7,7 @@
 - `box(link:)` makes the whole box clickable; `box(outset:)` bleeds its background past its edges.
 - `keep_with_next:` accepts a number of points of following content to keep.
 - `group(align:)`.
+- Table cells accept procs built with the DSL (`-> { image logo }`) and components.
 - Faster tables: cell padding is normalised once per cell, and PDF numbers are trimmed without a regexp (about 13% off a 1,500-row table render).
 - Table cells span columns and rows: `{ content:, colspan:, rowspan: }`, placed as in HTML; a table only splits between rows no rowspan crosses.
 - A table row taller than the page continues on the next page below the repeated header, its cells cut at the page bottom; `table(split_rows: true)` cuts any row that reaches the page bottom rather than moving it whole.
