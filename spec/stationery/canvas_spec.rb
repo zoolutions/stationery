@@ -160,6 +160,20 @@ RSpec.describe Stationery::Canvas do
     expect(page.annotations).to eq([{ rect: [10, 75, 40, 80], url: "https://example.com/pay?x=1" }])
   end
 
+  it "records a link to a #name as an internal destination" do
+    canvas.link(10, 20, 30, 5, "#totals")
+
+    expect(page.annotations).to eq([{ rect: [10, 75, 40, 80], dest: "totals" }])
+  end
+
+  it "records anchors at a PDF-space top, apart for page templates" do
+    canvas.anchor("intro", 30)
+    described_class.new(page, resources, template: true).anchor("header", 10)
+
+    expect(page.anchors).to eq([["intro", 70]])
+    expect(page.template_anchors).to eq([["header", 90]])
+  end
+
   describe "#debug_rect" do
     def debug_canvas(debug) = described_class.new(page, resources, debug:)
 

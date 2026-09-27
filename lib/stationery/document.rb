@@ -68,6 +68,7 @@ module Stationery
       resources = Resources.new
       pages = Layout::Paginator.new(resources:, page: page_options, warnings:, debug:).paginate(builder.root)
       PageTemplates.new(self, book:, resources:, debug:).apply(pages)
+      Structure.resolve(pages, warnings:)
       @warnings = warnings
       raise WarningsError, warnings if strict && warnings.any?
 

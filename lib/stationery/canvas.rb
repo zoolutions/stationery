@@ -13,9 +13,11 @@ module Stationery
 
     attr_reader :page
 
-    def initialize(page, resources, debug: false)
+    # `template: true` records anchors apart, for canvases page templates draw on.
+    def initialize(page, resources, template: false, debug: false)
       @page = page
       @resources = resources
+      @template = template
       @debug = debug
     end
 
@@ -64,11 +66,18 @@ module Stationery
       end
     end
 
-    # A clickable area opening `url`. Annotation rectangles live in absolute,
-    # untransformed page space, so they ignore clips and path transforms.
-    def link(x, y, w, h, url)
-      @page.annotations << { rect: [x, @page.height - y - h, x + w, @page.height - y].map { |v| num_value(v) },
-                             url: url.to_s }
+    # A clickable area opening `target`: a URL, or `#name` for an anchor in
+    # this document. Annotation rectangles live in absolute, untransformed
+    # page space, so they ignore clips and path transforms.
+    def link(x, y, w, h, target)
+      target = target.to_s
+      rect = [x, @page.height - y - h, x + w, @page.height - y].map { |v| num_value(v) }
+      @page.annotations << (target.start_with?("#") ? { rect:, dest: target[1..] } : { rect:, url: target })
+    end
+
+    # Names the point `y` on this page as a link target.
+    def anchor(name, y)
+      (@template ? @page.template_anchors : @page.anchors) << [name.to_s, num_value(@page.height - y)]
     end
 
     def num(value) = PDF::Serializer.number(num_value(value))

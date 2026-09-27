@@ -40,6 +40,19 @@ module PdfHelpers
     pdf.scan(%r{/Rect \[([-\d.\s]+)\]}).flatten.map { |rect| rect.split.map(&:to_f) }
   end
 
+  # Every internal link as [page index it sits on, target page index, target top].
+  def link_destinations(pdf)
+    reader = reader_for(pdf)
+    objects = reader.objects
+    pages = objects.page_references
+    reader.pages.each_with_index.flat_map do |page, index|
+      Array(objects.deref(page.attributes[:Annots])).filter_map do |ref|
+        dest = objects.deref(ref)[:Dest]
+        dest && [index, pages.index(dest[0]), dest[3]]
+      end
+    end
+  end
+
   # Decompressed content stream of every page, for operator-level assertions.
   def page_contents(pdf)
     reader_for(pdf).pages.map(&:raw_content)
