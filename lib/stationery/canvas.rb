@@ -6,15 +6,17 @@ module Stationery
   # settings never leak into the next one.
   class Canvas
     include Text
+    include Debug
 
     CAPS = { butt: 0, round: 1, square: 2 }.freeze
     JOINS = { miter: 0, round: 1, bevel: 2 }.freeze
 
     attr_reader :page
 
-    def initialize(page, resources)
+    def initialize(page, resources, debug: false)
       @page = page
       @resources = resources
+      @debug = debug
     end
 
     def save
@@ -34,8 +36,8 @@ module Stationery
       shape(fill: color, opacity:) { |p| p.rect(x, y, w, h) }
     end
 
-    def rounded_rect(x, y, w, h, radius:, fill: nil, stroke: nil, line_width: 1, opacity: nil)
-      shape(fill:, stroke:, line_width:, opacity:) { |p| p.rounded_rect(x, y, w, h, radius) }
+    def rounded_rect(x, y, w, h, radius:, fill: nil, stroke: nil, line_width: 1, dash: nil, opacity: nil)
+      shape(fill:, stroke:, line_width:, dash:, opacity:) { |p| p.rounded_rect(x, y, w, h, radius) }
     end
 
     def circle(cx, cy, r, fill: nil, stroke: nil, line_width: 1, opacity: nil)

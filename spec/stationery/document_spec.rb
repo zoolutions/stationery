@@ -84,7 +84,7 @@ RSpec.describe Stationery::Document do
   end
 
   it "exposes overflow warnings instead of raising" do
-    doc = SpecDocument.build { box { 40.times { |i| text "row #{i}" } } }
+    doc = SpecDocument.build { box(break_inside: :avoid) { 40.times { |i| text "row #{i}" } } }
     doc.to_pdf
 
     expect(doc.warnings.map(&:page)).to eq([1])
@@ -134,7 +134,22 @@ RSpec.describe Stationery::Document do
 
   it "explains a missing font family" do
     bare = Class.new(described_class) { def view_template = text("x") }
+  it "renders with bundled Inter when no font family is declared" do
+    bare = Class.new(described_class) { def view_template = text("zero config") }
+    pdf = bare.new.to_pdf
 
-    expect { bare.new.to_pdf }.to raise_error(Stationery::Error, /font_family/)
+    expect(text_of(pdf)).to eq("zero config")
+    expect(pdf).to include("+Inter-Regular")
+  end
+
+  it "declares a bundled family by name alone" do
+    doc = Class.new(described_class) do
+      font_family "Inter"
+      default_text font: "Inter", weight: :bold
+      def view_template = text("bold")
+    end
+
+    expect(doc.new.to_pdf).to include("+Inter-Bold")
+    expect { Class.new(described_class) { font_family "Nope" } }.to raise_error(ArgumentError, /bundled: Inter/)
   end
 end

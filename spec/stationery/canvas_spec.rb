@@ -42,6 +42,53 @@ RSpec.describe Stationery::Canvas do
     expect(ops).to include("5 100 m") # radius clamped to half the height
   end
 
+  describe "per-corner radii" do
+    def path_ops(radius, w: 50, h: 50)
+      Stationery::Canvas::Path.new(canvas).rounded_rect(0, 0, w, h, radius).to_s
+    end
+
+    it "rounds only the corners given a radius and draws the rest straight" do
+      out = path_ops([10, 10, 0, 0])
+
+      expect(out.scan(/ c$/).size).to eq(2)
+      expect(out).to include("50 50 l\n0 50 l") # bottom-right, then bottom-left, both square
+    end
+
+    it "draws a plain rectangle when every radius is zero" do
+      expect(path_ops([0, 0, 0, 0])).to eq("0 50 50 50 re")
+    end
+
+    it "matches the single-radius form when all four are equal" do
+      expect(path_ops([10, 10, 10, 10])).to eq(path_ops(10))
+    end
+
+    it "scales radii down proportionally so adjacent corners fit their side" do
+      out = path_ops([100, 100, 0, 0])
+
+      expect(out).to start_with("25 100 m\n25 100 l\n") # both top corners scaled to 25
+      expect(out).to include("50 75 c") # top-right corner ends 25 down the right side
+    end
+  end
+
+  it "dashes the stroke of a rounded rectangle" do
+    canvas.rounded_rect(0, 0, 20, 10, radius: 2, stroke: "#000", dash: [2, 2])
+
+    expect(ops).to include("[2 2] 0 d")
+  end
+
+  it "leaves rounded rectangles solid without a dash" do
+    canvas.rounded_rect(0, 0, 20, 10, radius: 2, stroke: "#000")
+
+    expect(ops).not_to match(/ d$/)
+  end
+
+  it "clips to a rectangle with per-corner radii" do
+    canvas.clip(0, 0, 50, 20, radius: [5, 0, 5, 0]) { canvas.fill_rect(0, 0, 200, 100, color: "#000") }
+
+    expect(ops.scan(/ c$/).size).to eq(2)
+    expect(ops).to include("W n")
+  end
+
   it "fills and strokes a circle" do
     canvas.circle(50, 50, 10, fill: "#000", stroke: "#FFF", line_width: 1)
 
@@ -111,5 +158,41 @@ RSpec.describe Stationery::Canvas do
     canvas.link(10, 20, 30, 5, "https://example.com/pay?x=1")
 
     expect(page.annotations).to eq([{ rect: [10, 75, 40, 80], url: "https://example.com/pay?x=1" }])
+  end
+
+  describe "#debug_rect" do
+    def debug_canvas(debug) = described_class.new(page, resources, debug:)
+
+    it "draws nothing when the canvas is not in debug mode" do
+      canvas.debug_rect(0, 0, 10, 10, :box)
+
+      expect(canvas).not_to be_debug
+      expect(ops).to be_empty
+    end
+
+    it "strokes a hairline in the kind's colour, dashed only for dashed kinds" do
+      debug = debug_canvas(true)
+      debug.debug_rect(0, 0, 10, 10, :box)
+
+      expect(debug).to be_debug
+      expect(ops).to include("0.5 w", Stationery::Color.parse("#E11D48").stroke, "0.25 90.25 9.5 9.5 re")
+      expect(ops).not_to include(" d\n")
+
+      debug.debug_rect(0, 0, 10, 10, :padding)
+      expect(ops).to include("[2 2] 0 d")
+    end
+
+    it "draws only the listed kinds when given an Array" do
+      debug = debug_canvas(%i[cell])
+      debug.debug_rect(0, 0, 10, 10, :box)
+      expect(ops).to be_empty
+
+      debug.debug_rect(0, 0, 10, 10, :cell)
+      expect(ops).to include(Stationery::Color.parse("#16A34A").stroke)
+    end
+
+    it "rejects an unknown kind" do
+      expect { debug_canvas(true).debug_rect(0, 0, 1, 1, :nope) }.to raise_error(ArgumentError, /nope/)
+    end
   end
 end
