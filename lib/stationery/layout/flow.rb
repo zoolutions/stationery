@@ -101,13 +101,18 @@ module Stationery
         end
 
         # keep_with_next: true needs the start of the next child on this page; a
-        # number needs that many points of it (or all of it, if it is shorter).
+        # number needs that many points of what follows (or all of it, if less).
         def strand?(child, left_after, rest)
           want = child.keep_with_next
           return false unless want && rest.any? && !@placed.empty?
           return rest.first.split(@width, left_after).first.nil? unless want.is_a?(Numeric)
 
-          left_after + EPSILON < [want, rest.first.measure(@width)].min
+          following = 0
+          rest.each do |node|
+            following += node.measure(@width)
+            break if following >= want
+          end
+          left_after + EPSILON < [want, following].min
         end
 
         def split_or_move(child, remaining, rest)
