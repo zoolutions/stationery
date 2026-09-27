@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Internal: `Stationery::Rich` block model (paragraphs, headings, lists, quotes, code, rules, tables, images; inlines with marks) with lenient `HTML.parse` (implied end tags, browser whitespace collapsing, Trix/ActionText output) and CommonMark-subset `Markdown.parse` (GFM tables and strikethrough, reference links). Loaded on demand; `html`/`markdown` elements follow.
+- `html` and `markdown` elements: ActionText/Trix HTML and CommonMark (GFM tables and strikethrough) rendered as paragraphs, headings, lists, blockquotes, code blocks, rules, tables and images with inline bold/italic/underline/strike/code/links/sub/sup. `styles:` deep-merges per-block defaults, `images:` resolves image sources (or `base_path:`), missing/remote images are skipped with a `SkippedImage` warning and never fetched, `bookmarks: true` outlines h1–h3. Parsers load on first use.
 - `require "stationery/rspec"` matchers (`have_pdf_text`, `have_pdf_text_on_page`, `have_page_count`, `have_pdf_link`, `have_image_count`, `have_bookmark`, `have_no_warnings`) and `require "stationery/minitest"` assertions, built on `Stationery::Testing::Inspector`. Needs `pdf-reader` in the test group.
 - `header` and `footer` regions that reserve page space, with `height:`, `gap:` and `on:` (`:all`, `:first`, `:rest`, `:odd`, `:even`, a page number, a range or a proc); later declarations win. A `page_template`'s `page.content_box` now excludes their space. `Page#margin_box`.
 - `header`/`footer` `on: :last`: the paginator checks whether the rest of the content fits above a taller last-page region, adding a page when it only fits a normal one.
