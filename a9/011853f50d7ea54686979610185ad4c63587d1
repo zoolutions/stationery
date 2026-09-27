@@ -1,0 +1,52 @@
+lib/stationery/builder.rb
+  s_600b6bfbec0b19::t_9b581018072bd6 65-68,70,72-75,84
+  s_600b6bfbec0b19::t_0964f0af9465d1 69,71
+examples/postcard.rb
+  s_600b6bfbec0b19::t_9b8b5b4297ba79 34-36,51,54,57
+  s_600b6bfbec0b19::t_4692c3e63f5f48 50,52
+  s_600b6bfbec0b19::t_9868f6fd881473 1-18,20-22,30-33,37-49,53,55-56,58-83
+  s_600b6bfbec0b19::t_a0624142a5a7e8 19,23-29
+spec/stationery/elements_spec.rb
+  s_600b6bfbec0b19::t_f4d2f96bd694f9 101-113,115,117-126
+  s_600b6bfbec0b19::t_f1f826fe5b522e 114,116
+spec/integration/postcard_spec.rb
+  s_600b6bfbec0b19::t_b4749cd763cac5 18
+  s_600b6bfbec0b19::t_f4d2f96bd694f9 1-17,19-21
+spec/stationery/layout/stack_spec.rb
+  s_600b6bfbec0b19::t_0964f0af9465d1 31-32,47-50
+  s_600b6bfbec0b19::t_8c5445077d6ff1 1-3,7-30,33-46,51-68
+  s_600b6bfbec0b19::t_8466598a334991 4-6
+lib/stationery/layout/stack.rb
+  s_600b6bfbec0b19::t_f1f826fe5b522e 34-39,41,48,53
+  s_600b6bfbec0b19::t_55ad58b1ebb235 1-33,40,42-47,49-52,55-57,67-81
+  s_600b6bfbec0b19::t_0964f0af9465d1 54,58-66
+lib/stationery.rb
+  s_600b6bfbec0b19::t_9b581018072bd6 110
+docs/app/views/docs/pages/elements.rb
+  s_600b6bfbec0b19::t_fe7be92659b7b6 267-300
+README.md
+  s_600b6bfbec0b19::t_fe7be92659b7b6 89-90
+lib/stationery/elements.rb
+  s_600b6bfbec0b19::t_f1f826fe5b522e 70,74
+  s_600b6bfbec0b19::t_9b581018072bd6 54-69,71-73,75-76
+lib/stationery/canvas/debug.rb
+  s_600b6bfbec0b19::t_9b581018072bd6 12
+spec/stationery/tagging_spec.rb
+  s_600b6bfbec0b19::t_f4d2f96bd694f9 34-45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "a9011853f50d7ea54686979610185ad4c63587d1",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
