@@ -1,0 +1,36 @@
+lib/stationery/layout/box.rb
+  s_600b6bfbec0b19::t_6db2d2ee5ec2d7 13-16,19-20,26,47-48,65-67,96-103,105,141-161,227-228,230-233,238-244
+  s_600b6bfbec0b19::t_1e1d74afb5678a 68
+README.md
+  s_600b6bfbec0b19::t_f5d907f387eded 83
+spec/stationery/elements_spec.rb
+  s_600b6bfbec0b19::t_f5d907f387eded 149-160
+docs/app/views/docs/pages/elements.rb
+  s_600b6bfbec0b19::t_f5d907f387eded 86-87,105,112-113,117-126
+spec/stationery/tagging_spec.rb
+  s_600b6bfbec0b19::t_f5d907f387eded 26-33
+spec/stationery/layout/box_spec.rb
+  s_600b6bfbec0b19::t_6db2d2ee5ec2d7 5
+  s_600b6bfbec0b19::t_f9e7270c577ce2 243-251,254-278,283-287,289-290,298-308,310-344
+  s_600b6bfbec0b19::t_148ec53150be91 252-253
+  s_600b6bfbec0b19::t_9821841c5c6106 280-281
+  ai_agent 279,282
+  s_600b6bfbec0b19::t_6060069847d6c0 288,291-292,297,309
+  s_600b6bfbec0b19::t_9ead2d6d5e7e66 293-296
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "26d271f62b928ed4da48db58f2c56a9cc4eada13",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
