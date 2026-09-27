@@ -60,6 +60,22 @@ RSpec.describe Stationery::Elements do
     expect(image_count(pdf)).to eq(1)
   end
 
+  it "builds table cells from procs and components" do
+    badge = Class.new(Stationery::Component) do
+      def view_template = box(background: "#EEEEEE", padding: 2) { text "component" }
+    end
+    logo = image_path("rgb.jpg")
+    pdf = render do
+      table([["plain", -> { image logo, width: 20 }],
+             [badge.new, -> { text "<b>proc</b>", markup: true }]],
+            width: :full, widths: [130, nil], cell: { padding: 0, borders: [] })
+    end
+
+    expect(strings_of(pdf)).to eq(%w[plain component proc])
+    expect(image_count(pdf)).to eq(1)
+    expect(positions_of(pdf).map(&:first)).to eq([20, 22, 150])
+  end
+
   it "scopes text defaults to a block" do
     pdf = render do
       text_style(color: "#00FF00", size: 12) { text "green" }

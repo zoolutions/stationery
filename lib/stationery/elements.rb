@@ -61,7 +61,10 @@ module Stationery
       @_builder.add(align ? Layout::Flow.new([node], align:) : node)
     end
 
+    # Cells are strings, layout nodes, procs built with the DSL (`-> { image … }`)
+    # or components.
     def table(rows, widths: nil, width: :auto, header: false, cell: {}, &)
+      rows = rows.map { |row| row.map { |content| cell_content(content) } }
       @_builder.add(Layout::Table.new(rows, context: @_builder.context, widths:, width:, header:, cell:, &))
     end
 
@@ -91,6 +94,14 @@ module Stationery
       flow = Layout::Flow.new([], gap:, align: align || :left)
       @_builder.within(flow) do
         align ? @_builder.with_text(align:) { yield_content(&) } : yield_content(&)
+      end
+    end
+
+    def cell_content(content)
+      case content
+      when Proc then container(&content)
+      when Component then container { render content }
+      else content
       end
     end
 
