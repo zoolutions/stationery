@@ -18,6 +18,8 @@ module Stationery
         blockquote: { border: { sides: [:left], width: 3, color: "#E5E7EB" }, padding: [0, 0, 0, 10] },
         hr: { height: 1, color: "#E5E7EB" },
         table: { cell: { padding: 4 }, header: { weight: :bold } },
+        ul: {},
+        ol: {},
         li: {},
         img: { max_width: nil }
       }.freeze
