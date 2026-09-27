@@ -1,0 +1,45 @@
+docs/app/views/docs/pages/elements.rb
+  s_832305fd821824::t_d5620b568a23a0 342,348-350
+lib/stationery/elements/forms.rb
+  s_832305fd821824::t_9a37ab89237559 21-41
+spec/integration/form_spec.rb
+  s_832305fd821824::t_cd84680febb274 1-37
+lib/stationery/forms/acro_form.rb
+  s_832305fd821824::t_b87bf6e6040258 88-89,92-94,97-100,103,105-106
+examples/form.rb
+  s_832305fd821824::t_ed111cdd5220be 1-57,59-99,101,103-112
+  s_832305fd821824::t_40a67b87ad7acf 58,100,102
+docs/spec/requests/docs_spec.rb
+  s_832305fd821824::t_d5620b568a23a0 44-45
+lib/stationery/forms/appearance.rb
+  s_832305fd821824::t_d0448a84ef317e 94-95,99-100
+  s_832305fd821824::t_1a77631696b79a 101
+  s_832305fd821824::t_b87bf6e6040258 13-14,26,28-29,47-50,85-93,96-98,102-107
+CHANGELOG.md
+  s_832305fd821824::t_d5620b568a23a0 6
+spec/stationery/forms_spec.rb
+  s_832305fd821824::t_cd84680febb274 143-195,202,204-209,211-226
+  s_832305fd821824::t_dd6e8e2596fa43 196-201,203,210
+lib/stationery/forms/field.rb
+  s_832305fd821824::t_b584bbf68856a8 8-9,11,13-14,17-20,41-42,44-45,49,54-55,58,60,65-71,73-74,76-78,85-90,92-98,105
+docs/app/views/docs/pages/cookbook.rb
+  s_832305fd821824::t_d5620b568a23a0 11,45-49
+README.md
+  s_832305fd821824::t_d5620b568a23a0 73,99-101,192-194,196,205-206,208
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "3b26f59141b7cda98693822f182f5d729cadb03b",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
