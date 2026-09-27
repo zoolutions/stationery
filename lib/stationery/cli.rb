@@ -71,3 +71,4 @@ module Stationery
 end
 
 require_relative "cli/render"
+require_relative "cli/fonts"

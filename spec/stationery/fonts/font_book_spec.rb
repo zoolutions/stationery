@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require "fileutils"
+require "tmpdir"
+
 RSpec.describe Stationery::Fonts::FontBook do
   it "returns one Font per file per book, with the face's synthetic flags" do
     book = open_sans_book
@@ -38,5 +41,30 @@ RSpec.describe Stationery::Fonts::FontBook do
     child = described_class.new(parent.families)
 
     expect(child.resolve(base_style).first).not_to equal(parent.resolve(base_style).first)
+  end
+
+  context "with an installed font pack" do
+    let(:dir) { Dir.mktmpdir }
+
+    before do
+      FileUtils.mkdir_p(File.join(dir, "liberation_serif"))
+      FileUtils.cp(font_path("OpenSans-Italic.ttf"), File.join(dir, "liberation_serif/LiberationSerif-Regular.ttf"))
+      Stationery.font_paths << dir
+    end
+
+    after do
+      Stationery.font_paths.delete(dir)
+      FileUtils.rm_rf(dir)
+    end
+
+    it "resolves the pack by name before falling back to the first registered family" do
+      expect(open_sans_book.resolve(base_style(family: "Liberation Serif")).last.path)
+        .to eq(File.join(dir, "liberation_serif/LiberationSerif-Regular.ttf"))
+    end
+
+    it "still rejects an unknown family without paths, naming bundled and installable options" do
+      expect { described_class.new.register("Nope") }
+        .to raise_error(ArgumentError, /regular face.*bundled: Inter.*stationery fonts install.*noto_sans/)
+    end
   end
 end

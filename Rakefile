@@ -27,3 +27,16 @@ task :bench do
   ruby "-Ilib benchmark/invoice.rb"
   ruby "-Ilib benchmark/table_50_pages.rb"
 end
+
+namespace :fonts do
+  desc "Download every font pack in the catalog and check its SHA-256s (needs network; not run in CI)"
+  task :verify do
+    require "tmpdir"
+    require_relative "lib/stationery"
+    Dir.mktmpdir do |dir|
+      installer = Stationery::Fonts::Installer.new(into: dir, out: $stdout)
+      Stationery::Fonts.catalog.each { |pack| installer.install(pack.key) }
+    end
+    puts "all font packs verified"
+  end
+end
