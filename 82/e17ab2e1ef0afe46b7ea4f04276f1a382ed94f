@@ -1,0 +1,11 @@
+docs/app/views/docs/pages/limitations.rb
+  ai_agent 20
+README.md
+  ai_agent 508
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "82e17ab2e1ef0afe46b7ea4f04276f1a382ed94f",
+  "prompts": {}
+}
