@@ -99,6 +99,14 @@ RSpec.describe Stationery::Canvas do
     expect(canvas.text("Hi", x: 0, y: 10, font:, size: 10)).to eq(font.width_of("Hi", 10))
   end
 
+  it "widens spaces with word spacing as a TJ array, including in the returned width" do
+    width = canvas.text("a b", x: 0, y: 10, font:, size: 10, word_spacing: 2)
+
+    hex = ->(text) { text.chars.map { |c| font.ttf.glyph_id(c.ord) }.pack("n*").unpack1("H*").upcase }
+    expect(ops).to include("[<#{hex["a "]}> -200 <#{hex["b"]}>] TJ")
+    expect(width).to be_within(1e-9).of(font.width_of("a b", 10) + 2)
+  end
+
   it "places images with a transformation matrix and registers the XObject" do
     image = Stationery::Images.load(image_path("rgb.jpg"))
     canvas.image(image, x: 10, y: 20, width: 40, height: 30)
