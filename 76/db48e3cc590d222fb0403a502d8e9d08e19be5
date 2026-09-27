@@ -1,0 +1,47 @@
+lib/stationery/rich/renderer/inlines.rb
+  s_832305fd821824::t_8b4f35854826f7 1-53
+CHANGELOG.md
+  s_832305fd821824::t_486952f0b75cc7 5
+README.md
+  s_832305fd821824::t_486952f0b75cc7 99-100,108-129
+lib/stationery/rich/styles.rb
+  s_832305fd821824::t_7c7a49655e188e 1-34
+spec/integration/markdown_spec.rb
+  s_832305fd821824::t_cfbb0af116c6e2 15-20
+  s_832305fd821824::t_376a8b62bb244c 1-14,21-29
+lib/stationery/rich/renderer.rb
+  s_832305fd821824::t_dcf804e12b8b88 1-12,14-121
+  s_832305fd821824::t_cfbb0af116c6e2 13
+lib/stationery.rb
+  s_832305fd821824::t_0d917b71570883 88
+spec/stationery/rich/renderer_spec.rb
+  s_832305fd821824::t_79e208b0e2325b 106
+  s_832305fd821824::t_bcb72962aa851e 1-41,50-90,93-100,103-105,107-135
+  s_832305fd821824::t_b231896b5a0159 42-49
+  s_832305fd821824::t_661db23fcf79af 91-92
+  s_832305fd821824::t_cfbb0af116c6e2 101-102
+spec/integration/html_spec.rb
+  s_832305fd821824::t_8a42b6fe8a03a8 20,23
+  s_832305fd821824::t_cfbb0af116c6e2 15-17
+  s_832305fd821824::t_967875e692ffc4 1-14,18-19,21-22,24-26
+lib/stationery/elements/rich.rb
+  s_832305fd821824::t_2083d854aa4747 1-27
+spec/fixtures/markdown/readme.md
+  s_832305fd821824::t_2a15cf6a0f267e 1-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "76db48e3cc590d222fb0403a502d8e9d08e19be5",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
