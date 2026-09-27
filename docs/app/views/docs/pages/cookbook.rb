@@ -8,7 +8,7 @@ class Views::Docs::Pages::Cookbook < DocsUI::Page
   title "Cookbook"
   eyebrow "Reference"
 
-  def lead = "Four complete, runnable documents from the gem's examples/ directory — each rendered in CI and covered by an integration spec."
+  def lead = "Five complete, runnable documents from the gem's examples/ directory — each rendered in CI and covered by an integration spec."
 
   def content
     DocsUI::Section("Running the examples") do
@@ -42,6 +42,11 @@ class Views::Docs::Pages::Cookbook < DocsUI::Page
            notes: "Landscape A4, a header with page numbers, a 120-row table with `split_rows: true` and a repeating " \
                   "header, and a barcode drawn on a `canvas`.",
            methods: %w[barcode items_table]
+
+    recipe "Application form", "form.rb",
+           notes: "An interactive AcroForm: labelled text fields in rows, a comb postcode, a select box, a radio " \
+                  "group, check boxes with labels, a multiline note and a signature field.",
+           methods: %w[applicant membership]
   end
 
   private

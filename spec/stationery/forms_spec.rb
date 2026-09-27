@@ -140,6 +140,90 @@ RSpec.describe Stationery::Forms do
     end
   end
 
+  describe "radio groups" do
+    let(:pdf) do
+      render do
+        radio "plan", "basic", label: "Basic"
+        radio "plan", "pro", checked: true, label: "Pro"
+        radio "plan", "team", label: "Team"
+      end
+    end
+
+    it "makes one parent field with the radio flag, the checked value and a widget per choice" do
+      plan = form_fields(pdf).fetch("plan")
+
+      expect(plan).to include(FT: :Btn, V: :pro)
+      expect([flag?(plan, 16), flag?(plan, 15)]).to eq([true, true])
+      expect(plan[:Kids].map { |kid| kid[:AS] }).to eq(%i[Off pro Off])
+      expect(plan[:Kids].map { |kid| kid[:MK][:CA] }).to all(eq("l"))
+    end
+
+    it "draws a dot for the on state only and labels each choice" do
+      kid = form_fields(pdf).fetch("plan")[:Kids].first
+
+      expect(appearance_of(pdf, kid, :basic).scan(/ c$/).size).to be > appearance_of(pdf, kid, :Off).scan(/ c$/).size
+      expect(text_of(pdf)).to include("Basic", "Pro", "Team")
+    end
+
+    it "is Off when nothing is checked" do
+      pdf = render { radio "size", "s" }
+
+      expect(form_fields(pdf).fetch("size")).to include(V: :Off)
+    end
+  end
+
+  describe "select boxes" do
+    it "writes a combo box with its options, value and an appearance showing the value" do
+      pdf = render { select "country", options: %w[Sweden Norway Österreich], value: "Norway", width: 120 }
+      field = form_fields(pdf).fetch("country")
+
+      expect(field).to include(FT: :Ch, V: "Norway")
+      expect(field[:Opt].map { |option| decode_text(option) }).to eq(%w[Sweden Norway Österreich])
+      expect([flag?(field, 18), flag?(field, 19)]).to eq([true, false])
+      expect(appearance_of(pdf, field)).to include("/Tx BMC", "(Norway) Tj")
+    end
+
+    it "adds the edit flag when editable and leaves the value out when none is chosen" do
+      pdf = render { select "city", options: %w[Lund Malmö], editable: true }
+      field = form_fields(pdf).fetch("city")
+
+      expect(flag?(field, 19)).to be(true)
+      expect(field).not_to have_key(:V)
+    end
+  end
+
+  describe "signature fields" do
+    it "draws only the rule without a label" do
+      pdf = render { signature_field "signature", label: "" }
+
+      expect(appearance_of(pdf, form_fields(pdf).fetch("signature"))).not_to include("Tj")
+    end
+
+    it "writes an empty /Sig field whose appearance draws a rule and the label" do
+      pdf = render { signature_field "signature", width: 180, label: "Sökandens underskrift" }
+      field = form_fields(pdf).fetch("signature")
+      stream = appearance_of(pdf, field)
+
+      expect(field).to include(FT: :Sig)
+      expect(field).not_to have_key(:V)
+      expect(field[:Rect][3] - field[:Rect][1]).to eq(40)
+      expect(stream).to include("(S\xF6kandens underskrift) Tj".b, "l\nS")
+    end
+  end
+
+  it "reports radios, selects and signatures in the document's fields" do
+    document = SpecDocument.build do
+      radio "plan", "basic"
+      radio "plan", "pro", checked: true
+      radio "size", "s"
+      select "country", options: %w[SE NO], value: "NO"
+      signature_field "sig"
+    end
+    document.to_pdf
+
+    expect(document.fields).to eq("plan" => "pro", "size" => nil, "country" => "NO", "sig" => nil)
+  end
+
   it "groups dotted names under parent fields" do
     pdf = render do
       text_field "address.city", value: "Lund"

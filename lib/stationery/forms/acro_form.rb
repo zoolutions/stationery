@@ -85,19 +85,25 @@ module Stationery
         @writer.set(ref, own.merge(Kids: node.children.values.map { |child| write_node(child, ref) }))
       end
 
-      # One widget is merged with its field; several become the field's kids.
+      # One widget is merged with its field; several, or radios, become the
+      # field's kids. A radio group's value is its checked choice.
       def write_field(widgets, own)
         field = widgets.first.field
-        return @writer.set(widgets.first.ref, own.merge(field.field_entries, widget(widgets.first))) if widgets.one?
+        unless field.radio? || !widgets.one?
+          return @writer.set(widgets.first.ref, own.merge(field.field_entries, widget(widgets.first)))
+        end
 
         ref = @writer.reserve
-        widgets.each { |kid| @writer.set(kid.ref, widget(kid).merge(Parent: ref)) }
-        @writer.set(ref, own.merge(field.field_entries, Kids: widgets.map(&:ref)))
+        value = field.radio? ? widgets.map(&:field).find(&:checked?)&.on_state || :Off : nil
+        widgets.each { |kid| @writer.set(kid.ref, widget(kid, value).merge(Parent: ref)) }
+        entries = value ? field.field_entries(value) : field.field_entries
+        @writer.set(ref, own.merge(entries, Kids: widgets.map(&:ref)))
       end
 
-      def widget(widget)
+      def widget(widget, group_value = nil)
         x1, y1, x2, y2 = widget.rect
-        entries = widget.field.widget_entries(x2 - x1, y2 - y1, @fonts)
+        state = group_value && (widget.field.on_state == group_value ? group_value : :Off)
+        entries = widget.field.widget_entries(x2 - x1, y2 - y1, @fonts, state:)
         normal = entries.dig(:AP, :N)
         normal = normal.is_a?(Hash) ? normal.transform_values { |stream| @writer.add(stream) } : @writer.add(normal)
         entries.merge(AP: { N: normal }, Rect: widget.rect, P: widget.page)

@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Interactive forms (AcroForm): `text_field` (multiline, `max_length:`, `comb:`, `read_only:`, `required:`) and `checkbox` (with `label:`) lay out like boxes or sit at `at: [x, y]`, also inside table cells. Each widget ships its own appearance stream (Helvetica / ZapfDingbats from the standard 14, listed in the AcroForm `/DR`), so forms render in every viewer; `NeedAppearances` is set so edits redraw. Dotted names (`"address.city"`) build parent fields; widgets sharing a name become one field's kids. Values are Unicode text strings and survive encryption. `Document#fields` returns `{ name => value }` after a render; `Canvas#widget` places a field widget; `to_pdf(debug: [:field])` outlines fields.
+- Forms: `radio` groups (radios sharing a name form one `/Btn` field with the radio flag; `/V` is the checked value), `select` combo boxes (`/Ch` with `/Opt`, `editable:` adds the Edit flag) and `signature_field` (an empty `/Sig` field drawn as a rule over its label). `examples/form.rb` is a one-page application form using every field type.
 
 ## 0.3.0 (2026-09-27)
 
