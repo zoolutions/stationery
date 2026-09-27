@@ -1,0 +1,32 @@
+spec/stationery/fonts/fallback_spec.rb
+  s_600b6bfbec0b19::t_107d5ef1433017 61-66,116-118,122-126
+  ai_agent 119-121
+lib/stationery/fonts/fallback.rb
+  s_600b6bfbec0b19::t_dba7e4704b2f7d 9-13,15
+lib/stationery/fonts/font.rb
+  s_600b6bfbec0b19::t_dba7e4704b2f7d 15-26,34,75-80,84-88,117-118,121-123,131-148,152-155
+docs/app/views/docs/pages/warnings.rb
+  s_600b6bfbec0b19::t_3d0ccb91e71e54 33
+spec/stationery/fonts/font_spec.rb
+  s_600b6bfbec0b19::t_107d5ef1433017 39-83
+docs/app/views/docs/pages/fonts.rb
+  s_600b6bfbec0b19::t_3d0ccb91e71e54 77-80
+README.md
+  s_600b6bfbec0b19::t_3d0ccb91e71e54 484-489
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "1b66a909ca65532c4d7e0cb59a2977ba33dca09f",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
