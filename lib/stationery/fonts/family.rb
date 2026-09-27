@@ -12,6 +12,14 @@ module Stationery
 
       attr_reader :name, :paths
 
+      # A family from explicit files, or a bundled one when no files are given.
+      def self.build(name, **paths)
+        return new(name, **paths) if paths.any?
+
+        Bundled.family(name) ||
+          raise(ArgumentError, "font family #{name} needs a regular face (bundled: #{Bundled.names.join(", ")})")
+      end
+
       def initialize(name, **paths)
         unknown = paths.keys - STYLES
         raise ArgumentError, "unknown font style #{unknown.join(", ")} (use #{STYLES.join(", ")})" if unknown.any?
