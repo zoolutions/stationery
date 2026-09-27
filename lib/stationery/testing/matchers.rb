@@ -101,6 +101,15 @@ module Stationery
         def actual = "got bookmarks #{@inspector.bookmarks.inspect}"
       end
 
+      class HaveLanguage < Base
+        def description = "have language #{show(@expected)}"
+
+        private
+
+        def match?(pdf) = pdf.lang == @expected.to_s
+        def actual = @inspector.lang ? "got #{@inspector.lang.inspect}" : "got none"
+      end
+
       class HaveNoWarnings < Base
         def description = "have no warnings"
 
@@ -140,6 +149,7 @@ module Stationery
       def have_pdf_link(expected) = HaveLink.new(expected)
       def have_image_count(expected) = HaveImageCount.new(expected)
       def have_bookmark(title) = HaveBookmark.new(title)
+      def have_pdf_language(lang) = HaveLanguage.new(lang)
       def have_no_warnings = HaveNoWarnings.new
       def have_structure(expected) = HaveStructure.new(expected)
       def have_tagged_content = HaveTaggedContent.new

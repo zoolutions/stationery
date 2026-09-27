@@ -60,8 +60,14 @@ module Stationery
       end
 
       def bookmarks
-        outlines = objects.deref!(objects.trailer[:Root])[:Outlines]
+        outlines = catalog[:Outlines]
         outlines ? titles(outlines[:First]) : []
+      end
+
+      # The catalog /Lang written by `metadata lang:`, or nil.
+      def lang
+        lang = catalog[:Lang]
+        decode(lang) if lang
       end
 
       # The structure tree of a tagged PDF as nested arrays; see StructureReader.
@@ -69,7 +75,6 @@ module Stationery
 
       # Whether the catalog marks the PDF as tagged and holds a structure tree.
       def tagged?
-        catalog = objects.deref!(objects.trailer[:Root])
         catalog.dig(:MarkInfo, :Marked) == true && !catalog[:StructTreeRoot].nil?
       end
 
@@ -81,6 +86,7 @@ module Stationery
       private
 
       def objects = reader.objects
+      def catalog = objects.deref!(objects.trailer[:Root])
 
       def annotations
         reader.pages.flat_map do |page|

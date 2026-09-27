@@ -57,4 +57,16 @@ RSpec.describe Stationery::Testing::Assertions do
 
     expect(host.calls.map(&:first)).to eq([true, true, false])
   end
+
+  it "asserts the language" do
+    german = Class.new(SpecDocument) do
+      metadata lang: "de"
+      def view_template = text("Hallo")
+    end.new.to_pdf
+    host.assert_pdf_language(german, "de")
+    host.assert_pdf_language(pdf, "de")
+
+    expect(host.calls.map(&:first)).to eq([true, false])
+    expect(host.calls.last.last).to eq('expected PDF to have language "de", got none')
+  end
 end
