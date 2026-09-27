@@ -3,10 +3,11 @@
 module Stationery
   module SVG
     # Presentation attributes an element inherits from its ancestors, and the
-    # transform it draws with.
+    # transform it draws with. An element's own values cascade: presentation
+    # attributes, then stylesheet rules, then its inline `style`.
     class Style
       INHERITED = %w[fill stroke stroke-width stroke-linecap stroke-linejoin fill-rule opacity fill-opacity
-                     stroke-opacity font-family font-size font-weight font-style text-anchor].freeze
+                     stroke-opacity font-family font-size font-weight font-style text-anchor visibility].freeze
       NAMED = { "black" => "#000000", "white" => "#FFFFFF", "red" => "#FF0000", "green" => "#008000",
                 "blue" => "#0000FF", "gray" => "#808080", "grey" => "#808080" }.freeze
       DEFAULTS = { "fill" => "black", "stroke" => "none", "stroke-width" => "1" }.freeze
@@ -31,14 +32,18 @@ module Stationery
 
       attr_reader :values, :matrix, :color
 
-      def initialize(values = DEFAULTS, matrix = [1, 0, 0, 1, 0, 0], color: "#000000")
+      def initialize(values = DEFAULTS, matrix = [1, 0, 0, 1, 0, 0], color: "#000000", sheet: Stylesheet::EMPTY,
+                     display: nil)
         @values = values
         @matrix = matrix
         @color = color
+        @sheet = sheet
+        @display = display
       end
 
-      def child(attributes)
-        own = attributes.merge(Style.declarations(attributes["style"]))
+      def child(element)
+        attributes = element.attributes
+        own = attributes.merge(@sheet.declarations(element), Style.declarations(attributes["style"]))
         values = @values.merge(own.slice(*INHERITED))
         matrix = if attributes["transform"]
                    Transform.multiply(@matrix,
@@ -46,8 +51,11 @@ module Stationery
                  else
                    @matrix
                  end
-        Style.new(values, matrix, color: @color)
+        Style.new(values, matrix, color: @color, sheet: @sheet, display: own["display"])
       end
+
+      def displayed? = @display != "none"
+      def visible? = !%w[hidden collapse].include?(@values["visibility"])
 
       def fill = paint("fill")
       def stroke = paint("stroke")

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 27.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 100 100" style="enable-background:new 0 0 100 100;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#123456;}
+	.st1{fill:none;stroke:#FF0000;stroke-width:4;stroke-linecap:round;}
+	.st2{display:none;}
+	.st3{fill:url(#SVGID_1_);}
+	.st4{font-family:'Nope-Bold';font-size:12px;font-weight:bold;}
+	#badge{fill:#00FF00;}
+</style>
+<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="100" y2="0">
+	<stop  offset="0" style="stop-color:#FFFFFF"/>
+	<stop  offset="1" style="stop-color:#000000"/>
+</linearGradient>
+<rect x="10" y="10" class="st0" width="30" height="30"/>
+<circle id="badge" class="st0" cx="70" cy="25" r="15"/>
+<path class="st1" d="M10,60h80"/>
+<g class="st2">
+	<rect x="0" y="0" class="st0" width="100" height="100"/>
+</g>
+<rect x="10" y="70" class="st3" width="80" height="10"/>
+<text transform="matrix(1 0 0 1 10 95)" class="st4">Label</text>
+</svg>

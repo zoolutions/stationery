@@ -12,22 +12,18 @@ module Stationery
 
       Stop = Data.define(:offset, :color, :opacity)
 
-      # Every gradient in the document, by id.
-      def self.collect(root)
+      # Every gradient in the document, by id; stops take `sheet` rules.
+      def self.collect(root, sheet = Stylesheet::EMPTY)
         elements = {}
-        walk(root) { |element| elements[element.attributes["id"]] = element if KINDS.include?(element.name) }
+        Parser.walk(root) { |element| elements[element.attributes["id"]] = element if KINDS.include?(element.name) }
         elements.delete(nil)
-        elements.transform_values { |element| new(element, elements) }
-      end
-
-      def self.walk(element, &)
-        yield element
-        element.children.each { |child| walk(child, &) if child.is_a?(Parser::Element) }
+        elements.transform_values { |element| new(element, elements, sheet) }
       end
 
       attr_reader :kind, :attributes, :stops
 
-      def initialize(element, elements)
+      def initialize(element, elements, sheet = Stylesheet::EMPTY)
+        @sheet = sheet
         @kind = element.name == "radialGradient" ? :radial : :linear
         chain = lineage(element, elements)
         @attributes = chain.reverse.map { |link| link.attributes.slice(*INHERITED) }.reduce({}, :merge)
@@ -99,7 +95,7 @@ module Stationery
 
         floor = 0.0
         stop_elements(element).map do |stop|
-          values = stop.attributes.merge(Style.declarations(stop.attributes["style"]))
+          values = stop.attributes.merge(@sheet.declarations(stop), Style.declarations(stop.attributes["style"]))
           floor = [floor, fraction(values.fetch("offset", "0")).clamp(0.0, 1.0)].max
           Stop.new(floor, values.fetch("stop-color", "black"), values.fetch("stop-opacity", "1").to_f)
         end
