@@ -278,6 +278,19 @@ which returns an instance built with sample data. Layout warnings print to
 stderr; `--strict` exits 1 instead of writing. `stationery help` lists the
 commands.
 
+```sh
+stationery fonts list                                    # packs, licenses, what is in vendor/fonts
+stationery fonts install noto_sans liberation_serif      # into vendor/fonts/<pack>/
+stationery fonts install noto_sans --into app/fonts --force
+stationery fonts install liberation_sans --from ~/Downloads/liberation-fonts-ttf-2.1.5.tar.gz  # offline
+```
+
+`fonts install` downloads pinned files over HTTPS, checks every SHA-256
+before writing anything, and writes the license next to the fonts. Files
+already present are kept unless `--force`. `--from` takes a directory or a
+`.tar.gz` holding the same files (still SHA-checked). In Rails,
+`bin/rails generate stationery:fonts noto_sans` does the same.
+
 ## Fonts and images
 
 Fonts are TrueType (`.ttf`) or OpenType/CFF (`.otf`, name-keyed or
@@ -290,6 +303,30 @@ Inter (regular, bold, italic, bold italic; SIL Open Font License) is bundled
 and used when a document declares no family. `font_family "Inter"` with no
 paths selects it explicitly, and `Stationery.bundled_fonts` lists what ships.
 Font files are read lazily, on first use, never when the gem is required.
+
+More families come as font packs, installed into your app at development
+time (commit them; nothing is downloaded at runtime):
+
+| Pack | Family | License |
+|---|---|---|
+| `inter` | Inter (copied from the gem) | OFL 1.1 |
+| `noto_sans`, `noto_serif`, `noto_sans_mono` | Noto Sans, Noto Serif, Noto Sans Mono | OFL 1.1 |
+| `liberation_sans`, `liberation_serif`, `liberation_mono` | Liberation Sans, Serif, Mono (metric-compatible with Arial, Times New Roman, Courier New) | OFL 1.1, Reserved Font Name "Liberation" |
+
+`Stationery.font_paths` lists the directories searched for installed packs;
+the Railtie adds `vendor/fonts` (and `config.stationery.font_paths`) when it
+exists. With the pack's directory there, the family name is enough:
+
+```ruby
+font_family "Noto Sans"                                                # found in Stationery.font_paths
+font_family "Noto Sans", **Stationery::Fonts.paths(:noto_sans, dir: "vendor/fonts") # outside Rails
+```
+
+or append it yourself: `Stationery.font_paths << File.expand_path("vendor/fonts")`.
+From Ruby: `Stationery::Fonts.install(:noto_sans, into: "vendor/fonts")`
+returns `{ regular: path, bold: path, … }`; `Stationery::Fonts.catalog` lists
+the packs. `rake fonts:verify` (development only) downloads every pack and
+checks its SHA-256s.
 
 Text is pair-kerned from the font's GPOS `kern` feature (PairPos lookups,
 including class-based pairs and Extension lookups), falling back to the

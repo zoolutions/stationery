@@ -28,15 +28,22 @@ module Stationery
 
       private
 
-      # Registered by name, bundled by name, then the first registered family,
-      # then the bundled default.
+      # Registered by name, bundled by name, an installed pack by name, then
+      # the first registered family, then the bundled default.
       def family(name)
-        @families[name.to_s] || bundled(name) || @families.values.first || bundled(Bundled::DEFAULT)
+        @families[name.to_s] || bundled(name) || pack(name) || @families.values.first || bundled(Bundled::DEFAULT)
       end
 
       def bundled(name)
         @bundled ||= {}
         @bundled[name.to_s] ||= Bundled.family(name)
+      end
+
+      def pack(name)
+        @packs ||= {}
+        return @packs[name.to_s] if @packs.key?(name.to_s)
+
+        @packs[name.to_s] = Packs.family(name)
       end
     end
   end

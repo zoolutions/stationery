@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Font packs: `stationery fonts list` and `stationery fonts install noto_sans liberation_serif [--into DIR] [--force] [--from PATH]` copy pinned, SHA-256-verified Noto Sans/Serif/Sans Mono, Liberation Sans/Serif/Mono and Inter files (plus their OFL license) into `vendor/fonts/<pack>/`, atomically and offline-capable. `font_family "Noto Sans"` with no paths finds an installed pack through `Stationery.font_paths`, as does an unregistered family name at render time. Ruby API `Stationery::Fonts.install`/`catalog`/`paths`, Rails generator `stationery:fonts`, and `rake fonts:verify`. No runtime downloads.
 - Internal: `Stationery::Rich` block model (paragraphs, headings, lists, quotes, code, rules, tables, images; inlines with marks) with lenient `HTML.parse` (implied end tags, browser whitespace collapsing, Trix/ActionText output) and CommonMark-subset `Markdown.parse` (GFM tables and strikethrough, reference links). Loaded on demand; `html`/`markdown` elements follow.
 - `require "stationery/rspec"` matchers (`have_pdf_text`, `have_pdf_text_on_page`, `have_page_count`, `have_pdf_link`, `have_image_count`, `have_bookmark`, `have_no_warnings`) and `require "stationery/minitest"` assertions, built on `Stationery::Testing::Inspector`. Needs `pdf-reader` in the test group.
 - `header` and `footer` regions that reserve page space, with `height:`, `gap:` and `on:` (`:all`, `:first`, `:rest`, `:odd`, `:even`, a page number, a range or a proc); later declarations win. A `page_template`'s `page.content_box` now excludes their space. `Page#margin_box`.
