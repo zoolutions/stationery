@@ -96,12 +96,37 @@ InvoicePdf.new(invoice).to_pdf("a.pdf") # also writes a path or an IO
 | `keep_with_next: true \| points` | On `text`, `box` or `group`: never end a page with this node; with a number, keep at least that many points of what follows with it. |
 | `text_style(**style) { }` | Default text style for a block. |
 | `canvas(height:) { \|canvas, rect\| }` | Draw directly: rectangles, rounded rectangles, circles, lines, Bézier paths, clipping, images, links. |
+| `html(source, styles:, gap:, images:, base_path:, bookmarks:)` | Rich text from HTML (ActionText/Trix, CMS output): paragraphs, headings, lists, quotes, code, rules, tables, images, inline marks and links. See [HTML and Markdown](#html-and-markdown). |
+| `markdown(source, styles:, gap:, images:, base_path:, bookmarks:)` | The same from CommonMark (plus GFM tables and strikethrough). |
 
 Text style options: `font`, `size`, `weight` (`:regular`, `:bold`), `style` (`:italic`), `color`,
 `letter_spacing`, `underline`, `strikethrough`, `link`, `opacity`, `kerning` (default `true`), `align` (`:left`, `:center`, `:right`, `:justify`), `leading`.
 `align: :justify` stretches the spaces of wrapped lines to the full width; the last line, lines
 ending in a newline and lines without spaces stay left-aligned (tabs are never stretched).
 Colours are `"#RRGGBB"`, `"RRGGBB"`, `"#RGB"`, `[r, g, b]` (0-255) or `[c, m, y, k]` (0-100).
+
+### HTML and Markdown
+
+`html` and `markdown` render user content with the elements above; their parsers load on first use.
+
+```ruby
+def view_template
+  html @post.body.to_s,                                   # ActionText
+       images: ->(src) { blob_path_for(src) },            # path, IO or nil (skipped with a warning)
+       styles: { h1: { size: 22 }, a: { color: "#0F766E" }, code: { font: "JetBrains Mono" } }
+  markdown File.read("NOTES.md"), base_path: "docs", bookmarks: true
+end
+```
+
+- Images come from `images:` (called with the `src`) or from files under `base_path:`; sources that
+  resolve nowhere, point outside `base_path` or are remote URLs are skipped with a `SkippedImage`
+  warning. Nothing is ever fetched over the network.
+- `styles:` is deep-merged into the defaults: `h1`–`h6` (`scale:` of the text size, or `size:` in
+  points; bold, `keep_with_next`), `p`, `a` (colour, underline), `code` (`font:`; register a
+  monospace family for inline and block code, otherwise the text font is used), `pre` and
+  `blockquote` (box options), `hr` (rule options), `table` (`cell:` options, `header:` text style),
+  `li` (text style) and `img` (`max_width:`).
+- `gap:` spaces the blocks (default 6); `bookmarks: true` adds h1–h3 to the PDF outline.
 
 ### Links, bookmarks and table of contents
 
@@ -327,6 +352,27 @@ From Ruby: `Stationery::Fonts.install(:noto_sans, into: "vendor/fonts")`
 returns `{ regular: path, bold: path, … }`; `Stationery::Fonts.catalog` lists
 the packs. `rake fonts:verify` (development only) downloads every pack and
 checks its SHA-256s.
+
+A character the text's family has no glyph for is drawn from the first
+family in `font_fallbacks` that has it, then from bundled Inter, in the same
+weight and style (synthesised when the family lacks the face):
+
+```ruby
+class Report < Stationery::Document
+  font_family "Brand", regular: "Brand-Regular.ttf"
+  font_family "Noto Sans Symbols", regular: "NotoSansSymbols-Regular.ttf"
+  font_fallbacks "Noto Sans Symbols"
+
+  def view_template = text("Next → ☃")
+end
+```
+
+Spaces, joiners, variation selectors and combining marks stay with the
+character before them. A glyph no font has is drawn as the family's
+`.notdef` and reported as a `Warnings::MissingGlyph` counting each drawn
+occurrence (so `strict` raises on it). Fallback covers every text element,
+table cell, list marker, table of contents entry and page template text;
+direct `canvas.text` calls draw with the font they are given.
 
 Text is pair-kerned from the font's GPOS `kern` feature (PairPos lookups,
 including class-based pairs and Extension lookups), falling back to the
