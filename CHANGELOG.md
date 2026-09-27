@@ -3,7 +3,6 @@
 ## Unreleased
 
 - `header` and `footer` regions that reserve page space, with `height:`, `gap:` and `on:` (`:all`, `:first`, `:rest`, `:odd`, `:even`, a page number, a range or a proc); later declarations win. A `page_template`'s `page.content_box` now excludes their space. `Page#margin_box`.
-
 - SVG: path (every command, including arcs), rect, circle, ellipse, line, polyline, polygon and g, with fill, stroke, caps, joins, fill-rule, opacity, inline styles, transforms and `currentColor`. `svg` element.
 - `wrap` element: children at their own widths, wrapping onto rows; splits between rows.
 - `box(link:)` makes the whole box clickable; `box(outset:)` bleeds its background past its edges.
