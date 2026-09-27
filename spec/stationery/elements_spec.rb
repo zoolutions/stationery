@@ -146,6 +146,18 @@ RSpec.describe Stationery::Elements do
     expect(kept.warnings.size).to eq(1)
   end
 
+  it "passes rotate: and shadow: to boxes and columns" do
+    pdf = render do
+      box(rotate: -3, shadow: true, background: "#FFFFFF", width: 100, height: 30) { text "card" }
+      row { column(rotate: 2, shadow: { blur: 0 }, background: "#FFFFFF") { text "column" } }
+    end
+    content = page_contents(pdf).first
+
+    expect(content.scan(" cm\n").size).to eq(2)
+    expect(content.scan(%r{/GS\d+ gs}).size).to eq(4 + 1)
+    expect(strings_of(pdf)).to eq(%w[card column])
+  end
+
   it "sets break_inside on a column" do
     boxes = []
     allow(Stationery::Layout::Box).to receive(:new).and_wrap_original do |original, *args, **options|

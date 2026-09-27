@@ -83,7 +83,8 @@ class Views::Docs::Pages::Elements < DocsUI::Page
     DocsUI::Section("box", description: "Padding, background, border, radius — and page-aware splitting.") do
       md <<~'MD'
         `box(padding:, background:, border:, radius:, width:, height:, overflow:, valign:, opacity:, at:,
-        link:, outset:, break_inside:, decoration:, align:, gap:, keep_with_next:, anchor:, bookmark:) { … }`
+        link:, outset:, break_inside:, decoration:, rotate:, shadow:, align:, gap:, keep_with_next:, anchor:,
+        bookmark:) { … }`
 
         ```ruby
         box(background: "#F3F4F6", radius: 6, padding: [8, 12], border: { color: "#E5E7EB", width: 0.5 }) do
@@ -101,16 +102,28 @@ class Views::Docs::Pages::Elements < DocsUI::Page
           [ "radius", "Numeric or [tl, tr, br, bl]", "0", "Corner radius." ],
           [ "width", "points, fraction, :auto", "full width", [ :md, "`0.5` is half the available width; `:auto` is the content's natural width." ] ],
           [ "height", "Numeric", "nil", "A fixed height. Fixed-height boxes never split." ],
-          [ "overflow", ":visible, :truncate, :shrink_to_fit", ":visible", "What text does when a fixed height is too small." ],
+          [ "overflow", ":visible, :hidden, :truncate, :shrink_to_fit", ":visible", [ :md, "What text does when a fixed height is too small. `:hidden` also clips the content to the rounded outline (`radius:`) and still splits across pages." ] ],
           [ "valign", ":top, :middle, :bottom", ":top", "Content placement inside a fixed height." ],
           [ "at", "[x, y]", "nil", "Pins the box to a page position, outside the flow." ],
           [ "link", "String", "nil", [ :md, "Makes the whole box clickable (a URL or `\"#anchor\"`)." ] ],
           [ "outset", "Box", "0", "Bleeds the background past the box, e.g. into the page margins." ],
           [ "break_inside", "nil, :auto, :avoid", "nil", [ :md, "See [Layout rules](/docs/layout-rules#break-inside)." ] ],
           [ "decoration", ":slice, :clone", ":slice", "At a page cut: drop padding and border, or keep the padding." ],
+          [ "rotate", "degrees", "0", [ :md, "Turns the painted box clockwise around its centre, like CSS `rotate()`. The layout rectangle is unchanged, the box never splits, and a `link:` keeps its unrotated rectangle (annotations live in page space)." ] ],
+          [ "shadow", "true or Hash", "nil", [ :md, "A soft drop shadow under the box: `{ offset: [0, 4], blur: 8, color: \"#000000\", opacity: 0.15 }`, merged over those defaults. Painted as stacked, fading rounded rectangles (an artifact), it takes no layout space and is skipped on a fragment cut by a page break." ] ],
           [ "align / gap", "Symbol / Numeric", ":left / 0", "Horizontal alignment of the children and space between them." ]
         ]
       )
+
+      md <<~'MD'
+        A tilted, white-framed photo with a shadow — the pieces of a collage:
+
+        ```ruby
+        box(width: 180, padding: 4, background: "#FFFFFF", radius: 12, shadow: true, rotate: -3) do
+          image "beach.jpg", width: 172, height: 129
+        end
+        ```
+      MD
     end
 
     DocsUI::Section("row and column", description: "Columns side by side.") do

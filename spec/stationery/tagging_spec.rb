@@ -23,6 +23,14 @@ RSpec.describe "Tagged PDF" do # rubocop:disable RSpec/DescribeClass
     expect(reader_for(pdf).info).not_to have_key(:lang)
   end
 
+  it "paints a box shadow as an artifact" do
+    content = page_contents(build { box(shadow: true, background: "#FFFFFF") { text "Card" } }.to_pdf).first
+
+    expect(content).to match(%r{\A/Artifact BMC\nq\n/GS1 gs\n.*?EMC\n}m)
+    expect(content.scan(%r{/GS\d+ gs}).size).to eq(4)
+    expect(struct_types(build { box(shadow: true) { text "Card" } }.to_pdf)).to eq([[:Document, [:P]]])
+  end
+
   it "paints the footer as a pagination artifact" do
     content = page_contents(build { text "Body" }.to_pdf).first
 

@@ -10,15 +10,20 @@ module Stationery
     # fixed-height box can truncate or shrink text that does not fit
     # (`overflow:`) and never splits. `min_height:` is a floor that does split:
     # the first fragment keeps as much of it as the page holds and the next
-    # one carries only what is left of it.
+    # one carries only what is left of it. `rotate:` turns the painted box
+    # around its centre without moving its layout rectangle (a rotated box
+    # never splits); `shadow:` paints a soft drop shadow under it, taking no
+    # space; `overflow: :hidden` clips the content to the rounded outline.
     class Box < Node
       BORDER = { width: 1, color: "#000000", sides: %i[top right bottom left] }.freeze
+      SHADOW = { offset: [0, 4], blur: 8, color: "#000000", opacity: 0.15 }.freeze
+      SHADOW_LAYERS = 8
 
       attr_reader :content, :width_spec
 
       def initialize(content = Flow.new, padding: 0, background: nil, border: nil, radius: 0, width: nil,
                      height: nil, min_height: nil, overflow: :visible, valign: :top, opacity: nil, link: nil, outset: 0,
-                     open: [], decoration: :slice, role: nil)
+                     open: [], decoration: :slice, role: nil, rotate: 0, shadow: nil)
         raise ArgumentError, "pass height: or min_height:, not both" if height && min_height
 
         super()
@@ -39,6 +44,8 @@ module Stationery
         @overflow = overflow
         @valign = valign
         @opacity = opacity
+        @rotate = rotate
+        @shadow = shadow && SHADOW.merge(shadow == true ? {} : shadow)
       end
 
       def natural_width
@@ -55,7 +62,10 @@ module Stationery
         end
       end
 
-      def splittable? = @height.nil? && @overflow == :visible && @content.splittable?
+      def splittable?
+        @height.nil? && @rotate.zero? && %i[visible hidden].include?(@overflow) && @content.splittable?
+      end
+
       def prefer_whole? = break_inside.nil? && splittable?
 
       def split(width, height, fresh: false)
@@ -83,15 +93,18 @@ module Stationery
 
       def paint(canvas, x, y, width, height = nil, valign: nil, debug_kind: :box, **)
         height ||= measure(width)
-        canvas.structure(@tag) do
-          canvas.structure(@link_tag) do
-            paint_background(canvas, x, y, width, height)
-            paint_border(canvas, x, y, width, height)
-            paint_content(canvas, x, y, width, height, valign || @valign)
+        canvas.rotate(@rotate, around: [x + (width / 2.0), y + (height / 2.0)]) do
+          canvas.structure(@tag) do
+            canvas.structure(@link_tag) do
+              paint_shadow(canvas, x, y, width, height)
+              paint_background(canvas, x, y, width, height)
+              paint_border(canvas, x, y, width, height)
+              paint_content(canvas, x, y, width, height, valign || @valign)
+            end
           end
+          paint_debug(canvas, Rect.new(x, y, width, height), debug_kind) if canvas.debug?
         end
         canvas.link(x, y, width, height, @link, tag: @link_tag) if @link
-        paint_debug(canvas, Rect.new(x, y, width, height), debug_kind) if canvas.debug?
       end
 
       protected
@@ -124,6 +137,27 @@ module Stationery
       def horizontal = insets[1] + insets[3]
       def vertical(open = @open) = insets(open).values_at(0, 2).sum
       def inner_width(width) = [width - horizontal, 0].max
+
+      # Stacked rounded rectangles under the box, the outermost grown by the
+      # blur and each fainter, so the centre sums to the opacity and the edge
+      # fades. An artifact: decoration, not content. Skipped on a fragment
+      # with cut sides, whose corners are square anyway.
+      def paint_shadow(canvas, x, y, width, height)
+        return unless @shadow && @open.empty?
+
+        blur = @shadow[:blur].to_f
+        layers = blur.positive? ? [(blur / 2).ceil, SHADOW_LAYERS].min : 1
+        dx, dy = @shadow[:offset]
+        canvas.artifact do
+          layers.downto(1) do |layer|
+            grow = blur * layer / layers
+            canvas.rounded_rect(x + dx - grow, y + dy - grow, width + (2 * grow), height + (2 * grow),
+                                radius: grown_radius(grow), fill: @shadow[:color], opacity: @shadow[:opacity] / layers)
+          end
+        end
+      end
+
+      def grown_radius(grow) = @radius.is_a?(Array) ? @radius.map { |r| r + grow } : @radius + grow
 
       # The outset paints the background past the box's own edges (a band that
       # bleeds into the page margins) without moving the content.
@@ -190,12 +224,24 @@ module Stationery
                                        end,
                                        inner.height, used)
         paint_inner = -> { content.paint(canvas, x + left, y + top + [offset, 0].max, inner.width) }
-        if @overflow == :visible
-          paint_inner.call
-        else
-          canvas.clip(inner.x, inner.y, inner.width, inner.height) do
+        clip_outline(canvas, Rect.new(x, y, width, height)) do
+          if @overflow == :visible || (@overflow == :hidden && @height.nil?)
             paint_inner.call
+          else
+            canvas.clip(inner.x, inner.y, inner.width, inner.height) do
+              paint_inner.call
+            end
           end
+        end
+      end
+
+      # `overflow: :hidden` keeps the content inside the rounded outline; cut
+      # sides stay square like the background's.
+      def clip_outline(canvas, area, &)
+        return yield unless @overflow == :hidden && @radius.positive?
+
+        cut(canvas, area, area) do |shape|
+          canvas.clip(shape.x, shape.y, shape.width, shape.height, radius: @radius, &)
         end
       end
 
