@@ -116,6 +116,24 @@ RSpec.describe "Tagged PDF" do # rubocop:disable RSpec/DescribeClass
     expect(struct_tree(pdf)[0][2].map { |type, alt, _| [type, alt] }).to eq([[:P, nil], [:Figure, "The logo"]])
   end
 
+  it "tags form fields as Form elements owning their widgets" do
+    pdf = build do
+      text "Apply"
+      text_field "name", value: "Ann", width: 120
+      checkbox "agree", checked: true, label: "I agree"
+    end.to_pdf
+    objects = reader_for(pdf).objects
+    widgets = objects.values.select { |obj| obj.is_a?(Hash) && obj[:Subtype] == :Widget }
+    forms = struct_tree(pdf)[0][2].select { |type, _, _| type == :Form }
+
+    expect(struct_types(pdf)).to eq([[:Document, %i[P Form Form P]]])
+    expect(widgets.map { |w| w[:StructParent] }).to all(be_an(Integer))
+    expect(forms.size).to eq(2)
+    elements = objects.values.select { |obj| obj.is_a?(Hash) && obj[:Type] == :StructElem && obj[:S] == :Form }
+    objrs = elements.flat_map { |elem| Array(objects.deref(elem[:K])).map { |kid| objects.deref(kid) } }
+    expect(objrs.map { |o| [o[:Type], objects.deref(o[:Obj])[:Subtype]] }).to eq([%i[OBJR Widget]] * 2)
+  end
+
   it "keeps page template content out of the structure" do
     logo = image_path("rgb.jpg")
     klass = Class.new(tagged) { page_template { box(at: [5, 5]) { image logo, width: 5 } } }

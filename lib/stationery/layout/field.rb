@@ -15,6 +15,7 @@ module Stationery
         @height = height
         @width = width
         @label = label
+        @tag = Tagging::Element.new(:Form, kind: :field)
       end
 
       def measure(width)
@@ -34,7 +35,7 @@ module Stationery
         own = @label ? @width : width
         total = measure(width)
         top = y + ((total - @height) / 2.0)
-        canvas.widget(@field, x, top, own, @height)
+        canvas.widget(@field, x, top, own, @height, tag: @tag)
         @label&.paint(canvas, x + label_offset, y + ((total - @label.measure(label_width(width))) / 2.0),
                       label_width(width))
         canvas.debug_rect(x, top, own, @height, :field) if canvas.debug?
