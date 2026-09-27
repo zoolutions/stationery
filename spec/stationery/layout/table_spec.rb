@@ -36,6 +36,31 @@ RSpec.describe Stationery::Layout::Table do
     expect(node.cell(1, 1).options[:color]).to be_nil
   end
 
+  it "applies styles set through a selection after the table was measured" do
+    node = table([["wide"]], cell: { padding: 0, borders: [] })
+    before = node.measure(260)
+    width_before = node.column_widths(260).first
+    node.row(0).size = 20
+    node.row(0).color = "#FF0000"
+    pdf, = render_layout(node)
+
+    expect(node.measure(260)).to be > before
+    expect(node.column_widths(260).first).to be > width_before
+    expect(page_contents(pdf).first).to include(" 20 Tf").and include("1 0 0 rg")
+  end
+
+  it "normalises a cell's padding once, until it is restyled" do
+    node = table([["a"]], cell: { padding: [2, 3] })
+    allow(Stationery::Geometry).to receive(:box).and_call_original
+
+    node.measure(260)
+    node.measure(200)
+    expect(Stationery::Geometry).to have_received(:box).with([2, 3]).once
+
+    node.row(0).padding = 5
+    expect(node.cell(0, 0).padding).to eq([5, 5, 5, 5])
+  end
+
   it "stripes rows with zebra" do
     node = table(rows + [%w[a b c]], cell: { borders: [] }) { |t| t.zebra(from: 1, color: "#F9FAFB") }
 
@@ -50,7 +75,7 @@ RSpec.describe Stationery::Layout::Table do
     font = open_sans_book.resolve(base_style).first
     total_x = positions_of(pdf)[5].first
 
-    expect(total_x + font.width_of("€8,00", 10)).to be_within(0.01).of(280)
+    expect(total_x + font.width_of("€8,00", 10, kerning: true)).to be_within(0.01).of(280)
   end
 
   it "draws per-cell borders, backgrounds and padding" do
@@ -89,10 +114,21 @@ RSpec.describe Stationery::Layout::Table do
     expect(paginator.warnings).to be_empty
   end
 
-  it "overflows a row taller than a page with a warning" do
+  it "continues a row taller than a page on the next page instead of overflowing" do
     tall = Array.new(40) { "line" }.join("\n")
-    _pdf, paginator = render_layout(table([[tall]]))
+    pdf, paginator = render_layout(table([[tall]]))
 
-    expect(paginator.warnings).not_to be_empty
+    expect(paginator.warnings).to be_empty
+    expect(page_count(pdf)).to be > 1
+  end
+
+  it "justifies cell text through the cell's align" do
+    text = "The quick brown fox jumps over the lazy dog and keeps on running"
+    node = table([[text]], width: :full, cell: { padding: 0, borders: [], align: :justify })
+    pdf, = render_layout(node)
+    left, = render_layout(table([[text]], width: :full, cell: { padding: 0, borders: [] }))
+
+    expect(page_contents(pdf)).not_to eq(page_contents(left))
+    expect(strings_of(pdf).join(" ")).to include("quick brown")
   end
 end

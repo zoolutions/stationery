@@ -91,7 +91,7 @@ module Stationery
 
       def finish(wrapped: false)
         segments = wrapped ? @current : @current + @pending_space
-        @lines << Line.new(fragments(trim_trailing(segments)), fallback_metrics)
+        @lines << Line.new(fragments(trim_trailing(segments)), fallback_metrics, justifiable: wrapped)
         @current = []
         @pending_space = []
       end
@@ -124,7 +124,8 @@ module Stationery
       end
 
       def measure(text, style)
-        @book.resolve(style).first.width_of(text, style.render_size, letter_spacing: style.letter_spacing)
+        font = @book.resolve(style).first
+        font.width_of(text, style.render_size, letter_spacing: style.letter_spacing, kerning: style.kerning)
       end
     end
   end
