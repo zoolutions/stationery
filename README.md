@@ -82,7 +82,9 @@ InvoicePdf.new(invoice).to_pdf("a.pdf") # also writes a path or an IO
 | `canvas(height:) { \|canvas, rect\| }` | Draw directly: rectangles, rounded rectangles, circles, lines, Bézier paths, clipping, images, links. |
 
 Text style options: `font`, `size`, `weight` (`:regular`, `:bold`), `style` (`:italic`), `color`,
-`letter_spacing`, `underline`, `strikethrough`, `link`, `opacity`, `kerning` (default `true`), `align`, `leading`.
+`letter_spacing`, `underline`, `strikethrough`, `link`, `opacity`, `kerning` (default `true`), `align` (`:left`, `:center`, `:right`, `:justify`), `leading`.
+`align: :justify` stretches the spaces of wrapped lines to the full width; the last line, lines
+ending in a newline and lines without spaces stay left-aligned (tabs are never stretched).
 Colours are `"#RRGGBB"`, `"RRGGBB"`, `"#RGB"`, `[r, g, b]` (0-255) or `[c, m, y, k]` (0-100).
 
 ## Components
@@ -145,7 +147,7 @@ mask). Parsed fonts and images are cached per process.
 ## Limitations
 
 No ligatures, no OpenType/CFF, TrueType collections, variable
-fonts or WOFF; no full justification; SVG covers the shapes icon sets use
+fonts or WOFF; SVG covers the shapes icon sets use
 (no text, gradients, patterns, masks or CSS stylesheets); no encryption,
 outlines, forms or tagged PDF; boxes and rows do not split across pages.
 

@@ -13,6 +13,9 @@
   style or font change are not kerned.
 - GPOS pair kerning: the `kern` feature's PairPos lookups (formats 1 and 2, also behind Extension lookups)
   take precedence over the `kern` table, so GPOS-only fonts such as Inter are kerned too.
+- `align: :justify` on `text`, `text_style` and table cells: wrapped lines are stretched to the full
+  width by widening their spaces (kerning is kept); the last line, lines ending in a newline and lines
+  without spaces stay left-aligned. Link areas widen with the stretched text.
 - Internal: `Fonts::GlyphRun` carries per-glyph advance adjustments (Tj/TJ emission) for upcoming kerning and justification; output unchanged.
 
 ## 0.1.0 (unreleased)
