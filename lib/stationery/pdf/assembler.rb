@@ -25,7 +25,8 @@ module Stationery
         @structure = @tagging && Tagging::Writer.new(@tagging, pages: @pages, refs: kids)
         @pages.each_with_index { |page, index| write_page(writer, page, kids[index], tree, refs) }
         writer.set(tree, { Type: :Pages, Kids: kids, Count: kids.size })
-        root = writer.add(catalog(tree, OutlineWriter.new(writer, @outline, kids).write, @form.write).merge(accessibility(writer)))
+        outlines = OutlineWriter.new(writer, @outline, kids).write
+        root = writer.add(catalog(tree, outlines, @form.write).merge(accessibility(writer)))
         writer.render(root:, info: writer.add(info_dictionary))
       end
 
