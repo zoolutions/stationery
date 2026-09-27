@@ -23,6 +23,11 @@ module PdfHelpers
     PDF::Inspector::Text.analyze(pdf).positions
   end
 
+  # Every text run of every page as [text, baseline y] (PDF bottom-up coordinates).
+  def page_runs(pdf)
+    reader_for(pdf).pages.map { |page| page.runs.map { |run| [run.text, run.origin.y.round(3)] } }
+  end
+
   def reader_for(pdf)
     PDF::Reader.new(StringIO.new(pdf))
   end

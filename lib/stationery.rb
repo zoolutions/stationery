@@ -59,6 +59,7 @@ require_relative "stationery/layout/positioned"
 require_relative "stationery/builder"
 require_relative "stationery/elements"
 require_relative "stationery/component"
+require_relative "stationery/regions"
 require_relative "stationery/page_templates"
 require_relative "stationery/document"
 

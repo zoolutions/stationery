@@ -9,12 +9,13 @@ module Stationery
       letter: [612, 792], legal: [612, 1008], tabloid: [792, 1224]
     }.freeze
 
-    attr_reader :size, :margin, :content, :annotations, :resource_names
+    attr_reader :size, :margin, :reserve, :content, :annotations, :resource_names
 
-    def initialize(size: :letter, layout: :portrait, margin: 0)
+    def initialize(size: :letter, layout: :portrait, margin: 0, reserve: [0, 0])
       @size = dimensions(size)
       @size = @size.reverse if layout.to_sym == :landscape
       @margin = Geometry.box(margin)
+      @reserve = reserve
       @content = String.new(encoding: Encoding::BINARY)
       @annotations = []
       @resource_names = Hash.new { |hash, key| hash[key] = [] }
@@ -23,10 +24,13 @@ module Stationery
     def width = @size[0]
     def height = @size[1]
 
-    def content_box
+    def margin_box
       top, right, bottom, left = @margin
       Rect.new(left, top, width - left - right, height - top - bottom)
     end
+
+    # The margin box less the space reserved for the header and footer.
+    def content_box = margin_box.inset(@reserve[0], 0, @reserve[1], 0)
 
     def use(category, name)
       names = @resource_names[category]

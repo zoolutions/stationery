@@ -107,6 +107,27 @@ render Callout.new(color: "#F3F4F6") { text "Amount due" }
 - `page_template { |page| … }` runs on every page after pagination with `page.number`, `page.count`,
   `page.width`, `page.height`, `page.margin` and `page.content_box`. `page_template(layer: :background)`
   paints under the content (full-bleed backgrounds).
+- `header` and `footer` reserve space at the top and bottom of the page; the body flows between them:
+
+  ```ruby
+  header(gap: 8) do |page|
+    row do
+      text "ACME"
+      text "Page #{page.number} of #{page.count}", align: :right
+    end
+  end
+  footer(on: :rest) { text "Confidential", size: 7, align: :center }
+  header(on: :first) {} # no header on page 1
+  ```
+
+  `on:` takes `:all` (default), `:first`, `:rest`, `:odd`, `:even`, a page number, a range or
+  `->(number) { … }`; later declarations win for the pages they match, and an empty block removes the
+  region there. `gap:` (default 8) is extra space between the region and the body. Without `height:` a
+  region is measured once, on the first page that uses it; pass `height:` when its content varies per
+  page. The footer is bottom-aligned. A region taller than its space is still drawn and listed in
+  `document.warnings`; regions that leave no room for the body raise `ArgumentError`.
+- With a header or footer, a `page_template`'s `page.content_box` excludes their space (it is the
+  body's area).
 - Content taller than a page is placed anyway; `document.warnings` lists every overflow.
 
 ## Rails
