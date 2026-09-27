@@ -1,0 +1,62 @@
+spec/stationery/svg/bounds_spec.rb
+  s_832305fd821824::t_28e903bb621280 1-32
+lib/stationery/svg/shading.rb
+  s_832305fd821824::t_a360786e0dfcd9 1-34
+lib/stationery/svg/gradient.rb
+  s_832305fd821824::t_f2bed90dc20ab4 74
+  s_832305fd821824::t_e9daff485f9afe 1-73,75-119
+spec/fixtures/svg/gradient.svg
+  s_832305fd821824::t_7a78031123b6f6 1-21
+lib/stationery/svg/painter.rb
+  s_832305fd821824::t_139d0b0d8b3341 1-65
+docs/app/views/docs/pages/limitations.rb
+  s_832305fd821824::t_e52d37655646e8 19
+README.md
+  s_832305fd821824::t_e52d37655646e8 87,471
+CHANGELOG.md
+  s_832305fd821824::t_e52d37655646e8 5-6
+spec/fixtures/svg/README.md
+  s_832305fd821824::t_7a78031123b6f6 2
+lib/stationery/svg/bounds.rb
+  s_832305fd821824::t_c1c5af84ab7bc2 1-19,22-53,58-69,73-76
+  s_832305fd821824::t_f2bed90dc20ab4 20-21,54-57,70-72
+lib/stationery/canvas.rb
+  s_832305fd821824::t_198b671bc40bba 61-73
+spec/stationery/svg/shading_spec.rb
+  s_832305fd821824::t_db33e9f06e0221 1-37
+lib/stationery/resources.rb
+  s_832305fd821824::t_198b671bc40bba 4,11,26-29,35-36
+lib/stationery.rb
+  s_832305fd821824::t_831c41ca72a5ad 82-85
+lib/stationery/svg/style.rb
+  s_832305fd821824::t_5a6a4e0893a28d 13,16-32,41
+  s_832305fd821824::t_1e85bfbddf1b6e 15,73,75-76
+spec/stationery/svg/document_draw_gradients_spec.rb
+  s_832305fd821824::t_f2bed90dc20ab4 1-95
+docs/app/views/docs/pages/images_and_svg.rb
+  s_832305fd821824::t_e52d37655646e8 59-61,63-67,74-75
+spec/stationery/svg/gradient_spec.rb
+  s_832305fd821824::t_db33e9f06e0221 1-14,17-44,46-87
+  s_832305fd821824::t_f2bed90dc20ab4 15,45
+  s_832305fd821824::t_53235e88eda1dc 16
+lib/stationery/svg/document.rb
+  s_832305fd821824::t_831c41ca72a5ad 8-9,12,26-27,39-40,61-69,71-82
+spec/stationery/svg/document_spec.rb
+  s_832305fd821824::t_831c41ca72a5ad 70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "38689008d61f702db94c091b8680ed93f2c16bc3",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
