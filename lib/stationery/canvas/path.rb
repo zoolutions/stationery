@@ -31,20 +31,21 @@ module Stationery
         close
       end
 
+      # r is one radius for every corner or [top_left, top_right, bottom_right,
+      # bottom_left]; radii are scaled down together until each side fits.
       def rounded_rect(x, y, w, h, r)
-        r = [r, w / 2.0, h / 2.0].min
-        return rect(x, y, w, h) if r <= 0
+        tl, tr, br, bl = corner_radii(r, w, h)
+        return rect(x, y, w, h) if [tl, tr, br, bl].none?(&:positive?)
 
-        k = r * KAPPA
-        move_to(x + r, y)
-        line_to(x + w - r, y)
-        curve_to(x + w - r + k, y, x + w, y + r - k, x + w, y + r)
-        line_to(x + w, y + h - r)
-        curve_to(x + w, y + h - r + k, x + w - r + k, y + h, x + w - r, y + h)
-        line_to(x + r, y + h)
-        curve_to(x + r - k, y + h, x, y + h - r + k, x, y + h - r)
-        line_to(x, y + r)
-        curve_to(x, y + r - k, x + r - k, y, x + r, y)
+        move_to(x + tl, y)
+        line_to(x + w - tr, y)
+        curve_to(x + w - tr + (tr * KAPPA), y, x + w, y + tr - (tr * KAPPA), x + w, y + tr) if tr.positive?
+        line_to(x + w, y + h - br)
+        curve_to(x + w, y + h - br + (br * KAPPA), x + w - br + (br * KAPPA), y + h, x + w - br, y + h) if br.positive?
+        line_to(x + bl, y + h)
+        curve_to(x + bl - (bl * KAPPA), y + h, x, y + h - bl + (bl * KAPPA), x, y + h - bl) if bl.positive?
+        line_to(x, y + tl)
+        curve_to(x, y + tl - (tl * KAPPA), x + tl - (tl * KAPPA), y, x + tl, y) if tl.positive?
         close
       end
 
@@ -66,6 +67,15 @@ module Stationery
       def add(op)
         @ops << op
         self
+      end
+
+      def corner_radii(r, w, h)
+        return Array.new(4, [r, w / 2.0, h / 2.0].min) if r.is_a?(Numeric)
+
+        tl, tr, br, bl = r.map { |v| [v, 0].max }
+        scale = [[w, tl + tr], [w, bl + br], [h, tl + bl], [h, tr + br]]
+                .filter_map { |side, sum| side.fdiv(sum) if sum.positive? }.push(1).min
+        [tl, tr, br, bl].map { |v| v * scale }
       end
 
       def point(x, y)

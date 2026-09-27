@@ -3,12 +3,13 @@
 if ENV["COVERAGE"] != "false"
   require "simplecov"
   SimpleCov.start do
-    add_filter "/spec/"
+    skip "/spec/"
     enable_coverage :branch
   end
 end
 
 require "stationery"
+require "stationery/rspec"
 
 Dir[File.join(__dir__, "support/**/*.rb")].each { |file| require file }
 

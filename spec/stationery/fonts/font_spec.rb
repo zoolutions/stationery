@@ -15,6 +15,27 @@ RSpec.describe Stationery::Fonts::Font do
     expect(font.width_of("Invoice", 10, letter_spacing: 1)).to be_within(0.001).of(plain + 7)
   end
 
+  it "narrows kerned pairs when measuring with kerning" do
+    kerned = font.width_of("AVA", 10, kerning: true)
+
+    expect(kerned).to be < font.width_of("AVA", 10)
+    expect(kerned).to be_within(1e-9).of(font.glyph_run("AVA", kerning: true).width(10))
+    expect(font.width_of("AVA", 20, kerning: true)).to be_within(1e-9).of(kerned * 2)
+    expect(font.width_of("ABC", 10, kerning: true)).to eq(font.width_of("ABC", 10))
+  end
+
+  it "adds pair adjustments in thousandths of an em to kerned glyph runs" do
+    run = font.glyph_run("AVA", kerning: true)
+    upem = font.ttf.units_per_em
+    a, v = %w[A V].map { |c| font.ttf.glyph_id(c.ord) }
+
+    expect(run.adjust.first).to be < 0
+    expect(run.adjust.first).to be_within(1e-9).of(font.ttf.kerning.adjust(a, v) * 1000.0 / upem)
+    expect(run.adjust.last).to eq(0)
+    expect(font.glyph_run("AV").adjust).to eq([0, 0])
+    expect(font.glyph_run("", kerning: true).adjust).to eq([])
+  end
+
   it "exposes vertical metrics scaled to a size" do
     expect(font.ascender(10)).to be_between(9, 12)
     expect(font.descender(10)).to be_between(2, 4)
@@ -44,9 +65,20 @@ RSpec.describe Stationery::Fonts::Font do
   it "maps glyphs back to Unicode in chunks of at most 100" do
     alphabet = [*"A".."Z", *"a".."z", *"0".."9"].join
     font.encode("#{alphabet}ÅÄÖåäöÜüéèàç.,;:!?-()[]{}'\"/\\@#$%&*+=<>|~^_`")
-    cmap = font.send(:to_unicode_cmap)
+    cmap = Stationery::Fonts::ToUnicode.cmap(font.used_codes)
 
     expect(cmap.scan(/(\d+) beginbfchar/).flatten.map(&:to_i)).to all(be <= 100)
     expect(cmap).to include("<00E5>") # å
+  end
+
+  it "writes TrueType and name-keyed CFF glyphs by glyph id, CID-keyed CFF glyphs by CID" do
+    jp = described_class.new(Stationery::Fonts::Registry.load(font_path("NotoSansJP-Subset.otf")))
+    otf = described_class.new(Stationery::Fonts::Registry.load(font_path("SourceSans3-Latin.otf")))
+
+    expect(font.code(42)).to eq(42)
+    expect(otf.code(80)).to eq(80)
+    expect(jp.code(jp.ttf.glyph_id("日".ord))).to eq(20_220)
+    expect(jp.encode("日").unpack("n*")).to eq([20_220])
+    expect(jp.used_codes).to eq(20_220 => "日")
   end
 end

@@ -26,6 +26,12 @@ RSpec.describe Stationery::PDF::Writer do
     expect(render(writer)).to include("1 0 obj\n<</Type /Pages>>").and include("2 0 obj\n<</Parent 1 0 R>>")
   end
 
+  it "refuses to render while a reserved reference is still unset" do
+    writer.reserve
+
+    expect { render(writer) }.to raise_error(Stationery::Error, /object 1 reserved but never set/)
+  end
+
   it "writes byte-accurate cross-reference offsets" do
     writer.add(Stationery::PDF::Stream.new("q Q"))
     pdf = render(writer)

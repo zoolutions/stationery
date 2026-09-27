@@ -18,3 +18,5 @@ end
 if defined?(ActiveSupport) && ActiveSupport.respond_to?(:on_load)
   ActiveSupport.on_load(:action_controller) { include Stationery::Rails }
 end
+
+require_relative "railtie" if defined?(Rails::Railtie)

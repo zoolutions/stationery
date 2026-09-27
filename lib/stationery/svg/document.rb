@@ -8,6 +8,7 @@ module Stationery
     # inline styles and transforms. `currentColor` takes the colour you pass.
     class Document
       SHAPES = %w[path rect circle ellipse line polyline polygon].freeze
+      QUIET = (SHAPES + %w[svg g title desc metadata]).freeze
 
       def self.parse(source)
         root = Parser.parse(source)
@@ -16,11 +17,12 @@ module Stationery
         new(root)
       end
 
-      attr_reader :view_box
+      attr_reader :view_box, :unsupported
 
       def initialize(root)
         @root = root
         @view_box = read_view_box
+        @unsupported = element_names(root).uniq.sort - QUIET
       end
 
       def aspect = @view_box[2].to_f / @view_box[3]
@@ -42,6 +44,10 @@ module Stationery
         return values if values&.size == 4
 
         [0, 0, number(@root.attributes.fetch("width", "100")), number(@root.attributes.fetch("height", "100"))]
+      end
+
+      def element_names(element)
+        element.children.flat_map { |child| [child.name, *element_names(child)] }
       end
 
       def number(value)
