@@ -130,6 +130,20 @@ require "stationery/rails" # adds send_pdf to controllers
 def show = send_pdf(InvoicePdf.new(@invoice), filename: "invoice.pdf")
 ```
 
+## CLI
+
+```sh
+stationery render app/pdfs/invoice_pdf.rb                # writes app/pdfs/invoice_pdf.pdf
+stationery render invoice.rb --out - > invoice.pdf       # PDF to stdout
+stationery render pdfs.rb --class InvoicePdf --strict    # pick one; fail on layout warnings
+```
+
+`render` loads the file and renders the `Stationery::Document` it defines. A
+document whose `initialize` needs arguments renders from `def self.preview`,
+which returns an instance built with sample data. Layout warnings print to
+stderr; `--strict` exits 1 instead of writing. `stationery help` lists the
+commands.
+
 ## Fonts and images
 
 Fonts are TrueType (`.ttf`) files. Only the glyphs a document uses are

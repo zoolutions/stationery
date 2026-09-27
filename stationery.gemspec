@@ -43,5 +43,7 @@ Gem::Specification.new do |spec|
   spec.files = gem_files.select do |f|
     f.start_with?("lib/", "exe/") || %w[CHANGELOG.md LICENSE.txt README.md].include?(f)
   end
+  spec.bindir = "exe"
+  spec.executables = ["stationery"]
   spec.require_paths = ["lib"]
 end
