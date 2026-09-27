@@ -20,3 +20,10 @@ group :test do
   gem "rspec", "~> 3.13"
   gem "simplecov", require: false
 end
+
+group :benchmark do
+  gem "benchmark-ips", require: false
+  gem "prawn", require: false
+  gem "prawn-table", require: false
+  gem "stackprof", require: false
+end

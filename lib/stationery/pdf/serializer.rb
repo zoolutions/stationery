@@ -41,7 +41,11 @@ module Stationery
       def number(value)
         return value.to_s if value.is_a?(Integer)
 
-        str = format("%.4f", value).sub(/\.?0+\z/, "")
+        str = format("%.4f", value)
+        last = str.bytesize
+        last -= 1 while str.getbyte(last - 1) == 48 # "0"
+        last -= 1 if str.getbyte(last - 1) == 46 # "."
+        str = str.byteslice(0, last)
         str == "-0" ? "0" : str
       end
 

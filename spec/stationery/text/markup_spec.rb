@@ -54,6 +54,10 @@ RSpec.describe Stationery::Text::Markup do
     expect(decoded).to eq(["Fish & Chips <3 > \"q\" 's € A"])
   end
 
+  it "decodes HTML 4 named entities" do
+    expect(texts("Fish &amp; Chips &mdash; &euro;5").join).to eq("Fish & Chips — €5")
+  end
+
   it "turns <br> into a newline" do
     expect(texts("a<br>b<br/>c").join).to eq("a\nb\nc")
   end
