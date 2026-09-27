@@ -17,6 +17,19 @@ gem "stationery"
 
 Ruby 3.4 or newer.
 
+## Quick start
+
+```ruby
+class Hello < Stationery::Document
+  def view_template = text("Hello, world", size: 24, weight: :bold)
+end
+
+File.binwrite("hello.pdf", Hello.new.to_pdf)
+```
+
+No fonts to configure: Inter ships inside the gem and is used until you
+declare a `font_family`.
+
 ## A document
 
 ```ruby
@@ -75,6 +88,9 @@ InvoicePdf.new(invoice).to_pdf("a.pdf") # also writes a path or an IO
 | `image(path_or_io, width:, height:, fit:, align:)` | JPEG or PNG, aspect preserved. |
 | `svg(source_or_path, width:, height:, color:, align:)` | Vector icons and drawings; `currentColor` takes `color:`. |
 | `wrap(gap:, row_gap:, align:) { }` | Children side by side at their own widths, wrapping onto new rows (chips, tags). |
+| `ul(style:, gap:, indent:, marker_gap:, marker_color:) { li "…" }` | Bulleted list. `style:` is `:disc`, `:circle`, `:square`, `:dash` or any String; unstyled nested lists cycle disc → circle → square. Any node added inside (not only `li`) becomes an item. Items split across pages; the marker stays with the first line. |
+| `ol(format:, start:, suffix:, gap:, indent:, marker_gap:, marker_color:) { }` | Numbered list. `format:` is `:decimal`, `:alpha`, `:upper_alpha`, `:roman`, `:upper_roman` or a Proc `(n) -> String`; `suffix:` defaults to `"."`. Markers right-align so bodies line up. |
+| `li(string, **style)`, `li(gap:) { }` | A list item: a paragraph, or a block of any elements (including nested lists). |
 | `rule(height:, color:)`, `spacer(height)`, `page_break` | Dividers and spacing. |
 | `group(keep_together: true, align:) { }` | Keep a block on one page. |
 | `keep_with_next: true \| points` | On `text`, `box` or `group`: never end a page with this node; with a number, keep at least that many points of what follows with it. |
@@ -117,12 +133,30 @@ require "stationery/rails" # adds send_pdf to controllers
 def show = send_pdf(InvoicePdf.new(@invoice), filename: "invoice.pdf")
 ```
 
+## CLI
+
+```sh
+stationery render app/pdfs/invoice_pdf.rb                # writes app/pdfs/invoice_pdf.pdf
+stationery render invoice.rb --out - > invoice.pdf       # PDF to stdout
+stationery render pdfs.rb --class InvoicePdf --strict    # pick one; fail on layout warnings
+```
+
+`render` loads the file and renders the `Stationery::Document` it defines. A
+document whose `initialize` needs arguments renders from `def self.preview`,
+which returns an instance built with sample data. Layout warnings print to
+stderr; `--strict` exits 1 instead of writing. `stationery help` lists the
+commands.
+
 ## Fonts and images
 
 Fonts are TrueType (`.ttf`) files. Only the glyphs a document uses are
 embedded, with a ToUnicode map so text copies and searches correctly. A style
-without its own file (bold, italic) is synthesised. There is no built-in
-font: declare at least one `font_family`.
+without its own file (bold, italic) is synthesised.
+
+Inter (regular, bold, italic, bold italic; SIL Open Font License) is bundled
+and used when a document declares no family. `font_family "Inter"` with no
+paths selects it explicitly, and `Stationery.bundled_fonts` lists what ships.
+Font files are read lazily, on first use, never when the gem is required.
 
 Images are JPEG (grey, RGB, CMYK) and PNG (every colour type, alpha as a soft
 mask). Parsed fonts and images are cached per process.
