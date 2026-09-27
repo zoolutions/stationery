@@ -73,7 +73,7 @@ module Stationery
         end
       end
 
-      def split(width, height)
+      def split(width, height, **)
         heights = row_heights(width)
         used = heights.first(@header).sum
         count = @header

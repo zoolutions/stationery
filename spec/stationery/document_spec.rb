@@ -84,14 +84,16 @@ RSpec.describe Stationery::Document do
   end
 
   it "exposes overflow warnings instead of raising" do
-    doc = SpecDocument.build { box { 40.times { |i| text "row #{i}" } } }
+    doc = SpecDocument.build { box(break_inside: :avoid) { 40.times { |i| text "row #{i}" } } }
     doc.to_pdf
 
     expect(doc.warnings.map(&:page)).to eq([1])
   end
 
   describe "strict mode" do
-    let(:overflowing) { Class.new(SpecDocument) { def view_template = box { 40.times { |i| text "row #{i}" } } } }
+    let(:overflowing) do
+      Class.new(SpecDocument) { def view_template = box(break_inside: :avoid) { 40.times { |i| text "row #{i}" } } }
+    end
 
     it "raises WarningsError listing the warnings when asked per render" do
       doc = overflowing.new
@@ -132,9 +134,22 @@ RSpec.describe Stationery::Document do
     expect(doc.warnings.to_a).to eq([Stationery::Warnings::SkippedImage.new(source: "x", reason: "y")])
   end
 
-  it "explains a missing font family" do
-    bare = Class.new(described_class) { def view_template = text("x") }
+  it "renders with bundled Inter when no font family is declared" do
+    bare = Class.new(described_class) { def view_template = text("zero config") }
+    pdf = bare.new.to_pdf
 
-    expect { bare.new.to_pdf }.to raise_error(Stationery::Error, /font_family/)
+    expect(text_of(pdf)).to eq("zero config")
+    expect(pdf).to include("+Inter-Regular")
+  end
+
+  it "declares a bundled family by name alone" do
+    doc = Class.new(described_class) do
+      font_family "Inter"
+      default_text font: "Inter", weight: :bold
+      def view_template = text("bold")
+    end
+
+    expect(doc.new.to_pdf).to include("+Inter-Bold")
+    expect { Class.new(described_class) { font_family "Nope" } }.to raise_error(ArgumentError, /bundled: Inter/)
   end
 end

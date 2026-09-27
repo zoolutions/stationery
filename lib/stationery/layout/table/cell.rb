@@ -39,6 +39,7 @@ module Stationery
           end
           paint_content(canvas, context, rect)
           paint_borders(canvas, rect)
+          paint_debug(canvas, rect) if canvas.debug?
         end
 
         private
@@ -66,6 +67,12 @@ module Stationery
           own = content.fixed_width(inner.width)
           left = own ? inner.x + Geometry.align_offset(@options[:align] || :left, inner.width, own) : inner.x
           content.paint(canvas, left, inner.y + offset, own || inner.width)
+        end
+
+        def paint_debug(canvas, rect)
+          canvas.debug_rect(rect.x, rect.y, rect.width, rect.height, :cell)
+          inner = rect.inset(*padding)
+          canvas.debug_rect(inner.x, inner.y, inner.width, inner.height, :cell_padding)
         end
 
         def paint_borders(canvas, rect)
