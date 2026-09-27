@@ -44,4 +44,20 @@ RSpec.describe Stationery::Structure do
                                        ])
     expect(warnings.to_a).to eq([Stationery::Warnings::UnresolvedLink.new(name: "missing", page: 1)])
   end
+
+  it "fills page-number slots right-aligned and leaves unknown ones blank" do
+    resources = Stationery::Resources.new
+    style = base_style(size: 10)
+    canvas(1).anchor("b", 0)
+    canvas(0).number_slot("b", x: 50, baseline: 20, width: 30, style:, link: [0, 10, 80, 12])
+    canvas(0).number_slot("missing", x: 50, baseline: 40, width: 30, style:, link: [0, 30, 80, 12])
+    described_class.resolve(pages, warnings:, resources:, book: open_sans_book)
+    x = 80 - open_sans_book.resolve(style).first.width_of("2", 10)
+
+    expect(pages[0].content.scan("Tj").size).to eq(1)
+    expect(pages[0].content).to include("#{Stationery::PDF::Serializer.number(x)} 80 Td")
+    expect(pages[0].resource_names[:Font]).to eq([:F1])
+    expect(pages[0].annotations).to eq([{ rect: [0, 78, 80, 90], dest: destination.new(1, 100) }])
+    expect(warnings).to be_empty
+  end
 end

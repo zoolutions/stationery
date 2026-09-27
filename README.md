@@ -101,7 +101,7 @@ Text style options: `font`, `size`, `weight` (`:regular`, `:bold`), `style` (`:i
 `letter_spacing`, `underline`, `strikethrough`, `link`, `opacity`, `align`, `leading`.
 Colours are `"#RRGGBB"`, `"RRGGBB"`, `"#RGB"`, `[r, g, b]` (0-255) or `[c, m, y, k]` (0-100).
 
-### Links and bookmarks
+### Links, bookmarks and table of contents
 
 A link target starting with `#` jumps to a named anchor in the same PDF; anything else is a URL.
 
@@ -133,6 +133,21 @@ text "Appendix", size: 16
 
 A document with bookmarks opens with the outline shown. A bookmark whose content never paints (cut off
 by a fixed-height box) is left out; bookmarks inside page templates are ignored.
+
+`table_of_contents` lists the bookmarks with the page each one landed on, one clickable row per entry.
+It reads the outline when layout starts, so bookmarks declared after it are included.
+
+```ruby
+text "Contents", size: 18
+table_of_contents                     # every level, dotted leaders
+table_of_contents(levels: 1..2, leader: :line, indent: 16, size: 9, color: "#374151")
+```
+
+Options: `levels:` (a Range, or an Integer maximum depth), `leader:` (`:dots`, `:line` or `nil`),
+`indent:` per level (points), `gap:` between rows and before the number, `number_width:` (defaults to
+the width of "0000") plus any text style. Numbers are right-aligned in a fixed slot and filled in after
+pagination, so a long contents list paginates without reflowing. An entry whose target never paints
+keeps its title, with no number and no link.
 
 ## Components
 

@@ -174,6 +174,15 @@ RSpec.describe Stationery::Canvas do
     expect(page.template_anchors).to eq([["header", 90]])
   end
 
+  it "records a page-number slot to fill once destinations are known" do
+    style = Stationery::Text::Style.new(family: "Open Sans")
+    canvas.number_slot("intro", x: 150, baseline: 40, width: 30, style:, link: [0, 30, 180, 12])
+
+    expect(page.slots).to eq([Stationery::Page::Slot.new("intro", 150, 40, 30, style, [0, 30, 180, 12])])
+    expect(page.annotations).to be_empty
+    expect(ops).to be_empty
+  end
+
   describe "#debug_rect" do
     def debug_canvas(debug) = described_class.new(page, resources, debug:)
 

@@ -82,6 +82,15 @@ module Stationery
       @_builder.add(mark(node, anchor, bookmark))
     end
 
+    # The document's bookmarks with their page numbers, one linked row each.
+    # `levels:` is a Range (or an Integer maximum depth); `leader:` is :dots,
+    # :line or nil; text options style the rows.
+    def table_of_contents(levels: 1.., leader: :dots, indent: 12, number_width: nil, gap: 4, **options)
+      node = Layout::TableOfContents.new(@_builder.outline, context: @_builder.context(@_builder.style(options)),
+                                                            levels:, leader:, indent:, number_width:, gap:)
+      @_builder.add(node)
+    end
+
     def image(source, align: nil, **)
       node = Layout::Image.new(source, **)
       @_builder.add(align ? Layout::Flow.new([node], align:) : node)
