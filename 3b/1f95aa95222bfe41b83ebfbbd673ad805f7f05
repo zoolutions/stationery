@@ -1,0 +1,48 @@
+lib/stationery/builder.rb
+  s_832305fd821824::t_7b4384ddeca32a 52
+spec/stationery/document_spec.rb
+  ai_agent 106,108-109
+  s_832305fd821824::t_edbd2cde229917 93-105,107,110-134
+lib/stationery/warnings.rb
+  s_832305fd821824::t_95ed028a7236c2 1-24,26-65
+  s_832305fd821824::t_6aad361eec37db 25
+lib/stationery/layout/paginator.rb
+  s_832305fd821824::t_6c60dfae17b301 10,13
+README.md
+  s_832305fd821824::t_ccb4ada21521e8 111-117
+spec/stationery/warnings_spec.rb
+  s_832305fd821824::t_6aad361eec37db 4,56,60
+  s_832305fd821824::t_706dc56c549b19 10
+  s_832305fd821824::t_08b72774fd539f 1-3,5-9,11-55,57-59,61-71
+spec/stationery/svg/document_spec.rb
+  s_832305fd821824::t_d16d9fc4cccad2 64-73
+spec/stationery/elements_spec.rb
+  s_832305fd821824::t_985793fe77e7a2 92-112
+  s_832305fd821824::t_aebd850e8b496b 3-4
+lib/stationery/errors.rb
+  s_832305fd821824::t_4b70265a5f2d98 11-18,21-22
+  s_832305fd821824::t_6aad361eec37db 19-20
+CHANGELOG.md
+  s_832305fd821824::t_ccb4ada21521e8 10-12
+lib/stationery/elements.rb
+  s_832305fd821824::t_17b12d91c7170b 59-61,65
+  s_832305fd821824::t_6aad361eec37db 62-64
+lib/stationery/fonts/font_book.rb
+  s_832305fd821824::t_cbd45d5683794c 9,11,13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "3b1f95aa95222bfe41b83ebfbbd673ad805f7f05",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
