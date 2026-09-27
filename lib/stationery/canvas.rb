@@ -85,11 +85,14 @@ module Stationery
 
     # A clickable area opening `target`: a URL, or `#name` for an anchor in
     # this document. Annotation rectangles live in absolute, untransformed
-    # page space, so they ignore clips and path transforms.
-    def link(x, y, w, h, target)
+    # page space, so they ignore clips and path transforms. `tag:` is the
+    # Link element the annotation belongs to in a tagged PDF.
+    def link(x, y, w, h, target, tag: nil)
       target = target.to_s
       rect = [x, @page.height - y - h, x + w, @page.height - y].map { |v| num_value(v) }
-      @page.annotations << (target.start_with?("#") ? { rect:, dest: target[1..] } : { rect:, url: target })
+      annotation = target.start_with?("#") ? { rect:, dest: target[1..] } : { rect:, url: target }
+      @page.annotations << annotation
+      own(annotation, tag) if tag
     end
 
     # An interactive form field's widget (a Forms::Field) over the rectangle.
@@ -104,9 +107,10 @@ module Stationery
     end
 
     # Leaves room for the page number `anchor` lands on; Structure fills it in
-    # and adds the `link:` area ([x, y, w, h]) when the anchor exists.
-    def number_slot(anchor, x:, baseline:, width:, style:, link: nil)
-      @page.slots << Page::Slot.new(anchor.to_s, x, baseline, width, style, link)
+    # and adds the `link:` area ([x, y, w, h]) when the anchor exists. `tags:`
+    # are the [link, number] elements they belong to in a tagged PDF.
+    def number_slot(anchor, x:, baseline:, width:, style:, link: nil, tags: nil)
+      @page.slots << Page::Slot.new(anchor.to_s, x, baseline, width, style, link, tags)
     end
 
     def num(value) = PDF::Serializer.number(num_value(value))

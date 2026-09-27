@@ -11,6 +11,9 @@ module Stationery
     # One marked-content sequence: the page it is on and its MCID there.
     MarkedContent = Data.define(:page, :mcid)
 
+    # An annotation (the page's link Hash) that belongs to an element.
+    ObjectRef = Data.define(:page, :annotation)
+
     def self.role(role)
       ROLES.fetch(role) { raise ArgumentError, "unknown role #{role.inspect} (use #{ROLES.keys.join(", ")})" }
     end
@@ -22,19 +25,27 @@ module Stationery
       :"H#{level}"
     end
 
+    # TODO(forms): once AcroForm fields land, tag Layout::Field as a `Form`
+    # element holding its widget annotation (Canvas#link's `tag:` path: an
+    # /OBJR plus /StructParent on the widget).
+
     # A structure element. Layout nodes create one per source node and share
     # it with every fragment a split produces, so content continued on the
     # next page stays one element. It joins the tree where it first paints.
     class Element
-      attr_reader :type, :alt, :kind, :kids, :parent, :bbox
+      attr_reader :type, :alt, :kind, :kids, :parent, :attributes
 
-      # `alt` is a Figure's alternate text; `kind` names what drew it in warnings.
-      def initialize(type, alt: nil, kind: nil)
+      # `alt` is a Figure's alternate text; `kind` names what drew it in
+      # warnings; `attributes` are { owner => { key => value } } (/A entries).
+      def initialize(type, alt: nil, kind: nil, attributes: {})
         @type = type
         @alt = alt
         @kind = kind
+        @attributes = attributes.transform_values(&:dup)
         @kids = []
       end
+
+      def attached? = !@parent.nil?
 
       def attach(parent)
         return if @parent
@@ -45,13 +56,14 @@ module Stationery
 
       # A bounding box in PDF space, kept from the first fragment painted.
       def place(bbox)
-        @bbox ||= bbox
+        (@attributes[:Layout] ||= {})[:BBox] ||= bbox
         self
       end
 
+      def bbox = @attributes.dig(:Layout, :BBox)
       def marked_content = @kids.grep(MarkedContent)
       def elements = @kids.grep(Element)
-      def empty? = marked_content.empty? && elements.all?(&:empty?)
+      def empty? = @kids.none?(MarkedContent) && @kids.none?(ObjectRef) && elements.all?(&:empty?)
     end
   end
 end

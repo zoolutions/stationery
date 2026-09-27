@@ -43,6 +43,31 @@ RSpec.describe Stationery::Canvas::Marking do
     expect(tree.root.kids).to be_empty
   end
 
+  it "splits runs into sequences per element, links joining their parent" do
+    tagged = canvas
+    link = Stationery::Tagging::Element.new(:Link)
+    tagged.tag_runs(paragraph) do |mark|
+      mark.call { nil }
+      mark.call(link) { tagged.link(0, 0, 5, 5, "https://example.com", tag: link) }
+      mark.call(link) { nil }
+      mark.call { nil }
+    end
+
+    expect(page.content.scan(/BDC|EMC/).each_slice(2).count).to eq(3)
+    expect(paragraph.kids.map(&:class)).to eq([Stationery::Tagging::MarkedContent, Stationery::Tagging::Element,
+                                               Stationery::Tagging::MarkedContent])
+    expect(link.kids.last).to eq(Stationery::Tagging::ObjectRef.new(page, page.annotations.first))
+    expect(page.annotations.first[:tag]).to be(link)
+  end
+
+  it "paints runs without a parent as an artifact and leaves unattached links alone" do
+    tagged = canvas
+    tagged.tag_runs(nil) { |mark| mark.call { tagged.link(0, 0, 5, 5, "#a", tag: paragraph) } }
+
+    expect(page.content).to eq("/Artifact BMC\nEMC\n")
+    expect(page.annotations.first).not_to have_key(:tag)
+  end
+
   it "records a figure's bounding box in PDF space" do
     figure = Stationery::Tagging::Element.new(:Figure)
     canvas.tag(figure, bbox: [10, 20, 30, 40]) { nil }

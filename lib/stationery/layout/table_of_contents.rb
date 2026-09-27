@@ -26,7 +26,7 @@ module Stationery
 
       def rows
         @rows ||= Flow.new(entries.map { |entry| Entry.new(entry, context: @context, options: @options, slot:) },
-                           gap: @options.gap)
+                           gap: @options.gap, tag: Tagging::Element.new(:TOC))
       end
 
       def entries

@@ -8,8 +8,11 @@ module Stationery
   class Page
     # Room for the page number of `anchor`, right-aligned in `width` from `x`
     # on `baseline` (top-left coordinates), drawn in `style`. `link` is an
-    # [x, y, w, h] area linked to the anchor only once it resolves.
-    Slot = Data.define(:anchor, :x, :baseline, :width, :style, :link)
+    # [x, y, w, h] area linked to the anchor only once it resolves. `tags` are
+    # its [link, number] structure elements in a tagged PDF.
+    Slot = Data.define(:anchor, :x, :baseline, :width, :style, :link, :tags) do
+      def initialize(anchor:, x:, baseline:, width:, style:, link:, tags: nil) = super
+    end
 
     SIZES = {
       a3: [841.89, 1190.55], a4: [595.28, 841.89], a5: [419.53, 595.28],

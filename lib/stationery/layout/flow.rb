@@ -10,11 +10,13 @@ module Stationery
     class Flow < Node
       attr_reader :children, :gap, :align
 
-      def initialize(children = [], gap: 0, align: :left)
+      # `tag` groups the children in a tagged PDF (a list's L).
+      def initialize(children = [], gap: 0, align: :left, tag: nil)
         super()
         @children = children
         @gap = gap
         @align = align
+        @tag = tag
       end
 
       def <<(child)
@@ -35,6 +37,20 @@ module Stationery
       end
 
       def paint(canvas, x, y, width, _height = nil, **)
+        canvas.structure(@tag) { paint_children(canvas, x, y, width) }
+      end
+
+      def split(width, height, fresh: false)
+        Splitter.new(self, width, height, fresh).call
+      end
+
+      def with_children(children)
+        self.class.new(children, gap: @gap, align: @align, tag: @tag)
+      end
+
+      private
+
+      def paint_children(canvas, x, y, width)
         cursor = y
         @children.reject(&:page_break?).each_with_index do |child, index|
           cursor += @gap unless index.zero?
@@ -45,14 +61,6 @@ module Stationery
           canvas.debug_rect(left, cursor, own, height, :flow)
           cursor += height
         end
-      end
-
-      def split(width, height, fresh: false)
-        Splitter.new(self, width, height, fresh).call
-      end
-
-      def with_children(children)
-        self.class.new(children, gap: @gap, align: @align)
       end
     end
 

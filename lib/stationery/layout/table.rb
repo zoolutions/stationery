@@ -10,8 +10,13 @@ module Stationery
       DEFAULT_CELL = { padding: 5, borders: %i[top right bottom left], border_width: 0.5,
                        border_color: "#000000" }.freeze
 
-      def initialize(rows, context:, widths: nil, width: :auto, header: false, split_rows: false, cell: {})
+      # `tag` is the Table element its fragments share; a `continued` fragment
+      # repeats header rows already read on an earlier page.
+      def initialize(rows, context:, widths: nil, width: :auto, header: false, split_rows: false, cell: {},
+                     tag: Tagging::Element.new(:Table), continued: false)
         super()
+        @tag = tag
+        @continued = continued
         @split_rows = split_rows
         @context = context
         @widths = widths
@@ -20,6 +25,7 @@ module Stationery
         defaults = DEFAULT_CELL.merge(cell)
         @cells = rows.map { |row| row.map { |content| build_cell(content, defaults) } }
         check_header
+        tag_cells
         yield self if block_given?
       end
 
@@ -74,11 +80,12 @@ module Stationery
       def paint(canvas, x, y, width, _height = nil, **)
         widths = column_widths(width)
         heights = row_heights(width)
-        grid.placements.each do |p|
-          rect = Rect.new(x + widths[0...p.column].sum, y + heights[0...p.row].sum,
-                          widths[p.columns].sum, heights[p.rows].sum)
-          p.cell.paint(canvas, @context, rect, last_column: p.columns.end == column_count,
-                                               last_row: p.rows.end == row_count)
+        canvas.structure(@tag) do
+          grid.placements.each do |p|
+            rect = Rect.new(x + widths[0...p.column].sum, y + heights[0...p.row].sum,
+                            widths[p.columns].sum, heights[p.rows].sum)
+            paint_cell(canvas, p, rect)
+          end
         end
       end
 
@@ -97,10 +104,34 @@ module Stationery
 
       def grid = @grid ||= Grid.new(@cells)
 
+      def paint_cell(canvas, placement, rect)
+        cell = placement.cell
+        paint = lambda do
+          cell.paint(canvas, @context, rect, last_column: placement.columns.end == column_count,
+                                             last_row: placement.rows.end == row_count)
+        end
+        return canvas.artifact(type: :pagination, &paint) if @continued && placement.row < @header
+
+        canvas.structure(cell.row_tag) { canvas.structure(cell.tag, &paint) }
+      end
+
+      def tag_cells
+        @cells.each_with_index do |row, index|
+          row_tag = Tagging::Element.new(:TR)
+          row.each { |cell| cell.tagged(cell_tag(cell, index < @header), row_tag) }
+        end
+      end
+
+      def cell_tag(cell, header)
+        attributes = { Scope: (:Column if header), ColSpan: (cell.colspan if cell.colspan > 1),
+                       RowSpan: (cell.rowspan if cell.rowspan > 1) }.compact
+        Tagging::Element.new(header ? :TH : :TD, attributes: attributes.empty? ? {} : { Table: attributes })
+      end
+
       def split_before(count)
         return [nil, self] if count == @header
 
-        [with_rows(@cells.first(count)), with_rows(@cells.first(@header) + @cells.drop(count))]
+        [with_rows(@cells.first(count)), with_rows(@cells.first(@header) + @cells.drop(count), continued: true)]
       end
 
       def split_row(row, width, space, fresh:)
@@ -113,7 +144,7 @@ module Stationery
         return unless heads
 
         [with_rows(@cells.first(row) + [heads], widths:),
-         with_rows(@cells.first(@header) + [tails] + @cells.drop(row + 1), widths:)]
+         with_rows(@cells.first(@header) + [tails] + @cells.drop(row + 1), widths:, continued: true)]
       end
 
       def build_cell(content, defaults)
@@ -156,8 +187,9 @@ module Stationery
         @row_heights[width] ||= grid.row_heights(column_widths(width)) { |p, span| p.cell.measure(@context, span) }
       end
 
-      def with_rows(rows, widths: @widths)
-        self.class.new(rows, context: @context, widths:, width: @width, header: @header, split_rows: @split_rows)
+      def with_rows(rows, widths: @widths, continued: @continued)
+        self.class.new(rows, context: @context, widths:, width: @width, header: @header, split_rows: @split_rows,
+                             tag: @tag, continued:)
       end
     end
   end

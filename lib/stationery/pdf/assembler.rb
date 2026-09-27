@@ -67,7 +67,10 @@ module Stationery
       def annotation_ref(writer, annotation, page)
         return @form.add(annotation[:widget], annotation[:rect], page) if annotation[:widget]
 
-        writer.add(annotation(annotation))
+        ref = writer.reserve
+        dictionary = annotation(annotation)
+        dictionary = dictionary.merge(@structure.annotation(annotation, ref)) if @structure
+        writer.set(ref, dictionary)
       end
 
       def annotation(link)
