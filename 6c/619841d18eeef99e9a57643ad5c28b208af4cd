@@ -1,0 +1,48 @@
+spec/stationery/fonts/gpos_spec.rb
+  s_832305fd821824::t_9f38704e506eec 1-32,37-48,50-55,58-91
+  s_832305fd821824::t_178b3007d5fedb 33-36,56
+  s_832305fd821824::t_b803f2b9cc6d99 49,57
+spec/support/gpos_builder.rb
+  s_832305fd821824::t_14428bf47d7ffc 58
+  s_832305fd821824::t_c3c52a2e58eed0 59-61,70-71
+  s_832305fd821824::t_2517d26c53476c 1-57,62-69,72-73,77-89
+  s_832305fd821824::t_64f0b3176fa962 74-76
+lib/stationery/fonts/gpos/coverage.rb
+  s_832305fd821824::t_56826d457b6d6c 1-10,15-20
+  s_832305fd821824::t_7f921e6f0eb05d 11-14
+lib/stationery/fonts/kerning.rb
+  s_832305fd821824::t_0d395064f3cceb 13-14
+lib/stationery/fonts/gpos/pair_pos.rb
+  s_832305fd821824::t_a757c2c23025b7 1-15,19,23,26,29-37,41-52,55-62,64-83
+  s_832305fd821824::t_29b2427a2c845e 16-18,20-22,24-25,27-28,38-40,53-54,63
+lib/stationery/fonts/gpos/class_def.rb
+  s_832305fd821824::t_086472b18a3134 1-6,9-10,12,20-25
+  s_832305fd821824::t_aceba8c6246ecd 7-8,11,13-19
+lib/stationery.rb
+  s_832305fd821824::t_6f08229ebb7b44 13-16
+spec/stationery/fonts/kerning_spec.rb
+  s_832305fd821824::t_62beb332b33646 6,13
+  s_832305fd821824::t_b803f2b9cc6d99 10-12,14-19,21-25
+CHANGELOG.md
+  ai_agent 14-15
+README.md
+  ai_agent 127-130
+lib/stationery/fonts/gpos.rb
+  s_832305fd821824::t_b1f9b65724c12b 1-62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "6c619841d18eeef99e9a57643ad5c28b208af4cd",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
