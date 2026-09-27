@@ -1,0 +1,39 @@
+lib/stationery/elements/rich.rb
+  s_600b6bfbec0b19::t_d6cd3ed64c0238 8,13,19
+  s_600b6bfbec0b19::t_a75dd5cdc494de 9-11,17
+spec/stationery/rich/renderer_spec.rb
+  s_600b6bfbec0b19::t_ec640161c924ba 50-57,63-67,70-101
+  s_600b6bfbec0b19::t_a75dd5cdc494de 58-62
+  ai_agent 68-69
+lib/stationery/rich/renderer.rb
+  s_600b6bfbec0b19::t_d6cd3ed64c0238 6,15,46
+  s_600b6bfbec0b19::t_a75dd5cdc494de 17,25
+spec/stationery/warnings_spec.rb
+  s_600b6bfbec0b19::t_ec640161c924ba 54-55
+lib/stationery/rich/renderer/inlines.rb
+  s_600b6bfbec0b19::t_d6cd3ed64c0238 22,25,32-39
+lib/stationery/rich/renderer/links.rb
+  s_600b6bfbec0b19::t_d6cd3ed64c0238 1-28
+lib/stationery/warnings.rb
+  s_600b6bfbec0b19::t_d6cd3ed64c0238 36-39
+README.md
+  s_600b6bfbec0b19::t_80e20a60166d94 102-103,133-136
+docs/app/views/docs/pages/warnings.rb
+  s_600b6bfbec0b19::t_80e20a60166d94 44-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "7f6709ebc759bf9d3251909b0088bd1a1c8028e1",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
