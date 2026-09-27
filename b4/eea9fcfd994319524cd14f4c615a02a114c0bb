@@ -1,0 +1,68 @@
+lib/stationery/fonts/installer.rb
+  s_832305fd821824::t_405b47d7a0845b 1-66,68-82,84-86,89-93,95,97-121
+  s_832305fd821824::t_31d30ed3f373a3 67
+  s_832305fd821824::t_ee408c361702f9 83
+  s_832305fd821824::t_9dce9765905efe 87-88,94,96
+lib/stationery/fonts/packs.rb
+  s_832305fd821824::t_307c2696e349c7 1-45
+lib/stationery/fonts/font_book.rb
+  s_832305fd821824::t_462f48ecfa727c 31-32,34,41-46
+lib/stationery.rb
+  s_832305fd821824::t_87fd9d75c4b477 31-33
+lib/stationery/cli.rb
+  s_832305fd821824::t_b9b01d342d2187 74
+spec/stationery/cli/fonts_spec.rb
+  s_832305fd821824::t_8aab1121319147 1-85
+lib/stationery/cli/fonts.rb
+  s_832305fd821824::t_19cd40a6d228cb 1-40,43-85
+  s_832305fd821824::t_c560a55f25b187 41-42
+spec/stationery/fonts_spec.rb
+  s_832305fd821824::t_81d68bdc0b983d 1-42
+spec/stationery/fonts/catalog_spec.rb
+  s_832305fd821824::t_ab6e322fc1876f 1-49
+lib/generators/stationery/fonts_generator.rb
+  s_832305fd821824::t_d7f047d292f29b 1-24
+spec/rails/fonts_generator_spec.rb
+  s_832305fd821824::t_855d0bc46fa675 1-23,26-27,29-30
+  s_832305fd821824::t_409b9555ed7922 24,28
+  s_832305fd821824::t_c560a55f25b187 25
+Rakefile
+  s_832305fd821824::t_c22b28f7b57c23 30-42
+README.md
+  s_832305fd821824::t_67b987d1d39893 281-293
+  s_832305fd821824::t_36ce1a2f9e3150 307-330
+lib/stationery/fonts/catalog.rb
+  s_832305fd821824::t_022a2017880d9c 22-23,26,30-32
+  s_832305fd821824::t_c1f271925b719c 1-21,24-25,27-29,33-101
+spec/stationery/fonts/packs_spec.rb
+  s_832305fd821824::t_6b56153da15e0f 1-53
+lib/stationery/fonts/family.rb
+  s_832305fd821824::t_73da9476f82c17 15-16,20-23
+spec/stationery/fonts/installer_spec.rb
+  s_832305fd821824::t_8a96024a699c39 1-4,6-13,16-23,30-38,40-67,69-70,74-157,161-162,166-172
+  s_832305fd821824::t_c560a55f25b187 39,68,71-72,158-160,163-165
+  s_832305fd821824::t_06b621cec6aeca 14-15,24-29
+  s_832305fd821824::t_00f9d556b5c9d0 73
+  s_832305fd821824::t_24dbb2e526f9ce 5
+spec/stationery/fonts/font_book_spec.rb
+  s_832305fd821824::t_b8089274769c6b 3-5
+  s_832305fd821824::t_cebec403e87b4e 45-69
+CHANGELOG.md
+  s_832305fd821824::t_a6109140820039 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "b4eea9fcfd994319524cd14f4c615a02a114c0bb",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
