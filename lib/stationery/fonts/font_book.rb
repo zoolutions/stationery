@@ -6,10 +6,11 @@ module Stationery
     # document gets its own book so glyph usage (and so subsetting) is per
     # document, while the parsed TrueType data is shared through the Registry.
     class FontBook
-      attr_reader :families
+      attr_reader :families, :warnings
 
-      def initialize(families = {})
+      def initialize(families = {}, warnings: Warnings.new)
         @families = families.dup
+        @warnings = warnings
         @fonts = {}
       end
 

@@ -23,7 +23,8 @@ module Stationery
         @config ||= if superclass.respond_to?(:config)
                       superclass.config.transform_values(&:dup)
                     else
-                      { page: { size: :letter, margin: 36 }, families: {}, text: {}, metadata: {}, templates: [] }
+                      { page: { size: :letter, margin: 36 }, families: {}, text: {}, metadata: {}, templates: [],
+                        strict: false }
                     end
       end
 
@@ -43,6 +44,11 @@ module Stationery
         config[:metadata] = config[:metadata].merge(info)
       end
 
+      # Raise WarningsError instead of writing a PDF that produced warnings.
+      def strict(value = true) # rubocop:disable Style/OptionalBooleanParameter
+        config[:strict] = value
+      end
+
       # Runs after pagination on every page. `layer: :background` paints under
       # the page's content.
       def page_template(layer: :foreground, &block)
@@ -55,14 +61,16 @@ module Stationery
     def page_options = self.class.config[:page]
     def metadata = self.class.config[:metadata]
 
-    def to_pdf(target = nil, debug: false)
-      book = Fonts::FontBook.new(self.class.config[:families])
+    def to_pdf(target = nil, strict: self.class.config[:strict], debug: false)
+      warnings = Warnings.new
+      book = Fonts::FontBook.new(self.class.config[:families], warnings:)
       call(builder = Builder.new(book:, text: self.class.config[:text]))
       resources = Resources.new
-      paginator = Layout::Paginator.new(resources:, page: page_options, debug:)
-      pages = paginator.paginate(builder.root)
-      @warnings = paginator.warnings
+      pages = Layout::Paginator.new(resources:, page: page_options, warnings:, debug:).paginate(builder.root)
       PageTemplates.new(self, book:, resources:, debug:).apply(pages)
+      @warnings = warnings
+      raise WarningsError, warnings if strict && warnings.any?
+
       write(PDF::Assembler.new(pages:, resources:, info:).render, target)
     end
 

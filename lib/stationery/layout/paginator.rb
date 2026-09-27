@@ -7,11 +7,11 @@ module Stationery
     class Paginator
       attr_reader :warnings
 
-      def initialize(resources:, page: {}, debug: false)
+      def initialize(resources:, page: {}, warnings: Warnings.new, debug: false)
         @resources = resources
         @debug = debug
         @page_options = page
-        @warnings = []
+        @warnings = warnings
       end
 
       def paginate(root)

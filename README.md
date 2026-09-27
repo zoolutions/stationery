@@ -124,6 +124,13 @@ render Callout.new(color: "#F3F4F6") { text "Amount due" }
   `page.width`, `page.height`, `page.margin` and `page.content_box`. `page_template(layer: :background)`
   paints under the content (full-bleed backgrounds).
 - Content taller than a page is placed anyway; `document.warnings` lists every overflow.
+- After `to_pdf`, `document.warnings` is an Enumerable of everything the render noticed but did not
+  raise on, each with a `#message`: overflows, SVG elements that were skipped (`UnsupportedSvg`), and
+  the other `Stationery::Warnings::*` kinds (missing glyphs, unknown font families, skipped images,
+  unresolved links, duplicate anchors). Equal warnings are listed once; warnings from page templates
+  are included. `to_pdf(strict: true)`, or `strict` at class level, raises `Stationery::WarningsError`
+  (with `#warnings`) instead of writing a PDF that produced any; `to_pdf(strict: false)` opts one
+  render out again.
 
 ### Debugging
 

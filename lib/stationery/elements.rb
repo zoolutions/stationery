@@ -64,8 +64,13 @@ module Stationery
     # An SVG drawing: markup String, or a path to a .svg file. `currentColor`
     # takes `color:`.
     def svg(source, width: nil, height: nil, color: "#000000", align: nil)
-      source = File.read(source.to_s) unless source.to_s.lstrip.start_with?("<")
-      node = Layout::Svg.new(SVG::Document.parse(source), width:, height:, color:)
+      name = source.to_s.lstrip.start_with?("<") ? "inline" : File.basename(source.to_s)
+      source = File.read(source.to_s) unless name == "inline"
+      document = SVG::Document.parse(source)
+      if document.unsupported.any?
+        @_builder.warnings << Warnings::UnsupportedSvg.new(elements: document.unsupported, source: name)
+      end
+      node = Layout::Svg.new(document, width:, height:, color:)
       @_builder.add(align ? Layout::Flow.new([node], align:) : node)
     end
 
