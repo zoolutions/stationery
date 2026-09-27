@@ -31,6 +31,7 @@ module Stationery
       def descender(size) = -scale(@ttf.descender, size)
       def line_gap(size) = scale(@ttf.line_gap, size)
       def line_height(size) = ascender(size) + descender(size) + line_gap(size)
+      def x_height(size) = scale(@ttf.x_height, size)
       def underline_position(size) = scale(@ttf.underline_position, size)
       def underline_thickness(size) = scale(@ttf.underline_thickness, size)
       def strikeout_position(size) = scale(@ttf.strikeout_position, size)
