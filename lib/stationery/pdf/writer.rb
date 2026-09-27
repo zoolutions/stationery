@@ -30,6 +30,10 @@ module Stationery
       end
 
       def render(root:, info:)
+        if (missing = @objects.index(nil))
+          raise Error, "object #{missing + 1} reserved but never set"
+        end
+
         out = HEADER.dup
         offsets = @objects.each_with_index.map { |object, index| write_object(out, index + 1, object) }
         xref = out.bytesize

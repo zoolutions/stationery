@@ -14,9 +14,14 @@ module Stationery
           name = Regexp.last_match(1)
           if name.start_with?("#x") then [name[2..].to_i(16)].pack("U")
           elsif name.start_with?("#") then [name[1..].to_i].pack("U")
-          else NAMED.fetch(name, entity)
+          else NAMED.fetch(name) { html4.fetch(name, entity) }
           end
         end
+      end
+
+      def html4
+        require_relative "entities/html4" unless defined?(HTML4)
+        HTML4
       end
     end
   end
