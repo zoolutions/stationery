@@ -1,0 +1,103 @@
+lib/stationery/fonts/font_book.rb
+  s_832305fd821824::t_c3ecdf4299ea25 9,11-13,15,32-33
+  s_832305fd821824::t_462f48ecfa727c 37-38,40,47-52
+spec/stationery/fonts/font_book_spec.rb
+  s_832305fd821824::t_cebec403e87b4e 45-69
+  s_832305fd821824::t_b8089274769c6b 3-5
+lib/stationery/rich/renderer/inlines.rb
+  s_832305fd821824::t_8b4f35854826f7 1-53
+lib/stationery/fonts/font.rb
+  s_832305fd821824::t_c3ecdf4299ea25 22,46
+spec/stationery/fonts/catalog_spec.rb
+  s_832305fd821824::t_ab6e322fc1876f 1-49
+lib/stationery/elements/rich.rb
+  s_832305fd821824::t_2083d854aa4747 1-27
+lib/stationery/fonts/family.rb
+  s_832305fd821824::t_73da9476f82c17 15-16,20-23
+lib/stationery/layout/text.rb
+  s_832305fd821824::t_c3ecdf4299ea25 11
+lib/stationery/cli/fonts.rb
+  s_832305fd821824::t_19cd40a6d228cb 1-40,43-85
+  s_832305fd821824::t_c560a55f25b187 41-42
+spec/stationery/layout/text_spec.rb
+  s_832305fd821824::t_a03f6d7aee974a 13-18
+spec/integration/markdown_spec.rb
+  s_832305fd821824::t_376a8b62bb244c 1-14,21-29
+  s_832305fd821824::t_cfbb0af116c6e2 15-20
+spec/stationery/fonts/fallback_spec.rb
+  ai_agent 1-116
+lib/stationery/cli.rb
+  s_832305fd821824::t_b9b01d342d2187 74
+spec/stationery/rich/renderer_spec.rb
+  ai_agent 1-135
+lib/stationery/fonts/packs.rb
+  s_832305fd821824::t_307c2696e349c7 1-45
+lib/stationery/fonts/catalog.rb
+  s_832305fd821824::t_022a2017880d9c 22-23,26,30-32
+  s_832305fd821824::t_c1f271925b719c 1-21,24-25,27-29,33-101
+spec/stationery/cli/fonts_spec.rb
+  ai_agent 1-85
+lib/generators/stationery/fonts_generator.rb
+  s_832305fd821824::t_d7f047d292f29b 1-24
+README.md
+  s_832305fd821824::t_67b987d1d39893 307-319
+  s_832305fd821824::t_36ce1a2f9e3150 333-356
+  s_832305fd821824::t_d549f508d36aff 357-377
+  s_832305fd821824::t_486952f0b75cc7 100-101,109-130
+spec/stationery/fonts/installer_spec.rb
+  ai_agent 1-172
+lib/stationery/rich/renderer.rb
+  s_832305fd821824::t_cfbb0af116c6e2 13
+  s_832305fd821824::t_dcf804e12b8b88 1-12,14-121
+lib/stationery.rb
+  s_832305fd821824::t_0d917b71570883 92
+  s_832305fd821824::t_87fd9d75c4b477 31-33
+  s_832305fd821824::t_0b29db1a9e92ba 50
+CHANGELOG.md
+  s_832305fd821824::t_a6109140820039 6
+  s_832305fd821824::t_486952f0b75cc7 7
+  s_832305fd821824::t_d549f508d36aff 8
+lib/stationery/document.rb
+  s_832305fd821824::t_c3ecdf4299ea25 26-27,39-44,84
+lib/stationery/rich/styles.rb
+  s_832305fd821824::t_7c7a49655e188e 1-34
+spec/stationery/fonts_spec.rb
+  ai_agent 1-42
+lib/stationery/text/paragraph.rb
+  s_832305fd821824::t_c3ecdf4299ea25 13,19,99,109-115
+spec/integration/html_spec.rb
+  ai_agent 1-26
+Rakefile
+  s_832305fd821824::t_c22b28f7b57c23 30-42
+spec/fixtures/markdown/readme.md
+  s_832305fd821824::t_2a15cf6a0f267e 1-28
+spec/stationery/fonts/packs_spec.rb
+  s_832305fd821824::t_6b56153da15e0f 1-53
+lib/stationery/fonts/fallback.rb
+  s_832305fd821824::t_3c93fd2b8e99cb 1-58
+spec/rails/fonts_generator_spec.rb
+  s_832305fd821824::t_409b9555ed7922 24,28
+  s_832305fd821824::t_c560a55f25b187 25
+  s_832305fd821824::t_855d0bc46fa675 1-23,26-27,29-30
+lib/stationery/fonts/installer.rb
+  s_832305fd821824::t_31d30ed3f373a3 67
+  s_832305fd821824::t_9dce9765905efe 87-88,94,96
+  s_832305fd821824::t_405b47d7a0845b 1-66,68-82,84-86,89-93,95,97-121
+  s_832305fd821824::t_ee408c361702f9 83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "d43965a37ccd065c4d340d861c1cc01dd5db5c7b",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
