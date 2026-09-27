@@ -1,0 +1,13 @@
+spec/stationery/testing/matchers_spec.rb
+  ai_agent 99
+spec/stationery/testing/assertions_spec.rb
+  ai_agent 46
+spec/stationery/testing/inspector_spec.rb
+  ai_agent 83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "0141eff81480e1d51551372278bfa2040842b0e3",
+  "prompts": {}
+}
