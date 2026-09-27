@@ -32,6 +32,14 @@ RSpec.describe Stationery::Canvas::Marking do
     expect(page.content).to eq("/P <</MCID 0>> BDC\nq\n0 0 0 rg\n0 99 1 1 re\nf\nQ\nEMC\n")
   end
 
+  it "keeps marked content balanced around a rotated block" do
+    tagged = canvas
+    tagged.tag(paragraph) { tagged.rotate(90, around: [0, 0]) { tagged.fill_rect(0, 0, 1, 1, color: "#000000") } }
+
+    expect(page.content)
+      .to eq("/P <</MCID 0>> BDC\nq\n0 -1 1 0 -100 100 cm\nq\n0 0 0 rg\n0 99 1 1 re\nf\nQ\nQ\nEMC\n")
+  end
+
   it "keeps elements painted inside an artifact out of the tree" do
     tagged = canvas
     tagged.artifact(type: :pagination, subtype: :header) do

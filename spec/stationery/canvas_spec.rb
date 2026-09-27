@@ -28,6 +28,55 @@ RSpec.describe Stationery::Canvas do
     expect(ops).to start_with("q\nq\nq\n")
   end
 
+  describe "#transform and #rotate" do
+    def num(value) = Stationery::PDF::Serializer.number(value)
+
+    it "applies an affine transform given in top-left space around the block" do
+      canvas.transform([2, 0, 0, 2, 10, 20]) { canvas.fill_rect(0, 0, 1, 1, color: "#000") }
+
+      # the top-left corner (PDF 0, 100) lands 10 right and 20 down (PDF 10, 80): 2 * 100 - 120
+      expect(ops).to start_with("q\n2 0 0 2 10 -120 cm\nq\n0 0 0 rg\n0 99 1 1 re\nf\nQ\nQ\n")
+    end
+
+    it "rotates clockwise around a page point, like CSS rotate()" do
+      canvas.rotate(90, around: [0, 0]) { canvas.fill_rect(0, 0, 10, 10, color: "#000") }
+
+      # the page's top-left corner stays put and what was to its right now hangs below it
+      expect(ops).to start_with("q\n0 -1 1 0 -100 100 cm\n")
+    end
+
+    it "rotates by a small angle around a centre" do
+      cos = Math.cos(2 * Math::PI / 180)
+      sin = Math.sin(2 * Math::PI / 180)
+      e = 50 - (50 * cos) + (50 * sin)
+      f = 50 - (50 * sin) - (50 * cos)
+      canvas.rotate(2, around: [50, 50]) { nil }
+
+      matrix = [cos, -sin, sin, cos, (-sin * 100) + e, 100 - (cos * 100) - f]
+      expect(ops).to eq("q\n#{matrix.map { num(it) }.join(" ")} cm\nQ\n")
+    end
+
+    it "only yields for a zero rotation" do
+      canvas.rotate(0, around: [50, 50]) { canvas.fill_rect(0, 0, 1, 1, color: "#000") }
+
+      expect(ops).to eq("q\n0 0 0 rg\n0 99 1 1 re\nf\nQ\n")
+    end
+
+    it "gives nested rotations their own graphics state" do
+      canvas.rotate(10, around: [0, 0]) { canvas.rotate(-10, around: [0, 0]) { nil } }
+
+      expect(ops.scan("cm\n").size).to eq(2)
+      expect(ops).to start_with("q\n").and end_with("Q\nQ\n")
+    end
+
+    it "rotates debug outlines with the content" do
+      debug = described_class.new(page, resources, debug: true)
+      debug.rotate(45, around: [10, 10]) { debug.debug_rect(0, 0, 10, 10, :image) }
+
+      expect(ops).to match(/\Aq\n[^\n]+ cm\nq\n.*0\.25 90\.25 9\.5 9\.5 re/m)
+    end
+  end
+
   it "strokes lines with width, dash and cap" do
     canvas.line(0, 10, 100, 10, color: "#000", width: 2, dash: [3, 1], cap: :round)
 
