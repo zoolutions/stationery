@@ -24,9 +24,10 @@ module Stationery
         def []=(name, value)
           @options[name] = value
           @node = nil
+          @padding = nil
         end
 
-        def padding = Geometry.box(@options[:padding])
+        def padding = @padding ||= Geometry.box(@options[:padding])
         def horizontal = padding[1] + padding[3]
         def vertical = padding[0] + padding[2]
 

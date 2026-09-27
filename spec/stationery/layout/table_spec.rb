@@ -49,6 +49,18 @@ RSpec.describe Stationery::Layout::Table do
     expect(page_contents(pdf).first).to include(" 20 Tf").and include("1 0 0 rg")
   end
 
+  it "normalises a cell's padding once, until it is restyled" do
+    node = table([["a"]], cell: { padding: [2, 3] })
+    allow(Stationery::Geometry).to receive(:box).and_call_original
+
+    node.measure(260)
+    node.measure(200)
+    expect(Stationery::Geometry).to have_received(:box).with([2, 3]).once
+
+    node.row(0).padding = 5
+    expect(node.cell(0, 0).padding).to eq([5, 5, 5, 5])
+  end
+
   it "stripes rows with zebra" do
     node = table(rows + [%w[a b c]], cell: { borders: [] }) { |t| t.zebra(from: 1, color: "#F9FAFB") }
 
