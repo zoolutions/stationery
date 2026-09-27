@@ -9,7 +9,7 @@ module Stationery
       DEBUG_COLORS = {
         box: "#E11D48", padding: "#E11D48", column: "#2563EB", cell: "#16A34A", cell_padding: "#16A34A",
         flow: "#9CA3AF", positioned: "#DB2777", image: "#0D9488", page: "#06B6D4", region: "#0EA5E9",
-        field: "#7C3AED"
+        field: "#7C3AED", stack: "#F59E0B"
       }.freeze
       DEBUG_DASHES = { padding: [2, 2], cell_padding: [2, 2], flow: [1, 2] }.freeze
 

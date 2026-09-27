@@ -264,6 +264,40 @@ class Views::Docs::Pages::Elements < DocsUI::Page
       MD
     end
 
+    DocsUI::Section("stack and layer", description: "Overlapping content: a collage, a badge on a photo, a stamp on a card.") do
+      md <<~'MD'
+        `stack(gap: 0, align: nil) { … }` is a container whose ordinary children form the base and set the
+        height. `layer(top:, right:, bottom:, left:, width:, height:, **box_options) { … }` inside it is a
+        box painted over the base, placed by insets from the stack's edges and taking no space. Insets,
+        `width:` and `height:` are points, or a fraction of the stack's width (horizontal) or height
+        (vertical) when given as a Float between -1 and 1 or a Rational (`1/3r`); negative insets overhang.
+        A layer takes every `box` option, so `rotate:`, `shadow:`, `padding:`, `background:` and `radius:`
+        make tilted, framed snapshots. A stack never splits: it moves to the next page whole.
+
+        Overhanging layers paint past the stack, so wrap it in a `box(padding:)` at least as big as the
+        overhang to keep them inside the page margins (what `examples/postcard.rb` does):
+
+        ```ruby
+        box(padding: 18) do
+          stack do
+            box(width: :auto, radius: 16, shadow: true) do
+              image "sea.png", width: 228, height: 171, fit: :cover, radius: 16, alt: "The bay at dawn"
+            end
+            layer(bottom: -18, left: -18, width: 0.4, rotate: -3, padding: 4, background: "#FFFFFF", radius: 12, shadow: true) do
+              image "hills.png", width: 83, height: 62, fit: :cover, radius: 8, alt: "Hills above the village"
+            end
+            layer(top: -18, right: -18, width: 1/3r, rotate: 2, padding: 4, background: "#FFFFFF", radius: 12, shadow: true) do
+              image "stone.png", width: 68, height: 68, fit: :cover, radius: 8, alt: "A sandstone wall"
+            end
+          end
+        end
+        ```
+
+        Without `left:`/`top:` a layer sits at the stack's top-left; without `width:` it takes its content's
+        natural width (at most the stack's). In a tagged PDF the base and the layers attach in paint order.
+      MD
+    end
+
     DocsUI::Section("canvas", description: "Draw directly.") do
       md <<~'MD'
         `canvas(height:, at: nil, width: nil) { |canvas, rect| … }` reserves `height` points and hands the

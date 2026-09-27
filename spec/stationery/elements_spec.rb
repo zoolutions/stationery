@@ -98,6 +98,32 @@ RSpec.describe Stationery::Elements do
     expect(in_flow.first).to eq(20)
   end
 
+  it "stacks layers over a base without taking up flow space" do
+    logo = image_path("rgb.jpg")
+    pdf = render do
+      stack do
+        image logo, width: 200, height: 100, fit: :cover
+        layer(top: -10, right: -10, width: 0.25, rotate: 2, padding: 4, background: "#FFFFFF") { text "tag" }
+        layer(bottom: 0, left: 0.5) { text "caption" }
+      end
+      text "below"
+    end
+    tag, caption, below = positions_of(pdf)
+
+    expect(image_count(pdf)).to eq(1)
+    expect(caption.first).to eq(20 + 130)
+    expect(below.last).to be < caption.last
+    expect(tag.first).to be > 20 + 260 - 65 - 10
+    expect(page_contents(pdf).first.scan(/ cm$/).size).to eq(2)
+  end
+
+  it "refuses a layer outside a stack" do
+    expect { render { layer(top: 0) { text "lost" } } }
+      .to raise_error(ArgumentError, "layer must be inside a stack")
+    expect { render { stack { box { layer(top: 0) { text "lost" } } } } }
+      .to raise_error(ArgumentError, "layer must be inside a stack")
+  end
+
   it "draws SVG icons from a string, sized and coloured, with currentColor replaced" do
     source = File.read(File.expand_path("../fixtures/svg/check.svg", __dir__))
     pdf = render { svg source, width: 16, color: "#FF0000", align: :center }
