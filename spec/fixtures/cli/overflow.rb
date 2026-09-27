@@ -7,5 +7,5 @@ class CliOverflowDocument < Stationery::Document
   font_family "Open Sans", regular: File.expand_path("../fonts/OpenSans-Regular.ttf", __dir__)
   default_text font: "Open Sans", size: 10
 
-  def view_template = box { 40.times { text "x" } }
+  def view_template = box(break_inside: :avoid) { 40.times { text "x" } }
 end
