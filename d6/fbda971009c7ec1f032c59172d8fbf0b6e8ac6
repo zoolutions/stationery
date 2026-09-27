@@ -1,0 +1,23 @@
+README.md
+  s_600b6bfbec0b19::t_aedc48eec9b00b 131-132
+lib/stationery/rich/renderer.rb
+  s_600b6bfbec0b19::t_aedc48eec9b00b 60
+lib/stationery/rich/styles.rb
+  s_600b6bfbec0b19::t_aedc48eec9b00b 21-22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "d6fbda971009c7ec1f032c59172d8fbf0b6e8ac6",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
