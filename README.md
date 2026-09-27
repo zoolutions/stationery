@@ -135,6 +135,23 @@ mask). Parsed fonts and images are cached per process.
   a browser per worker; stray processes and memory are the price.
 - **Typst** is excellent but a native extension and a second template language.
 
+## Performance
+
+`bundle exec rake bench` renders two documents with Stationery and with Prawn
+2.5 + prawn-table, both embedding the same Open Sans TTF files
+(`benchmark/`, not part of CI). Apple M2 Max, Ruby 3.4.2 +YJIT, 27 September 2026:
+
+| Document | Engine | Renders/s | Objects allocated | PDF bytes |
+|---|---|---:|---:|---:|
+| Invoice (1 page, `examples/invoice.rb`) | Stationery | 23.7 | 44,584 | 23,436 |
+| | Prawn | 43.0 (1.82x faster) | 88,558 | 33,034 |
+| Table, 1,500 rows × 5 columns, repeating header | Stationery | 0.80 (46 pages) | 10,338,092 | 233,389 |
+| | Prawn | 0.63 (40 pages; 1.27x slower) | 6,901,807 | 2,689,487 |
+
+Stationery compresses content streams; Prawn does not by default, hence the
+larger file. `PROFILE=1 bundle exec ruby -Ilib benchmark/profile.rb` prints the
+20 hottest frames of the table render under StackProf.
+
 ## Limitations
 
 No kerning or ligatures, no OpenType/CFF, TrueType collections, variable
