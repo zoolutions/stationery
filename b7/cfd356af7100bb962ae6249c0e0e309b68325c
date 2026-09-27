@@ -1,0 +1,42 @@
+lib/stationery.rb
+  s_832305fd821824::t_0b29db1a9e92ba 47
+CHANGELOG.md
+  s_832305fd821824::t_d549f508d36aff 5
+lib/stationery/fonts/font_book.rb
+  s_832305fd821824::t_c3ecdf4299ea25 9,11-13,15,32-33
+lib/stationery/text/paragraph.rb
+  s_832305fd821824::t_c3ecdf4299ea25 13,19,99,109-115
+spec/stationery/fonts/fallback_spec.rb
+  s_832305fd821824::t_4373ae734593ce 57
+  s_832305fd821824::t_f4ac6294d8e818 1-56,58-96,98-103,107-116
+  s_832305fd821824::t_f86cb323acd1c4 97
+  s_832305fd821824::t_901356a61f6684 104-106
+lib/stationery/fonts/fallback.rb
+  s_832305fd821824::t_3c93fd2b8e99cb 1-58
+lib/stationery/document.rb
+  s_832305fd821824::t_c3ecdf4299ea25 26-27,39-44,84
+lib/stationery/layout/text.rb
+  s_832305fd821824::t_c3ecdf4299ea25 11
+README.md
+  s_832305fd821824::t_d549f508d36aff 294-314
+lib/stationery/fonts/font.rb
+  s_832305fd821824::t_c3ecdf4299ea25 22,46
+spec/stationery/layout/text_spec.rb
+  s_832305fd821824::t_a03f6d7aee974a 13-18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "b7cfd356af7100bb962ae6249c0e0e309b68325c",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
