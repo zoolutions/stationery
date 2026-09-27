@@ -105,7 +105,9 @@ RSpec.describe "Tagged PDF" do # rubocop:disable RSpec/DescribeClass
   it "tags on request and leaves documents untagged by default" do
     doc = SpecDocument.build { text "Hello", heading: 2 }
 
-    expect(doc.to_pdf).not_to include("/StructTreeRoot", "BDC", "/MarkInfo", "/Lang")
+    plain = doc.to_pdf
+    expect(page_contents(plain).first).not_to include("BDC")
+    expect(catalog_of(plain).keys).not_to include(:StructTreeRoot, :MarkInfo, :Lang)
     expect(struct_types(doc.to_pdf(tagged: true))).to eq([[:Document, [:H2]]])
   end
 
