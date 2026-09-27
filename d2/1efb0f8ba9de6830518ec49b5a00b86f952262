@@ -1,0 +1,52 @@
+lib/stationery/testing/inspector.rb
+  s_832305fd821824::t_f73781c9d9da53 71-76
+  s_832305fd821824::t_7b1004e9f8faab 1-30,32-70,77-98
+  s_832305fd821824::t_93f61de2d01d5a 31
+spec/spec_helper.rb
+  s_832305fd821824::t_0fa645a29f94f8 12
+CHANGELOG.md
+  s_832305fd821824::t_3c253acbd60489 5
+lib/stationery/testing/matchers.rb
+  s_832305fd821824::t_d8190a6618842c 1-13,18-48,54-123
+  s_832305fd821824::t_a2c2a6b7964fe2 14-17,49-53
+spec/support/pdf_helpers.rb
+  s_832305fd821824::t_4da84645de5df4 4,13-14,24-26
+spec/integration/invoice_spec.rb
+  s_832305fd821824::t_f255d18733d451 26-27,47,55
+spec/stationery/testing/assertions_spec.rb
+  s_832305fd821824::t_872fd5bd9caa90 1-21,23-51
+  s_832305fd821824::t_f57a14b0aec05a 22
+.rubocop.yml
+  s_832305fd821824::t_a2c2a6b7964fe2 53-57
+spec/support/outline_pdf.rb
+  s_832305fd821824::t_a2c2a6b7964fe2 29-30
+  s_832305fd821824::t_7817bec252661c 1-5,7-8,10-27,32-36
+lib/stationery/minitest.rb
+  s_832305fd821824::t_91051c384b59d9 1-33
+spec/stationery/testing/matchers_spec.rb
+  s_832305fd821824::t_d3f1c34136da26 1-18,20-112
+  s_832305fd821824::t_172d4184ee2237 19
+spec/stationery/testing/inspector_spec.rb
+  s_832305fd821824::t_20da2771c81336 67-68
+  s_832305fd821824::t_6696b04b6cab9a 1-66,69-99
+lib/stationery/rspec.rb
+  s_832305fd821824::t_cc8f3bbf3c027a 1-6
+README.md
+  s_832305fd821824::t_3c253acbd60489 130-185
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "d21efb0f8ba9de6830518ec49b5a00b86f952262",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
