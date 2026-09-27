@@ -4,15 +4,16 @@ module Stationery
   module PDF
     # Writes finished pages, their shared resources and document info as PDF.
     class Assembler
-      def initialize(pages:, resources:, info: {}, outline: [])
+      def initialize(pages:, resources:, info: {}, outline: [], encryption: nil)
         @pages = pages
         @resources = resources
         @info = info
         @outline = outline
+        @encryption = encryption
       end
 
       def render
-        writer = Writer.new
+        writer = Writer.new(encryption: @encryption)
         tree = writer.reserve
         refs = @resources.build(writer)
         kids = @kids = @pages.map { writer.reserve }
