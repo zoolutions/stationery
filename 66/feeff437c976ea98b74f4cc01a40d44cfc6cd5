@@ -1,0 +1,47 @@
+lib/stationery/testing/structure_reader.rb
+  s_832305fd821824::t_9d1035d3b66dfa 1-71
+spec/stationery/testing/assertions_spec.rb
+  s_832305fd821824::t_3ac30056ba7e52 51-59
+spec/stationery/testing/structure_reader_spec.rb
+  s_832305fd821824::t_5c54053ff261a1 1-44,46-61
+  s_832305fd821824::t_ec68a24299483a 45
+CHANGELOG.md
+  s_832305fd821824::t_d873db4d8ecad4 7
+docs/app/views/docs/pages/limitations.rb
+  s_832305fd821824::t_d873db4d8ecad4 20
+lib/stationery/tagging/element.rb
+  s_832305fd821824::t_ec68a24299483a 36-37,69-75
+  s_832305fd821824::t_38ae1877bd6f9a 68
+docs/app/views/docs/pages/pages.rb
+  s_832305fd821824::t_d873db4d8ecad4 97-100
+spec/stationery/testing/matchers_spec.rb
+  s_832305fd821824::t_3ac30056ba7e52 106-135
+lib/stationery/minitest.rb
+  s_832305fd821824::t_38ae1877bd6f9a 20-21
+lib/stationery/testing/inspector.rb
+  s_832305fd821824::t_38ae1877bd6f9a 6,67-78
+lib/stationery/testing/matchers.rb
+  s_832305fd821824::t_38ae1877bd6f9a 114-136,144-145
+README.md
+  s_832305fd821824::t_d873db4d8ecad4 293-305,504-505,524-525,534-538,570
+examples/report.rb
+  s_832305fd821824::t_4916e6f7d5b07f 25-26,59,80,102,109,155
+lib/stationery/testing/marked_text.rb
+  s_832305fd821824::t_478980b0c51009 1-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "66feeff437c976ea98b74f4cc01a40d44cfc6cd5",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
