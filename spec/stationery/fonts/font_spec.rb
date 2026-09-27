@@ -15,6 +15,27 @@ RSpec.describe Stationery::Fonts::Font do
     expect(font.width_of("Invoice", 10, letter_spacing: 1)).to be_within(0.001).of(plain + 7)
   end
 
+  it "narrows kerned pairs when measuring with kerning" do
+    kerned = font.width_of("AVA", 10, kerning: true)
+
+    expect(kerned).to be < font.width_of("AVA", 10)
+    expect(kerned).to be_within(1e-9).of(font.glyph_run("AVA", kerning: true).width(10))
+    expect(font.width_of("AVA", 20, kerning: true)).to be_within(1e-9).of(kerned * 2)
+    expect(font.width_of("ABC", 10, kerning: true)).to eq(font.width_of("ABC", 10))
+  end
+
+  it "adds pair adjustments in thousandths of an em to kerned glyph runs" do
+    run = font.glyph_run("AVA", kerning: true)
+    upem = font.ttf.units_per_em
+    a, v = %w[A V].map { |c| font.ttf.glyph_id(c.ord) }
+
+    expect(run.adjust.first).to be < 0
+    expect(run.adjust.first).to be_within(1e-9).of(font.ttf.kerning.adjust(a, v) * 1000.0 / upem)
+    expect(run.adjust.last).to eq(0)
+    expect(font.glyph_run("AV").adjust).to eq([0, 0])
+    expect(font.glyph_run("", kerning: true).adjust).to eq([])
+  end
+
   it "exposes vertical metrics scaled to a size" do
     expect(font.ascender(10)).to be_between(9, 12)
     expect(font.descender(10)).to be_between(2, 4)

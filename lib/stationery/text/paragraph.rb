@@ -88,7 +88,7 @@ module Stationery
         canvas.text(fragment.text, x:, y: top + line.ascent, font: fragment.font, size: style.render_size,
                                    color: style.color, letter_spacing: style.letter_spacing, rise: style.rise,
                                    opacity: style.opacity, underline: style.underline,
-                                   strikethrough: style.strikethrough,
+                                   strikethrough: style.strikethrough, kerning: style.kerning,
                                    synthetic_bold: fragment.face.synthetic_bold,
                                    synthetic_oblique: fragment.face.synthetic_oblique)
         canvas.link(x, top, fragment.width, line.height, style.link) if style.link

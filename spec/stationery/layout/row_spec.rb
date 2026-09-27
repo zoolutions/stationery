@@ -8,7 +8,7 @@ RSpec.describe Stationery::Layout::Row do
       [column(width: 50), column(width: 0.25), column(text_node("auto"), width: :auto), column, column], gap: 10
     )
     widths = row.column_widths(460)
-    auto = open_sans_book.resolve(base_style).first.width_of("auto", 10)
+    auto = open_sans_book.resolve(base_style).first.width_of("auto", 10, kerning: true)
 
     expect(widths[0]).to eq(50)
     expect(widths[1]).to eq(0.25 * 420)

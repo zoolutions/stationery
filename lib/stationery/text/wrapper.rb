@@ -124,7 +124,8 @@ module Stationery
       end
 
       def measure(text, style)
-        @book.resolve(style).first.width_of(text, style.render_size, letter_spacing: style.letter_spacing)
+        font = @book.resolve(style).first
+        font.width_of(text, style.render_size, letter_spacing: style.letter_spacing, kerning: style.kerning)
       end
     end
   end

@@ -82,7 +82,7 @@ InvoicePdf.new(invoice).to_pdf("a.pdf") # also writes a path or an IO
 | `canvas(height:) { \|canvas, rect\| }` | Draw directly: rectangles, rounded rectangles, circles, lines, Bézier paths, clipping, images, links. |
 
 Text style options: `font`, `size`, `weight` (`:regular`, `:bold`), `style` (`:italic`), `color`,
-`letter_spacing`, `underline`, `strikethrough`, `link`, `opacity`, `align`, `leading`.
+`letter_spacing`, `underline`, `strikethrough`, `link`, `opacity`, `kerning` (default `true`), `align`, `leading`.
 Colours are `"#RRGGBB"`, `"RRGGBB"`, `"#RGB"`, `[r, g, b]` (0-255) or `[c, m, y, k]` (0-100).
 
 ## Components
@@ -124,6 +124,11 @@ embedded, with a ToUnicode map so text copies and searches correctly. A style
 without its own file (bold, italic) is synthesised. There is no built-in
 font: declare at least one `font_family`.
 
+Text is pair-kerned from the font's `kern` table (`kerning: false` on an
+element or in `default_text` turns it off). Pairs that straddle a style or
+font change are not kerned. Kerning only tightens in practice, so a kerned
+line is never wider than the same line unkerned.
+
 Images are JPEG (grey, RGB, CMYK) and PNG (every colour type, alpha as a soft
 mask). Parsed fonts and images are cached per process.
 
@@ -137,7 +142,7 @@ mask). Parsed fonts and images are cached per process.
 
 ## Limitations
 
-No kerning or ligatures, no OpenType/CFF, TrueType collections, variable
+No ligatures, no OpenType/CFF, TrueType collections, variable
 fonts or WOFF; no full justification; SVG covers the shapes icon sets use
 (no text, gradients, patterns, masks or CSS stylesheets); no encryption,
 outlines, forms or tagged PDF; boxes and rows do not split across pages.

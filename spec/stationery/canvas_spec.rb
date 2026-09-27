@@ -107,6 +107,13 @@ RSpec.describe Stationery::Canvas do
     expect(width).to be_within(1e-9).of(font.width_of("a b", 10) + 2)
   end
 
+  it "kerns text as a TJ array when asked, returning the kerned width" do
+    width = canvas.text("AV", x: 0, y: 10, font:, size: 10, kerning: true)
+
+    expect(ops).to match(/\[<\h{4}> \d+(\.\d+)? <\h{4}>\] TJ/)
+    expect(width).to be_within(1e-9).of(font.width_of("AV", 10, kerning: true))
+  end
+
   it "places images with a transformation matrix and registers the XObject" do
     image = Stationery::Images.load(image_path("rgb.jpg"))
     canvas.image(image, x: 10, y: 20, width: 40, height: 30)

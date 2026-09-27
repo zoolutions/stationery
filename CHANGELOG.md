@@ -7,6 +7,10 @@
 - `box(link:)` makes the whole box clickable; `box(outset:)` bleeds its background past its edges.
 - `keep_with_next:` accepts a number of points of following content to keep.
 - `group(align:)`.
+- Pair kerning from the font's `kern` table, **on by default**: measured widths shift slightly (kerned
+  lines only get narrower), so wrapping and right-aligned positions can move by a fraction of a point.
+  `kerning: false` on `text`/`text_style` or in `default_text` restores unkerned output. Pairs across a
+  style or font change are not kerned.
 - Internal: `Fonts::GlyphRun` carries per-glyph advance adjustments (Tj/TJ emission) for upcoming kerning and justification; output unchanged.
 
 ## 0.1.0 (unreleased)

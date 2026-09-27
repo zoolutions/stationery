@@ -50,7 +50,7 @@ RSpec.describe Stationery::Layout::Table do
     font = open_sans_book.resolve(base_style).first
     total_x = positions_of(pdf)[5].first
 
-    expect(total_x + font.width_of("€8,00", 10)).to be_within(0.01).of(280)
+    expect(total_x + font.width_of("€8,00", 10, kerning: true)).to be_within(0.01).of(280)
   end
 
   it "draws per-cell borders, backgrounds and padding" do

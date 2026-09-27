@@ -4,7 +4,7 @@ module Stationery
   # Collects the nodes a component tree describes. Holds the container stack
   # (where the next node goes) and the text defaults in effect.
   class Builder
-    STYLE_KEYS = %i[size color weight style letter_spacing underline strikethrough link opacity].freeze
+    STYLE_KEYS = %i[size color weight style letter_spacing underline strikethrough link opacity kerning].freeze
 
     # Collects a row's columns; anything that is not already a column box is
     # wrapped in one.
