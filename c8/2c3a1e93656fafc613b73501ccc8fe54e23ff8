@@ -1,0 +1,66 @@
+docs/app/views/docs/pages/limitations.rb
+  s_832305fd821824::t_141dbabc096807 20
+lib/stationery/pdf/encryption/rc4.rb
+  s_832305fd821824::t_d83d32dd177f09 1-33
+spec/stationery/pdf/writer_spec.rb
+  s_832305fd821824::t_83abaaf010219e 56-72
+spec/stationery/pdf/serializer_spec.rb
+  s_832305fd821824::t_cce18d28ccc13e 48,50-55
+  s_832305fd821824::t_ca5a886c062d60 49
+.rubocop.yml
+  s_832305fd821824::t_d3e4c96438b6c2 55-59
+README.md
+  s_832305fd821824::t_9af9e0edbf5dbc 231-251
+  s_832305fd821824::t_d289c8c276d441 492-493
+lib/stationery/pdf/encryption/aes.rb
+  s_832305fd821824::t_2f10d6bd7fac45 8-9,17,21-23,25-33
+  s_832305fd821824::t_2cb254a7431cc7 1-7,10-16,18-20,24,34-37
+lib/stationery/pdf/encryption/revision6.rb
+  s_832305fd821824::t_2c68887d5af68a 27
+  s_832305fd821824::t_5772e8c63e2ebc 1-19,21-23,25-26,28-47,49-56
+  s_832305fd821824::t_0247592fad90ff 48
+lib/stationery.rb
+  s_832305fd821824::t_b7fae218e62416 8-12
+spec/stationery/pdf/encryption/rc4_spec.rb
+  s_832305fd821824::t_bff3b13e765644 1-17
+lib/stationery/pdf/encryption/standard_security.rb
+  s_832305fd821824::t_7ef5a8c75d5a05 1-78
+lib/stationery/pdf/writer.rb
+  s_832305fd821824::t_a72c7b0c90efa3 12-14,16,40,44,48,54-58,61,64-66,68,73-78
+spec/stationery/document_encryption_spec.rb
+  s_832305fd821824::t_3ab0121c518b5b 1-105
+lib/stationery/pdf/encryption/revision4.rb
+  s_832305fd821824::t_d2651788af81fd 36,38-39
+  s_832305fd821824::t_5bc1189ebdfa49 1-35,37,40-48
+lib/stationery/document.rb
+  s_832305fd821824::t_6b9ac7a6549e1d 102
+  s_832305fd821824::t_c8c0349ee09cfa 58-59,62-63
+  ai_agent 60-61
+  s_832305fd821824::t_364f0eedbc2e3f 88-89
+lib/stationery/pdf/assembler.rb
+  s_832305fd821824::t_6ac4262665dd8f 7,12,16
+spec/stationery/pdf/encryption/standard_security_spec.rb
+  ai_agent 4
+  s_832305fd821824::t_c409536f4c04d3 1-3,5-74
+CHANGELOG.md
+  s_832305fd821824::t_d4abbd0208a37f 5-6
+lib/stationery/pdf/serializer.rb
+  s_832305fd821824::t_080e69876b247e 10-12,20,24-28,44,46-48,60,62,64
+  ai_agent 45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "c82c3a1e93656fafc613b73501ccc8fe54e23ff8",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
