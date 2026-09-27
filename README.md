@@ -17,6 +17,19 @@ gem "stationery"
 
 Ruby 3.4 or newer.
 
+## Quick start
+
+```ruby
+class Hello < Stationery::Document
+  def view_template = text("Hello, world", size: 24, weight: :bold)
+end
+
+File.binwrite("hello.pdf", Hello.new.to_pdf)
+```
+
+No fonts to configure: Inter ships inside the gem and is used until you
+declare a `font_family`.
+
 ## A document
 
 ```ruby
@@ -121,8 +134,12 @@ def show = send_pdf(InvoicePdf.new(@invoice), filename: "invoice.pdf")
 
 Fonts are TrueType (`.ttf`) files. Only the glyphs a document uses are
 embedded, with a ToUnicode map so text copies and searches correctly. A style
-without its own file (bold, italic) is synthesised. There is no built-in
-font: declare at least one `font_family`.
+without its own file (bold, italic) is synthesised.
+
+Inter (regular, bold, italic, bold italic; SIL Open Font License) is bundled
+and used when a document declares no family. `font_family "Inter"` with no
+paths selects it explicitly, and `Stationery.bundled_fonts` lists what ships.
+Font files are read lazily, on first use, never when the gem is required.
 
 Images are JPEG (grey, RGB, CMYK) and PNG (every colour type, alpha as a soft
 mask). Parsed fonts and images are cached per process.

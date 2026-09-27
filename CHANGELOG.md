@@ -7,6 +7,7 @@
 - `box(link:)` makes the whole box clickable; `box(outset:)` bleeds its background past its edges.
 - `keep_with_next:` accepts a number of points of following content to keep.
 - `group(align:)`.
+- Inter (OFL) is bundled: documents render without any `font_family`; `font_family "Inter"` needs no paths; `Stationery.bundled_fonts`. An unknown family name without paths raises.
 - Fixed: fonts without an OS/2 v2 table (including every subset) crashed on a nil cap height.
 - `PDF::Writer` raises when a reserved object is never set instead of writing `null`.
 - Gemspec ships every file under `lib/` and `exe/` when built without git, not only `.rb`.
