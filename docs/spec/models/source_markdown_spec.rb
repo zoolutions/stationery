@@ -20,7 +20,7 @@ RSpec.describe SourceMarkdown do
   end
 
   it "reads the changelog without its title" do
-    expect(described_class.changelog).to start_with("## Unreleased")
+    expect(described_class.changelog).to start_with("## ").and include("### Fixes")
   end
 
   it "reads an example's summary comment" do

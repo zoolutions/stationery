@@ -33,7 +33,7 @@ class Views::Docs::Pages::Warnings < DocsUI::Page
             "No font — the family, its fallbacks or Inter — has the character; it is drawn as .notdef.",
             "missing glyph \"☃\" (U+2603) in Brand, drawn 2 times as .notdef" ],
           [ [ :code, "UnknownFamily" ], "requested, used",
-            "Reserved for unregistered family names. The font book currently resolves them silently (first registered family, then Inter), so no render emits it yet.",
+            "A text style named a family that is neither registered, bundled nor an installed pack; it drew with the first registered family (else bundled Inter). Reported once per name.",
             "font family \"Brand\" is not registered, using \"Inter\"" ],
           [ [ :code, "UnsupportedSvg" ], "elements, source",
             "An SVG used elements that cannot be drawn (text, use, …); the rest is drawn.",
