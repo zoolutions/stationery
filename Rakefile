@@ -21,3 +21,9 @@ task :examples do
 end
 
 task default: %i[spec rubocop]
+
+desc "Benchmark against Prawn (bundle exec rake bench)"
+task :bench do
+  ruby "-Ilib benchmark/invoice.rb"
+  ruby "-Ilib benchmark/table_50_pages.rb"
+end
