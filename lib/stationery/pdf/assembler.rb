@@ -4,10 +4,11 @@ module Stationery
   module PDF
     # Writes finished pages, their shared resources and document info as PDF.
     class Assembler
-      def initialize(pages:, resources:, info: {})
+      def initialize(pages:, resources:, info: {}, outline: [])
         @pages = pages
         @resources = resources
         @info = info
+        @outline = outline
       end
 
       def render
@@ -17,11 +18,16 @@ module Stationery
         kids = @kids = @pages.map { writer.reserve }
         @pages.each_with_index { |page, index| write_page(writer, page, kids[index], tree, refs) }
         writer.set(tree, { Type: :Pages, Kids: kids, Count: kids.size })
-        root = writer.add({ Type: :Catalog, Pages: tree })
+        root = writer.add(catalog(tree, OutlineWriter.new(writer, @outline, kids).write))
         writer.render(root:, info: writer.add(info_dictionary))
       end
 
       private
+
+      def catalog(tree, outlines)
+        catalog = { Type: :Catalog, Pages: tree }
+        outlines ? catalog.merge(Outlines: outlines, PageMode: :UseOutlines) : catalog
+      end
 
       def write_page(writer, page, ref, tree, refs)
         dictionary = {

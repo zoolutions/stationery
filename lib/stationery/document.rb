@@ -68,11 +68,11 @@ module Stationery
       resources = Resources.new
       pages = Layout::Paginator.new(resources:, page: page_options, warnings:, debug:).paginate(builder.root)
       PageTemplates.new(self, book:, resources:, debug:).apply(pages)
-      Structure.resolve(pages, warnings:)
+      outline = builder.outline.resolve(Structure.resolve(pages, warnings:))
       @warnings = warnings
       raise WarningsError, warnings if strict && warnings.any?
 
-      write(PDF::Assembler.new(pages:, resources:, info:).render, target)
+      write(PDF::Assembler.new(pages:, resources:, info:, outline:).render, target)
     end
 
     # Used by page templates to build nodes into their own root.

@@ -53,6 +53,27 @@ module PdfHelpers
     end
   end
 
+  # The document outline as nested hashes (title, target page index, top,
+  # count, children), or nil when the catalog has none.
+  def outline_of(pdf)
+    objects = reader_for(pdf).objects
+    root = objects.deref(objects.deref(objects.trailer[:Root])[:Outlines])
+    root && outline_children(objects, root)
+  end
+
+  def outline_children(objects, parent)
+    ref = parent[:First]
+    items = []
+    while ref
+      node = objects.deref(ref)
+      dest = node[:Dest]
+      items << { title: node[:Title], page: objects.page_references.index(dest[0]), top: dest[3],
+                 count: node[:Count], children: outline_children(objects, node) }
+      ref = node[:Next]
+    end
+    items
+  end
+
   # Decompressed content stream of every page, for operator-level assertions.
   def page_contents(pdf)
     reader_for(pdf).pages.map(&:raw_content)

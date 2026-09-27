@@ -101,7 +101,7 @@ Text style options: `font`, `size`, `weight` (`:regular`, `:bold`), `style` (`:i
 `letter_spacing`, `underline`, `strikethrough`, `link`, `opacity`, `align`, `leading`.
 Colours are `"#RRGGBB"`, `"RRGGBB"`, `"#RGB"`, `[r, g, b]` (0-255) or `[c, m, y, k]` (0-100).
 
-### Links and anchors
+### Links and bookmarks
 
 A link target starting with `#` jumps to a named anchor in the same PDF; anything else is a URL.
 
@@ -119,6 +119,20 @@ text "Appendix", size: 16
 An anchor on content that splits across pages points at its first page. A link to an unknown anchor
 is dropped and reported as an `UnresolvedLink` warning; a name defined twice keeps the first and reports
 a `DuplicateAnchor`. Anchors drawn by page templates resolve to the first page.
+
+`bookmark:` adds an entry to the PDF outline (the viewer's bookmarks sidebar) pointing at where the
+content paints. Levels nest under the nearest shallower entry above them; `open: true` shows an entry's
+children expanded.
+
+```ruby
+text "Introduction", size: 18, bookmark: "Introduction"            # level 1
+box(bookmark: { title: "Scope", level: 2, open: true }) { ... }    # also group(bookmark:), table(rows, bookmark:)
+bookmark "Appendix", level: 1                                       # standalone; moves with what follows it
+text "Appendix", size: 16
+```
+
+A document with bookmarks opens with the outline shown. A bookmark whose content never paints (cut off
+by a fixed-height box) is left out; bookmarks inside page templates are ignored.
 
 ## Components
 

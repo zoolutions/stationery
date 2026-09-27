@@ -69,6 +69,7 @@ module Stationery
     end
 
     def text_defaults = @text.last
+    def outline = @outline ||= Outline.new
     def warnings = @book.warnings
 
     def style(options = {})
