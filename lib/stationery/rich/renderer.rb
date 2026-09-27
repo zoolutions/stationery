@@ -3,6 +3,7 @@
 require_relative "nodes"
 require_relative "styles"
 require_relative "renderer/inlines"
+require_relative "renderer/links"
 
 module Stationery
   module Rich
@@ -11,8 +12,9 @@ module Stationery
     # from files under `base_path:`; remote URLs are never fetched.
     class Renderer
       REMOTE = /\A[a-z][a-z0-9+.-]*:/i
+      LINK_SCHEMES = %w[http https mailto tel].freeze
 
-      def initialize(component, builder, gap:, styles:, images:, base_path:, bookmarks: false)
+      def initialize(component, builder, gap:, styles:, images:, base_path:, bookmarks: false, links: nil)
         @component = component
         @builder = builder
         @gap = gap
@@ -20,6 +22,7 @@ module Stationery
         @images = images
         @base_path = base_path && File.expand_path(base_path.to_s)
         @bookmarks = bookmarks
+        @links = Links.new(links || LINK_SCHEMES, builder.warnings)
       end
 
       def render(blocks) = @component.group(gap: @gap) { blocks.each { |block| block(block) } }
@@ -40,7 +43,7 @@ module Stationery
       end
 
       def paragraph(inlines, **)
-        @component.text(**) { |runs| Inlines.new(runs, @styles).write(inlines) }
+        @component.text(**) { |runs| Inlines.new(runs, @styles, @links).write(inlines) }
       end
 
       def heading(heading)

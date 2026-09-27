@@ -51,6 +51,8 @@ RSpec.describe Stationery::Warnings do
       .to eq('link to "terms" on page 3 has no matching anchor')
     expect(described_class::DuplicateAnchor.new(name: "top", page: 2).message)
       .to eq('anchor "top" on page 2 is already defined')
+    expect(described_class::DroppedLink.new(href: "javascript:alert(1)").message)
+      .to eq('link "javascript:alert(1)" dropped: scheme not allowed')
   end
 
   describe "WarningsError" do

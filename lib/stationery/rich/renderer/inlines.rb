@@ -19,16 +19,24 @@ module Stationery
           bold: [[:b]], italic: [[:i]], underline: [[:u]], strike: [[:strikethrough]]
         }.freeze
 
-        def initialize(runs, styles)
+        def initialize(runs, styles, links = Links.new(:all, nil))
           @runs = runs
           @styles = styles
+          @links = links
         end
 
         def write(inlines) = inlines.grep(Inline).each { |inline| inline.break? ? @runs.br : write_one(inline) }
 
         private
 
-        def write_one(inline) = nest(inline.marks.flat_map { |mark, value| steps(mark, value) }, inline.text)
+        def write_one(inline) = nest(marks_of(inline).flat_map { |mark, value| steps(mark, value) }, inline.text)
+
+        def marks_of(inline)
+          marks = inline.marks
+          return marks unless marks.key?(:link) && !@links.allowed?(marks[:link])
+
+          marks.except(:link)
+        end
 
         def nest(steps, text)
           return @runs.plain(text) if steps.empty?
