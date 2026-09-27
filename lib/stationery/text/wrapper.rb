@@ -91,7 +91,7 @@ module Stationery
 
       def finish(wrapped: false)
         segments = wrapped ? @current : @current + @pending_space
-        @lines << Line.new(fragments(trim_trailing(segments)), fallback_metrics)
+        @lines << Line.new(fragments(trim_trailing(segments)), fallback_metrics, justifiable: wrapped)
         @current = []
         @pending_space = []
       end

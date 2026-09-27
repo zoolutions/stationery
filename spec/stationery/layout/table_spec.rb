@@ -121,4 +121,14 @@ RSpec.describe Stationery::Layout::Table do
     expect(paginator.warnings).to be_empty
     expect(page_count(pdf)).to be > 1
   end
+
+  it "justifies cell text through the cell's align" do
+    text = "The quick brown fox jumps over the lazy dog and keeps on running"
+    node = table([[text]], width: :full, cell: { padding: 0, borders: [], align: :justify })
+    pdf, = render_layout(node)
+    left, = render_layout(table([[text]], width: :full, cell: { padding: 0, borders: [] }))
+
+    expect(page_contents(pdf)).not_to eq(page_contents(left))
+    expect(strings_of(pdf).join(" ")).to include("quick brown")
+  end
 end
