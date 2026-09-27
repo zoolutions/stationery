@@ -47,6 +47,15 @@ RSpec.describe Stationery::Fonts::TrueType do
     expect(font.cff).to be_nil
   end
 
+  it "falls back to a cap height from the ascender when there is no OS/2 table" do
+    data, = Stationery::Fonts::Subset.build(font, [font.glyph_id("H".ord)])
+    subset = described_class.new(data, cmap: false)
+
+    expect(subset.table?("OS/2")).to be(false)
+    expect(subset.cap_height).to eq((subset.ascender * 0.7).round)
+    expect { Stationery::Fonts::Font.new(subset).build(Stationery::PDF::Writer.new) }.not_to raise_error
+  end
+
   def sfnt(signature, tags)
     [signature, tags.size, 0, 0, 0].pack("a4nnnn") + tags.map { |tag| [tag, 0, 0, 0].pack("a4NNN") }.join
   end
