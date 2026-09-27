@@ -7,8 +7,9 @@ module Stationery
   # Paints a document's headers, footers and page templates on every
   # finished page.
   class PageTemplates
-    def initialize(document, book:, resources:, regions: nil, warnings: [])
+    def initialize(document, book:, resources:, debug: false, regions: nil, warnings: [])
       @document = document
+      @debug = debug
       @book = book
       @resources = resources
       @regions = regions
@@ -51,7 +52,7 @@ module Stationery
 
     def paint(page, root, rect, layer = :foreground)
       mark = page.content.bytesize
-      root.paint(Canvas.new(page, @resources), rect.x, rect.y, rect.width)
+      root.paint(Canvas.new(page, @resources, template: true, debug: @debug), rect.x, rect.y, rect.width)
       page.content.prepend(page.content.slice!(mark..)) if layer == :background
     end
   end
