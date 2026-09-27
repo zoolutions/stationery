@@ -11,6 +11,7 @@
 - `keep_with_next:` accepts a number of points of following content to keep.
 - `group(align:)`.
 - Rails: a Railtie adds `render pdf: document` (`filename:`, `disposition:`) and `config.stationery` (`renderer`, `font_paths`); `Stationery.font_paths`. A `spec:rails` lane tests it against Rails 8 without adding a dependency.
+- Rails: PDF previews like ActionMailer previews. `Stationery::Preview` subclasses in `spec/pdfs/previews` or `test/pdfs/previews` render at `/rails/stationery/previews` (`?debug=1` when the document supports it); `config.stationery.preview_paths` and `show_previews` (development by default). `rake spec:rails` no longer overwrites the main suite's coverage report.
 - Markup decodes all 252 HTML 4 named entities (`&mdash;`, `&euro;`, `&hellip;`, …); the table loads on first use.
 - Pair kerning from the font's `kern` table, **on by default**: measured widths shift slightly (kerned
   lines only get narrower), so wrapping and right-aligned positions can move by a fraction of a point.

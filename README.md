@@ -239,6 +239,28 @@ Configure in `config/application.rb`:
 | --- | --- | --- |
 | `config.stationery.renderer` | `true` | `false` skips `render pdf:` (keeps another gem's, e.g. wicked_pdf's) |
 | `config.stationery.font_paths` | `["vendor/fonts"]` | directories under `Rails.root` added to `Stationery.font_paths` when they exist |
+| `config.stationery.preview_paths` | `["spec/pdfs/previews", "test/pdfs/previews"]` | directories under `Rails.root` searched for `*_preview.rb` |
+| `config.stationery.show_previews` | `Rails.env.development?` | mounts the preview routes |
+
+### Previews
+
+Like ActionMailer previews: a class ending in `Preview` under
+`spec/pdfs/previews` (or `test/pdfs/previews`), one public method per sample
+document.
+
+```ruby
+# spec/pdfs/previews/invoice_pdf_preview.rb
+class InvoicePdfPreview < Stationery::Preview
+  def paid = InvoicePdf.new(Invoice.paid.first)
+  def overdue(params) = InvoicePdf.new(Invoice.find(params.fetch("id", Invoice.overdue.first.id)))
+end
+```
+
+Open `/rails/stationery/previews` for the list; each one renders inline at
+`/rails/stationery/previews/invoice_pdf/paid`. Query parameters reach methods
+that take an argument (`?id=42`); `?debug=1` passes `debug: true` to `to_pdf`
+when the document supports it. Preview files are re-`load`ed on every request,
+so edits show up on refresh.
 
 The gem has no Rails dependency; the Railtie loads only inside a Rails app.
 
