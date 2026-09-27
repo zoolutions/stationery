@@ -10,6 +10,8 @@ module Stationery
       PADDING = 2
       LEADING = 1.15
       CHECK = { glyph: "4", width: 0.846, middle: 0.345 }.freeze
+      DOT = 0.45
+      SIGNATURE = { rule: 14, label_size: 7, label_baseline: 4, label_gray: 0.42 }.freeze
 
       def initialize(field, width, height, fonts)
         @field = field
@@ -21,8 +23,10 @@ module Stationery
       # One stream, or a Hash of streams by appearance state for buttons.
       def normal
         case @field.kind
-        when :text then stream(frame + variable_text(text_lines))
+        when :text, :select then stream(frame + variable_text(text_lines))
         when :checkbox then { @field.on_state => stream(frame + check), Off: stream(frame) }
+        when :radio then { @field.on_state => stream(circle + dot), Off: stream(circle) }
+        when :signature then stream(signature)
         end
       end
 
@@ -40,11 +44,10 @@ module Stationery
       def frame
         return +"" unless options[:background] || options[:border]
 
-        page = Page.new(size: [@width, @height])
-        canvas = Canvas.new(page, nil)
-        canvas.rounded_rect(0.5, 0.5, @width - 1, @height - 1,
-                            radius: options[:radius], fill: options[:background], stroke: options[:border])
-        page.content
+        draw do |canvas|
+          canvas.rounded_rect(0.5, 0.5, @width - 1, @height - 1,
+                              radius: options[:radius], fill: options[:background], stroke: options[:border])
+        end
       end
 
       # [x, baseline, WinAnsi bytes] runs in PDF space.
@@ -77,6 +80,31 @@ module Stationery
                    "#{PDF::Serializer.literal(bytes)} Tj", "ET")
         end
         ops.push("Q", "EMC").join("\n") << "\n"
+      end
+
+      def circle
+        draw { |canvas| canvas.circle(*center, radius - 0.5, fill: options[:background], stroke: options[:border]) }
+      end
+
+      def dot = draw { |canvas| canvas.circle(*center, radius * DOT, fill: "#000000") }
+      def center = [@width / 2.0, @height / 2.0]
+      def radius = [@width, @height].min / 2.0
+
+      def signature
+        y = @height - SIGNATURE[:rule]
+        content = draw { |canvas| canvas.line(PADDING, y, @width - PADDING, y, color: options[:border], width: 0.75) }
+        label = Metrics.encode(options[:label])
+        return content if label.empty?
+
+        ops = ["q", "#{SIGNATURE[:label_gray]} g", "BT", "/#{Field::FONT} #{SIGNATURE[:label_size]} Tf",
+               "#{PADDING} #{SIGNATURE[:label_baseline]} Td", "#{PDF::Serializer.literal(label)} Tj", "ET", "Q"]
+        "#{content}#{ops.join("\n")}\n"
+      end
+
+      def draw
+        page = Page.new(size: [@width, @height])
+        yield Canvas.new(page, nil)
+        page.content
       end
 
       def check

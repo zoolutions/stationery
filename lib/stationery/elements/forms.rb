@@ -18,6 +18,27 @@ module Stationery
       field_node(field, width: size, height: size, at:, label:)
     end
 
+    # One choice of the radio group `name`; its `value` becomes the group's
+    # value when checked.
+    def radio(name, value, checked: false, size: 12, label: nil, at: nil, **)
+      field = Forms::Field.new(:radio, name, value: value.to_s, checked:, **)
+      field_node(field, width: size, height: size, at:, label:)
+    end
+
+    # A drop-down (combo box) of `options`; `editable: true` also accepts
+    # typed values.
+    def select(name, options:, value: nil, width: :full, height: 22, at: nil, **)
+      field = Forms::Field.new(:select, name, value: value&.to_s, options: options.map(&:to_s), **)
+      field_node(field, width:, height:, at:)
+    end
+
+    # An empty signature field for the signer to fill, drawn as a rule over
+    # the label.
+    def signature_field(name, width: :full, height: 40, label: "Signature", at: nil, **)
+      field = Forms::Field.new(:signature, name, label: label.to_s, **)
+      field_node(field, width:, height:, at:)
+    end
+
     private
 
     def field_node(field, width:, height:, at:, label: nil)
