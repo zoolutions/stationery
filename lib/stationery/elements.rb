@@ -7,7 +7,7 @@ module Stationery
 
     # A paragraph. Plain strings are always literal; pass `markup: true` to
     # read inline tags, or a block to build styled runs in Ruby.
-    def text(content = nil, markup: false, keep_with_next: nil, break_inside: nil, **options, &)
+    def text(content = nil, markup: false, keep_with_next: nil, break_inside: nil, anchor: nil, **options, &)
       settings = PARAGRAPH_DEFAULTS.merge(@_builder.text_defaults.slice(:align, :leading)).merge(options)
       style = @_builder.style(options)
       runs = text_runs(content, style, markup, &)
@@ -15,14 +15,15 @@ module Stationery
                                     leading: settings[:leading])
       node.keep_with_next = keep_with_next
       node.break_inside = break_inside
-      @_builder.add(node)
+      @_builder.add(mark(node, anchor))
     end
 
     # A container with padding, background, border and radius. `at: [x, y]`
     # places it at a fixed page position outside the flow.
-    def box(at: nil, align: nil, gap: 0, width: nil, keep_with_next: nil, **, &)
+    def box(at: nil, align: nil, gap: 0, width: nil, keep_with_next: nil, anchor: nil, **, &)
       node = Layout::Box.new(container(align:, gap:, &), width:, **)
       node.keep_with_next = keep_with_next
+      node = mark(node, anchor)
       @_builder.add(at ? Layout::Positioned.new(node, x: at[0], y: at[1], width:) : node)
     end
 
@@ -40,11 +41,11 @@ module Stationery
 
     # Children kept in one vertical group; `keep_together: true` moves the
     # whole group to the next page rather than splitting it.
-    def group(gap: 0, align: nil, keep_together: false, keep_with_next: nil, &)
+    def group(gap: 0, align: nil, keep_together: false, keep_with_next: nil, anchor: nil, &)
       flow = container(align:, gap:, &)
       flow.break_inside = :avoid if keep_together
       flow.keep_with_next = keep_with_next
-      @_builder.add(flow)
+      @_builder.add(mark(flow, anchor))
     end
 
     # Children side by side at their own widths, wrapping onto new rows.
@@ -66,8 +67,9 @@ module Stationery
       @_builder.add(align ? Layout::Flow.new([node], align:) : node)
     end
 
-    def table(rows, widths: nil, width: :auto, header: false, cell: {}, &)
-      @_builder.add(Layout::Table.new(rows, context: @_builder.context, widths:, width:, header:, cell:, &))
+    def table(rows, widths: nil, width: :auto, header: false, cell: {}, anchor: nil, &)
+      node = Layout::Table.new(rows, context: @_builder.context, widths:, width:, header:, cell:, &)
+      @_builder.add(mark(node, anchor))
     end
 
     def image(source, align: nil, **)
@@ -78,6 +80,10 @@ module Stationery
     def rule(**) = @_builder.add(Layout::Rule.new(**))
     def spacer(height) = @_builder.add(Layout::Spacer.new(height))
     def page_break = @_builder.add(Layout::PageBreak.new)
+
+    # A named link target (`link: "#name"`) at this point; it moves to the
+    # next page with whatever follows it.
+    def anchor(name) = @_builder.add(Layout::Mark.standalone(name))
 
     # Draw directly: the block receives the canvas and the reserved rectangle.
     def canvas(height:, at: nil, width: nil, &)
@@ -91,6 +97,8 @@ module Stationery
     end
 
     private
+
+    def mark(node, anchor) = anchor ? Layout::Mark.new(node, [anchor.to_s]) : node
 
     def container(align: nil, gap: 0, &)
       flow = Layout::Flow.new([], gap:, align: align || :left)

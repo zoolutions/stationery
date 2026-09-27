@@ -29,7 +29,7 @@ module Stationery
       @document.build_with(builder) { @document.instance_exec(info, &block) }
       mark = page.content.bytesize
       box = page.content_box
-      builder.root.paint(Canvas.new(page, @resources), box.x, box.y, box.width)
+      builder.root.paint(Canvas.new(page, @resources, template: true), box.x, box.y, box.width)
       page.content.prepend(page.content.slice!(mark..)) if layer == :background
     end
   end

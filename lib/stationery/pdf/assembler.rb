@@ -14,7 +14,8 @@ module Stationery
         writer = Writer.new
         tree = writer.reserve
         refs = @resources.build(writer)
-        kids = @pages.map { |page| write_page(writer, page, tree, refs) }
+        kids = @kids = @pages.map { writer.reserve }
+        @pages.each_with_index { |page, index| write_page(writer, page, kids[index], tree, refs) }
         writer.set(tree, { Type: :Pages, Kids: kids, Count: kids.size })
         root = writer.add({ Type: :Catalog, Pages: tree })
         writer.render(root:, info: writer.add(info_dictionary))
@@ -22,13 +23,13 @@ module Stationery
 
       private
 
-      def write_page(writer, page, tree, refs)
+      def write_page(writer, page, ref, tree, refs)
         dictionary = {
           Type: :Page, Parent: tree, MediaBox: [0, 0, *page.size],
           Contents: writer.add(Stream.new(page.content)), Resources: page_resources(page, refs)
         }
         dictionary[:Annots] = page.annotations.map { |link| writer.add(annotation(link)) } if page.annotations.any?
-        writer.add(dictionary)
+        writer.set(ref, dictionary)
       end
 
       def page_resources(page, refs)
@@ -38,8 +39,12 @@ module Stationery
       end
 
       def annotation(link)
-        { Type: :Annot, Subtype: :Link, Rect: link[:rect], Border: [0, 0, 0],
-          A: { Type: :Action, S: :URI, URI: link[:url].b } }
+        target = if (dest = link[:dest])
+                   { Dest: [@kids.fetch(dest.page), :XYZ, nil, dest.top, nil] }
+                 else
+                   { A: { Type: :Action, S: :URI, URI: link[:url].b } }
+                 end
+        { Type: :Annot, Subtype: :Link, Rect: link[:rect], Border: [0, 0, 0], **target }
       end
 
       def info_dictionary

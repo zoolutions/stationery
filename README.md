@@ -85,6 +85,25 @@ Text style options: `font`, `size`, `weight` (`:regular`, `:bold`), `style` (`:i
 `letter_spacing`, `underline`, `strikethrough`, `link`, `opacity`, `align`, `leading`.
 Colours are `"#RRGGBB"`, `"RRGGBB"`, `"#RGB"`, `[r, g, b]` (0-255) or `[c, m, y, k]` (0-100).
 
+### Links and anchors
+
+A link target starting with `#` jumps to a named anchor in the same PDF; anything else is a URL.
+
+```ruby
+text "See the totals", link: "#totals"
+text %(Back to the <a href="#intro">introduction</a>), markup: true
+box(link: "#appendix") { text "Appendix" }
+
+text "Introduction", anchor: "intro"      # also box(anchor:), group(anchor:), table(rows, anchor:)
+box(anchor: "totals") { text "Totals" }
+anchor "appendix"                         # standalone; moves to the next page with what follows it
+text "Appendix", size: 16
+```
+
+An anchor on content that splits across pages points at its first page. A link to an unknown anchor
+is dropped and reported as an `UnresolvedLink` warning; a name defined twice keeps the first and reports
+a `DuplicateAnchor`. Anchors drawn by page templates resolve to the first page.
+
 ## Components
 
 Components have Phlex's lifecycle (`around_template`, `before_template`,
