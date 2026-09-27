@@ -246,8 +246,10 @@ and used when a document declares no family. `font_family "Inter"` with no
 paths selects it explicitly, and `Stationery.bundled_fonts` lists what ships.
 Font files are read lazily, on first use, never when the gem is required.
 
-Text is pair-kerned from the font's `kern` table (`kerning: false` on an
-element or in `default_text` turns it off). Pairs that straddle a style or
+Text is pair-kerned from the font's GPOS `kern` feature (PairPos lookups,
+including class-based pairs and Extension lookups), falling back to the
+legacy `kern` table (`kerning: false` on an element or in `default_text`
+turns it off). Pairs that straddle a style or
 font change are not kerned. Kerning only tightens in practice, so a kerned
 line is never wider than the same line unkerned.
 
