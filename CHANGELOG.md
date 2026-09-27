@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Examples: `examples/report.rb` (multi-page annual report: header/footer regions, contents, bookmarks, lists, tables, a split callout, internal links, SVG icons), `examples/letter.rb` (one-page letter with a vector letterhead) and `examples/packing_slip.rb` (landscape, 120-row table with split rows, canvas barcode), each covered by an integration spec and rendered in CI by `rake examples`.
 - Internal: `Stationery::Rich` block model (paragraphs, headings, lists, quotes, code, rules, tables, images; inlines with marks) with lenient `HTML.parse` (implied end tags, browser whitespace collapsing, Trix/ActionText output) and CommonMark-subset `Markdown.parse` (GFM tables and strikethrough, reference links). Loaded on demand; `html`/`markdown` elements follow.
 - `require "stationery/rspec"` matchers (`have_pdf_text`, `have_pdf_text_on_page`, `have_page_count`, `have_pdf_link`, `have_image_count`, `have_bookmark`, `have_no_warnings`) and `require "stationery/minitest"` assertions, built on `Stationery::Testing::Inspector`. Needs `pdf-reader` in the test group.
 - `header` and `footer` regions that reserve page space, with `height:`, `gap:` and `on:` (`:all`, `:first`, `:rest`, `:odd`, `:even`, a page number, a range or a proc); later declarations win. A `page_template`'s `page.content_box` now excludes their space. `Page#margin_box`.
