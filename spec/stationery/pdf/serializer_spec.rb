@@ -13,6 +13,13 @@ RSpec.describe Stationery::PDF::Serializer do
     expect(dump(nil)).to eq("null")
   end
 
+  it "keeps whole floats, negatives and trailing non-zero digits intact" do
+    expect(dump(10.0)).to eq("10")
+    expect(dump(100.25)).to eq("100.25")
+    expect(dump(-3.5)).to eq("-3.5")
+    expect(dump(0.5)).to eq("0.5")
+  end
+
   it "writes names, hex-escaping delimiters and non-printable bytes" do
     expect(dump(:Type)).to eq("/Type")
     expect(dump(:"A B")).to eq("/A#20B")
