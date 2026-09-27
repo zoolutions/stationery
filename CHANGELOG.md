@@ -7,6 +7,7 @@
 - `box(link:)` makes the whole box clickable; `box(outset:)` bleeds its background past its edges.
 - `keep_with_next:` accepts a number of points of following content to keep.
 - `group(align:)`.
+- Fixed: table cells restyled through a selection after the table had been measured kept their old style.
 
 ## 0.1.0 (unreleased)
 

@@ -36,6 +36,19 @@ RSpec.describe Stationery::Layout::Table do
     expect(node.cell(1, 1).options[:color]).to be_nil
   end
 
+  it "applies styles set through a selection after the table was measured" do
+    node = table([["wide"]], cell: { padding: 0, borders: [] })
+    before = node.measure(260)
+    width_before = node.column_widths(260).first
+    node.row(0).size = 20
+    node.row(0).color = "#FF0000"
+    pdf, = render_layout(node)
+
+    expect(node.measure(260)).to be > before
+    expect(node.column_widths(260).first).to be > width_before
+    expect(page_contents(pdf).first).to include(" 20 Tf").and include("1 0 0 rg")
+  end
+
   it "stripes rows with zebra" do
     node = table(rows + [%w[a b c]], cell: { borders: [] }) { |t| t.zebra(from: 1, color: "#F9FAFB") }
 

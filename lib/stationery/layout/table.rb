@@ -38,6 +38,9 @@ module Stationery
 
       def splittable? = true
 
+      # Forgets measurements taken before a selection restyled cells.
+      def invalidate! = @column_widths = nil
+
       def natural_width = column_metric(:natural_width).sum
       def min_width = column_metric(:min_width).sum
 
