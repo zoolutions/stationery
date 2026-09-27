@@ -25,10 +25,6 @@ module Stationery
       :"H#{level}"
     end
 
-    # TODO(forms): once AcroForm fields land, tag Layout::Field as a `Form`
-    # element holding its widget annotation (Canvas#link's `tag:` path: an
-    # /OBJR plus /StructParent on the widget).
-
     # A structure element. Layout nodes create one per source node and share
     # it with every fragment a split produces, so content continued on the
     # next page stays one element. It joins the tree where it first paints.

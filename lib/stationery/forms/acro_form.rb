@@ -10,7 +10,7 @@ module Stationery
 
       # A widget placed on a page: its field, PDF-space rect, page and the
       # reference the page's /Annots already points at.
-      Widget = Data.define(:field, :rect, :page, :ref)
+      Widget = Data.define(:field, :rect, :page, :ref, :extra)
 
       # A name segment: widgets when it is a field, children when a group.
       Node = Struct.new(:name, :widgets, :children)
@@ -30,9 +30,11 @@ module Stationery
       end
 
       # Reserves the widget annotation for `field` at `rect` on `page`.
+      # `extra` entries for the widget dictionary may be computed from its
+      # reference (a tagged PDF's /StructParent).
       def add(field, rect, page)
         ref = @writer.reserve
-        @widgets << Widget.new(field, rect, page, ref)
+        @widgets << Widget.new(field, rect, page, ref, block_given? ? yield(ref) : {})
         ref
       end
 
@@ -106,7 +108,7 @@ module Stationery
         entries = widget.field.widget_entries(x2 - x1, y2 - y1, @fonts, state:)
         normal = entries.dig(:AP, :N)
         normal = normal.is_a?(Hash) ? normal.transform_values { |stream| @writer.add(stream) } : @writer.add(normal)
-        entries.merge(AP: { N: normal }, Rect: widget.rect, P: widget.page)
+        entries.merge(AP: { N: normal }, Rect: widget.rect, P: widget.page, **widget.extra)
       end
     end
   end

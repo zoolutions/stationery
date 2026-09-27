@@ -96,9 +96,11 @@ module Stationery
     end
 
     # An interactive form field's widget (a Forms::Field) over the rectangle.
-    def widget(field, x, y, w, h)
+    def widget(field, x, y, w, h, tag: nil)
       rect = [x, @page.height - y - h, x + w, @page.height - y].map { |v| num_value(v) }
-      @page.annotations << { rect:, widget: field }
+      annotation = { rect:, widget: field }
+      @page.annotations << annotation
+      adopt(annotation, tag, rect) if tag
     end
 
     # Names the point `y` on this page as a link target.

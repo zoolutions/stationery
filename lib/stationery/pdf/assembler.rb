@@ -65,7 +65,11 @@ module Stationery
       end
 
       def annotation_ref(writer, annotation, page)
-        return @form.add(annotation[:widget], annotation[:rect], page) if annotation[:widget]
+        if annotation[:widget]
+          return @form.add(annotation[:widget], annotation[:rect], page) do |widget_ref|
+            @structure ? @structure.annotation(annotation, widget_ref) : {}
+          end
+        end
 
         ref = writer.reserve
         dictionary = annotation(annotation)

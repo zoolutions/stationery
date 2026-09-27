@@ -84,6 +84,16 @@ module Stationery
       private
 
       # Records an annotation as an /OBJR of `element`, when that element is in the tree.
+      # Joins `element` to the open structure with `annotation` as its only
+      # content (a form field's widget): no marked content, just the /OBJR.
+      def adopt(annotation, element, bbox)
+        return unless structure?
+
+        element.attach(open_element)
+        element.place(bbox)
+        own(annotation, element)
+      end
+
       def own(annotation, element)
         return unless @tagging && element.attached?
 
