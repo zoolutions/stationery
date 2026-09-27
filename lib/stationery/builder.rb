@@ -62,6 +62,17 @@ module Stationery
       @containers.pop
     end
 
+    # Whether nodes are being added straight into a stack's flow (where a
+    # layer may go).
+    def in_stack? = stacks.include?(@containers.last)
+
+    def stack(flow, &)
+      stacks << flow
+      within(flow, &)
+    ensure
+      stacks.delete(flow)
+    end
+
     def with_text(**overrides)
       @text << text_defaults.merge(overrides.compact)
       yield
@@ -70,6 +81,7 @@ module Stationery
     end
 
     def text_defaults = @text.last
+    def stacks = @stacks ||= []
     def outline = @outline ||= Outline.new
     def warnings = @book.warnings
 

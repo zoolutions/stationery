@@ -31,6 +31,18 @@ RSpec.describe "Tagged PDF" do # rubocop:disable RSpec/DescribeClass
     expect(struct_types(build { box(shadow: true) { text "Card" } }.to_pdf)).to eq([[:Document, [:P]]])
   end
 
+  it "attaches a stack's base and layers in paint order" do
+    logo = image_path("rgb.jpg")
+    pdf = build do
+      stack do
+        image logo, width: 100, height: 60, fit: :cover, alt: "Base"
+        layer(top: 0, left: 0, padding: 2, background: "#FFFFFF") { text "Over" }
+      end
+    end.to_pdf
+
+    expect(struct_types(pdf)).to eq([[:Document, %i[Figure P]]])
+  end
+
   it "paints the footer as a pagination artifact" do
     content = page_contents(build { text "Body" }.to_pdf).first
 

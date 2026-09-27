@@ -51,6 +51,29 @@ module Stationery
       @_builder.add(node)
     end
 
+    # A base with layers painted over it: every ordinary child is part of the
+    # base (which sets the height), every `layer` floats over it relative to
+    # the stack's rectangle, taking no space. The stack moves to the next
+    # page whole. Layers may overhang; wrap the stack in `box(padding:)` to
+    # keep them inside the page.
+    def stack(gap: 0, align: nil, &)
+      flow = Layout::Flow.new([], gap:, align: align || :left)
+      @_builder.stack(flow) { align ? @_builder.with_text(align:) { yield_content(&) } : yield_content(&) }
+      layers, base = flow.children.partition { |child| child.is_a?(Layout::Layer) }
+      @_builder.add(Layout::Stack.new(flow.with_children(base), layers))
+    end
+
+    # A box placed over the enclosing `stack` by insets from its edges:
+    # points, or a fraction (`0.4`, `1/3r`) of the stack's width or height;
+    # negative values overhang. Takes every box option (`rotate:`, `shadow:`,
+    # `padding:`, `background:`, `radius:`, `height:`, …).
+    def layer(top: nil, right: nil, bottom: nil, left: nil, width: nil, height: nil, align: nil, gap: 0, **, &)
+      raise ArgumentError, "layer must be inside a stack" unless @_builder.in_stack?
+
+      box = Layout::Box.new(container(align:, gap:, &), **)
+      @_builder.add(Layout::Layer.new(box, top:, right:, bottom:, left:, width:, height:))
+    end
+
     # Children kept in one vertical group; `keep_together: true` moves the
     # whole group to the next page rather than splitting it.
     def group(gap: 0, align: nil, keep_together: false, keep_with_next: nil, anchor: nil, bookmark: nil, &)
