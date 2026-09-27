@@ -23,8 +23,8 @@ RSpec.describe "the example invoice" do
   it "embeds the logo once and links the contact address" do
     pdf = render
 
-    expect(image_count(pdf)).to eq(2) # the logo and its alpha soft mask
-    expect(pdf).to include("/URI (mailto:hello@acme.test)")
+    expect(pdf).to have_image_count(2) # the logo and its alpha soft mask
+    expect(pdf).to have_pdf_link("mailto:hello@acme.test")
   end
 
   it "right-aligns the amount column" do
@@ -44,6 +44,7 @@ RSpec.describe "the example invoice" do
     pdf = render(items: Array.new(80) { |i| ["Item #{i + 1}", 1, 10.0] })
     pages = reader_for(pdf).pages
 
+    expect(pdf).to have_pdf_text_on_page(pages.size, "Page #{pages.size} of #{pages.size}")
     expect(pages.size).to be >= 3
     pages.drop(1).each { |page| expect(page.text).to include("Description") }
     expect(pages.last.text).to include("Page #{pages.size} of #{pages.size}", "Total")
@@ -51,6 +52,6 @@ RSpec.describe "the example invoice" do
   end
 
   it "survives characters outside ASCII" do
-    expect(text_of(render(items: [["Café crème — Ångström", 1, 5.0]]))).to include("Café crème — Ångström")
+    expect(render(items: [["Café crème — Ångström", 1, 5.0]])).to have_pdf_text("Café crème — Ångström")
   end
 end

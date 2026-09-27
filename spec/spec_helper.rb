@@ -9,6 +9,7 @@ if ENV["COVERAGE"] != "false"
 end
 
 require "stationery"
+require "stationery/rspec"
 
 Dir[File.join(__dir__, "support/**/*.rb")].each { |file| require file }
 

@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
-require "stringio"
 require "pdf/inspector"
-require "pdf/reader"
+require "stationery/testing/inspector"
 
 module PdfHelpers
   FONTS = File.expand_path("../fixtures/fonts", __dir__)
@@ -11,9 +10,8 @@ module PdfHelpers
   def font_path(name) = File.join(FONTS, name)
   def image_path(name) = File.join(IMAGES, name)
 
-  def text_of(pdf)
-    PDF::Inspector::Text.analyze(pdf).strings.join(" ")
-  end
+  def inspect_pdf(pdf) = Stationery::Testing::Inspector.new(pdf)
+  def text_of(pdf) = inspect_pdf(pdf).text
 
   def strings_of(pdf)
     PDF::Inspector::Text.analyze(pdf).strings
@@ -23,21 +21,13 @@ module PdfHelpers
     PDF::Inspector::Text.analyze(pdf).positions
   end
 
+  def reader_for(pdf) = inspect_pdf(pdf).reader
+  def page_count(pdf) = inspect_pdf(pdf).page_count
+  def image_count(pdf) = inspect_pdf(pdf).image_count
+
   # Every text run of every page as [text, baseline y] (PDF bottom-up coordinates).
   def page_runs(pdf)
     reader_for(pdf).pages.map { |page| page.runs.map { |run| [run.text, run.origin.y.round(3)] } }
-  end
-
-  def reader_for(pdf)
-    PDF::Reader.new(StringIO.new(pdf))
-  end
-
-  def page_count(pdf)
-    reader_for(pdf).page_count
-  end
-
-  def image_count(pdf)
-    pdf.scan(%r{/Subtype /Image}).size
   end
 
   # Every /Rect a link annotation wrote, as [x1, y1, x2, y2] in page space.
