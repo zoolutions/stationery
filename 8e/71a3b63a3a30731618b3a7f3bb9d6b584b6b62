@@ -1,0 +1,79 @@
+lib/stationery/fonts/true_type.rb
+  ai_agent 170
+lib/stationery/builder.rb
+  ai_agent 75
+spec/fixtures/cli/one.rb
+  ai_agent 1-13
+README.md
+  ai_agent 20-32,136-149,154-159
+spec/fixtures/fonts/README.md
+  ai_agent 4
+spec/stationery/pdf/writer_spec.rb
+  ai_agent 29-34
+lib/stationery/fonts/bundled.rb
+  ai_agent 1-25
+.gitignore
+  ai_agent 9
+exe/stationery
+  ai_agent 1-6
+lib/stationery/cli/render.rb
+  ai_agent 1-137
+spec/fixtures/cli/debug.rb
+  ai_agent 1-17
+spec/stationery/gemspec_spec.rb
+  ai_agent 1-22
+spec/fixtures/cli/overflow.rb
+  ai_agent 1-11
+lib/stationery.rb
+  ai_agent 16,71-72
+lib/stationery/fonts/data/README.md
+  ai_agent 1-14
+spec/stationery/document_spec.rb
+  ai_agent 93-95,97-109
+lib/stationery/fonts/data/OFL.txt
+  ai_agent 1-92
+spec/fixtures/cli/empty.rb
+  ai_agent 1-4
+stationery.gemspec
+  ai_agent 39,44,46-47
+spec/fixtures/cli/two.rb
+  ai_agent 1-15
+spec/spec_helper.rb
+  ai_agent 6
+lib/stationery/pdf/writer.rb
+  ai_agent 33-36
+spec/stationery/cli/render_spec.rb
+  ai_agent 1-131
+spec/stationery/fonts/true_type_spec.rb
+  ai_agent 31-39
+lib/stationery/fonts/font_book.rb
+  ai_agent 19,30-31,33-38
+lib/stationery/fonts/family.rb
+  ai_agent 15-22
+examples/invoice.rb
+  ai_agent 6,33-38,152
+CHANGELOG.md
+  ai_agent 13-21
+spec/stationery/fonts/font_book_spec.rb
+  ai_agent 12,14-33
+lib/stationery/document.rb
+  ai_agent 8,35
+lib/stationery/cli.rb
+  ai_agent 1-73
+spec/fixtures/cli/needs_args.rb
+  ai_agent 1-15
+spec/stationery/cli_spec.rb
+  ai_agent 1-54
+spec/stationery/fonts/bundled_spec.rb
+  ai_agent 1-40
+.rubocop.yml
+  ai_agent 75
+spec/fixtures/cli/no_debug.rb
+  ai_agent 1-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "8e71a3b63a3a30731618b3a7f3bb9d6b584b6b62",
+  "prompts": {}
+}
