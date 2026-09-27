@@ -46,6 +46,16 @@ RSpec.describe Stationery::Preview do
     expect(preview.pdfs).to eq(%w[name overdue paid])
   end
 
+  it "does not list an around_render override as a pdf" do
+    stub_const("WrappedPreview", Class.new(described_class) do
+      def around_render(_name, _params) = yield
+      def paid = nil
+    end)
+
+    expect(WrappedPreview.pdfs).to eq(%w[paid])
+    expect(described_class.find("wrapped/around_render")).to be_nil
+  end
+
   describe ".find" do
     it "returns the class and pdf for a path" do
       expect(described_class.find("receipt_pdf/paid")).to eq([preview, "paid"])
@@ -77,6 +87,44 @@ RSpec.describe Stationery::Preview do
     it "refuses anything that is not a document" do
       expect { preview.new.render("name") }
         .to raise_error(Stationery::Error, "ReceiptPdfPreview#name must return a Stationery::Document (got String)")
+    end
+  end
+
+  describe "#to_pdf" do
+    let(:wrapped) do
+      Class.new(described_class) do
+        def around_render(_name, params)
+          Thread.current[:preview_locale] = params.fetch("locale", "en")
+          yield
+        ensure
+          Thread.current[:preview_locale] = nil
+        end
+
+        def greeting(_params)
+          built = Thread.current[:preview_locale]
+          SpecDocument.build { text "built #{built}, rendered #{Thread.current[:preview_locale]}" }
+        end
+      end
+    end
+
+    it "runs around_render around both building and rendering the document" do
+      pdf = wrapped.new.to_pdf("greeting", { "locale" => "de" })
+
+      expect(text_of(pdf)).to eq("built de, rendered de")
+      expect(Thread.current[:preview_locale]).to be_nil
+    end
+
+    it "renders without a hook by default" do
+      expect(preview.new.to_pdf("paid")).to start_with("%PDF")
+    end
+
+    it "passes debug: only to documents that accept it" do
+      debuggable = Class.new(SpecDocument) { def to_pdf(debug: false) = "debug=#{debug}" }
+      stub_const("DebugPreview", Class.new(described_class) { define_method(:paid) { debuggable.new } })
+
+      expect(DebugPreview.new.to_pdf("paid", debug: true)).to eq("debug=true")
+      expect(DebugPreview.new.to_pdf("paid")).to eq("debug=false")
+      expect(preview.new.to_pdf("paid", debug: true)).to start_with("%PDF")
     end
   end
 end

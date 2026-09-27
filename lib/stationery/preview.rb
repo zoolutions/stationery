@@ -4,15 +4,19 @@ require "stationery"
 
 module Stationery
   # Browsable sample documents, like ActionMailer previews. Each public method
-  # returns one document:
+  # returns one document. `around_render` wraps building and rendering it,
+  # for anything that must be in effect while the document paints:
   #
   #   # spec/pdfs/previews/invoice_pdf_preview.rb
   #   class InvoicePdfPreview < Stationery::Preview
   #     def paid = InvoicePdf.new(Invoice.first)
   #     def overdue(params) = InvoicePdf.new(Invoice.find(params.fetch("id")))
+  #
+  #     def around_render(_name, params) = I18n.with_locale(params.fetch("locale", I18n.default_locale)) { yield }
   #   end
   class Preview
     REGISTRY_LOCK = Mutex.new
+    HOOKS = %w[around_render].freeze
 
     class << self
       def inherited(subclass)
@@ -40,7 +44,7 @@ module Stationery
       end
 
       def preview_name = underscore(name.delete_suffix("Preview"))
-      def pdfs = public_instance_methods(false).sort.map(&:to_s)
+      def pdfs = public_instance_methods(false).sort.map(&:to_s) - HOOKS
 
       protected
 
@@ -53,6 +57,19 @@ module Stationery
       end
     end
 
+    # The PDF bytes of one preview, built and rendered inside around_render.
+    # `debug: true` reaches to_pdf when the document accepts it.
+    def to_pdf(name, params = {}, debug: false)
+      around_render(name, params) do
+        document = render(name, params)
+        document.to_pdf(**(debug && accepts_debug?(document) ? { debug: true } : {}))
+      end
+    end
+
+    # Override to wrap the preview: set an I18n locale, Current attributes,
+    # a time zone. Both the preview method and to_pdf run inside the block.
+    def around_render(_name, _params) = yield
+
     def render(name, params = {})
       method = public_method(name)
       document = method.arity.zero? ? method.call : method.call(params)
@@ -60,5 +77,9 @@ module Stationery
 
       raise Error, "#{self.class}##{name} must return a Stationery::Document (got #{document.class})"
     end
+
+    private
+
+    def accepts_debug?(document) = document.method(:to_pdf).parameters.include?(%i[key debug])
   end
 end

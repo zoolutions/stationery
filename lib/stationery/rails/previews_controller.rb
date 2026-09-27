@@ -19,8 +19,8 @@ module Stationery
       klass, pdf = Preview.find(params[:path])
       return head(:not_found) unless klass
 
-      document = klass.new.render(pdf, request.query_parameters.except("debug"))
-      send_data document.to_pdf(**debug_option(document)), type: "application/pdf", disposition: "inline"
+      pdf = klass.new.to_pdf(pdf, request.query_parameters.except("debug"), debug: params[:debug].present?)
+      send_data pdf, type: "application/pdf", disposition: "inline"
     end
 
     private
@@ -33,11 +33,6 @@ module Stationery
 
     def load_previews
       Preview.load(Railtie.preview_paths(::Rails.root, config.preview_paths))
-    end
-
-    def debug_option(document)
-      debug = params[:debug].present? && document.method(:to_pdf).parameters.include?(%i[key debug])
-      debug ? { debug: true } : {}
     end
 
     def page(paths)

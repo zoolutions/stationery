@@ -33,6 +33,24 @@ RSpec.describe Stationery::PreviewsController do
     expect(get("/rails/stationery/previews/invoice_pdf/paid?debug=1").body).to eq("%PDF debug=true")
   end
 
+  it "runs around_render around building and rendering the document" do
+    Stationery::Preview.load(Rails.application.config.stationery.preview_paths)
+    InvoicePdfPreview.class_eval do
+      def around_render(_name, params)
+        Thread.current[:preview_locale] = params.fetch("locale", "en")
+        yield
+      ensure
+        Thread.current[:preview_locale] = nil
+      end
+    end
+    document = Class.new(InvoicePdfPreview::Invoice) do
+      def view_template = text("locale #{Thread.current[:preview_locale]}")
+    end
+    allow(InvoicePdfPreview::Invoice).to receive(:new).and_return(document.new)
+
+    expect(text_of(get("/rails/stationery/previews/invoice_pdf/paid?locale=de").body)).to eq("locale de")
+  end
+
   it "answers 404 for an unknown preview" do
     expect(get("/rails/stationery/previews/invoice_pdf/missing").status).to eq(404)
   end
