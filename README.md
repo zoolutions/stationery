@@ -239,9 +239,11 @@ commands.
 
 ## Fonts and images
 
-Fonts are TrueType (`.ttf`) files. Only the glyphs a document uses are
-embedded, with a ToUnicode map so text copies and searches correctly. A style
-without its own file (bold, italic) is synthesised.
+Fonts are TrueType (`.ttf`) or OpenType/CFF (`.otf`, name-keyed or
+CID-keyed) files. A TrueType font embeds only the glyphs a document uses; an
+OpenType/CFF font is embedded whole. Either way a ToUnicode map makes text
+copy and search correctly. A style without its own file (bold, italic) is
+synthesised.
 
 Inter (regular, bold, italic, bold italic; SIL Open Font License) is bundled
 and used when a document declares no family. `font_family "Inter"` with no
@@ -268,8 +270,8 @@ mask). Parsed fonts and images are cached per process.
 
 ## Limitations
 
-No ligatures, no OpenType/CFF, TrueType collections, variable
-fonts or WOFF; SVG covers the shapes icon sets use
+No ligatures, no TrueType collections, variable fonts (including CFF2) or
+WOFF; SVG covers the shapes icon sets use
 (no text, gradients, patterns, masks or CSS stylesheets); no encryption,
 outlines, forms or tagged PDF; fixed-height boxes, and rows holding one,
 never split across pages.

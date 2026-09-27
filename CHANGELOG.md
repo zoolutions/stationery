@@ -15,6 +15,9 @@
   style or font change are not kerned.
 - GPOS pair kerning: the `kern` feature's PairPos lookups (formats 1 and 2, also behind Extension lookups)
   take precedence over the `kern` table, so GPOS-only fonts such as Inter are kerned too.
+- OpenType fonts with CFF outlines (`.otf`), name-keyed and CID-keyed: embedded whole as a CIDFontType0
+  (`FontFile3 /OpenType`), CID-keyed text written as CIDs with the font's ROS. Variable CFF2 fonts are rejected
+  with a named reason.
 - `align: :justify` on `text`, `text_style` and table cells: wrapped lines are stretched to the full
   width by widening their spaces (kerning is kept); the last line, lines ending in a newline and lines
   without spaces stay left-aligned. Link areas widen with the stretched text.

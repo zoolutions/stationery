@@ -65,9 +65,20 @@ RSpec.describe Stationery::Fonts::Font do
   it "maps glyphs back to Unicode in chunks of at most 100" do
     alphabet = [*"A".."Z", *"a".."z", *"0".."9"].join
     font.encode("#{alphabet}ÅÄÖåäöÜüéèàç.,;:!?-()[]{}'\"/\\@#$%&*+=<>|~^_`")
-    cmap = font.send(:to_unicode_cmap)
+    cmap = Stationery::Fonts::ToUnicode.cmap(font.used_codes)
 
     expect(cmap.scan(/(\d+) beginbfchar/).flatten.map(&:to_i)).to all(be <= 100)
     expect(cmap).to include("<00E5>") # å
+  end
+
+  it "writes TrueType and name-keyed CFF glyphs by glyph id, CID-keyed CFF glyphs by CID" do
+    jp = described_class.new(Stationery::Fonts::Registry.load(font_path("NotoSansJP-Subset.otf")))
+    otf = described_class.new(Stationery::Fonts::Registry.load(font_path("SourceSans3-Latin.otf")))
+
+    expect(font.code(42)).to eq(42)
+    expect(otf.code(80)).to eq(80)
+    expect(jp.code(jp.ttf.glyph_id("日".ord))).to eq(20_220)
+    expect(jp.encode("日").unpack("n*")).to eq([20_220])
+    expect(jp.used_codes).to eq(20_220 => "日")
   end
 end
