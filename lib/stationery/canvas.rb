@@ -58,6 +58,19 @@ module Stationery
       shape(fill:, stroke:, line_width:, cap:, join:, dash:, even_odd:, opacity:, transform:, &)
     end
 
+    # Paints `shading` inside the path the block traces. `matrix` maps the
+    # shading's coordinates into top-left page space.
+    def shade(shading, matrix:, transform: nil, even_odd: false, opacity: nil)
+      path = Path.new(self, transform:)
+      yield path
+      name = @page.use(:Shading, @resources.shading(shading))
+      a, b, c, d, e, f = matrix
+      graphics(opacity:) do |ops|
+        ops << path.to_s << (even_odd ? "W* n" : "W n")
+        ops << "#{[a, -b, c, -d, e, @page.height - f].map { |v| num(v) }.join(" ")} cm" << "/#{name} sh"
+      end
+    end
+
     def image(image, x:, y:, width:, height:, opacity: nil)
       name = @page.use(:XObject, @resources.image(image))
       graphics(opacity:) do |ops|

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- SVG: `linearGradient` and `radialGradient` fills (`fill="url(#id)"`, also in `style`), with stops, `href`/`xlink:href` inheritance, `objectBoundingBox` and `userSpaceOnUse` units and `gradientTransform`, drawn as PDF axial/radial shadings clipped to the shape. Approximations: `reflect`/`repeat` spreads are drawn as `pad` (reported in `unsupported`), stop opacity is the first stop's for the whole gradient, and a gradient stroke is drawn in the gradient's middle colour. A reference to a missing gradient paints its fallback colour or nothing and is reported as `url(#id)`. `Canvas#shade` paints a shading dictionary inside a path.
+
 ## 0.2.0 (2026-09-27)
 
 Everything from the three planned milestones ("works out of the box", "typography and layout",

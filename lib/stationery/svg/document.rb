@@ -5,10 +5,11 @@ module Stationery
     # A parsed SVG drawn as vector paths on a canvas. Supports the subset icon
     # sets use: path, rect (with rx), circle, ellipse, line, polyline, polygon
     # and g, with fill, stroke, stroke width/caps/joins, fill-rule, opacity,
-    # inline styles and transforms. `currentColor` takes the colour you pass.
+    # inline styles, transforms and linear/radial gradients. `currentColor`
+    # takes the colour you pass.
     class Document
       SHAPES = %w[path rect circle ellipse line polyline polygon].freeze
-      QUIET = (SHAPES + %w[svg g title desc metadata]).freeze
+      QUIET = (SHAPES + %w[svg g title desc metadata defs linearGradient radialGradient stop]).freeze
 
       def self.parse(source)
         root = Parser.parse(source)
@@ -22,7 +23,8 @@ module Stationery
       def initialize(root)
         @root = root
         @view_box = read_view_box
-        @unsupported = element_names(root).uniq.sort - QUIET
+        @gradients = Gradient.collect(root)
+        @unsupported = (element_names(root).uniq - QUIET).sort + approximations
       end
 
       def aspect = @view_box[2].to_f / @view_box[3]
@@ -34,7 +36,8 @@ module Stationery
         e = x + ((width - (vw * scale)) / 2.0) - (vx * scale)
         f = y + ((height - (vh * scale)) / 2.0) - (vy * scale)
         style = Style.new(Style::DEFAULTS, [scale, 0, 0, scale, e, f], color:).child(@root.attributes)
-        @root.children.each { |element| draw_element(canvas, element, style) }
+        painter = Painter.new(canvas, @gradients, @view_box.last(2))
+        shapes(@root, style) { |element, own| painter.paint(element, own) }
       end
 
       private
@@ -55,18 +58,28 @@ module Stationery
         float == float.round ? float.round : float
       end
 
-      def draw_element(canvas, element, parent)
-        style = parent.child(element.attributes)
-        return element.children.each { |child| draw_element(canvas, child, style) } if element.name == "g"
-        return unless SHAPES.include?(element.name)
+      # Yields every drawn shape with its resolved style, in paint order.
+      def shapes(parent, parent_style, &)
+        parent.children.each do |element|
+          style = parent_style.child(element.attributes)
+          if element.name == "g" then shapes(element, style, &)
+          elsif SHAPES.include?(element.name) then yield element, style
+          end
+        end
+      end
 
-        fill = style.fill
-        stroke = style.stroke
-        return if fill.nil? && stroke.nil?
-
-        canvas.path(fill:, stroke:, line_width: style.line_width, cap: style.cap || :butt, join: style.join || :miter,
-                    even_odd: style.even_odd?, opacity: style.opacity < 1 ? style.opacity : nil,
-                    transform: style.matrix) { |path| Shapes.trace(path, element) }
+      # Paint references to missing gradients, and gradient spreads drawn as pad.
+      def approximations
+        missing = []
+        shapes(@root, Style.new.child(@root.attributes)) do |_element, style|
+          [style.fill, style.stroke].grep(Style::Reference).each do |reference|
+            missing << "url(##{reference.id})" unless @gradients.key?(reference.id)
+          end
+        end
+        spreads = @gradients.values.filter_map do |gradient|
+          "#{gradient.kind}Gradient spreadMethod=#{gradient.approximated_spread}" if gradient.approximated_spread
+        end
+        (missing + spreads).uniq.sort
       end
     end
   end
