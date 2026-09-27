@@ -6,10 +6,13 @@ module Stationery
     # document gets its own book so glyph usage (and so subsetting) is per
     # document, while the parsed TrueType data is shared through the Registry.
     class FontBook
-      attr_reader :families, :warnings
+      attr_reader :families, :fallbacks, :warnings
 
-      def initialize(families = {}, warnings: Warnings.new)
+      # `fallbacks:` names the families tried, in order, for a character the
+      # run's own family has no glyph for.
+      def initialize(families = {}, fallbacks: [], warnings: Warnings.new)
         @families = families.dup
+        @fallbacks = fallbacks.map(&:to_s).freeze
         @warnings = warnings
         @fonts = {}
       end
@@ -26,17 +29,27 @@ module Stationery
         [@fonts[face.path] ||= Font.new(Registry.load(face.path)), face]
       end
 
+      # The runs split so every character is drawn by a font that has it.
+      def fallback(runs) = (@fallback ||= Fallback.new(self)).apply(runs)
+
       private
 
-      # Registered by name, bundled by name, then the first registered family,
-      # then the bundled default.
+      # Registered by name, bundled by name, an installed pack by name, then
+      # the first registered family, then the bundled default.
       def family(name)
-        @families[name.to_s] || bundled(name) || @families.values.first || bundled(Bundled::DEFAULT)
+        @families[name.to_s] || bundled(name) || pack(name) || @families.values.first || bundled(Bundled::DEFAULT)
       end
 
       def bundled(name)
         @bundled ||= {}
         @bundled[name.to_s] ||= Bundled.family(name)
+      end
+
+      def pack(name)
+        @packs ||= {}
+        return @packs[name.to_s] if @packs.key?(name.to_s)
+
+        @packs[name.to_s] = Packs.family(name)
       end
     end
   end

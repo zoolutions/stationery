@@ -23,8 +23,8 @@ module Stationery
         @config ||= if superclass.respond_to?(:config)
                       superclass.config.transform_values(&:dup)
                     else
-                      { page: { size: :letter, margin: 36 }, families: {}, text: {}, metadata: {}, templates: [],
-                        regions: [], strict: false }
+                      { page: { size: :letter, margin: 36 }, families: {}, fallbacks: [], text: {}, metadata: {},
+                        templates: [], regions: [], strict: false }
                     end
       end
 
@@ -34,6 +34,12 @@ module Stationery
 
       def font_family(name, **paths)
         config[:families][name.to_s] = Fonts::Family.build(name, **paths)
+      end
+
+      # Families tried, in order, for characters the text's own family has no
+      # glyph for; bundled Inter is tried last.
+      def font_fallbacks(*names)
+        config[:fallbacks] = names.map(&:to_s)
       end
 
       def default_text(**options)
@@ -75,7 +81,7 @@ module Stationery
 
     def to_pdf(target = nil, strict: self.class.config[:strict], debug: false)
       warnings = Warnings.new
-      book = Fonts::FontBook.new(self.class.config[:families], warnings:)
+      book = Fonts::FontBook.new(self.class.config[:families], fallbacks: self.class.config[:fallbacks], warnings:)
       call(builder = Builder.new(book:, text: self.class.config[:text]))
       resources = Resources.new
       regions = Regions.new(self.class.config[:regions], measure: region_measure(book))
