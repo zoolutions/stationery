@@ -1,0 +1,36 @@
+spec/stationery/fonts/woff_spec.rb
+  s_832305fd821824::t_fe37dce2803ccd 1-29,31-70
+  s_832305fd821824::t_bfa38811334537 30
+spec/stationery/fonts/true_type_spec.rb
+  s_832305fd821824::t_df93e70a7ebf69 83,121-139
+spec/fixtures/fonts/README.md
+  s_832305fd821824::t_f28250fa492d19 7-8,45,57-60
+CHANGELOG.md
+  s_832305fd821824::t_f28250fa492d19 8
+lib/stationery/fonts/woff.rb
+  s_832305fd821824::t_d46194b59c6a77 1-52
+lib/stationery.rb
+  s_832305fd821824::t_25b9420c60ffa2 10
+spec/integration/woff_spec.rb
+  s_832305fd821824::t_3e5e79914fb60d 1-16
+README.md
+  s_832305fd821824::t_f28250fa492d19 320-321,477
+lib/stationery/fonts/true_type.rb
+  s_832305fd821824::t_25b9420c60ffa2 7-8,18,30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "c83289f3267602deb7fff2a649df79ceb89c2f56",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
