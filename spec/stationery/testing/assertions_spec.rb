@@ -43,7 +43,7 @@ RSpec.describe Stationery::Testing::Assertions do
     host.assert_image_count(pdf, 0)
     host.assert_bookmark(outline_pdf, "Intro")
     host.assert_no_pdf_warnings(SpecDocument.build { text "x" })
-    host.assert_no_pdf_warnings(SpecDocument.build { box { 40.times { |i| text "row #{i}" } } })
+    host.assert_no_pdf_warnings(SpecDocument.build { box(break_inside: :avoid) { 40.times { |i| text "row #{i}" } } })
 
     expect(host.calls.map(&:first)).to eq([true, true, true, true, true, false])
     expect(host.calls.last.last).to start_with("expected PDF to have no warnings, got:")

@@ -80,7 +80,7 @@ RSpec.describe Stationery::Testing::Inspector do
 
   describe "#warnings" do
     it "collects a document's overflow warnings" do
-      doc = SpecDocument.build { box { 40.times { |i| text "row #{i}" } } }
+      doc = SpecDocument.build { box(break_inside: :avoid) { 40.times { |i| text "row #{i}" } } }
 
       expect(described_class.new(doc).warnings.map(&:page)).to eq([1])
     end

@@ -96,7 +96,7 @@ RSpec.describe Stationery::Testing::Matchers do
 
   it "lists the warnings of an overflowing document" do
     matcher = have_no_warnings
-    overflowing = SpecDocument.build { box { 40.times { |i| text "row #{i}" } } }
+    overflowing = SpecDocument.build { box(break_inside: :avoid) { 40.times { |i| text "row #{i}" } } }
 
     expect(matcher.matches?(overflowing)).to be(false)
     expect(matcher.failure_message).to match(/\Aexpected PDF to have no warnings, got:\n  - content .+ on page 1/)
