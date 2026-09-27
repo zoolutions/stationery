@@ -89,6 +89,14 @@ RSpec.describe Stationery::Testing::Matchers do
     expect(matcher.failure_message).to end_with('got bookmarks ["Intro", "Détails", "Appendix"]')
   end
 
+  it "composes with and, or and all like the built-in matchers" do
+    expect(outline_pdf).to have_bookmark("Intro").and have_bookmark("Appendix")
+    expect(outline_pdf).to have_bookmark("Missing").or have_bookmark("Détails")
+    expect([pdf, document]).to all(have_pdf_text("INV-7").and(have_page_count(2)))
+    expect { expect(outline_pdf).to have_bookmark("Intro").and have_bookmark("Missing") }
+      .to raise_error(RSpec::Expectations::ExpectationNotMetError, /expected PDF to have a bookmark "Missing"/)
+  end
+
   it "matches a document without warnings" do
     expect(document).to have_no_warnings
     expect(have_no_warnings.description).to eq("have no warnings")

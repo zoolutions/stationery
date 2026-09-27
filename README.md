@@ -562,7 +562,8 @@ end
 
 The matcher names carry a `pdf_` prefix so they never clash with Capybara's
 `have_text` and `have_link`. `have_bookmark` / `assert_bookmark` match outline
-titles. For anything else, `Stationery::Testing::Inspector.new(subject)`
+titles. The RSpec matchers compose like the built-ins: `.and` / `.or`, and inside
+`all`, `include` or `match`. For anything else, `Stationery::Testing::Inspector.new(subject)`
 exposes `text`, `page_texts`, `page_count`, `links`, `internal_links`,
 `image_count`, `bookmarks`, `metadata`, `warnings`, `tagged?`, `untagged_text` and
 `structure` — a tagged PDF's structure tree as nested arrays, each element's text
