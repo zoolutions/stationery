@@ -64,10 +64,14 @@ RSpec/NestedGroups:
 RSpec/DescribeClass:
   Exclude:
     - "spec/integration/**/*"
+RSpec/SpecFilePathFormat:
+  Exclude:
+    - "spec/rails/**/*" # the Rails lane lives apart from the Rails-free suite
 
 # Font and image caches are process-global by design and guarded by a Mutex.
 ThreadSafety/MutableClassInstanceVariable:
   Exclude: &caches
+    - "lib/stationery.rb" # font_paths is appended to once, at boot
     - "lib/stationery/fonts/registry.rb"
     - "lib/stationery/images/cache.rb"
 # Document configuration is written while the class body is evaluated and

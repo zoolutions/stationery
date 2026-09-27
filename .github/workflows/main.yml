@@ -47,3 +47,19 @@ jobs:
         run: bundle exec rspec
       - name: Examples render
         run: bundle exec rake examples
+
+  rails:
+    runs-on: ubuntu-latest
+    name: Rails
+    env:
+      BUNDLE_GEMFILE: gemfiles/rails.gemfile
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+      - name: Rails specs
+        run: bundle exec rake spec:rails

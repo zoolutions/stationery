@@ -5,5 +5,6 @@
 /examples/*.pdf
 *.gem
 .rspec_status
+gemfiles/*.lock
 implementation-notes.md
 /.claude/worktrees/

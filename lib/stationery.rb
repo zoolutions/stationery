@@ -93,6 +93,12 @@ require_relative "stationery/document"
 
 # Pure-Ruby PDF documents built from Phlex-style components.
 module Stationery
+  @font_paths = []
+
+  class << self
+    # Directories searched for font files; the Railtie appends the app's.
+    attr_reader :font_paths
+  end
   # Names of the font families shipped inside the gem.
   def self.bundled_fonts = Fonts::Bundled.names
 end

@@ -218,10 +218,29 @@ Invoice.new.to_pdf("invoice.pdf", debug: %i[cell cell_padding])
 ## Rails
 
 ```ruby
-require "stationery/rails" # adds send_pdf to controllers
-
-def show = send_pdf(InvoicePdf.new(@invoice), filename: "invoice.pdf")
+# Gemfile
+gem "stationery", require: "stationery/rails"
 ```
+
+Controllers gain `render pdf:` and `send_pdf`:
+
+```ruby
+def show
+  render pdf: InvoicePdf.new(@invoice), filename: "invoice.pdf" # disposition: "attachment" to download
+end
+
+def download = send_pdf(InvoicePdf.new(@invoice), filename: "invoice.pdf", disposition: "attachment")
+```
+
+`render pdf:` only accepts a document; anything else raises `ArgumentError`.
+Configure in `config/application.rb`:
+
+| Key | Default | |
+| --- | --- | --- |
+| `config.stationery.renderer` | `true` | `false` skips `render pdf:` (keeps another gem's, e.g. wicked_pdf's) |
+| `config.stationery.font_paths` | `["vendor/fonts"]` | directories under `Rails.root` added to `Stationery.font_paths` when they exist |
+
+The gem has no Rails dependency; the Railtie loads only inside a Rails app.
 
 ## CLI
 
