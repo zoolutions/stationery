@@ -1,0 +1,34 @@
+lib/stationery/structure.rb
+  s_832305fd821824::t_50d844f7a3e653 29,60-65
+lib/stationery/layout/table_of_contents/entry.rb
+  s_832305fd821824::t_50d844f7a3e653 8,31-32
+README.md
+  ai_agent 134
+lib/stationery/canvas.rb
+  s_832305fd821824::t_50d844f7a3e653 81-84
+lib/stationery/page.rb
+  s_832305fd821824::t_50d844f7a3e653 10-12
+spec/stationery/layout/table_of_contents_spec.rb
+  s_832305fd821824::t_0359ead191b285 110
+  s_832305fd821824::t_50d844f7a3e653 98-109,111-113
+spec/stationery/canvas_spec.rb
+  s_832305fd821824::t_50d844f7a3e653 132,134-135
+spec/stationery/structure_spec.rb
+  s_832305fd821824::t_50d844f7a3e653 52-53,60-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "30a0001bbf602ba985cd77ef7c0b4944d09c7a08",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
