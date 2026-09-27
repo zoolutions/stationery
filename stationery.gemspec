@@ -36,12 +36,14 @@ Gem::Specification.new do |spec|
 
       tracked.split("\x0")
     rescue StandardError
-      Dir.glob("lib/**/*.rb", base: __dir__) +
+      Dir.glob("{lib,exe}/**/*", base: __dir__).select { |f| File.file?(File.join(__dir__, f)) } +
         %w[CHANGELOG.md LICENSE.txt README.md].select { |f| File.file?(File.join(__dir__, f)) }
     end
 
   spec.files = gem_files.select do |f|
-    f.start_with?("lib/") || %w[CHANGELOG.md LICENSE.txt README.md].include?(f)
+    f.start_with?("lib/", "exe/") || %w[CHANGELOG.md LICENSE.txt README.md].include?(f)
   end
+  spec.bindir = "exe"
+  spec.executables = ["stationery"]
   spec.require_paths = ["lib"]
 end

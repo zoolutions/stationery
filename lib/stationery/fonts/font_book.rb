@@ -17,7 +17,7 @@ module Stationery
       def inspect = "#<#{self.class} families=#{@families.keys.inspect}>"
 
       def register(name, **paths)
-        @families[name.to_s] = Family.new(name, **paths)
+        @families[name.to_s] = Family.build(name, **paths)
       end
 
       # Returns [Font, Family::Face] for a Text::Style.
@@ -28,9 +28,15 @@ module Stationery
 
       private
 
+      # Registered by name, bundled by name, then the first registered family,
+      # then the bundled default.
       def family(name)
-        @families[name.to_s] || @families.values.first ||
-          raise(Error, "no font registered; declare one with `font_family \"Name\", regular: \"path/to/font.ttf\"`")
+        @families[name.to_s] || bundled(name) || @families.values.first || bundled(Bundled::DEFAULT)
+      end
+
+      def bundled(name)
+        @bundled ||= {}
+        @bundled[name.to_s] ||= Bundled.family(name)
       end
     end
   end

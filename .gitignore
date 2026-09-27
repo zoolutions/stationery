@@ -6,3 +6,4 @@
 *.gem
 .rspec_status
 implementation-notes.md
+/.claude/worktrees/
