@@ -19,6 +19,7 @@ module Stationery
         @used = {}
         @widths = {}
         @pairs = {}
+        @glyphs = {}
         @cid_keyed = ttf.cff? && ttf.cff.cid_keyed?
       end
 
@@ -42,7 +43,7 @@ module Stationery
       def underline_thickness(size) = scale(@ttf.underline_thickness, size)
       def strikeout_position(size) = scale(@ttf.strikeout_position, size)
       def strikeout_size(size) = scale(@ttf.strikeout_size, size)
-      def glyph?(char) = @ttf.glyph?(char)
+      def glyph?(char) = @glyphs.fetch(char) { @glyphs[char] = @ttf.glyph?(char) }
 
       def bold?
         @ttf.weight >= 600
