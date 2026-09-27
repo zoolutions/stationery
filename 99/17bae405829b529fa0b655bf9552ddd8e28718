@@ -1,0 +1,76 @@
+spec/stationery/text/style_spec.rb
+  s_832305fd821824::t_9615581fd43265 8-9
+spec/stationery/layout/row_spec.rb
+  s_832305fd821824::t_d8a0b286065f9f 11
+spec/stationery/fonts/font_spec.rb
+  s_832305fd821824::t_98c7a061cc63dd 18-38
+lib/stationery/fonts/true_type.rb
+  s_832305fd821824::t_81542b208734b1 60-65
+spec/integration/invoice_spec.rb
+  s_832305fd821824::t_d8a0b286065f9f 37
+spec/stationery/fonts/kerning_spec.rb
+  s_832305fd821824::t_4ee90c368a498c 1-20
+lib/stationery.rb
+  s_832305fd821824::t_861615395d869e 12-13
+lib/stationery/fonts/font.rb
+  s_832305fd821824::t_1c4f7f3ccf7955 21,26,28-32,51-52,58-59,101-103
+lib/stationery/layout/text.rb
+  s_832305fd821824::t_849131575a3ce4 42-43,45
+spec/stationery/fonts/kern_table_spec.rb
+  s_832305fd821824::t_493d6a29e10653 1-40
+lib/stationery/fonts/kern_table.rb
+  s_832305fd821824::t_70e5cb43162ecc 34,37
+  s_832305fd821824::t_e33dabc4ff1937 1-10,12-33,38-52
+  s_832305fd821824::t_a46e14387c8a91 35-36
+  s_832305fd821824::t_d63987c5d72b58 11
+lib/stationery/text/style.rb
+  s_832305fd821824::t_dce3a76caf7f60 9,11
+spec/stationery/layout/table_spec.rb
+  s_832305fd821824::t_d8a0b286065f9f 53
+spec/stationery/canvas_spec.rb
+  s_832305fd821824::t_88de9a2df3b774 110-116
+lib/stationery/fonts/kerning.rb
+  s_832305fd821824::t_120d9bbd1b5b1f 9
+  s_832305fd821824::t_b2f175297e9edf 1-8,10-16
+spec/stationery/text/wrapper_spec.rb
+  s_832305fd821824::t_d8a0b286065f9f 12
+lib/stationery/text/wrapper.rb
+  s_832305fd821824::t_70e5cb43162ecc 127-128
+spec/stationery/elements_spec.rb
+  s_832305fd821824::t_d8a0b286065f9f 38
+spec/stationery/layout/text_spec.rb
+  s_832305fd821824::t_d8a0b286065f9f 8
+  s_832305fd821824::t_1a0b5e20440cdc 9-10
+CHANGELOG.md
+  s_832305fd821824::t_b8b95ba9661343 10-13
+README.md
+  s_832305fd821824::t_b8b95ba9661343 85,127-131,145
+lib/stationery/builder.rb
+  s_832305fd821824::t_dce3a76caf7f60 7
+spec/stationery/document_spec.rb
+  s_832305fd821824::t_d272ddbe9228a4 45-57
+spec/stationery/fonts/glyph_run_spec.rb
+  s_832305fd821824::t_6c70e5ad2d9572 58-62
+spec/stationery/text/paragraph_spec.rb
+  s_832305fd821824::t_6180c06896e51a 40,44,46,51-58
+  s_832305fd821824::t_d8a0b286065f9f 35
+  s_832305fd821824::t_1a0b5e20440cdc 38-39,41-43,45,47-50
+lib/stationery/text/paragraph.rb
+  s_832305fd821824::t_dce3a76caf7f60 91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "9917bae405829b529fa0b655bf9552ddd8e28718",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
