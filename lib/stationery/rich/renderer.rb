@@ -57,7 +57,7 @@ module Stationery
       end
 
       def list(list)
-        options = list.ordered ? { start: list.start || 1 } : {}
+        options = list.ordered ? { **@styles[:ol], start: list.start || 1 } : @styles[:ul]
         @component.public_send(list.ordered ? :ol : :ul, **options) do
           list.items.each do |blocks|
             @component.li { @component.text_style(**@styles[:li]) { render(blocks) } }

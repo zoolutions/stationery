@@ -128,7 +128,8 @@ end
   points; bold, `keep_with_next`), `p`, `a` (colour, underline), `code` (`font:`; register a
   monospace family for inline and block code, otherwise the text font is used), `pre` and
   `blockquote` (box options), `hr` (rule options), `table` (`cell:` options, `header:` text style),
-  `li` (text style) and `img` (`max_width:`).
+  `ul` and `ol` (list options: `gap:`, `indent:`, `marker_gap:`, `marker_color:`, plus `style:` for
+  `ul` and `format:`/`suffix:` for `ol`), `li` (text style) and `img` (`max_width:`).
 - `gap:` spaces the blocks (default 6); `bookmarks: true` adds h1–h3 to the PDF outline.
 
 ### Links, bookmarks and table of contents

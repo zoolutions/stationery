@@ -53,6 +53,29 @@ RSpec.describe "Stationery::Rich::Renderer" do
     expect(strings_of(pdf)).to eq(["3.", "three", "4.", "four", "inner"])
   end
 
+  describe "list styles" do
+    def baselines(pdf) = page_runs(pdf).first.map(&:last).uniq
+
+    it "passes styles[:ul] to ul" do
+      loose = render { markdown "- a\n- b" }
+      tight = render { markdown "- a\n- b", styles: { ul: { gap: 0 } } }
+
+      expect(baselines(loose).first - baselines(loose).last).to be > baselines(tight).first - baselines(tight).last
+    end
+
+    it "passes styles[:ol] to ol, keeping the list's own start" do
+      pdf = render { markdown "3. a\n4. b", styles: { ol: { format: :alpha, suffix: ")" } } }
+
+      expect(strings_of(pdf)).to eq(["c)", "a", "d)", "b"])
+    end
+
+    it "colours markers with marker_color" do
+      pdf = render { html "<ul><li>a</li></ul>", styles: { ul: { marker_color: "#FF0000" } } }
+
+      expect(page_contents(pdf).first).to include("1 0 0 rg")
+    end
+  end
+
   it "draws a left border beside blockquotes" do
     pdf = render { html "<blockquote><p>quoted</p></blockquote>" }
 
