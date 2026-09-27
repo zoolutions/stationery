@@ -21,6 +21,7 @@ class Views::Docs::Pages::Testing < DocsUI::Page
           [ [ :code, "have_pdf_link(url_or_regexp)" ], [ :code, "assert_pdf_link" ], "a URI link annotation matches" ],
           [ [ :code, "have_image_count(n)" ], [ :code, "assert_image_count" ], "n image XObjects are embedded" ],
           [ [ :code, "have_bookmark(title)" ], [ :code, "assert_bookmark" ], "an outline entry has that title" ],
+          [ [ :code, "have_pdf_language(lang)" ], [ :code, "assert_pdf_language" ], "the catalog /Lang (from metadata lang:) equals it" ],
           [ [ :code, "have_no_warnings" ], [ :code, "assert_no_pdf_warnings" ], "the render produced no warnings (documents only)" ]
         ]
       )
@@ -44,6 +45,7 @@ class Views::Docs::Pages::Testing < DocsUI::Page
         pdf.image_count      # => 1
         pdf.bookmarks        # => ["Introduction", "Highlights", …]
         pdf.metadata         # => { Title: "Invoice", … }
+        pdf.lang             # => "en", the catalog /Lang, or nil
         pdf.warnings         # the document's warnings after rendering it
         ```
 

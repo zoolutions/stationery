@@ -61,6 +61,24 @@ RSpec.describe Stationery::Testing::Inspector do
     it "exposes the document info" do
       expect(inspector.metadata[:Producer]).to start_with("Stationery")
     end
+
+    it "has no language" do
+      expect(inspector.lang).to be_nil
+    end
+  end
+
+  describe "#lang" do
+    it "reads the catalog /Lang as UTF-8" do
+      doc = Class.new(SpecDocument) do
+        metadata lang: "de-CH"
+        def view_template = text("Grüezi")
+      end.new
+
+      lang = described_class.new(doc).lang
+
+      expect(lang).to eq("de-CH")
+      expect(lang.encoding).to eq(Encoding::UTF_8)
+    end
   end
 
   it "counts images" do

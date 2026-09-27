@@ -129,6 +129,16 @@ RSpec.describe Stationery::Testing::Matchers do
       expect(matcher.failure_message).to end_with("got [[:Document, [[:H1, \"Title\"]]]]")
     end
 
+    it "matches the language" do
+      matcher = have_pdf_language("de")
+
+      expect(tagged).to have_pdf_language("en")
+      expect(matcher.matches?(tagged)).to be(false)
+      expect(matcher.description).to eq('have language "de"')
+      expect(matcher.failure_message).to eq('expected PDF to have language "de", got "en"')
+      expect(have_pdf_language("en").tap { |m| m.matches?(document) }.failure_message).to end_with("got none")
+    end
+
     it "matches when every text is tagged or an artifact" do
       matcher = have_tagged_content
 

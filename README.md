@@ -534,6 +534,7 @@ RSpec.describe InvoicePdf do
   it { is_expected.to have_pdf_link("mailto:hello@acme.test") }
   it { is_expected.to have_image_count(1) }
   it { is_expected.to have_no_warnings }
+  it { is_expected.to have_pdf_language("en") } # the catalog /Lang from `metadata lang:`
   it { is_expected.to have_tagged_content } # a tagged PDF with every text tagged or an artifact
   it { is_expected.to have_structure([[:Document, [[:H1, "Invoice"], [:P, "INV-7"]]]]) }
 end
@@ -554,6 +555,7 @@ class InvoicePdfTest < Minitest::Test
     assert_page_count pdf, 2
     assert_pdf_link pdf, /acme\.test/
     assert_no_pdf_warnings pdf
+    assert_pdf_language pdf, "en"
     assert_tagged_content pdf
     assert_pdf_structure pdf, [[:Document, [[:H1, "Invoice"], [:P, "INV-7"]]]]
   end
@@ -565,7 +567,7 @@ The matcher names carry a `pdf_` prefix so they never clash with Capybara's
 titles. The RSpec matchers compose like the built-ins: `.and` / `.or`, and inside
 `all`, `include` or `match`. For anything else, `Stationery::Testing::Inspector.new(subject)`
 exposes `text`, `page_texts`, `page_count`, `links`, `internal_links`,
-`image_count`, `bookmarks`, `metadata`, `warnings`, `tagged?`, `untagged_text` and
+`image_count`, `bookmarks`, `metadata`, `lang`, `warnings`, `tagged?`, `untagged_text` and
 `structure` — a tagged PDF's structure tree as nested arrays, each element's text
 read from its marked content: `[type, "text"]`, `[type, [children]]` (its own text
 between the children, as for a `P` holding a `Link`) or `[type]` when empty; a
