@@ -65,7 +65,7 @@ module Stationery
 
       # A copy holding other content and open sides, every option kept.
       def with_content(content, open = @open) = dup.reopen(content, open)
-      def with_open(open) = with_content(@content, open)
+      def with_open(*sides) = with_content(@content, @open | sides)
 
       def measure(width)
         @height || (@content.measure(inner_width(width)) + vertical)
