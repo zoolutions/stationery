@@ -41,7 +41,7 @@ RSpec.describe "Docs site" do
     get "/docs/elements"
 
     %w[text box row column group wrap table image svg rule spacer page_break canvas ul ol li anchor bookmark
-       table_of_contents html markdown text_style].each do |element|
+       table_of_contents html markdown text_style text_field checkbox].each do |element|
       expect(response.body).to include("<code>#{element}"), "expected the elements page to cover #{element}"
     end
   end
