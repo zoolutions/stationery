@@ -1,0 +1,9 @@
+CHANGELOG.md
+  ai_agent 16,25,81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "9d1052265bb64d44304c0cad4f061c35e9633bb3",
+  "prompts": {}
+}
