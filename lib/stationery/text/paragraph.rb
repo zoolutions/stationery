@@ -47,7 +47,12 @@ module Stationery
         top = y
         @lines.each do |line|
           offset = x + Geometry.align_offset(@align, @width, line.width)
-          line.fragments.each { |fragment| draw_fragment(canvas, fragment, offset, top, line) }
+          extra = word_spacing(line)
+          spaces = 0
+          line.fragments.each do |fragment|
+            draw_fragment(canvas, fragment, offset + (extra * spaces), top, line, extra)
+            spaces += fragment.text.count(" ")
+          end
           top += line.height + @leading
         end
       end
@@ -82,16 +87,23 @@ module Stationery
         @runs.map { |run| Run.new(run.text, run.style.with(size: [run.style.size * factor, MIN_SHRINK_SIZE].max)) }
       end
 
-      def draw_fragment(canvas, fragment, offset, top, line)
+      # Extra points per space that stretch a justifiable line to the width.
+      def word_spacing(line)
+        return 0 unless @align == :justify && line.justifiable? && line.space_count.positive?
+
+        [(@width - line.width) / line.space_count, 0].max
+      end
+
+      def draw_fragment(canvas, fragment, offset, top, line, word_spacing)
         style = fragment.style
         x = offset + fragment.x
-        canvas.text(fragment.text, x:, y: top + line.ascent, font: fragment.font, size: style.render_size,
-                                   color: style.color, letter_spacing: style.letter_spacing, rise: style.rise,
-                                   opacity: style.opacity, underline: style.underline,
-                                   strikethrough: style.strikethrough, kerning: style.kerning,
-                                   synthetic_bold: fragment.face.synthetic_bold,
-                                   synthetic_oblique: fragment.face.synthetic_oblique)
-        canvas.link(x, top, fragment.width, line.height, style.link) if style.link
+        width = canvas.text(fragment.text, x:, y: top + line.ascent, font: fragment.font, size: style.render_size,
+                                           color: style.color, letter_spacing: style.letter_spacing, rise: style.rise,
+                                           opacity: style.opacity, underline: style.underline,
+                                           strikethrough: style.strikethrough, kerning: style.kerning,
+                                           synthetic_bold: fragment.face.synthetic_bold,
+                                           synthetic_oblique: fragment.face.synthetic_oblique, word_spacing:)
+        canvas.link(x, top, width, line.height, style.link) if style.link
       end
     end
   end

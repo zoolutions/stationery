@@ -24,7 +24,7 @@ module Stationery
         paragraph(width).draw(canvas, x, y)
       end
 
-      def split(width, height)
+      def split(width, height, **)
         head, tail = paragraph(width).split(height)
         [head && from(head), tail && from(tail)]
       end

@@ -28,6 +28,15 @@ RSpec.describe Stationery::Fonts::TrueType do
     expect(font.advance(font.glyph_id("W".ord))).to be > font.advance(font.glyph_id("i".ord))
   end
 
+  it "estimates a cap height for fonts without an OS/2 table" do
+    data, = Stationery::Fonts::Subset.build(font, [0, font.glyph_id("A".ord)])
+    subset = described_class.new(data, cmap: false)
+
+    expect(subset.cap_height).to eq((subset.ascender * 0.7).round)
+    expect(subset.x_height).to eq((subset.ascender * 0.5).round)
+    expect { Stationery::Fonts::Font.new(subset).build(Stationery::PDF::Writer.new) }.not_to raise_error
+  end
+
   it "reads a font with a format 12 cmap" do
     inter = described_class.new(File.binread(font_path("Inter-Regular.ttf")))
     expect(inter.glyph_id("A".ord)).to be > 0
