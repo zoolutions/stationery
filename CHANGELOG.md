@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.2.0 (unreleased)
+## Unreleased
+
+## 0.2.0 (2026-09-27)
 
 Everything from the three planned milestones ("works out of the box", "typography and layout",
 "documents, Rails and testing") shipped together.
