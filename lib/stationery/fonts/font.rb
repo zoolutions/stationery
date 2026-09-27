@@ -22,7 +22,7 @@ module Stationery
 
       def inspect = "#<#{self.class} #{@ttf.postscript_name} used=#{@used.size}>"
 
-      def width_of(text, size, letter_spacing: 0)
+      def width_of(text, size, letter_spacing: 0, kerning: false) # rubocop:disable Lint/UnusedMethodArgument
         units = text.each_char.sum { |char| @widths[char] ||= @ttf.advance(@ttf.glyph_id(char.ord)) }
         scale(units, size) + (letter_spacing * text.length)
       end
@@ -42,12 +42,15 @@ module Stationery
         @ttf.weight >= 600
       end
 
-      def encode(text)
-        text.each_char.map do |char|
+      def encode(text) = glyph_run(text).gids.pack("n*")
+
+      def glyph_run(text, kerning: false) # rubocop:disable Lint/UnusedMethodArgument
+        gids = text.each_char.map do |char|
           gid = @ttf.glyph_id(char.ord)
           @used[gid] ||= char
           gid
-        end.pack("n*")
+        end
+        GlyphRun.new(font: self, gids:, adjust: Array.new(gids.size, 0))
       end
 
       def used?
