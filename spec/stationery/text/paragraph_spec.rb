@@ -32,7 +32,30 @@ RSpec.describe Stationery::Text::Paragraph do
     right = positions_of(render(paragraph("x", align: :right))).first
     font = book.resolve(base_style).first
 
-    expect(right.first).to be_within(0.01).of(10 + 200 - font.width_of("x", 10))
+    expect(right.first).to be_within(0.01).of(10 + 200 - font.width_of("x", 10, kerning: true))
+  end
+
+  it "kerns by default, and the kerned text still extracts" do
+    pdf = render(paragraph("AVA"))
+
+    expect(page_contents(pdf).first).to include("] TJ")
+    expect(text_of(pdf)).to eq("AVA")
+  end
+
+  it "draws plain strings with kerning off" do
+    plain = described_class.new([Stationery::Text::Run.new("AVA", base_style(kerning: false))], book:, width: 200)
+    content = page_contents(render(plain)).first
+
+    expect(content).to include("> Tj")
+    expect(content).not_to include("TJ")
+  end
+
+  it "wraps with kerned widths" do
+    font = book.resolve(base_style).first
+    para = paragraph("AVAVAV AVAVAV", width: font.width_of("AVAVAV AVAVAV", 10, kerning: true) + 0.01)
+
+    expect(para.lines.size).to eq(1)
+    expect(para.lines.first.width).to be_within(1e-9).of(font.width_of("AVAVAV AVAVAV", 10, kerning: true))
   end
 
   it "splits by whole lines to fit a height, returning the remainder" do
@@ -77,6 +100,73 @@ RSpec.describe Stationery::Text::Paragraph do
 
       expect(para.fit(100, overflow: :shrink_to_fit)).to equal(para)
       expect(paragraph(long, width: 100).fit(10, overflow: :visible).height).to be > 10
+    end
+  end
+
+  describe "justification" do
+    let(:long) { "The quick brown fox jumps over the lazy dog and keeps running far beyond the hills." }
+
+    # [x, width] of every canvas.text call, in drawing order.
+    def draws(para)
+      calls = []
+      allow(canvas).to receive(:text).and_wrap_original do |original, string, **options|
+        original.call(string, **options).tap { |width| calls << [options[:x], width] }
+      end
+      para.draw(canvas, 10, 10)
+      calls
+    end
+
+    # Renders on a page of its own, so annotations from other renders stay out.
+    def render_alone(para)
+      page = Stationery::Page.new(size: [300, 300])
+      resources = Stationery::Resources.new
+      para.draw(Stationery::Canvas.new(page, resources), 10, 10)
+      Stationery::PDF::Assembler.new(pages: [page], resources:).render
+    end
+
+    it "stretches the spaces of every soft-wrapped line to the full width" do
+      para = paragraph(long, align: :justify)
+      calls = draws(para)
+
+      expect(para.lines.size).to be > 2
+      para.lines[0...-1].zip(calls).each do |line, (x, width)|
+        expect(line).to be_justifiable
+        expect(x + width).to be_within(0.01).of(210)
+      end
+    end
+
+    it "left-aligns the last line" do
+      para = paragraph(long, align: :justify)
+      x, width = draws(para).last
+
+      expect(x).to eq(10)
+      expect(width).to be_within(0.001).of(para.lines.last.width)
+    end
+
+    it "leaves lines without spaces alone" do
+      para = paragraph("Supercalifragilisticexpialidocious", width: 60, align: :justify)
+      calls = draws(para)
+
+      expect(para.lines.size).to be > 1
+      para.lines.zip(calls).each { |line, (_x, width)| expect(width).to be_within(0.001).of(line.width) }
+    end
+
+    it "moves later fragments right by the stretch of the spaces before them" do
+      para = paragraph("a <b>bold</b> b c d e f g h i j k l m n o p q r s t u v w x y z end", align: :justify)
+      line = para.lines.first
+      extra = (200 - line.width) / line.space_count
+      second = line.fragments[1]
+
+      expect(draws(para)[1].first).to be_within(0.01).of(10 + second.x + extra)
+    end
+
+    it "widens link rectangles over stretched spaces" do
+      source = "<link href='https://x.test'>#{long}</link>"
+      left = link_rects(render_alone(paragraph(source))).first
+      justified = link_rects(render_alone(paragraph(source, align: :justify))).first
+
+      expect(justified[2] - justified[0]).to be_within(0.01).of(200)
+      expect(justified[2] - justified[0]).to be > left[2] - left[0]
     end
   end
 end

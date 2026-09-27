@@ -9,7 +9,7 @@ RSpec.describe Stationery::Text::Wrapper do
   end
 
   def width_of(text, style: base_style)
-    book.resolve(style).first.width_of(text, style.size)
+    book.resolve(style).first.width_of(text, style.size, kerning: style.kerning)
   end
 
   it "keeps text that fits on one line" do
@@ -63,5 +63,23 @@ RSpec.describe Stationery::Text::Wrapper do
 
     expect(line.fragments.map(&:x)).to eq([0, width_of("ab ")])
     expect(line.width).to be_within(0.001).of(width_of("ab ") + width_of("cd", style: base_style(weight: :bold)))
+  end
+
+  describe "justifiability" do
+    def wrapped(source, width)
+      described_class.new(book).wrap(Stationery::Text::Markup.parse(source, base_style), width)
+    end
+
+    it "marks soft-wrapped lines justifiable, not the last line" do
+      result = wrapped("alpha beta gamma", width_of("alpha beta") + 1)
+
+      expect(result.map(&:justifiable?)).to eq([true, false])
+    end
+
+    it "does not justify a line ended by a newline" do
+      result = wrapped("alpha beta\ngamma delta epsilon", width_of("gamma delta") + 1)
+
+      expect(result.map(&:justifiable?)).to eq([false, true, false])
+    end
   end
 end

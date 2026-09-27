@@ -27,6 +27,7 @@ module Stationery
       def paint(canvas, x, y, width, _height = nil, **)
         w, h = size(width)
         @document.draw(canvas, x:, y:, width: w, height: h, color: @color)
+        canvas.debug_rect(x, y, w, h, :image)
       end
 
       private

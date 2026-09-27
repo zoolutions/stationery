@@ -4,7 +4,7 @@ module Stationery
   # Collects the nodes a component tree describes. Holds the container stack
   # (where the next node goes) and the text defaults in effect.
   class Builder
-    STYLE_KEYS = %i[size color weight style letter_spacing underline strikethrough link opacity].freeze
+    STYLE_KEYS = %i[size color weight style letter_spacing underline strikethrough link opacity kerning].freeze
 
     # Collects a row's columns; anything that is not already a column box is
     # wrapped in one.
@@ -19,13 +19,33 @@ module Stationery
       end
     end
 
-    attr_reader :root, :book
+    # Collects a list's items: every node added becomes one item.
+    class Items
+      attr_reader :nodes
+
+      def initialize = @nodes = []
+
+      def <<(node)
+        @nodes << node
+        self
+      end
+    end
+
+    attr_reader :root, :book, :list_depth
 
     def initialize(book:, text: {})
       @book = book
       @root = Layout::Flow.new
       @containers = [@root]
       @text = [text]
+      @list_depth = 0
+    end
+
+    def nested_list
+      @list_depth += 1
+      yield
+    ensure
+      @list_depth -= 1
     end
 
     def add(node)
@@ -49,10 +69,12 @@ module Stationery
     end
 
     def text_defaults = @text.last
+    def outline = @outline ||= Outline.new
+    def warnings = @book.warnings
 
     def style(options = {})
       options = text_defaults.merge(options)
-      family = options[:font] || @book.families.keys.first || "default"
+      family = options[:font] || @book.families.keys.first || Fonts::Bundled::DEFAULT
       Text::Style.new(family: family.to_s, **options.slice(*STYLE_KEYS))
     end
 
