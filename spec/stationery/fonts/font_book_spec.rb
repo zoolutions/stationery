@@ -43,6 +43,23 @@ RSpec.describe Stationery::Fonts::FontBook do
     expect(child.resolve(base_style).first).not_to equal(parent.resolve(base_style).first)
   end
 
+  it "re-resolves styles after a family is registered" do
+    book = described_class.new
+    before = book.resolve(base_style(family: "Custom")).last.path
+    book.register("Custom", regular: font_path("OpenSans-Regular.ttf"))
+
+    expect([before, book.resolve(base_style(family: "Custom")).last.path])
+      .to eq([book.resolve(base_style(family: "Inter")).last.path, font_path("OpenSans-Regular.ttf")])
+  end
+
+  it "returns runs it already split for fallback as they are" do
+    book = open_sans_book
+    split = book.fallback([Stationery::Text::Run.new("a → b", base_style)])
+
+    expect(book.fallback(split)).to equal(split)
+    expect(split.map(&:text)).to eq(["a ", "→ ", "b"])
+  end
+
   context "with an installed font pack" do
     let(:dir) { Dir.mktmpdir }
 

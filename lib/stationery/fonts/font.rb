@@ -20,18 +20,20 @@ module Stationery
         @widths = {}
         @pairs = {}
         @glyphs = {}
+        @advances = {}
+        @kerns = {}
         @cid_keyed = ttf.cff? && ttf.cff.cid_keyed?
       end
 
       def inspect = "#<#{self.class} #{@ttf.postscript_name} used=#{@used.size}>"
 
+      # Advances and kerning are remembered per string, so measuring the same
+      # word again (wrapping, then laying out the line) allocates nothing.
       def width_of(text, size, letter_spacing: 0, kerning: false)
-        units = text.each_char.sum { |char| @widths[char] ||= @ttf.advance(@ttf.glyph_id(char.ord)) }
-        width = scale(units, size) + (letter_spacing * text.length)
+        width = scale(advance_units(text), size) + (letter_spacing * text.length)
         return width unless kerning
 
-        gids = text.each_char.map { |char| @ttf.glyph_id(char.ord) }
-        width + (gids.each_cons(2).sum { |left, right| pair(left, right) } * size / 1000.0)
+        width + (kerning_units(text) * size / 1000.0)
       end
 
       def ascender(size) = scale(@ttf.ascender, size)
@@ -88,6 +90,15 @@ module Stationery
       end
 
       private
+
+      def advance_units(text)
+        @advances[text] ||= text.each_char.sum { |char| @widths[char] ||= @ttf.advance(@ttf.glyph_id(char.ord)) }
+      end
+
+      def kerning_units(text)
+        @kerns[text] ||= text.each_char.map { |char| @ttf.glyph_id(char.ord) }
+                             .each_cons(2).sum { |left, right| pair(left, right) }
+      end
 
       # Kerning between two glyphs in thousandths of an em.
       def pair(left, right)
