@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `box(min_height:)` and `column(min_height:)`: a height floor that, unlike `height:`, still splits across pages. The first fragment keeps as much of the floor as the page holds and the next carries the rest, so a row of equal-height cards or an empty signature area can span a page break. Passing both `height:` and `min_height:` raises `ArgumentError`.
+
 ## 0.2.0 (2026-09-27)
 
 Everything from the three planned milestones ("works out of the box", "typography and layout",
