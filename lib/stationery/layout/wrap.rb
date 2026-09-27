@@ -46,6 +46,7 @@ module Stationery
           left = x + Geometry.align_offset(@align, width, used)
           row.each do |child, w|
             child.paint(canvas, left, top, w)
+            canvas.debug_rect(left, top, w, child.measure(w), :flow) if canvas.debug?
             left += w + @gap
           end
           top += height + @row_gap

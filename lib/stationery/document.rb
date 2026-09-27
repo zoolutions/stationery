@@ -55,14 +55,14 @@ module Stationery
     def page_options = self.class.config[:page]
     def metadata = self.class.config[:metadata]
 
-    def to_pdf(target = nil)
+    def to_pdf(target = nil, debug: false)
       book = Fonts::FontBook.new(self.class.config[:families])
       call(builder = Builder.new(book:, text: self.class.config[:text]))
       resources = Resources.new
-      paginator = Layout::Paginator.new(resources:, page: page_options)
+      paginator = Layout::Paginator.new(resources:, page: page_options, debug:)
       pages = paginator.paginate(builder.root)
       @warnings = paginator.warnings
-      PageTemplates.new(self, book:, resources:).apply(pages)
+      PageTemplates.new(self, book:, resources:, debug:).apply(pages)
       write(PDF::Assembler.new(pages:, resources:, info:).render, target)
     end
 
