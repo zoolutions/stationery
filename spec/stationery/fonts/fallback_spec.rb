@@ -58,6 +58,12 @@ RSpec.describe Stationery::Fonts::Fallback do
              .first.style.family).to eq("Copy")
   end
 
+  it "keeps whitespace no font has with its neighbours instead of hunting for a font" do
+    runs = apply("a\u3000b\u202Fc")
+
+    expect(runs.map { |run| [run.text, run.style.family] }).to eq([["a\u3000b\u202Fc", "Open Sans"]])
+  end
+
   it "keeps a glyph no font has in the primary family" do
     runs = apply("a☃b")
 
@@ -105,6 +111,19 @@ RSpec.describe Stationery::Fonts::Fallback do
       expect(pdf).to include("+Inter-Regular")
       expect(pdf).not_to include("+SourceSans")
       expect(SpecDocument.config[:fallbacks]).to eq([])
+    end
+
+    it "draws whitespace no font has as a blank of its width, without a warning" do
+      doc = SpecDocument.build { text "a\u3000b" }
+      pdf = doc.to_pdf
+      book = open_sans_book
+      font = book.resolve(base_style).first
+      line = Stationery::Text::Paragraph.new([run_class.new("a\u3000b", base_style)], book:, width: 200).lines.first
+
+      expect(doc.warnings.to_a).to be_empty
+      expect(text_of(pdf)).to match(/\Aa\s+b\z/)
+      expect(pdf).not_to include("+Inter-Regular")
+      expect(line.width).to be_within(1e-6).of(font.width_of("ab", 10, kerning: true) + 10)
     end
 
     it "covers table cells" do
