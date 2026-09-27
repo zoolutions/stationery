@@ -1,0 +1,32 @@
+lib/stationery/pdf/assembler.rb
+  s_832305fd821824::t_d54c227f363ba7 68-72
+lib/stationery/canvas.rb
+  s_832305fd821824::t_d54c227f363ba7 99,101-103
+lib/stationery/forms/acro_form.rb
+  s_832305fd821824::t_d54c227f363ba7 13,33-34,37,111
+lib/stationery/layout/field.rb
+  s_832305fd821824::t_d54c227f363ba7 18,38
+lib/stationery/canvas/marking.rb
+  s_832305fd821824::t_d54c227f363ba7 87-96
+spec/stationery/tagging_spec.rb
+  s_832305fd821824::t_892beae79b67a6 132-134
+  s_832305fd821824::t_d54c227f363ba7 119-131,135-136
+CHANGELOG.md
+  ai_agent 5-6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "bf1f7aaea8b4b4cb82c793a9a919b1c35429db0f",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
