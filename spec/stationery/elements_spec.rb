@@ -125,4 +125,79 @@ RSpec.describe Stationery::Elements do
     expect(page_count(split)).to be > 1
     expect(kept.warnings.size).to eq(1)
   end
+
+  describe "lists" do
+    def curves(content) = content.scan(/ c$/).size
+
+    it "numbers ordered items from a start" do
+      pdf = render do
+        ol(start: 3) do
+          li "three"
+          li "four"
+        end
+      end
+
+      expect(strings_of(pdf)).to eq(["3.", "three", "4.", "four"])
+    end
+
+    it "indents every body past the widest marker, formats markers and keeps text options" do
+      pdf = render do
+        ol(format: :upper_roman, suffix: ")", marker_gap: 4) do
+          li "one"
+          li "two", weight: :bold
+        end
+      end
+      font = Stationery::Fonts::Font.new(Stationery::Fonts::Registry.load(font_path("OpenSans-Regular.ttf")))
+      bodies = positions_of(pdf).values_at(1, 3).map(&:first)
+
+      expect(strings_of(pdf)).to eq(["I)", "one", "II)", "two"])
+      expect(bodies.uniq.size).to eq(1)
+      expect(bodies.first).to be_within(0.01).of(20 + [font.width_of("II)", 10), 10].max + 4)
+      expect(page_contents(pdf).first).to include("/F2 10 Tf")
+    end
+
+    it "turns bare nodes into items and draws a String style as text" do
+      pdf = render do
+        ul(style: ">", marker_color: "#FF0000") do
+          text "bare"
+          li
+          li(gap: 2) { text "rich" }
+        end
+      end
+
+      expect(strings_of(pdf)).to eq([">", "bare", ">", ">", "rich"])
+      expect(page_contents(pdf).first).to include("1 0 0 rg")
+    end
+
+    it "draws a dash, a filled square and coloured discs" do
+      dash = render { ul(style: :dash) { li "a" } }
+      square = render { ul(style: :square) { li "a" } }
+      disc = render { ul(marker_color: "#00FF00") { li "a" } }
+
+      expect(strings_of(dash)).to eq(["–", "a"])
+      expect(page_contents(square).first).to match(/ re\nf$/)
+      expect(page_contents(disc).first).to match(/0 1 0 rg\n[\d. ]+ m$/)
+    end
+
+    it "cycles unstyled nested lists through disc, circle and square" do
+      pdf = render do
+        ul do
+          li "outer"
+          li do
+            ul do
+              li "middle"
+              li { ul { li "deepest" } }
+            end
+          end
+        end
+      end
+      content = page_contents(pdf).first
+      xs = positions_of(pdf).map(&:first)
+
+      expect(curves(content)).to eq(16)
+      expect(content).to match(/ c\nh\nS$/).and match(/ re\nf$/)
+      expect(xs).to eq(xs.sort)
+      expect(xs.uniq.size).to eq(3)
+    end
+  end
 end
