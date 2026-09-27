@@ -119,10 +119,11 @@ def show = send_pdf(InvoicePdf.new(@invoice), filename: "invoice.pdf")
 
 ## Fonts and images
 
-Fonts are TrueType (`.ttf`) files. Only the glyphs a document uses are
-embedded, with a ToUnicode map so text copies and searches correctly. A style
-without its own file (bold, italic) is synthesised. There is no built-in
-font: declare at least one `font_family`.
+Fonts are TrueType (`.ttf`) or OpenType/CFF (`.otf`, name-keyed or
+CID-keyed) files. A TrueType font embeds only the glyphs a document uses; an
+OpenType/CFF font is embedded whole. Either way a ToUnicode map makes text
+copy and search correctly. A style without its own file (bold, italic) is
+synthesised. There is no built-in font: declare at least one `font_family`.
 
 Text is pair-kerned from the font's GPOS `kern` feature (PairPos lookups,
 including class-based pairs and Extension lookups), falling back to the
@@ -144,8 +145,8 @@ mask). Parsed fonts and images are cached per process.
 
 ## Limitations
 
-No ligatures, no OpenType/CFF, TrueType collections, variable
-fonts or WOFF; no full justification; SVG covers the shapes icon sets use
+No ligatures, no TrueType collections, variable fonts (including CFF2) or
+WOFF; no full justification; SVG covers the shapes icon sets use
 (no text, gradients, patterns, masks or CSS stylesheets); no encryption,
 outlines, forms or tagged PDF; boxes and rows do not split across pages.
 
