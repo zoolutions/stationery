@@ -7,7 +7,7 @@ module Stationery
     module ToUnicode
       module_function
 
-      # `chars` is { code => character }.
+      # `chars` is { code => text }; a ligature maps to several characters.
       def cmap(chars)
         mappings = chars.sort.map do |code, char|
           format("<%<code>04X> <%<utf16>s>", code:, utf16: char.encode(Encoding::UTF_16BE).unpack1("H*").upcase)
