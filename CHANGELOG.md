@@ -7,6 +7,7 @@
 - `box(link:)` makes the whole box clickable; `box(outset:)` bleeds its background past its edges.
 - `keep_with_next:` accepts a number of points of following content to keep.
 - `group(align:)`.
+- Fixed-width children of a flow (`box(width:)`) are measured, split and paginated at their own width, not the flow's.
 
 ## 0.1.0 (unreleased)
 

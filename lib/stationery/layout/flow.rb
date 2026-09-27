@@ -27,17 +27,17 @@ module Stationery
 
       def measure(width)
         visible = @children.reject(&:page_break?)
-        visible.sum { |child| child.measure(width) } + (@gap * [visible.size - 1, 0].max)
+        visible.sum { |child| child.measure(child.width_in(width)) } + (@gap * [visible.size - 1, 0].max)
       end
 
       def paint(canvas, x, y, width, _height = nil, **)
         cursor = y
         @children.reject(&:page_break?).each_with_index do |child, index|
           cursor += @gap unless index.zero?
-          own = child.fixed_width(width)
-          left = own ? x + Geometry.align_offset(@align, width, own) : x
-          child.paint(canvas, left, cursor, own || width)
-          cursor += child.measure(width)
+          own = child.width_in(width)
+          left = child.fixed_width(width) ? x + Geometry.align_offset(@align, width, own) : x
+          child.paint(canvas, left, cursor, own)
+          cursor += child.measure(own)
         end
       end
 
@@ -79,7 +79,7 @@ module Stationery
 
           gap = @placed.empty? ? 0 : @flow.gap
           remaining = @height - @used - gap
-          height = child.measure(@width)
+          height = child.measure(child.width_in(@width))
           return fits(child, height + gap, remaining - height, rest) if height <= remaining + EPSILON
           return [part(@placed), part(rest)] if child.is_a?(Spacer)
 
@@ -105,11 +105,11 @@ module Stationery
         def strand?(child, left_after, rest)
           want = child.keep_with_next
           return false unless want && rest.any? && !@placed.empty?
-          return rest.first.split(@width, left_after).first.nil? unless want.is_a?(Numeric)
+          return rest.first.split(rest.first.width_in(@width), left_after).first.nil? unless want.is_a?(Numeric)
 
           following = 0
           rest.each do |node|
-            following += node.measure(@width)
+            following += node.measure(node.width_in(@width))
             break if following >= want
           end
           left_after + EPSILON < [want, following].min
@@ -117,7 +117,7 @@ module Stationery
 
         def split_or_move(child, remaining, rest)
           unless child.avoid_break?
-            head, tail = child.split(@width, remaining)
+            head, tail = child.split(child.width_in(@width), remaining)
             # A nested flow can finish on this page (its trailing spacer
             # dropped at the break) and hand back no remainder.
             return [part(@placed + [head]), part([tail, *rest].compact)] if head

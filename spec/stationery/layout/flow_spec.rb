@@ -110,4 +110,36 @@ RSpec.describe Stationery::Layout::Flow do
     expect(page_count(pdf)).to eq(2)
     expect(reader_for(pdf).pages[1].text).to include("after")
   end
+
+  describe "a fixed-width child" do
+    let(:narrow) { Stationery::Layout::Box.new(flow(text_node("word " * 20)), width: 100) }
+
+    it "measures at its own width" do
+      expect(narrow.measure(100)).to be > narrow.measure(260)
+      expect(flow(narrow).measure(260)).to be_within(0.001).of(narrow.measure(100))
+    end
+
+    it "advances the cursor by its height at its own width" do
+      pdf, = render_layout(flow(narrow, text_node("after")))
+      positions = positions_of(pdf)
+
+      expect(positions.first[1] - positions.last[1]).to be_within(0.5).of(narrow.measure(100))
+    end
+
+    it "moves to the next page when it only fits at the flow's width" do
+      pdf, paginator = render_layout(flow(spacer(100), narrow))
+
+      expect(page_count(pdf)).to eq(2)
+      expect(reader_for(pdf).pages[1].text).to include("word")
+      expect(paginator.warnings).to be_empty
+    end
+
+    it "counts toward a numeric keep_with_next at its own width" do
+      heading = text_node("Heading").tap { |t| t.keep_with_next = 25 }
+      short = Stationery::Layout::Box.new(flow(text_node("word " * 6)), width: 100)
+      pdf, = render_layout(flow(spacer(126), heading, short))
+
+      expect(reader_for(pdf).pages[1].text).to include("Heading", "word")
+    end
+  end
 end
