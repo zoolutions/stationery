@@ -6,6 +6,11 @@
 - Tagged PDF structure for lists (`L` with `/ListNumbering` > `LI` > `Lbl` + `LBody`; drawn bullets are artifacts), tables (`Table` > `TR` > `TH` with `/Scope /Column` or `TD`, `/ColSpan`/`/RowSpan` attributes; one `Table` across pages, repeated header rows as artifacts), links (linked text is a `Link` inside its paragraph with the annotation's `/OBJR`; annotations get `/StructParent`; `box(link:)` groups its content in a `Link`) and `table_of_contents` (`TOC` > `TOCI` > `Link` + `Reference`). `html`/`markdown` tag headings `H1`–`H6` and block quotes. `Canvas#tag_runs`, `Canvas#link(…, tag:)`, `Layout::Flow.new(…, tag:)`, `Tagging::Element.new(…, attributes:)`.
 - Testing tagged PDFs: `Inspector#structure` reads the structure tree as nested arrays with each element's text taken from its marked content (`[[:Document, [[:H1, "Intro"], [:P, ["Read", [:Link, "the docs"], "now"]]]]]`), `Inspector#tagged?` and `#untagged_text`; matchers `have_structure` and `have_tagged_content`, assertions `assert_pdf_structure` and `assert_tagged_content`. `examples/report.rb` is tagged, with headings and a decorative icon. Empty table cells stay in the tree.
 
+## Unreleased
+
+- Interactive forms (AcroForm): `text_field` (multiline, `max_length:`, `comb:`, `read_only:`, `required:`) and `checkbox` (with `label:`) lay out like boxes or sit at `at: [x, y]`, also inside table cells. Each widget ships its own appearance stream (Helvetica / ZapfDingbats from the standard 14, listed in the AcroForm `/DR`), so forms render in every viewer; `NeedAppearances` is set so edits redraw. Dotted names (`"address.city"`) build parent fields; widgets sharing a name become one field's kids. Values are Unicode text strings and survive encryption. `Document#fields` returns `{ name => value }` after a render; `Canvas#widget` places a field widget; `to_pdf(debug: [:field])` outlines fields.
+- Forms: `radio` groups (radios sharing a name form one `/Btn` field with the radio flag; `/V` is the checked value), `select` combo boxes (`/Ch` with `/Opt`, `editable:` adds the Edit flag) and `signature_field` (an empty `/Sig` field drawn as a rule over its label). `examples/form.rb` is a one-page application form using every field type.
+
 ## 0.3.0 (2026-09-27)
 
 The Limitations page, shortened: TrueType collections, WOFF, ligatures, splittable
