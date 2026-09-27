@@ -44,9 +44,11 @@ Metrics/ModuleLength:
 Metrics/ParameterLists:
   Max: 6
   CountKeywordArgs: false
+  Exclude:
+    - "lib/stationery/svg/**/*" # arcs take the SVG spec's seven arguments
 
 Naming/MethodParameterName:
-  AllowedNames: [a, cx, cy, op, x, y, w, h, r, g, b, c, m, k, io, id, at, to, x1, y1, x2, y2, x3, y3, dx, dy, rx, ry]
+  AllowedNames: [a, d, cx, cy, op, qx, qy, ux, uy, x, y, w, h, r, g, b, c, m, k, io, id, at, to, x1, y1, x2, y2, x3, y3, dx, dy, rx, ry]
 
 RSpec/ExampleLength:
   Max: 25

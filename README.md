@@ -69,12 +69,15 @@ InvoicePdf.new(invoice).to_pdf("a.pdf") # also writes a path or an IO
 | `text(string, **style)` | A paragraph. Plain strings are literal. |
 | `text(string, markup: true)` | Reads `<b> <i> <u> <strikethrough> <sub> <sup> <br> <color rgb=""> <font size="" name=""> <link href="">`. |
 | `text { b "Total"; plain " due" }` | Styled runs in Ruby. Take a block argument (`{ \|t\| t.b @x }`) to keep your own `self`. |
-| `box(padding:, background:, border:, radius:, width:, height:, overflow:, at:) { }` | A container. Moves to the next page whole. `overflow: :truncate` or `:shrink_to_fit` for fixed heights. `at: [x, y]` pins it to a page position. |
+| `box(padding:, background:, border:, radius:, width:, height:, overflow:, at:, link:, outset:) { }` | A container. Moves to the next page whole. `overflow: :truncate` or `:shrink_to_fit` for fixed heights. `at: [x, y]` pins it to a page position. `link:` makes the whole box clickable. `outset:` bleeds the background past the box (e.g. into the page margins). |
 | `row(gap:, align:) { column(width:) { } }` | Columns side by side. `width:` is points, a fraction (`0.5`), `:auto` or `nil` (equal share). |
 | `table(rows, widths:, width:, header:, cell:) { \|t\| }` | Tables. Style with `t.row(0)`, `t.rows(-1)`, `t.column(1)`, `t.columns(1..)`, chained, plus `t.zebra`. Header rows repeat after a page break. |
 | `image(path_or_io, width:, height:, fit:, align:)` | JPEG or PNG, aspect preserved. |
+| `svg(source_or_path, width:, height:, color:, align:)` | Vector icons and drawings; `currentColor` takes `color:`. |
+| `wrap(gap:, row_gap:, align:) { }` | Children side by side at their own widths, wrapping onto new rows (chips, tags). |
 | `rule(height:, color:)`, `spacer(height)`, `page_break` | Dividers and spacing. |
-| `group(keep_together: true) { }` | Keep a block on one page. |
+| `group(keep_together: true, align:) { }` | Keep a block on one page. |
+| `keep_with_next: true \| points` | On `text`, `box` or `group`: never end a page with this node; with a number, keep at least that many points of what follows with it. |
 | `text_style(**style) { }` | Default text style for a block. |
 | `canvas(height:) { \|canvas, rect\| }` | Draw directly: rectangles, rounded rectangles, circles, lines, Bézier paths, clipping, images, links. |
 
@@ -135,9 +138,9 @@ mask). Parsed fonts and images are cached per process.
 ## Limitations
 
 No kerning or ligatures, no OpenType/CFF, TrueType collections, variable
-fonts or WOFF; no full justification; no SVG (paths are available on the
-canvas); no encryption, outlines, forms or tagged PDF; boxes and rows do not
-split across pages.
+fonts or WOFF; no full justification; SVG covers the shapes icon sets use
+(no text, gradients, patterns, masks or CSS stylesheets); no encryption,
+outlines, forms or tagged PDF; boxes and rows do not split across pages.
 
 ## License
 

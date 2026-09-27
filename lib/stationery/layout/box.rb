@@ -11,8 +11,10 @@ module Stationery
       attr_reader :content, :width_spec
 
       def initialize(content = Flow.new, padding: 0, background: nil, border: nil, radius: 0, width: nil,
-                     height: nil, overflow: :visible, valign: :top, opacity: nil)
+                     height: nil, overflow: :visible, valign: :top, opacity: nil, link: nil, outset: 0)
         super()
+        @link = link
+        @outset = Geometry.box(outset)
         @content = content
         @padding = Geometry.box(padding)
         @background = background
@@ -48,6 +50,7 @@ module Stationery
         paint_background(canvas, x, y, width, height)
         paint_border(canvas, x, y, width, height)
         paint_content(canvas, x, y, width, height, valign || @valign)
+        canvas.link(x, y, width, height, @link) if @link
       end
 
       private
@@ -64,10 +67,14 @@ module Stationery
       def vertical = insets[0] + insets[2]
       def inner_width(width) = [width - horizontal, 0].max
 
+      # The outset paints the background past the box's own edges (a band that
+      # bleeds into the page margins) without moving the content.
       def paint_background(canvas, x, y, width, height)
         return unless @background
 
-        canvas.rounded_rect(x, y, width, height, radius: @radius, fill: @background, opacity: @opacity)
+        top, right, bottom, left = @outset
+        canvas.rounded_rect(x - left, y - top, width + left + right, height + top + bottom,
+                            radius: @radius, fill: @background, opacity: @opacity)
       end
 
       def paint_border(canvas, x, y, width, height)

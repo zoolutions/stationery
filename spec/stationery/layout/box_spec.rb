@@ -45,4 +45,21 @@ RSpec.describe Stationery::Layout::Box do
     expect(text_of(truncated).split.size).to be < 60
     expect(text_of(shrunk).split.size).to eq(60)
   end
+
+  it "links its whole area when given a link" do
+    pdf, = render_layout(box(text_node("Apply"), padding: [6, 30], link: "https://example.com/apply"))
+    x1, _y1, x2, = link_rects(pdf).first
+
+    expect(pdf).to include("/URI (https://example.com/apply)")
+    expect([x1, x2]).to eq([20, 280])
+  end
+
+  it "paints its background beyond its own edges by the outset, leaving content in place" do
+    pdf, = render_layout(box(text_node("band"), background: "#EEEEEE", outset: [0, 20, 0, 20]))
+
+    expect(page_contents(pdf).first).to include("0 ")
+    expect(page_contents(pdf).first).to match(/
+0 [\d.]+ 300 [\d.]+ re\nf/)
+    expect(positions_of(pdf).first.first).to eq(20)
+  end
 end

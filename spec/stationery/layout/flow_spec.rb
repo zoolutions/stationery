@@ -78,4 +78,20 @@ RSpec.describe Stationery::Layout::Flow do
 
     expect(page_contents(pdf).first).to include("40 0 0 30 240 150 cm")
   end
+
+  it "keeps a child with at least a given amount of what follows" do
+    heading = text_node("Heading").tap { |t| t.keep_with_next = 60 }
+    pdf, = render_layout(flow(spacer(100), heading, lines_of(10, prefix: "body")))
+    first, second = reader_for(pdf).pages
+
+    expect(first.text).not_to include("Heading")
+    expect(second.text).to include("Heading", "body 1")
+  end
+
+  it "keeps a numeric keep_with_next satisfied when enough follows on the same page" do
+    heading = text_node("Heading").tap { |t| t.keep_with_next = 30 }
+    pdf, = render_layout(flow(spacer(60), heading, lines_of(10, prefix: "body")))
+
+    expect(reader_for(pdf).pages.first.text).to include("Heading", "body 1", "body 2")
+  end
 end
