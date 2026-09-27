@@ -1,0 +1,9 @@
+spec/stationery/tagging_spec.rb
+  ai_agent 108-110
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "c69fe06e2fb0ec9afcf267da640a86e27bc02754",
+  "prompts": {}
+}
