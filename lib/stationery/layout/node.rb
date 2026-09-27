@@ -32,6 +32,8 @@ module Stationery
       def natural_width = 0
       def min_width = 0
       def fixed_width(_available) = nil
+      # The width this node is laid out at inside a parent of `available`.
+      def width_in(available) = fixed_width(available) || available
       def page_break? = false
 
       def split(width, height)
