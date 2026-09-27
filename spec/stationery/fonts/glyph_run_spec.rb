@@ -55,7 +55,10 @@ RSpec.describe Stationery::Fonts::GlyphRun do
     expect(run.width(10)).to be_within(1e-9).of(font.width_of("a b c", 10) + 4)
   end
 
-  it "accepts kerning without changing the run yet" do
-    expect(font.glyph_run("AV", kerning: true).adjust).to eq([0, 0])
+  it "measures kerned runs exactly like Font#width_of with kerning" do
+    ["AVATAR", "To you", "Wave", "x"].each do |text|
+      expect(font.glyph_run(text, kerning: true).width(11, letter_spacing: 0.2))
+        .to be_within(1e-9).of(font.width_of(text, 11, letter_spacing: 0.2, kerning: true))
+    end
   end
 end

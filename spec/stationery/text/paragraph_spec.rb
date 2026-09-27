@@ -32,7 +32,30 @@ RSpec.describe Stationery::Text::Paragraph do
     right = positions_of(render(paragraph("x", align: :right))).first
     font = book.resolve(base_style).first
 
-    expect(right.first).to be_within(0.01).of(10 + 200 - font.width_of("x", 10))
+    expect(right.first).to be_within(0.01).of(10 + 200 - font.width_of("x", 10, kerning: true))
+  end
+
+  it "kerns by default, and the kerned text still extracts" do
+    pdf = render(paragraph("AVA"))
+
+    expect(page_contents(pdf).first).to include("] TJ")
+    expect(text_of(pdf)).to eq("AVA")
+  end
+
+  it "draws plain strings with kerning off" do
+    plain = described_class.new([Stationery::Text::Run.new("AVA", base_style(kerning: false))], book:, width: 200)
+    content = page_contents(render(plain)).first
+
+    expect(content).to include("> Tj")
+    expect(content).not_to include("TJ")
+  end
+
+  it "wraps with kerned widths" do
+    font = book.resolve(base_style).first
+    para = paragraph("AVAVAV AVAVAV", width: font.width_of("AVAVAV AVAVAV", 10, kerning: true) + 0.01)
+
+    expect(para.lines.size).to eq(1)
+    expect(para.lines.first.width).to be_within(1e-9).of(font.width_of("AVAVAV AVAVAV", 10, kerning: true))
   end
 
   it "splits by whole lines to fit a height, returning the remainder" do

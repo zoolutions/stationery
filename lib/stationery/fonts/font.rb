@@ -18,13 +18,18 @@ module Stationery
         @ttf = ttf
         @used = {}
         @widths = {}
+        @pairs = {}
       end
 
       def inspect = "#<#{self.class} #{@ttf.postscript_name} used=#{@used.size}>"
 
-      def width_of(text, size, letter_spacing: 0, kerning: false) # rubocop:disable Lint/UnusedMethodArgument
+      def width_of(text, size, letter_spacing: 0, kerning: false)
         units = text.each_char.sum { |char| @widths[char] ||= @ttf.advance(@ttf.glyph_id(char.ord)) }
-        scale(units, size) + (letter_spacing * text.length)
+        width = scale(units, size) + (letter_spacing * text.length)
+        return width unless kerning
+
+        gids = text.each_char.map { |char| @ttf.glyph_id(char.ord) }
+        width + (gids.each_cons(2).sum { |left, right| pair(left, right) } * size / 1000.0)
       end
 
       def ascender(size) = scale(@ttf.ascender, size)
@@ -44,13 +49,15 @@ module Stationery
 
       def encode(text) = glyph_run(text).gids.pack("n*")
 
-      def glyph_run(text, kerning: false) # rubocop:disable Lint/UnusedMethodArgument
+      # `kerning:` fills the adjustments with the font's pair kerning.
+      def glyph_run(text, kerning: false)
         gids = text.each_char.map do |char|
           gid = @ttf.glyph_id(char.ord)
           @used[gid] ||= char
           gid
         end
-        GlyphRun.new(font: self, gids:, adjust: Array.new(gids.size, 0))
+        adjust = gids.each_with_index.map { |gid, i| kerning && i + 1 < gids.size ? pair(gid, gids[i + 1]) : 0 }
+        GlyphRun.new(font: self, gids:, adjust:)
       end
 
       def used?
@@ -90,6 +97,11 @@ module Stationery
           StemV: bold? ? 120 : 80,
           FontFile2: writer.add(PDF::Stream.new(subset, { Length1: subset.bytesize }))
         )
+      end
+
+      # Kerning between two glyphs in thousandths of an em.
+      def pair(left, right)
+        @pairs[(left << 16) | right] ||= @ttf.kerning.adjust(left, right) * 1000.0 / @ttf.units_per_em
       end
 
       def scale(units, size)

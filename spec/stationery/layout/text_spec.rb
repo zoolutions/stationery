@@ -5,8 +5,9 @@ RSpec.describe Stationery::Layout::Text do
     node = text_node("hello wide world")
     font = open_sans_book.resolve(base_style).first
 
-    expect(node.natural_width).to be_within(0.01).of(font.width_of("hello wide world", 10))
-    expect(node.min_width).to be_within(0.01).of(%w[hello wide world].map { |w| font.width_of(w, 10) }.max)
+    expect(node.natural_width).to be_within(0.01).of(font.width_of("hello wide world", 10, kerning: true))
+    widest = %w[hello wide world].map { |w| font.width_of(w, 10, kerning: true) }.max
+    expect(node.min_width).to be_within(0.01).of(widest)
   end
 
   it "splits by lines" do

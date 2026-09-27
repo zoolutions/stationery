@@ -57,6 +57,12 @@ module Stationery
         end
       end
 
+      # Pair kerning, read on first use. Shared by every document using this
+      # parse; the source is immutable once built.
+      def kerning
+        @kerning ||= Kerning.for(self)
+      end
+
       def fixed_pitch?
         @fixed_pitch
       end

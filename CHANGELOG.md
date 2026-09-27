@@ -9,6 +9,10 @@
 - `box(link:)` makes the whole box clickable; `box(outset:)` bleeds its background past its edges.
 - `keep_with_next:` accepts a number of points of following content to keep.
 - `group(align:)`.
+- Pair kerning from the font's `kern` table, **on by default**: measured widths shift slightly (kerned
+  lines only get narrower), so wrapping and right-aligned positions can move by a fraction of a point.
+  `kerning: false` on `text`/`text_style` or in `default_text` restores unkerned output. Pairs across a
+  style or font change are not kerned.
 - Internal: `Fonts::GlyphRun` carries per-glyph advance adjustments (Tj/TJ emission) for upcoming kerning and justification; output unchanged.
 - Table cells accept procs built with the DSL (`-> { image logo }`) and components.
 - Faster tables: cell padding is normalised once per cell, and PDF numbers are trimmed without a regexp (about 13% off a 1,500-row table render).

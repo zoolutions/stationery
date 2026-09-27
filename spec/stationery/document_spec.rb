@@ -42,6 +42,19 @@ RSpec.describe Stationery::Document do
     expect(SpecDocument.new.page_options[:size]).to eq([300, 200])
   end
 
+  it "kerns text unless the document or the element turns it off" do
+    kerned = SpecDocument.build { text "AVA" }.to_pdf
+    per_element = SpecDocument.build { text "AVA", kerning: false }.to_pdf
+    unkerned = Class.new(SpecDocument) do
+      default_text kerning: false
+      def view_template = text("AVA")
+    end.new.to_pdf
+
+    expect(page_contents(kerned).first).to include("] TJ")
+    expect(page_contents(per_element).first).not_to include("TJ")
+    expect(page_contents(unkerned).first).not_to include("TJ")
+  end
+
   it "writes metadata from the class and from the instance" do
     doc = Class.new(SpecDocument) do
       metadata title: "Invoice 42", author: "Acme"

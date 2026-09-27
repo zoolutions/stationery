@@ -34,7 +34,7 @@ RSpec.describe "the example invoice" do
     font = Stationery::Fonts::Font.new(Stationery::Fonts::Registry.load(font_path("OpenSans-Regular.ttf")))
     right_edges = ["€2 400,00", "€3 200,00", "€2 160,00"].map do |amount|
       index = strings.rindex(amount)
-      positions[index].first + font.width_of(amount, 9)
+      positions[index].first + font.width_of(amount, 9, kerning: true)
     end
 
     expect(right_edges.uniq { |edge| edge.round(2) }.size).to eq(1)

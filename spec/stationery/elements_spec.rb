@@ -37,7 +37,7 @@ RSpec.describe Stationery::Elements do
     font = Stationery::Fonts::Registry.load(font_path("OpenSans-Regular.ttf"))
     right_x = positions_of(pdf).last.first
 
-    expect(right_x + Stationery::Fonts::Font.new(font).width_of("right", 10)).to be_within(0.01).of(280)
+    expect(right_x + Stationery::Fonts::Font.new(font).width_of("right", 10, kerning: true)).to be_within(0.01).of(280)
   end
 
   it "wraps loose content in a row into a column" do

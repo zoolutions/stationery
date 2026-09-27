@@ -9,7 +9,7 @@ RSpec.describe Stationery::Text::Wrapper do
   end
 
   def width_of(text, style: base_style)
-    book.resolve(style).first.width_of(text, style.size)
+    book.resolve(style).first.width_of(text, style.size, kerning: style.kerning)
   end
 
   it "keeps text that fits on one line" do
