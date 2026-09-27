@@ -1,0 +1,32 @@
+lib/stationery/layout/text.rb
+  s_832305fd821824::t_7c44602b1dd26f 27
+lib/stationery/layout/table.rb
+  s_832305fd821824::t_7c44602b1dd26f 76
+spec/stationery/layout/flow_spec.rb
+  s_832305fd821824::t_500763b160ea21 145-162
+lib/stationery/layout/wrap.rb
+  s_832305fd821824::t_7c44602b1dd26f 55
+lib/stationery/layout/node.rb
+  s_832305fd821824::t_7c44602b1dd26f 41
+  s_832305fd821824::t_2e814c24b4b82f 22-24
+CHANGELOG.md
+  ai_agent 11
+lib/stationery/layout/flow.rb
+  ai_agent 120
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "f4304137726c01a28c4fa941d84a7c56e82f33ae",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
