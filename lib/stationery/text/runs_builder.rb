@@ -19,9 +19,17 @@ module Stationery
 
       # A block taking an argument is called with the builder (so it keeps its
       # own self and instance variables); one without is evaluated on it.
+      # Once a block has taken the builder as an argument, nested blocks are
+      # called as closures too, so `t.link(url) { t.color(tone, "go") }` can
+      # still reach the caller's methods.
       def capture(&block)
         before = @runs.size
-        result = block.arity == 1 ? yield(self) : instance_exec(&block)
+        result = if block.arity == 1 || @yielding
+                   @yielding = true
+                   block.arity.zero? ? yield : yield(self)
+                 else
+                   instance_exec(&block)
+                 end
         plain(result) if result.is_a?(String) && @runs.size == before
       end
 

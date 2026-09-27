@@ -118,7 +118,9 @@ module Stationery
         def split_or_move(child, remaining, rest)
           unless child.avoid_break?
             head, tail = child.split(@width, remaining)
-            return [part(@placed + [head]), part([tail, *rest])] if head
+            # A nested flow can finish on this page (its trailing spacer
+            # dropped at the break) and hand back no remainder.
+            return [part(@placed + [head]), part([tail, *rest].compact)] if head
           end
           return [part([child]), part(rest)] if @placed.empty? && @fresh
 

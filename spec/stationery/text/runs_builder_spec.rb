@@ -21,4 +21,15 @@ RSpec.describe Stationery::Text::RunsBuilder do
   it "treats a string returned from the block as plain text" do
     expect(described_class.build(base_style) { "hello" }.map(&:text)).to eq(["hello"])
   end
+
+  it "keeps the caller's self in nested blocks once the outer block takes the builder" do
+    klass = Struct.new(:tone) do
+      def build(style)
+        Stationery::Text::RunsBuilder.build(style) { |t| t.link("https://x.test") { t.color(tone, "go") } }
+      end
+    end
+    runs = klass.new("#FF0000").build(base_style)
+
+    expect(runs.first.style).to have_attributes(link: "https://x.test", color: "#FF0000")
+  end
 end

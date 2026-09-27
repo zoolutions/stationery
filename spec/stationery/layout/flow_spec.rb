@@ -102,4 +102,12 @@ RSpec.describe Stationery::Layout::Flow do
 
     expect(reader_for(pdf).pages.first.text).to include("Heading", "body 1", "body 2")
   end
+
+  it "splits a nested group whose trailing spacer lands on the page break" do
+    group = flow(lines_of(10, prefix: "grouped"), spacer(40))
+    pdf, = render_layout(flow(spacer(20), group, text_node("after")))
+
+    expect(page_count(pdf)).to eq(2)
+    expect(reader_for(pdf).pages[1].text).to include("after")
+  end
 end
