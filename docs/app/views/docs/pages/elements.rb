@@ -15,6 +15,7 @@ class Views::Docs::Pages::Elements < DocsUI::Page
     spacing
     lists
     navigation
+    forms
     rich_text
   end
 
@@ -334,6 +335,18 @@ class Views::Docs::Pages::Elements < DocsUI::Page
 
         The full story is on [Links, bookmarks and contents](/docs/links).
       MD
+    end
+  end
+
+  def forms
+    DocsUI::Section("text_field and checkbox", description: "Interactive form fields.") do
+      md <<~'MD'
+        - `text_field(name, value: "", width: :full, height: 22, multiline: false, max_length: nil, comb: nil,
+          read_only: false, required: false, font_size: 10, border: "#9CA3AF", background: "#FFFFFF", radius: 2,
+          at: nil)` — a text input; `comb:` is a cell count (or `true` with `max_length:`).
+        - `checkbox(name, checked: false, size: 12, label: nil, at: nil)` — a check box with an optional label.
+      MD
+      md SourceMarkdown.readme_section("Forms")
     end
   end
 

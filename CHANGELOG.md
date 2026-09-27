@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Interactive forms (AcroForm): `text_field` (multiline, `max_length:`, `comb:`, `read_only:`, `required:`) and `checkbox` (with `label:`) lay out like boxes or sit at `at: [x, y]`, also inside table cells. Each widget ships its own appearance stream (Helvetica / ZapfDingbats from the standard 14, listed in the AcroForm `/DR`), so forms render in every viewer; `NeedAppearances` is set so edits redraw. Dotted names (`"address.city"`) build parent fields; widgets sharing a name become one field's kids. Values are Unicode text strings and survive encryption. `Document#fields` returns `{ name => value }` after a render; `Canvas#widget` places a field widget; `to_pdf(debug: [:field])` outlines fields.
+
 ## 0.3.0 (2026-09-27)
 
 The Limitations page, shortened: TrueType collections, WOFF, ligatures, splittable

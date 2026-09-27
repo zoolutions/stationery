@@ -80,7 +80,8 @@ module Stationery
       end
     end
 
-    attr_reader :warnings
+    # `fields` is every form field's name and value from the last render.
+    attr_reader :warnings, :fields
 
     def page_options = self.class.config[:page]
     def metadata = self.class.config[:metadata]
@@ -97,6 +98,7 @@ module Stationery
       PageTemplates.new(self, book:, resources:, debug:, regions:, warnings:).apply(pages)
       outline = builder.outline.resolve(Structure.resolve(pages, warnings:, resources:, book:))
       @warnings = warnings
+      @fields = Forms::AcroForm.values(pages)
       raise WarningsError, warnings if strict && warnings.any?
 
       write(PDF::Assembler.new(pages:, resources:, info:, outline:, encryption:).render, target)
