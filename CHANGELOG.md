@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Documentation site at https://stationery.zoolutions.llc, a docs-kit app under `docs/` (not part of the gem): getting started, every element with its options, layout rules, pages and regions, links and bookmarks, fonts, images and SVG, Rails, testing, the CLI, warnings, a cookbook built from `examples/`, performance, limitations and this changelog, rendered from the README and CHANGELOG where they overlap.
 - Examples: `examples/report.rb` (multi-page annual report: header/footer regions, contents, bookmarks, lists, tables, a split callout, internal links, SVG icons), `examples/letter.rb` (one-page letter with a vector letterhead) and `examples/packing_slip.rb` (landscape, 120-row table with split rows, canvas barcode), each covered by an integration spec and rendered in CI by `rake examples`.
 - Font packs: `stationery fonts list` and `stationery fonts install noto_sans liberation_serif [--into DIR] [--force] [--from PATH]` copy pinned, SHA-256-verified Noto Sans/Serif/Sans Mono, Liberation Sans/Serif/Mono and Inter files (plus their OFL license) into `vendor/fonts/<pack>/`, atomically and offline-capable. `font_family "Noto Sans"` with no paths finds an installed pack through `Stationery.font_paths`, as does an unregistered family name at render time. Ruby API `Stationery::Fonts.install`/`catalog`/`paths`, Rails generator `stationery:fonts`, and `rake fonts:verify`. No runtime downloads.
 - `html` and `markdown` elements: ActionText/Trix HTML and CommonMark (GFM tables and strikethrough) rendered as paragraphs, headings, lists, blockquotes, code blocks, rules, tables and images with inline bold/italic/underline/strike/code/links/sub/sup. `styles:` deep-merges per-block defaults, `images:` resolves image sources (or `base_path:`), missing/remote images are skipped with a `SkippedImage` warning and never fetched, `bookmarks: true` outlines h1–h3. Parsers load on first use.
@@ -54,15 +55,11 @@
 - Rows split across pages like boxes, every column at the same break; a column that ends early continues as an empty fragment so backgrounds stay aligned. `row(break_inside:)`.
 - `keep_with_next` now moves with a following node that avoids breaking inside and would not start on the page.
 - `ul` / `ol` / `li` lists: drawn (disc, circle, square) or text bullets (dash, any String), decimal / alpha / roman / Proc numbering, `start:` and `suffix:`, aligned bodies, nested lists with depth-cycled bullets, and items that split across pages keeping the marker with their first line.
-||||||| 56fe3ff
 - Inter (OFL) is bundled: documents render without any `font_family`; `font_family "Inter"` needs no paths; `Stationery.bundled_fonts`. An unknown family name without paths raises.
 - Fixed: fonts without an OS/2 v2 table (including every subset) crashed on a nil cap height.
 - `PDF::Writer` raises when a reserved object is never set instead of writing `null`.
 - Gemspec ships every file under `lib/` and `exe/` when built without git, not only `.rb`.
 - `stationery` executable with a command registry; `stationery render FILE [--out PATH|-] [--class NAME] [--strict] [--debug]` renders the Document a Ruby file defines (through `self.preview` when it needs arguments) and reports pages and bytes.
-||||||| parent of c49dfa8 (fix(layout): lay out fixed-width flow children at their own width)
-||||||| parent of c49dfa8 (fix(layout): lay out fixed-width flow children at their own width)
-||||||| parent of f430413 (refactor(layout): split takes fresh: on every node)
 
 ## 0.1.0 (unreleased)
 
