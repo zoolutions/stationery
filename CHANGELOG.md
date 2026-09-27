@@ -15,6 +15,8 @@
 ||||||| parent of c49dfa8 (fix(layout): lay out fixed-width flow children at their own width)
 - Fixed-width children of a flow (`box(width:)`) are measured, split and paginated at their own width, not the flow's.
 ||||||| parent of c49dfa8 (fix(layout): lay out fixed-width flow children at their own width)
+||||||| parent of f430413 (refactor(layout): split takes fresh: on every node)
+- Layout: `split` takes `fresh:` on every node; a flow passes it on to the child that starts a fresh page.
 
 ## 0.1.0 (unreleased)
 
