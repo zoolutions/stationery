@@ -127,6 +127,62 @@ font: declare at least one `font_family`.
 Images are JPEG (grey, RGB, CMYK) and PNG (every colour type, alpha as a soft
 mask). Parsed fonts and images are cached per process.
 
+## Testing
+
+`stationery/rspec` and `stationery/minitest` read a rendered PDF back for
+assertions. They need the `pdf-reader` gem, which stationery itself does not
+depend on:
+
+```ruby
+# Gemfile
+group :test do
+  gem "pdf-reader"
+end
+```
+
+The subject is a document (rendered once), PDF bytes, a file path or an IO.
+
+```ruby
+# spec/spec_helper.rb
+require "stationery/rspec"
+
+RSpec.describe InvoicePdf do
+  subject(:pdf) { InvoicePdf.new(invoice) }
+
+  it { is_expected.to have_pdf_text("Invoice INV-7") }
+  it { is_expected.to have_pdf_text_on_page(2, /Total €[\d ,]+/) }
+  it { is_expected.to have_page_count(2) }
+  it { is_expected.to have_pdf_link("mailto:hello@acme.test") }
+  it { is_expected.to have_image_count(1) }
+  it { is_expected.to have_no_warnings }
+end
+```
+
+```ruby
+# test/test_helper.rb
+require "stationery/minitest"
+
+class InvoicePdfTest < Minitest::Test
+  include Stationery::Testing::Assertions
+
+  def test_prints_the_total
+    pdf = InvoicePdf.new(invoice)
+
+    assert_pdf_text pdf, "Invoice INV-7"
+    refute_pdf_text pdf, "DRAFT"
+    assert_page_count pdf, 2
+    assert_pdf_link pdf, /acme\.test/
+    assert_no_pdf_warnings pdf
+  end
+end
+```
+
+The matcher names carry a `pdf_` prefix so they never clash with Capybara's
+`have_text` and `have_link`. `have_bookmark` / `assert_bookmark` match outline
+titles. For anything else, `Stationery::Testing::Inspector.new(subject)`
+exposes `text`, `page_texts`, `page_count`, `links`, `internal_links`,
+`image_count`, `bookmarks`, `metadata` and `warnings`.
+
 ## Why not Prawn, Chrome or Typst?
 
 - **Prawn** is an imperative cursor API: every document does its own layout

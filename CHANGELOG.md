@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- `require "stationery/rspec"` matchers (`have_pdf_text`, `have_pdf_text_on_page`, `have_page_count`, `have_pdf_link`, `have_image_count`, `have_bookmark`, `have_no_warnings`) and `require "stationery/minitest"` assertions, built on `Stationery::Testing::Inspector`. Needs `pdf-reader` in the test group.
 - SVG: path (every command, including arcs), rect, circle, ellipse, line, polyline, polygon and g, with fill, stroke, caps, joins, fill-rule, opacity, inline styles, transforms and `currentColor`. `svg` element.
 - `wrap` element: children at their own widths, wrapping onto rows; splits between rows.
 - `box(link:)` makes the whole box clickable; `box(outset:)` bleeds its background past its edges.
