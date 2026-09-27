@@ -12,6 +12,8 @@
 - `PDF::Writer` raises when a reserved object is never set instead of writing `null`.
 - Gemspec ships every file under `lib/` and `exe/` when built without git, not only `.rb`.
 - `stationery` executable with a command registry; `stationery render FILE [--out PATH|-] [--class NAME] [--strict] [--debug]` renders the Document a Ruby file defines (through `self.preview` when it needs arguments) and reports pages and bytes.
+||||||| parent of c49dfa8 (fix(layout): lay out fixed-width flow children at their own width)
+- Fixed-width children of a flow (`box(width:)`) are measured, split and paginated at their own width, not the flow's.
 
 ## 0.1.0 (unreleased)
 
