@@ -46,6 +46,12 @@ class Views::Docs::Pages::Fonts < DocsUI::Page
         `default_text` turns it off. Pairs that straddle a style or font change are not kerned. Kerning only
         tightens in practice, so a kerned line is never wider than the same line unkerned.
 
+        Standard ligatures (fi, fl, ffi, …) come from the font's GSUB `liga` feature and are on by default;
+        `ligatures: false` on an element or in `default_text` turns them off, and any `letter_spacing` does too.
+        Only `liga` applies, not `clig` or `dlig`. A ligature glyph maps back to all of its characters, so
+        extracted and copied text is unchanged. Fonts without `liga` ligatures, such as bundled Inter, are
+        unaffected.
+
         `align: :justify` (on `text`, `text_style` and table cells) stretches the spaces of wrapped lines to
         the full width, keeping kerning. The last line, lines ending in a newline and lines without spaces stay
         left-aligned; tabs are never stretched.

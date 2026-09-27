@@ -3,16 +3,17 @@
 module Stationery
   module Fonts
     # Glyph ids for one run of text in one font, with an extra advance after
-    # each glyph in thousandths of the font size (positive widens). All-zero
+    # each glyph in thousandths of the font size (positive widens) and the
+    # source text of each glyph (several characters for a ligature). All-zero
     # adjustments draw as a plain Tj string; otherwise as a TJ array. Glyphs
     # are written as the font's character codes (see Font#code).
-    GlyphRun = Data.define(:font, :gids, :adjust) do
+    GlyphRun = Data.define(:font, :gids, :adjust, :chars) do
       def width(size, letter_spacing: 0)
         units = gids.sum { |gid| font.ttf.advance(gid) }
         (units * size / font.ttf.units_per_em.to_f) + (adjust.sum * size / 1000.0) + (letter_spacing * gids.size)
       end
 
-      def with_word_spacing(chars, extra_points, size)
+      def with_word_spacing(extra_points, size)
         extra = extra_points * 1000.0 / size
         with(adjust: adjust.each_with_index.map { |a, i| chars[i] == " " ? a + extra : a })
       end

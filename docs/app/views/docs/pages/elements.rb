@@ -57,7 +57,8 @@ class Views::Docs::Pages::Elements < DocsUI::Page
           [ "underline / strikethrough", "Boolean", "false", "Decoration lines." ],
           [ "link", "String", "—", [ :md, "A URL, or `\"#name\"` for an [internal link](/docs/links)." ] ],
           [ "opacity", "0..1", "1", "Text transparency." ],
-          [ "kerning", "Boolean", "true", "GPOS / kern-table pair kerning." ]
+          [ "kerning", "Boolean", "true", "GPOS / kern-table pair kerning." ],
+          [ "ligatures", "Boolean", "true", "GSUB `liga` standard ligatures (off with letter spacing)." ]
         ]
       )
     end
