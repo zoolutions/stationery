@@ -63,3 +63,26 @@ jobs:
           bundler-cache: true
       - name: Rails specs
         run: bundle exec rake spec:rails
+
+  docs:
+    runs-on: ubuntu-latest
+    name: Docs site
+    defaults:
+      run:
+        working-directory: docs
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+          working-directory: docs
+      - uses: oven-sh/setup-bun@v2
+      - name: Build CSS
+        run: bun install --frozen-lockfile && bun run build:css
+      - name: RuboCop
+        run: bundle exec rubocop
+      - name: Specs (every page, its .md twin, README/CHANGELOG sections)
+        run: bundle exec rspec
