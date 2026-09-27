@@ -1,0 +1,998 @@
+docs/app/assets/svg/icons/lucide/outline/audio-lines.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/align-horizontal-justify-center.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/square-dashed-plus.svg
+  ai_agent 1-26
+docs/app/assets/svg/icons/lucide/outline/bell-minus.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/gauge.svg
+  ai_agent 1-14
+docs/public/503.html
+  ai_agent 1-135
+docs/app/assets/svg/icons/lucide/outline/banana.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/calendar.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/shopping-basket.svg
+  ai_agent 1-19
+docs/app/assets/svg/icons/lucide/outline/align-horizontal-distribute-end.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/wheat.svg
+  ai_agent 1-20
+docs/app/assets/svg/icons/lucide/outline/cctv.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/receipt-swiss-franc.svg
+  ai_agent 1-16
+docs/bin/ci
+  ai_agent 1-6
+docs/app/views/pwa/manifest.json.erb
+  ai_agent 1-22
+docs/app/assets/svg/icons/lucide/outline/fast-forward.svg
+  ai_agent 1-14
+docs/config/routes.rb
+  ai_agent 1-22
+docs/app/assets/svg/icons/lucide/outline/face-grinning.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/circle-parking-off.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/file-digit.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/receipt-indian-rupee.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/subscript.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/square.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/aperture.svg
+  ai_agent 1-19
+docs/spec/rails_helper.rb
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/align-horizontal-distribute-center.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/corner-right-up.svg
+  ai_agent 1-14
+docs/app/views/docs/pages/documents_and_components.rb
+  s_832305fd821824::t_446b1014c131f2 1-113
+docs/app/assets/svg/icons/lucide/outline/folders.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/gallery-horizontal.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/calculator.svg
+  ai_agent 1-22
+docs/app/assets/svg/icons/lucide/outline/rat.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/circle-dollar-sign.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/align-center-horizontal.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/vibrate-off.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/alarm-clock-check.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/clock-4.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/group.svg
+  ai_agent 1-18
+docs/.claude/skills/write-docs-page/SKILL.md
+  ai_agent 1-88
+docs/app/assets/svg/icons/lucide/outline/triangle-alert.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/repeat.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/server-crash.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/camera-off.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/calendar-arrow-down.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/circuit-board.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/tram-front.svg
+  ai_agent 1-19
+docs/app/assets/svg/icons/lucide/outline/flashlight-off.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/receipt.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/book-type.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/file-question-mark.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/clock.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/sunrise.svg
+  ai_agent 1-20
+docs/app/assets/svg/icons/lucide/outline/box.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/align-horizontal-space-around.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/wifi-pen.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/space.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/baby.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/clock-arrow-down.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/sprout.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/octagon-x.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/ungroup.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/search-alert.svg
+  ai_agent 1-16
+docs/config/environments/production.rb
+  ai_agent 1-61
+docs/app/assets/svg/icons/lucide/outline/chevron-last.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/house-wifi.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/birdhouse.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/file-up.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/haze.svg
+  ai_agent 1-20
+docs/app/assets/svg/icons/lucide/outline/layers-arrow-up.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/folder-git-2.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/building-complex-plus.svg
+  ai_agent 1-20
+docs/app/assets/svg/icons/lucide/outline/redo.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/waves-ladder.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/waypoints.svg
+  ai_agent 1-19
+docs/app/assets/svg/icons/lucide/outline/ticket-x.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/circle-minus.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/database-x.svg
+  ai_agent 1-19
+docs/app/assets/svg/icons/lucide/outline/layout-panel-top.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/layout-template.svg
+  ai_agent 1-15
+docs/config/ci.rb
+  ai_agent 1-20
+docs/app/assets/svg/icons/lucide/outline/locate.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/flag-triangle-left.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/tally-2.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/spotlight.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/trending-up.svg
+  ai_agent 1-14
+docs/app/views/docs/pages/pages.rb
+  s_832305fd821824::t_5905bd8ff87329 1-106
+docs/app/assets/svg/icons/lucide/outline/undo-2.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/inbox.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/user-plus.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/square-chevron-down.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/triangles-centerline-dashed-horizontal.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/circle-pause.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/panel-top-bottom-dashed.svg
+  ai_agent 1-21
+docs/app/assets/svg/icons/lucide/outline/align-vertical-justify-end.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/keyboard.svg
+  ai_agent 1-21
+docs/app/assets/svg/icons/lucide/outline/shopping-cart-plus.svg
+  ai_agent 1-19
+docs/app/assets/svg/icons/lucide/outline/zodiac-capricorn.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/panel-left-open.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/spline.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/smartphone-nfc.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/minus.svg
+  ai_agent 1-13
+.github/workflows/main.yml
+  s_832305fd821824::t_0db614c512b860 66-88
+README.md
+  s_832305fd821824::t_d776f54236a6e7 8-9
+docs/app/assets/svg/icons/lucide/outline/leaf.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/clock-3.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/file-pen.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/arrow-right.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/server.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/chart-column-decreasing.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/folder-code.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/dna.svg
+  ai_agent 1-23
+docs/app/models/doc.rb
+  s_832305fd821824::t_781ea314f3edd0 16-25,28-35
+  s_832305fd821824::t_96a66455a80b2f 26-27
+docs/app/assets/svg/icons/lucide/outline/move-diagonal-2.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/folder-heart.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/sailboat.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/move-up-right.svg
+  ai_agent 1-14
+.rubocop.yml
+  s_832305fd821824::t_f76b9f13b6751d 15
+docs/app/assets/svg/icons/lucide/outline/face-neutral.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/drama.svg
+  ai_agent 1-20
+docs/app/assets/svg/icons/lucide/outline/book-open-check.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/sun-snow.svg
+  ai_agent 1-23
+docs/app/assets/svg/icons/lucide/outline/plug.svg
+  ai_agent 1-16
+docs/app/views/docs/pages/images_and_svg.rb
+  s_832305fd821824::t_9e7ab5c45eee97 1-78
+docs/app/assets/svg/icons/lucide/outline/soup.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/grid-2x2-plus.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/triangle-right.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/helicopter.svg
+  ai_agent 1-20
+docs/app/assets/svg/icons/lucide/outline/monitor-cloud.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/letters.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/radiation.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/square-arrow-out-down-right.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/building-complex.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/sofa.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/panel-top-open.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/message-circle-code.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/send-horizontal.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/plug-zap.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/clapperboard.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/non-binary.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/arrow-up-right.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/copy-minus.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/pilcrow.svg
+  ai_agent 1-15
+docs/app/views/layouts/application.html.erb
+  ai_agent 1-29
+docs/app/views/docs/pages/changelog.rb
+  s_832305fd821824::t_5c7cb5f340059e 1-16
+docs/app/assets/svg/icons/lucide/outline/pound-sterling.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/film.svg
+  ai_agent 1-20
+docs/app/assets/svg/icons/lucide/outline/package-search.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/shield-plus.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/notebook-tabs.svg
+  ai_agent 1-21
+docs/app/assets/svg/icons/lucide/outline/receipt-japanese-yen.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/ticket-slash.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/hexagon.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/vote.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/bone.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/hard-hat.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/bluetooth-off.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/cast.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/chevrons-up.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/sparkle.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/cloud-drizzle.svg
+  ai_agent 1-19
+docs/app/assets/svg/icons/lucide/outline/concierge-bell.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/paint-bucket.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/combine.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/calendar-search.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/funnel-x.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/arrow-up-narrow-wide.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/columns-2.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/circle-slash-2.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/carrot.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/omega.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/presentation.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/text-align-start.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/table-properties.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/ticket-percent.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/whole-word.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/sport-shoe.svg
+  ai_agent 1-15
+CHANGELOG.md
+  s_832305fd821824::t_3df703b8e16673 5
+docs/Gemfile.lock
+  ai_agent 1-519
+docs/app/assets/svg/icons/lucide/outline/file-stack.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/folder-search-2.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/circle-dashed.svg
+  ai_agent 1-20
+docs/app/assets/svg/icons/lucide/outline/clock-7.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/message-square-x.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/cookie.svg
+  ai_agent 1-21
+docs/app/assets/svg/icons/lucide/outline/grape.svg
+  ai_agent 1-21
+docs/Dockerfile.dockerignore
+  s_832305fd821824::t_193385f8f4b38e 1-51
+docs/app/assets/svg/icons/lucide/outline/lamp-floor.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/audio-lines-x.svg
+  ai_agent 1-20
+docs/.gitignore
+  s_832305fd821824::t_3e3944b1cd174d 29-34
+docs/app/assets/svg/icons/lucide/outline/ev-charger.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/file.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/warehouse.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/search.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/loader-pinwheel.svg
+  ai_agent 1-16
+docs/spec/spec_helper.rb
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/briefcase-business.svg
+  ai_agent 1-16
+docs/Dockerfile
+  s_832305fd821824::t_699abf7606100d 1-94
+docs/app/assets/svg/icons/lucide/outline/image-upscale.svg
+  ai_agent 1-20
+docs/app/assets/svg/icons/lucide/outline/shield-question-mark.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/traffic-cone.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/circle-question-mark.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/app-window-mac.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/circle-arrow-up.svg
+  ai_agent 1-15
+docs/lib/tasks/docs_kit_og.rake
+  s_832305fd821824::t_5847c9e8851b74 28-30
+docs/app/assets/svg/icons/lucide/outline/dock.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/gallery-vertical.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/salad.svg
+  ai_agent 1-17
+docs/app/views/docs/pages/testing.rb
+  s_832305fd821824::t_610fb7ef4145d3 1-54
+docs/app/assets/svg/icons/lucide/outline/spray-can.svg
+  ai_agent 1-22
+docs/AGENTS.md
+  ai_agent 1-105
+docs/app/assets/svg/icons/lucide/outline/circle-chevron-left.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/clock-6.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/pizza.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/venus-and-mars.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/circle-arrow-right.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/graduation-cap.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/chart-candlestick.svg
+  ai_agent 1-19
+docs/app/assets/svg/icons/lucide/outline/party-popper.svg
+  ai_agent 1-21
+docs/app/assets/svg/icons/lucide/outline/alarm-clock.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/calendar-fold.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/list.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/footprints.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/gavel.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/hash.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/type-outline.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/clipboard-minus.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/database-plus.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/bed.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/braces.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/file-chart-pie.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/file-music.svg
+  ai_agent 1-16
+.github/workflows/deploy-docs.yml
+  s_832305fd821824::t_e8668996913b00 3-10
+docs/app/assets/svg/icons/lucide/outline/skip-forward.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/iteration-cw.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/joystick.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/zodiac-sagittarius.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/flag-triangle-right.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/file-code-corner.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/pilcrow-left.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/beaker.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/loader.svg
+  ai_agent 1-20
+docs/app/assets/svg/icons/lucide/outline/lamp.svg
+  ai_agent 1-15
+docs/lib/tasks/build_css.rake
+  s_832305fd821824::t_5847c9e8851b74 13
+docs/app/assets/svg/icons/lucide/outline/step-back.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/grid-2x2-x.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/text-initial.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/book-down.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/message-circle-x.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/user-shield.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/car-taxi-front.svg
+  ai_agent 1-19
+docs/app/assets/svg/icons/lucide/outline/file-clock.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/share-2.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/wallet-minimal.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/chevron-right.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/door-closed-package.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/map-pin-house.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/chevrons-down.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/arrow-down-up.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/navigation-2.svg
+  ai_agent 1-13
+docs/app/views/docs/pages/limitations.rb
+  s_832305fd821824::t_762c4eb7243c2f 1-29
+docs/app/assets/svg/icons/lucide/outline/clock-5.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/align-vertical-distribute-center.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/chef-hat.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/command.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/crown.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/fold-horizontal.svg
+  ai_agent 1-20
+docs/app/assets/svg/icons/lucide/outline/hourglass.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/pen-tool.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/panda.svg
+  ai_agent 1-18
+docs/app/controllers/application_controller.rb
+  ai_agent 1-8
+docs/app/views/docs/pages/rails_integration.rb
+  s_832305fd821824::t_2fb39d4b933548 1-73
+docs/app/assets/svg/icons/lucide/outline/biohazard.svg
+  ai_agent 1-22
+docs/app/assets/svg/icons/lucide/outline/file-check.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/send-to-back.svg
+  ai_agent 1-16
+docs/.ruby-version
+  ai_agent 1
+docs/app/assets/svg/icons/lucide/outline/folder-open.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/rotate-ccw-square.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/list-sort-descending.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/book-open.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/flower.svg
+  ai_agent 1-22
+docs/app/assets/svg/icons/lucide/outline/save-plus.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/square-arrow-right.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/worm.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/bed-double.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/shield-minus.svg
+  ai_agent 1-14
+docs/app/views/landings/show.rb
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/chevron-down.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/file-chart-column-increasing.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/git-branch.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/chart-column-stacked.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/lightbulb-off.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/award.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/gamepad-directional.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/mail-check.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/pen.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/database-check.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/arrow-down-a-z.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/arrow-down-to-line.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/notepad-text.svg
+  ai_agent 1-19
+docs/app/assets/svg/icons/lucide/outline/cloud-rain-wind.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/scroll.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/radar.svg
+  ai_agent 1-20
+docs/config/environments/development.rb
+  ai_agent 1-51
+docs/app/assets/svg/icons/lucide/outline/file-badge.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/zoom-in.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/battery-charging.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/message-circle-check.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/panels-top-left.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/message-square-lock.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/mop-sparkles.svg
+  ai_agent 1-22
+docs/app/assets/svg/icons/lucide/outline/music-4.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/package-minus.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/sword.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/gap-vertical.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/arrow-up-from-dot.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/plus.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/eclipse.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/map-pin.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/folder.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/rose.svg
+  ai_agent 1-17
+docs/bin/build-css
+  ai_agent 1-34
+docs/app/assets/svg/icons/lucide/outline/chart-pie.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/dam.svg
+  ai_agent 1-19
+docs/app/assets/svg/icons/lucide/outline/hop-off.svg
+  ai_agent 1-21
+docs/app/assets/svg/icons/lucide/outline/divide.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/scan-qr-code.svg
+  ai_agent 1-20
+docs/app/models/source_markdown.rb
+  s_832305fd821824::t_cfd475777b69b5 36,40
+  s_832305fd821824::t_fa76b8f2d839f5 1-28,38,52-55
+  s_832305fd821824::t_6df8d5915d2cf3 32
+  s_832305fd821824::t_0a11cbc1a25c0b 29-31,33-35,37,39,41-51
+docs/app/assets/svg/icons/lucide/outline/milestone.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/forklift.svg
+  ai_agent 1-19
+docs/app/assets/svg/icons/lucide/outline/cloud-hail.svg
+  ai_agent 1-19
+docs/app/assets/svg/icons/lucide/outline/fishing-hook.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/message-circle-dashed.svg
+  ai_agent 1-20
+docs/app/assets/svg/icons/lucide/outline/dice-4.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/ruler.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/image-off.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/cloud-download.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/paintbrush.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/arrow-big-down.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/face-slightly-smiling.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/link-2-off.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/diamond-percent.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/user-key.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/turntable.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/arrow-big-right.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/laptop-minimal-check.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/git-commit-vertical.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/zodiac-gemini.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/file-pen-line.svg
+  ai_agent 1-16
+docs/.rspec
+  s_832305fd821824::t_572739dd0a5681 1
+docs/app/assets/svg/icons/lucide/outline/dice-3.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/cannabis.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/git-pull-request-create-arrow.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/gamepad.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/calendar-heart.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/pi.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/cannabis-off.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/timer-off.svg
+  ai_agent 1-17
+docs/app/views/docs/pages/layout_rules.rb
+  s_832305fd821824::t_f5177de3d1ac0c 97-99
+  s_832305fd821824::t_2eaea598044c57 1-96,100-124
+docs/app/assets/svg/icons/lucide/outline/dna-off.svg
+  ai_agent 1-22
+docs/app/assets/svg/icons/lucide/outline/person-standing.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/hammer.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/route-off.svg
+  ai_agent 1-19
+docs/app/assets/svg/icons/lucide/outline/swiss-franc.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/faucet.svg
+  ai_agent 1-19
+docs/app/assets/svg/icons/lucide/outline/trash.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/watch.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/chart-no-axes-column-increasing.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/screen-share-off.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/wrench.svg
+  ai_agent 1-13
+docs/README.md
+  s_832305fd821824::t_4b9d290c1bf842 1-22
+docs/app/assets/svg/icons/lucide/outline/phone-missed.svg
+  ai_agent 1-15
+docs/bun.lock
+  ai_agent 1-160
+docs/app/assets/svg/icons/lucide/outline/creative-commons.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/octagon-minus.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/clock-arrow-left.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/circle-slash.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/file-key.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/torus.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/crop.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/sun.svg
+  ai_agent 1-21
+docs/app/assets/svg/icons/lucide/outline/star.svg
+  ai_agent 1-13
+docs/app/views/docs/pages/fonts.rb
+  s_832305fd821824::t_12071b1024f53c 1-34,39-119
+  s_832305fd821824::t_b8ad611d33442f 35-38
+docs/app/assets/svg/icons/lucide/outline/scissors-line-dashed.svg
+  ai_agent 1-19
+docs/app/assets/svg/icons/lucide/outline/fingerprint-pattern.svg
+  ai_agent 1-21
+docs/app/assets/svg/icons/lucide/outline/check-check.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/heading-5.svg
+  ai_agent 1-17
+docs/app/views/docs/pages/getting_started.rb
+  s_832305fd821824::t_441e3e04b19809 1-129
+docs/app/assets/svg/icons/lucide/outline/book-a.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/feather.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/microwave.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/plane.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/circle-gauge.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/delete.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/pocket-knife.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/link.svg
+  ai_agent 1-14
+docs/spec/requests/docs_spec.rb
+  s_832305fd821824::t_f0f93b67323ff4 1-63
+docs/app/assets/svg/icons/lucide/outline/monitor-off.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/shield-cog.svg
+  ai_agent 1-22
+docs/app/assets/svg/icons/lucide/outline/rotate-cw.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/pentagon.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/rss.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/spell-check.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/leafy-green.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/square-arrow-up-left.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/square-parking.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/user-check.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/eye-dashed.svg
+  ai_agent 1-21
+docs/app/views/docs/pages/warnings.rb
+  s_832305fd821824::t_76586710a12fbd 36,43
+  s_832305fd821824::t_f0e0eca7e25056 1-35,37-42,44-77
+docs/app/assets/svg/icons/lucide/outline/arrow-up-from-line.svg
+  ai_agent 1-15
+docs/app/javascript/controllers/hello_controller.js
+  ai_agent 1-7
+docs/app/assets/svg/icons/lucide/outline/file-chart-line.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/computer.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/ellipse.svg
+  ai_agent 1-13
+docs/app/views/docs/pages/elements.rb
+  s_832305fd821824::t_eb94b6e977aaf0 1-115,118-344
+  s_832305fd821824::t_ee6b38b9ac02ad 116-117
+docs/app/assets/svg/icons/lucide/outline/octagon-alert.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/circle-arrow-left.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/clef-bass.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/smartphone-charging.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/heart-off.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/parasol.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/cherry.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/square-code.svg
+  ai_agent 1-15
+docs/app/views/docs/pages/cookbook.rb
+  s_832305fd821824::t_5d83a90d136f75 1-58
+docs/app/assets/svg/icons/lucide/outline/tree-pine.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/flame.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/list-filter-plus.svg
+  ai_agent 1-17
+docs/bin/importmap
+  ai_agent 1-4
+docs/app/views/docs/pages/cli.rb
+  s_832305fd821824::t_1e2f9721428174 1-70
+docs/config/initializers/inflections.rb
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/file-x-corner.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/headset.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/satellite-dish.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/heart-x.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/table-cells-split.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/slice.svg
+  ai_agent 1-13
+docs/app/assets/svg/icons/lucide/outline/user-round-key.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/layout-arrow-right.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/map-pin-x.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/rocket.svg
+  ai_agent 1-16
+docs/app/views/docs/pages/performance.rb
+  s_832305fd821824::t_01afd572c479b9 1-30
+docs/app/assets/svg/icons/lucide/outline/map-pin-check-inside.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/map-pin-plus-inside.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/align-start-horizontal.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/panel-right-open.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/percent.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/badge-percent.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/map-pin-check.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/send.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/layers-2.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/file-plus-corner.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/clipboard-plus.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/music.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/voicemail.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/square-m.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/square-off.svg
+  ai_agent 1-15
+docs/spec/models/source_markdown_spec.rb
+  s_832305fd821824::t_cd1b49c42f23fb 1-25,44-45
+  s_832305fd821824::t_cfd475777b69b5 33
+  s_832305fd821824::t_7f1f81b8495e08 26-32,34-43
+docs/app/assets/svg/icons/lucide/outline/git-pull-request-arrow.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/cone.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/globe-check.svg
+  ai_agent 1-14
+docs/public/422.html
+  ai_agent 1-135
+docs/.rubocop.yml
+  s_832305fd821824::t_ac9cf5397de99c 1,4-15
+  s_832305fd821824::t_5847c9e8851b74 2-3
+docs/app/views/docs/pages/links.rb
+  s_832305fd821824::t_1eeb000d474945 1-90
+docs/config/initializers/docs_kit.rb
+  s_832305fd821824::t_1da58369852842 4-70
+docs/config/environment.rb
+  ai_agent 1-5
+docs/app/assets/svg/icons/lucide/outline/align-vertical-distribute-end.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/mail-open.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/atom.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/book-open-text.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/squares-intersect.svg
+  ai_agent 1-23
+docs/app/assets/svg/icons/lucide/outline/sticky-note.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/calendar-arrow-up.svg
+  ai_agent 1-18
+docs/app/assets/svg/icons/lucide/outline/log-in.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/shield-x.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/parking-meter.svg
+  ai_agent 1-17
+docs/Rakefile
+  ai_agent 1-6
+docs/app/assets/svg/icons/lucide/outline/calendar-minus.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/files.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/rabbit.svg
+  ai_agent 1-17
+docs/app/assets/svg/icons/lucide/outline/cooking-pot.svg
+  ai_agent 1-16
+docs/app/assets/svg/icons/lucide/outline/bell.svg
+  ai_agent 1-14
+docs/app/assets/svg/icons/lucide/outline/text-align-end.svg
+  ai_agent 1-15
+docs/app/assets/svg/icons/lucide/outline/face-slightly-smiling-plus.svg
+  ai_agent 1-18
+docs/config/deploy.yml
+  s_832305fd821824::t_e8668996913b00 78-80
+docs/app/assets/svg/icons/lucide/outline/rotate-cw-fading-clock.svg
+  ai_agent 1-22
+docs/Gemfile
+  s_832305fd821824::t_3e3944b1cd174d 10-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "e8fe0f0e3204e8bf1b164ea188982fb0e3030670",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
