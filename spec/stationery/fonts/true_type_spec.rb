@@ -81,11 +81,43 @@ RSpec.describe Stationery::Fonts::TrueType do
   it "rejects formats it cannot embed, naming them" do
     expect { described_class.new("wOFF#{"\0" * 20}") }
       .to raise_error(Stationery::UnsupportedFont, /WOFF web fonts/)
-    expect { described_class.new("ttcf#{"\0" * 20}") }
-      .to raise_error(Stationery::UnsupportedFont, /collections/)
     expect { described_class.new(File.binread(font_path("not-a-ttf.woff2"))) }
       .to raise_error(Stationery::UnsupportedFont, /WOFF2/)
     expect { described_class.new("junk" * 10) }
       .to raise_error(Stationery::UnsupportedFont, /not a TrueType font/)
+  end
+
+  describe "a TrueType collection" do
+    let(:collection) { File.binread(font_path("OpenSans-Collection.ttc")) }
+
+    it "counts its faces" do
+      expect(described_class.collection?(collection)).to be(true)
+      expect(described_class.faces(collection)).to eq(2)
+      expect(described_class.collection?(font.data)).to be(false)
+      expect(described_class.faces(font.data)).to eq(1)
+    end
+
+    it "parses the face at an index, face 0 by default" do
+      expect(described_class.new(collection).postscript_name).to eq("OpenSans-Regular")
+      expect(described_class.new(collection, index: 0).postscript_name).to eq("OpenSans-Regular")
+      bold = described_class.new(collection, index: 1)
+
+      expect(bold.postscript_name).to eq("OpenSans-Bold")
+      expect(bold.weight).to eq(700)
+      expect(bold.advance(bold.glyph_id("W".ord))).to be > 0
+    end
+
+    it "raises for a face index out of range, naming the face count" do
+      expect { described_class.new(collection, index: 5) }.to raise_error(ArgumentError, /face 5.*numFonts 2/)
+      expect { described_class.new(font.data, index: 1) }.to raise_error(ArgumentError, /face 1.*numFonts 1/)
+    end
+
+    it "subsets and embeds a face from the collection" do
+      bold = described_class.new(collection, index: 1)
+      data, = Stationery::Fonts::Subset.build(bold, "Bold".chars.map { |c| bold.glyph_id(c.ord) })
+
+      expect(described_class.new(data, cmap: false).num_glyphs).to eq(5)
+      expect { Stationery::Fonts::Font.new(bold).build(Stationery::PDF::Writer.new) }.not_to raise_error
+    end
   end
 end
