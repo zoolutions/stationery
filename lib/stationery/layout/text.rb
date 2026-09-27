@@ -8,7 +8,7 @@ module Stationery
 
       def initialize(runs, context:, align: :left, leading: 0, paragraph: nil)
         super()
-        @runs = runs
+        @runs = context.book.fallback(runs)
         @context = context
         @align = align
         @leading = leading

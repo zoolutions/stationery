@@ -10,13 +10,13 @@ module Stationery
       attr_reader :runs, :lines, :width, :align, :leading
 
       def initialize(runs, book:, width:, align: :left, leading: 0, lines: nil, fallback_style: nil)
-        @runs = runs
+        @runs = lines ? runs : book.fallback(runs)
         @book = book
         @width = width
         @align = align
         @leading = leading
         @fallback_style = fallback_style || runs.first&.style
-        @lines = lines || Wrapper.new(book).wrap(runs, width, fallback_style: @fallback_style)
+        @lines = lines || Wrapper.new(book).wrap(@runs, width, fallback_style: @fallback_style)
       end
 
       def height
@@ -96,6 +96,7 @@ module Stationery
 
       def draw_fragment(canvas, fragment, offset, top, line, word_spacing)
         style = fragment.style
+        count_missing(fragment)
         x = offset + fragment.x
         width = canvas.text(fragment.text, x:, y: top + line.ascent, font: fragment.font, size: style.render_size,
                                            color: style.color, letter_spacing: style.letter_spacing, rise: style.rise,
@@ -104,6 +105,14 @@ module Stationery
                                            synthetic_bold: fragment.face.synthetic_bold,
                                            synthetic_oblique: fragment.face.synthetic_oblique, word_spacing:)
         canvas.link(x, top, width, line.height, style.link) if style.link
+      end
+
+      def count_missing(fragment)
+        fragment.text.each_char do |char|
+          next if Fonts::Fallback.carried?(char) || fragment.font.glyph?(char)
+
+          @book.warnings.missing_glyph(char, fragment.style.family)
+        end
       end
     end
   end

@@ -291,6 +291,27 @@ and used when a document declares no family. `font_family "Inter"` with no
 paths selects it explicitly, and `Stationery.bundled_fonts` lists what ships.
 Font files are read lazily, on first use, never when the gem is required.
 
+A character the text's family has no glyph for is drawn from the first
+family in `font_fallbacks` that has it, then from bundled Inter, in the same
+weight and style (synthesised when the family lacks the face):
+
+```ruby
+class Report < Stationery::Document
+  font_family "Brand", regular: "Brand-Regular.ttf"
+  font_family "Noto Sans Symbols", regular: "NotoSansSymbols-Regular.ttf"
+  font_fallbacks "Noto Sans Symbols"
+
+  def view_template = text("Next → ☃")
+end
+```
+
+Spaces, joiners, variation selectors and combining marks stay with the
+character before them. A glyph no font has is drawn as the family's
+`.notdef` and reported as a `Warnings::MissingGlyph` counting each drawn
+occurrence (so `strict` raises on it). Fallback covers every text element,
+table cell, list marker, table of contents entry and page template text;
+direct `canvas.text` calls draw with the font they are given.
+
 Text is pair-kerned from the font's GPOS `kern` feature (PairPos lookups,
 including class-based pairs and Extension lookups), falling back to the
 legacy `kern` table (`kerning: false` on an element or in `default_text`

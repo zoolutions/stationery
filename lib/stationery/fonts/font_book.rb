@@ -6,10 +6,13 @@ module Stationery
     # document gets its own book so glyph usage (and so subsetting) is per
     # document, while the parsed TrueType data is shared through the Registry.
     class FontBook
-      attr_reader :families, :warnings
+      attr_reader :families, :fallbacks, :warnings
 
-      def initialize(families = {}, warnings: Warnings.new)
+      # `fallbacks:` names the families tried, in order, for a character the
+      # run's own family has no glyph for.
+      def initialize(families = {}, fallbacks: [], warnings: Warnings.new)
         @families = families.dup
+        @fallbacks = fallbacks.map(&:to_s).freeze
         @warnings = warnings
         @fonts = {}
       end
@@ -25,6 +28,9 @@ module Stationery
         face = family(style.family).face(weight: style.weight, style: style.style)
         [@fonts[face.path] ||= Font.new(Registry.load(face.path)), face]
       end
+
+      # The runs split so every character is drawn by a font that has it.
+      def fallback(runs) = (@fallback ||= Fallback.new(self)).apply(runs)
 
       private
 
