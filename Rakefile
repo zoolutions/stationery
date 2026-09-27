@@ -8,6 +8,7 @@ RSpec::Core::RakeTask.new(:spec)
 namespace :spec do
   desc "Run the Rails integration specs (BUNDLE_GEMFILE=gemfiles/rails.gemfile)"
   RSpec::Core::RakeTask.new(:rails) do |task|
+    ENV["COVERAGE"] = "false" # the lane covers the Railtie only; keep coverage/ for the main suite
     task.pattern = "spec/rails/**/*_spec.rb"
     task.exclude_pattern = ""
   end

@@ -13,6 +13,8 @@ class StationeryRailsApp < Rails::Application
   config.logger = Logger.new(nil)
   config.action_dispatch.show_exceptions = :none
   config.stationery.font_paths = []
+  config.stationery.show_previews = true
+  config.stationery.preview_paths = [File.expand_path("../fixtures/previews", __dir__)]
 end
 
 StationeryRailsApp.initialize!
