@@ -80,8 +80,8 @@ renders them all, or render one with `stationery render examples/report.rb`.
 | `text(string, **style)` | A paragraph. Plain strings are literal. |
 | `text(string, markup: true)` | Reads `<b> <i> <u> <strikethrough> <sub> <sup> <br> <color rgb=""> <font size="" name=""> <link href="">`; decodes numeric and HTML 4 named entities. |
 | `text { b "Total"; plain " due" }` | Styled runs in Ruby. Take a block argument (`{ \|t\| t.b @x }`) to keep your own `self`. |
-| `box(padding:, background:, border:, radius:, width:, height:, overflow:, at:, link:, outset:, break_inside:, decoration:) { }` | A container. Moves to the next page whole when it fits there and continues across pages when it does not; `break_inside: :auto` splits it at any page break, `:avoid` never splits it. At a cut, `decoration: :slice` (default) drops the padding and border, `:clone` keeps the padding. `overflow: :truncate` or `:shrink_to_fit` for fixed heights. `at: [x, y]` pins it to a page position. `link:` makes the whole box clickable. `outset:` bleeds the background past the box (e.g. into the page margins). |
-| `row(gap:, align:, break_inside:) { column(width:) { } }` | Columns side by side. `width:` is points, a fraction (`0.5`), `:auto` or `nil` (equal share). Splits across pages like a box, every column at once; a row with a fixed-height column never splits. |
+| `box(padding:, background:, border:, radius:, width:, height:, min_height:, overflow:, at:, link:, outset:, break_inside:, decoration:) { }` | A container. Moves to the next page whole when it fits there and continues across pages when it does not; `break_inside: :auto` splits it at any page break, `:avoid` never splits it. At a cut, `decoration: :slice` (default) drops the padding and border, `:clone` keeps the padding. `overflow: :truncate` or `:shrink_to_fit` for fixed heights; a fixed `height:` never splits. `min_height:` is a floor that still splits: the first fragment keeps as much of it as the page holds, the next carries the rest (not combinable with `height:`). `at: [x, y]` pins it to a page position. `link:` makes the whole box clickable. `outset:` bleeds the background past the box (e.g. into the page margins). |
+| `row(gap:, align:, break_inside:) { column(width:) { } }` | Columns side by side. `width:` is points, a fraction (`0.5`), `:auto` or `nil` (equal share). Splits across pages like a box, every column at once; a row with a fixed-height column never splits; columns with `min_height:` do. |
 | `table(rows, widths:, width:, header:, split_rows:, cell:) { \|t\| }` | Tables. Cells are strings, layout nodes, procs built with the DSL (`-> { image logo }`) or components. Style with `t.row(0)`, `t.rows(-1)`, `t.column(1)`, `t.columns(1..)`, chained, plus `t.zebra`. Header rows repeat after a page break. A cell may be `{ content:, colspan:, rowspan: }` plus any cell option; rows list only the cells they start, as in HTML, and pages never break through a rowspan. Spans are set in the rows, not through selections. A row taller than the page continues on the next page, cut through its cells, with the header repeated; `split_rows: true` cuts any row that reaches the page bottom instead of moving it whole. |
 | `image(path_or_io, width:, height:, fit:, align:)` | JPEG or PNG, aspect preserved. |
 | `svg(source_or_path, width:, height:, color:, align:)` | Vector icons and drawings; `currentColor` takes `color:`. |
@@ -476,8 +476,8 @@ larger file. `PROFILE=1 bundle exec ruby -Ilib benchmark/profile.rb` prints the
 No ligatures, no variable fonts (including CFF2) or
 WOFF2 (it needs Brotli; convert to `.ttf` or `.woff`); SVG covers the shapes icon sets use
 (no text, gradients, patterns, masks or CSS stylesheets); no encryption,
-forms or tagged PDF; fixed-height boxes, and rows holding one,
-never split across pages.
+forms or tagged PDF. A box with a fixed `height:` never splits (use
+`min_height:` for a floor that can); a row splits only when every column can.
 
 ## License
 
