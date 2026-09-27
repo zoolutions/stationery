@@ -5,7 +5,7 @@ module Stationery
   #
   #   class Invoice < Stationery::Document
   #     page size: :a4, margin: 40
-  #     font_family "Inter", regular: "Inter-Regular.ttf", bold: "Inter-Bold.ttf"
+  #     font_family "Brand", regular: "Brand-Regular.ttf", bold: "Brand-Bold.ttf"
   #     default_text font: "Inter", size: 9
   #     metadata title: "Invoice"
   #     page_template { |page| box(at: [40, page.height - 30]) { text "#{page.number}/#{page.count}" } }
@@ -32,7 +32,7 @@ module Stationery
       end
 
       def font_family(name, **paths)
-        config[:families][name.to_s] = Fonts::Family.new(name, **paths)
+        config[:families][name.to_s] = Fonts::Family.build(name, **paths)
       end
 
       def default_text(**options)
