@@ -4,8 +4,8 @@ module Stationery
   module Fonts
     # Reads the sfnt tables of a static font needed to measure text and to
     # embed it: TrueType outlines (.ttf) or CFF outlines (.otf), alone or as one
-    # face of a collection (.ttc). Variable CFF2 fonts and web font wrappers are
-    # rejected with a named reason.
+    # face of a collection (.ttc), or unwrapped from a WOFF web font. Variable
+    # CFF2 fonts and WOFF2 are rejected with a named reason.
     class TrueType
       include SfntMetrics
 
@@ -15,8 +15,7 @@ module Stationery
       SFNT_VERSIONS = ["\x00\x01\x00\x00".b, "true", "OTTO"].freeze
       COLLECTION = "ttcf"
       SIGNATURES = {
-        "wOFF" => "WOFF web fonts are not supported, use the TrueType (.ttf) file",
-        "wOF2" => "WOFF2 web fonts are not supported, use the TrueType (.ttf) file"
+        "wOF2" => "WOFF2 needs Brotli; convert to .ttf or .woff"
       }.freeze
 
       attr_reader :data, :tables, :units_per_em, :bbox, :ascender, :descender, :line_gap, :num_glyphs,
@@ -28,6 +27,7 @@ module Stationery
       # collection, face 0 by default.
       def initialize(data, cmap: true, index: nil)
         @data = data.b
+        @data = WOFF.unpack(@data) if @data.start_with?(WOFF::SIGNATURE)
         @sfnt = face_offset(index || 0)
         check_signature
         read_table_directory(cmap)

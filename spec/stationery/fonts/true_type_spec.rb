@@ -79,10 +79,8 @@ RSpec.describe Stationery::Fonts::TrueType do
   end
 
   it "rejects formats it cannot embed, naming them" do
-    expect { described_class.new("wOFF#{"\0" * 20}") }
-      .to raise_error(Stationery::UnsupportedFont, /WOFF web fonts/)
     expect { described_class.new(File.binread(font_path("not-a-ttf.woff2"))) }
-      .to raise_error(Stationery::UnsupportedFont, /WOFF2/)
+      .to raise_error(Stationery::UnsupportedFont, /WOFF2 needs Brotli; convert to .ttf or .woff/)
     expect { described_class.new("junk" * 10) }
       .to raise_error(Stationery::UnsupportedFont, /not a TrueType font/)
   end
@@ -118,6 +116,27 @@ RSpec.describe Stationery::Fonts::TrueType do
 
       expect(described_class.new(data, cmap: false).num_glyphs).to eq(5)
       expect { Stationery::Fonts::Font.new(bold).build(Stationery::PDF::Writer.new) }.not_to raise_error
+    end
+  end
+
+  describe "a WOFF web font" do
+    let(:woff) { described_class.new(File.binread(font_path("OpenSans-Regular.woff"))) }
+    let(:source) { described_class.new(File.binread(font_path("OpenSans-Collection.ttc"))) }
+
+    it "reads the same glyphs and metrics as the font it wraps" do
+      chars = "Hello, WOFF!".chars.map(&:ord)
+      advances = ->(ttf) { Array.new(ttf.num_glyphs) { |gid| ttf.advance(gid) } }
+
+      expect(woff.postscript_name).to eq("OpenSans-Regular")
+      expect(chars.map { |c| woff.glyph_id(c) }).to eq(chars.map { |c| source.glyph_id(c) })
+      expect(advances.call(woff)).to eq(advances.call(source))
+    end
+
+    it "subsets and embeds" do
+      data, = Stationery::Fonts::Subset.build(woff, "WOFF".chars.map { |c| woff.glyph_id(c.ord) })
+
+      expect(described_class.new(data, cmap: false).num_glyphs).to eq(4)
+      expect { Stationery::Fonts::Font.new(woff).build(Stationery::PDF::Writer.new) }.not_to raise_error
     end
   end
 end

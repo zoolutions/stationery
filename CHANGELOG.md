@@ -5,6 +5,7 @@
 ### Fonts
 
 - TrueType collections (`.ttc`): `font_family "Brand", regular: "Brand.ttc#0", bold: "Brand.ttc#2"` picks a face by a `#N` suffix (face 0 without one); each face is parsed, cached, subset and embedded on its own. `TrueType.new(data, index:)`, `TrueType.collection?` and `TrueType.faces`; an index out of range raises `ArgumentError` naming the face count.
+- WOFF 1.0 web fonts (`.woff`): `font_family "Web", regular: "Brand.woff"`. Tables are inflated with zlib into an in-memory sfnt (`Fonts::WOFF.unpack`), then measured, subset and embedded like the `.ttf`. WOFF2 is still rejected: it needs Brotli, so convert to `.ttf` or `.woff`.
 
 ## 0.2.0 (2026-09-27)
 
