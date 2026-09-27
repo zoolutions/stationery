@@ -77,7 +77,8 @@ module Stationery
       @_builder.add(align ? Layout::Flow.new([node], align:) : node)
     end
 
-    def table(rows, widths: nil, width: :auto, header: false, split_rows: false, cell: {}, anchor: nil, bookmark: nil, &)
+    def table(rows, widths: nil, width: :auto, header: false, split_rows: false, cell: {}, anchor: nil, bookmark: nil,
+              &)
       node = Layout::Table.new(rows, context: @_builder.context, widths:, width:, header:, split_rows:, cell:, &)
       @_builder.add(mark(node, anchor, bookmark))
     end

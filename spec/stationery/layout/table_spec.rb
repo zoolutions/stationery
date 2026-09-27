@@ -102,10 +102,11 @@ RSpec.describe Stationery::Layout::Table do
     expect(paginator.warnings).to be_empty
   end
 
-  it "overflows a row taller than a page with a warning" do
+  it "continues a row taller than a page on the next page instead of overflowing" do
     tall = Array.new(40) { "line" }.join("\n")
-    _pdf, paginator = render_layout(table([[tall]]))
+    pdf, paginator = render_layout(table([[tall]]))
 
-    expect(paginator.warnings).not_to be_empty
+    expect(paginator.warnings).to be_empty
+    expect(page_count(pdf)).to be > 1
   end
 end
