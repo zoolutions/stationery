@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "stationery/cli"
+
+exit Stationery::CLI.start(ARGV)

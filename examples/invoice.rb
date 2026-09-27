@@ -3,6 +3,7 @@
 # An invoice built with stationery. Run it to write examples/invoice.pdf:
 #
 #   ruby -Ilib examples/invoice.rb
+#   ruby -Ilib exe/stationery render examples/invoice.rb
 require "stationery"
 
 class ExampleInvoice < Stationery::Document
@@ -27,6 +28,12 @@ class ExampleInvoice < Stationery::Document
     box(at: [page.margin[3], page.height - 34], width: page.content_box.width) do
       text "Page #{page.number} of #{page.count}", size: 7, color: MUTED, align: :right
     end
+  end
+
+  def self.preview
+    items = [["Brand workshop", 1, 2400.0], ["Logo design, three concepts", 1, 3200.0],
+             ["Illustration set (12)", 12, 180.0], ["Print-ready files", 1, 450.0], ["Rush delivery", 1, 300.0]]
+    new(number: "INV-2026-042", items:, customer: "Müller & Söhne GmbH", due: "26 October 2026")
   end
 
   def initialize(number:, items:, customer:, due:)
@@ -142,9 +149,6 @@ class ExampleInvoice < Stationery::Document
 end
 
 if $PROGRAM_NAME == __FILE__
-  items = [["Brand workshop", 1, 2400.0], ["Logo design, three concepts", 1, 3200.0],
-           ["Illustration set (12)", 12, 180.0], ["Print-ready files", 1, 450.0], ["Rush delivery", 1, 300.0]]
-  ExampleInvoice.new(number: "INV-2026-042", items:, customer: "Müller & Söhne GmbH", due: "26 October 2026")
-                .to_pdf(File.expand_path("invoice.pdf", __dir__))
+  ExampleInvoice.preview.to_pdf(File.expand_path("invoice.pdf", __dir__))
   puts "wrote examples/invoice.pdf"
 end
