@@ -35,7 +35,7 @@ module Stationery
         move(element.attributes)
         element.children.each do |child|
           if child.is_a?(String) then add(child, style)
-          elsif child.name == "tspan" then place(child, style.child(child.attributes))
+          elsif child.name == "tspan" then place(child, style.child(child))
           end
         end
       end

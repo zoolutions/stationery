@@ -6,21 +6,24 @@ module Stationery
   module SVG
     # A minimal XML reader for SVG documents: elements, attributes and nesting.
     # Comments, processing instructions and doctypes are skipped; text content
-    # is kept only inside text and tspan, as String children with entities
-    # decoded and each run of whitespace collapsed to one space.
+    # (CDATA included) is kept only inside text, tspan and style, as String
+    # children with entities decoded and each whitespace run one space.
     module Parser
       Element = Data.define(:name, :attributes, :children)
 
-      TEXT = %w[text tspan].freeze
+      TEXT = %w[text tspan style].freeze
 
-      IGNORED = /<!--.*?-->|<\?.*?\?>|<!DOCTYPE[^>]*>|<!\[CDATA\[.*?\]\]>/m
+      IGNORED = /<!--.*?-->|<\?.*?\?>|<!DOCTYPE[^>]*>/m
+      CDATA = /<!\[CDATA\[(.*?)\]\]>/m
+      ESCAPES = { "&" => "&amp;", "<" => "&lt;", ">" => "&gt;" }.freeze
       TAG = %r{<(/?)([a-zA-Z][\w:.-]*)((?:\s+[\w:.-]+\s*=\s*(?:"[^"]*"|'[^']*'))*)\s*(/?)>}m
       ATTRIBUTE = /([\w:.-]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/
 
       module_function
 
       def parse(source)
-        scanner = StringScanner.new(source.to_s.gsub(IGNORED, ""))
+        source = source.to_s.gsub(IGNORED, "").gsub(CDATA) { Regexp.last_match(1).gsub(/[&<>]/, ESCAPES) }
+        scanner = StringScanner.new(source)
         root = Element.new("document", {}, [])
         stack = [root]
         while (content = scanner.scan_until(/(?=<)/))
@@ -29,6 +32,12 @@ module Stationery
           handle(stack, *tag.match(TAG).captures)
         end
         root.children.first
+      end
+
+      # Yields the element and every element below it, depth first.
+      def walk(element, &)
+        yield element
+        element.children.each { |child| walk(child, &) if child.is_a?(Element) }
       end
 
       def keep(element, content)

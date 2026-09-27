@@ -56,7 +56,9 @@ class Views::Docs::Pages::ImagesAndSvg < DocsUI::Page
 
         **Supported:** `path` (every command, including arcs), `rect` (with `rx`/`ry`), `circle`, `ellipse`,
         `line`, `polyline`, `polygon` and `g`, with fill, stroke, line caps and joins, `fill-rule`, opacity,
-        inline `style` attributes, `transform` (`matrix`, `translate`, `scale`, `rotate`, `skewX`, `skewY`),
+        inline `style` attributes, `<style>` stylesheets (element, `.class`, `#id`, `element.class`, comma lists and
+        `*` selectors; presentation attributes < rules by specificity < inline `style`; `display: none` and
+        `visibility: hidden` skip elements), `transform` (`matrix`, `translate`, `scale`, `rotate`, `skewX`, `skewY`),
         `currentColor`, `linearGradient`/`radialGradient` fills (stops, `href` chains, both gradient units,
         `gradientTransform`), and `text`/`tspan` (`x`, `y`, `dx`, `dy`, `font-family`, `font-size`, `font-weight`,
         `font-style`, `text-anchor`, `fill`, `opacity`). SVG text uses the document's fonts: the first
@@ -67,7 +69,8 @@ class Views::Docs::Pages::ImagesAndSvg < DocsUI::Page
         gradient's middle colour. Text glyphs stay upright: a transform moves the text's origin and scales its size
         uniformly, so rotated or skewed text is approximated, and `dominant-baseline` is ignored.
 
-        **Not supported:** `use`, `textPath`, patterns, masks and CSS stylesheets.
+        **Not supported:** `use`, `textPath`, patterns, masks, and stylesheet rules with combinators (`g path`,
+        `a > b`), which are ignored and reported.
       MD
     end
 
