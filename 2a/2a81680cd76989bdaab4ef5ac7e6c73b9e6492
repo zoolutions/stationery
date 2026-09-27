@@ -1,0 +1,71 @@
+examples/form.rb
+  ai_agent 1-112
+README.md
+  s_832305fd821824::t_d5620b568a23a0 73,99-101,192-194,196,205-206,208
+  s_832305fd821824::t_3872f9491ffbe5 97-98,182-191,195,197-204,207,209,572
+spec/stationery/forms_spec.rb
+  s_832305fd821824::t_a8ba0d2c5c1ae1 52,58,301
+  s_832305fd821824::t_65781545c32441 242-256
+  s_832305fd821824::t_dd6e8e2596fa43 196-201,203,210
+  s_832305fd821824::t_d2c50d1a8e4b15 282-283
+  s_832305fd821824::t_cd84680febb274 143-195,202,204-209,211-226
+  s_832305fd821824::t_fb92a71ad5ec03 1-51,53-57,59-142,227-241,257-281,284-300,302-314
+lib/stationery/document.rb
+  s_832305fd821824::t_d482cd2cea48e7 90-91,108
+docs/app/views/docs/pages/cookbook.rb
+  s_832305fd821824::t_d5620b568a23a0 11,45-49
+lib/stationery/canvas.rb
+  s_832305fd821824::t_4ff08d4b8f3bfa 95-100
+lib/stationery/forms/appearance.rb
+  ai_agent 1-119
+lib/stationery/forms/field.rb
+  s_832305fd821824::t_95356548966aab 12,53
+  s_832305fd821824::t_29a8aa7fbae2d0 1-7,10,15-16,21-40,43,46-48,50-52,56-57,59,61-64,72,75,79-84,91,99-104,106-122
+  s_832305fd821824::t_b584bbf68856a8 8-9,11,13-14,17-20,41-42,44-45,49,54-55,58,60,65-71,73-74,76-78,85-90,92-98,105
+lib/stationery/forms/metrics.rb
+  ai_agent 1-49
+spec/support/form_helpers.rb
+  ai_agent 1-55
+lib/stationery.rb
+  s_832305fd821824::t_4ff08d4b8f3bfa 61-64,110,118
+docs/app/views/docs/pages/elements.rb
+  s_832305fd821824::t_3872f9491ffbe5 18,341,343-347,351-352
+  s_832305fd821824::t_d5620b568a23a0 342,348-350
+docs/spec/requests/docs_spec.rb
+  s_832305fd821824::t_d5620b568a23a0 44-45
+CHANGELOG.md
+  s_832305fd821824::t_3872f9491ffbe5 9,11
+  s_832305fd821824::t_d5620b568a23a0 10
+lib/stationery/forms/acro_form.rb
+  ai_agent 1-113
+spec/integration/form_spec.rb
+  ai_agent 1-37
+docs/app/views/docs/pages/limitations.rb
+  s_832305fd821824::t_3872f9491ffbe5 20
+lib/stationery/pdf/assembler.rb
+  s_832305fd821824::t_d2c50d1a8e4b15 53-55,67-69
+  s_832305fd821824::t_e39b082ef3f1b2 28
+  s_832305fd821824::t_4ff08d4b8f3bfa 21,34,36,66
+lib/stationery/elements/forms.rb
+  ai_agent 1-55
+lib/stationery/layout/field.rb
+  ai_agent 1-50
+lib/stationery/canvas/debug.rb
+  s_832305fd821824::t_4ff08d4b8f3bfa 11-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "2a2a81680cd76989bdaab4ef5ac7e6c73b9e6492",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
