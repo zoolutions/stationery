@@ -8,6 +8,7 @@
 - `keep_with_next:` accepts a number of points of following content to keep.
 - `group(align:)`.
 - Table cells span columns and rows: `{ content:, colspan:, rowspan: }`, placed as in HTML; a table only splits between rows no rowspan crosses.
+- A table row taller than the page continues on the next page below the repeated header, its cells cut at the page bottom; `table(split_rows: true)` cuts any row that reaches the page bottom rather than moving it whole.
 - Fixed: table cells restyled through a selection after the table had been measured kept their old style.
 - `Stationery::Warnings`: one collector per render, deduplicated, with `#message` on every entry (`Overflow`, `MissingGlyph`, `UnknownFamily`, `UnsupportedSvg`, `SkippedImage`, `UnresolvedLink`, `DuplicateAnchor`). `document.warnings` now includes warnings raised while page templates draw.
 - Strict mode: `to_pdf(strict: true)` or class-level `strict` raises `Stationery::WarningsError` when a render produced warnings.

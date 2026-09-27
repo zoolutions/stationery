@@ -22,6 +22,9 @@ module Stationery
           @node ||= @content.is_a?(Node) ? @content : text_node(context)
         end
 
+        # The same cell holding another node, as a row split into two parts needs.
+        def with_content(node) = Cell.new(node, @options, colspan:, rowspan:)
+
         # Changes an option and forgets the node built from the old ones.
         def []=(name, value)
           @options[name] = value
