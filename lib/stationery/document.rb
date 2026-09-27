@@ -55,6 +55,12 @@ module Stationery
         config[:strict] = value
       end
 
+      # Encrypts every render with the standard security handler; see
+      # PDF::Encryption::StandardSecurity for the options.
+      def encrypt(**)
+        config[:encrypt] = PDF::Encryption::StandardSecurity.options(**)
+      end
+
       # Runs after pagination on every page. `layer: :background` paints under
       # the page's content.
       def page_template(layer: :foreground, &block)
@@ -79,7 +85,8 @@ module Stationery
     def page_options = self.class.config[:page]
     def metadata = self.class.config[:metadata]
 
-    def to_pdf(target = nil, strict: self.class.config[:strict], debug: false)
+    def to_pdf(target = nil, strict: self.class.config[:strict], debug: false, encrypt: self.class.config[:encrypt])
+      encryption = encrypt && PDF::Encryption::StandardSecurity.new(**encrypt)
       warnings = Warnings.new
       book = Fonts::FontBook.new(self.class.config[:families], fallbacks: self.class.config[:fallbacks], warnings:)
       call(builder = Builder.new(book:, text: self.class.config[:text]))
@@ -92,7 +99,7 @@ module Stationery
       @warnings = warnings
       raise WarningsError, warnings if strict && warnings.any?
 
-      write(PDF::Assembler.new(pages:, resources:, info:, outline:).render, target)
+      write(PDF::Assembler.new(pages:, resources:, info:, outline:, encryption:).render, target)
     end
 
     # Used by page templates to build nodes into their own root.

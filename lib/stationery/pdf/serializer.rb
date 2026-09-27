@@ -7,6 +7,9 @@ module Stationery
     # A plain String is always written as a literal byte string `( … )` — never
     # re-encoded — so a URI stays the 7-bit ASCII the spec requires. Use
     # TextString for human-readable text that may need UTF-16.
+    #
+    # `crypt`, when given, receives every string's bytes (the writer binds it
+    # to the object being written) and the result is written as hex.
     module Serializer
       NAME_ESCAPE = %r{[^\x21-\x7E]|[#%()/<>\[\]{}]}n
       LITERAL_ESCAPE = /[\\()\r]/n
@@ -14,15 +17,15 @@ module Stationery
 
       module_function
 
-      def dump(value)
+      def dump(value, crypt = nil)
         case value
         when Reference then "#{value.id} 0 R"
         when Symbol then name(value)
-        when Hash then "<<#{value.map { |k, v| "#{name(k)} #{dump(v)}" }.join(" ")}>>"
-        when Array then "[#{value.map { |v| dump(v) }.join(" ")}]"
-        when HexString then "<#{value.bytes.unpack1("H*").upcase}>"
-        when TextString then text(value.value)
-        when String then literal(value)
+        when Hash then "<<#{value.map { |k, v| "#{name(k)} #{dump(v, crypt)}" }.join(" ")}>>"
+        when Array then "[#{value.map { |v| dump(v, crypt) }.join(" ")}]"
+        when HexString then hex(value.bytes, crypt)
+        when TextString then text(value.value, crypt)
+        when String then crypt ? hex(value, crypt) : literal(value)
         when Integer, true, false then value.to_s
         when Float then number(value)
         when nil then "null"
@@ -38,6 +41,11 @@ module Stationery
         "(#{value.b.gsub(LITERAL_ESCAPE) { |c| c == "\r" ? "\\r" : "\\#{c}" }})"
       end
 
+      def hex(bytes, crypt = nil)
+        bytes = crypt.call(bytes.b) if crypt
+        "<#{bytes.unpack1("H*").upcase}>"
+      end
+
       def number(value)
         return value.to_s if value.is_a?(Integer)
 
@@ -49,11 +57,11 @@ module Stationery
         str == "-0" ? "0" : str
       end
 
-      def text(value)
+      def text(value, crypt = nil)
         value = value.to_s
-        return literal(value) if value.ascii_only?
+        return dump(value, crypt) if value.ascii_only?
 
-        dump(HexString.new(UTF16_BOM + value.encode(Encoding::UTF_16BE).b))
+        hex(UTF16_BOM + value.encode(Encoding::UTF_16BE).b, crypt)
       end
     end
   end

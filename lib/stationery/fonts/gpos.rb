@@ -15,19 +15,21 @@ module Stationery
         base = ttf.table_offset("GPOS")
         return unless base && ttf.u16(base) == 1
 
-        indices = kern_lookups(ttf, base + ttf.u16(base + 6))
-        return if indices.empty?
-
-        list = base + ttf.u16(base + 8)
-        new(indices.map { |i| lookup(ttf, list + ttf.u16(list + 2 + (i * 2))) })
+        offsets = feature_lookups(ttf, base, "kern")
+        new(offsets.map { |offset| lookup(ttf, offset) }) if offsets.any?
       end
 
-      def self.kern_lookups(ttf, list)
+      # Offsets of the lookups every `tag` feature record of the GSUB or GPOS
+      # table at `base` names, in LookupList order.
+      def self.feature_lookups(ttf, base, tag)
+        list = base + ttf.u16(base + 6)
         records = Array.new(ttf.u16(list)) { |i| list + 2 + (i * 6) }
-        records.select { |record| ttf.data.byteslice(record, 4) == "kern" }.flat_map do |record|
+        indices = records.select { |record| ttf.data.byteslice(record, 4) == tag }.flat_map do |record|
           feature = list + ttf.u16(record + 4)
           Array.new(ttf.u16(feature + 2)) { |j| ttf.u16(feature + 4 + (j * 2)) }
-        end.uniq
+        end
+        lookups = base + ttf.u16(base + 8)
+        indices.uniq.sort.map { |i| lookups + ttf.u16(lookups + 2 + (i * 2)) }
       end
 
       # A lookup's PairPos subtables; other lookup types have none.
@@ -42,7 +44,7 @@ module Stationery
           end
         end.freeze
       end
-      private_class_method :kern_lookups, :lookup
+      private_class_method :lookup
 
       def initialize(lookups)
         @lookups = lookups.freeze

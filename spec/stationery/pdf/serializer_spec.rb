@@ -45,6 +45,14 @@ RSpec.describe Stationery::PDF::Serializer do
     expect(dump({ Type: :Page, Kids: [ref], Box: { A: 1 } })).to eq("<</Type /Page /Kids [7 0 R] /Box <</A 1>>>>")
   end
 
+  it "passes every string's bytes through a crypt hook and writes the result as hex" do
+    crypt = :reverse.to_proc
+    value = { S: "ab", H: Stationery::PDF::HexString.new("cd".b), T: [Stationery::PDF::TextString.new("ü"), :N, 1] }
+
+    expect(described_class.dump(value, crypt)).to eq("<</S <6261> /H <6463> /T [<FC00FFFE> /N 1]>>")
+    expect(described_class.dump(Stationery::PDF::TextString.new("ok"), crypt)).to eq("<6B6F>")
+  end
+
   it "refuses values it cannot represent" do
     expect { dump(Object.new) }.to raise_error(ArgumentError, /cannot serialize Object/)
   end
