@@ -4,8 +4,9 @@ module Stationery
   module Layout
     # Children stacked top to bottom: the document body and every box's
     # content. Splits across pages: a splittable child continues on the next
-    # page, anything else moves there whole, a spacer at the break is dropped
-    # and a child marked keep_with_next moves with its successor.
+    # page (one that prefers staying whole only from the top of a fresh page),
+    # anything else moves there whole, a spacer at the break is dropped and a
+    # child marked keep_with_next moves with its successor.
     class Flow < Node
       attr_reader :children, :gap, :align
 
@@ -27,18 +28,18 @@ module Stationery
 
       def measure(width)
         visible = @children.reject(&:page_break?)
-        visible.sum { |child| child.measure(width) } + (@gap * [visible.size - 1, 0].max)
+        visible.sum { |child| child.measure(child.width_in(width)) } + (@gap * [visible.size - 1, 0].max)
       end
 
       def paint(canvas, x, y, width, _height = nil, **)
         cursor = y
         @children.reject(&:page_break?).each_with_index do |child, index|
           cursor += @gap unless index.zero?
-          own = child.fixed_width(width)
-          left = own ? x + Geometry.align_offset(@align, width, own) : x
-          child.paint(canvas, left, cursor, own || width)
-          height = child.measure(width)
-          canvas.debug_rect(left, cursor, own || width, height, :flow)
+          own = child.width_in(width)
+          left = child.fixed_width(width) ? x + Geometry.align_offset(@align, width, own) : x
+          child.paint(canvas, left, cursor, own)
+          height = child.measure(own)
+          canvas.debug_rect(left, cursor, own, height, :flow)
           cursor += height
         end
       end
@@ -81,7 +82,7 @@ module Stationery
 
           gap = @placed.empty? ? 0 : @flow.gap
           remaining = @height - @used - gap
-          height = child.measure(@width)
+          height = child.measure(child.width_in(@width))
           return fits(child, height + gap, remaining - height, rest) if height <= remaining + EPSILON
           return [part(@placed), part(rest)] if child.is_a?(Spacer)
 
@@ -107,19 +108,19 @@ module Stationery
         def strand?(child, left_after, rest)
           want = child.keep_with_next
           return false unless want && rest.any? && !@placed.empty?
-          return rest.first.split(@width, left_after).first.nil? unless want.is_a?(Numeric)
+          return !starts?(rest.first, left_after) unless want.is_a?(Numeric)
 
           following = 0
           rest.each do |node|
-            following += node.measure(@width)
+            following += node.measure(node.width_in(@width))
             break if following >= want
           end
           left_after + EPSILON < [want, following].min
         end
 
         def split_or_move(child, remaining, rest)
-          unless child.avoid_break?
-            head, tail = child.split(@width, remaining)
+          if may_split?(child)
+            head, tail = child.split(child.width_in(@width), remaining, fresh: @fresh && @placed.empty?)
             # A nested flow can finish on this page (its trailing spacer
             # dropped at the break) and hand back no remainder.
             return [part(@placed + [head]), part([tail, *rest].compact)] if head
@@ -127,6 +128,18 @@ module Stationery
           return [part([child]), part(rest)] if @placed.empty? && @fresh
 
           @placed.empty? ? [nil, part([child, *rest])] : [part(@placed), part([child, *rest])]
+        end
+
+        def may_split?(child, top: @placed.empty? && @fresh)
+          !child.avoid_break? && (!child.prefer_whole? || top)
+        end
+
+        # Whether any of `node` would be placed in `height` below other content.
+        def starts?(node, height)
+          width = node.width_in(@width)
+          return !node.split(width, height).first.nil? if may_split?(node, top: false)
+
+          node.measure(width) <= height + EPSILON
         end
 
         def part(children)

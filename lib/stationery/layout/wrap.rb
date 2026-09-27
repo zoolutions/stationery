@@ -53,7 +53,7 @@ module Stationery
         end
       end
 
-      def split(width, height)
+      def split(width, height, **)
         heights = row_heights(width)
         used = 0
         count = heights.take_while.with_index { |h, i| (used += h + (i.zero? ? 0 : @row_gap)) <= height + EPSILON }.size
