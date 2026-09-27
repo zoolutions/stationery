@@ -159,4 +159,40 @@ RSpec.describe Stationery::Canvas do
 
     expect(page.annotations).to eq([{ rect: [10, 75, 40, 80], url: "https://example.com/pay?x=1" }])
   end
+
+  describe "#debug_rect" do
+    def debug_canvas(debug) = described_class.new(page, resources, debug:)
+
+    it "draws nothing when the canvas is not in debug mode" do
+      canvas.debug_rect(0, 0, 10, 10, :box)
+
+      expect(canvas).not_to be_debug
+      expect(ops).to be_empty
+    end
+
+    it "strokes a hairline in the kind's colour, dashed only for dashed kinds" do
+      debug = debug_canvas(true)
+      debug.debug_rect(0, 0, 10, 10, :box)
+
+      expect(debug).to be_debug
+      expect(ops).to include("0.5 w", Stationery::Color.parse("#E11D48").stroke, "0.25 90.25 9.5 9.5 re")
+      expect(ops).not_to include(" d\n")
+
+      debug.debug_rect(0, 0, 10, 10, :padding)
+      expect(ops).to include("[2 2] 0 d")
+    end
+
+    it "draws only the listed kinds when given an Array" do
+      debug = debug_canvas(%i[cell])
+      debug.debug_rect(0, 0, 10, 10, :box)
+      expect(ops).to be_empty
+
+      debug.debug_rect(0, 0, 10, 10, :cell)
+      expect(ops).to include(Stationery::Color.parse("#16A34A").stroke)
+    end
+
+    it "rejects an unknown kind" do
+      expect { debug_canvas(true).debug_rect(0, 0, 1, 1, :nope) }.to raise_error(ArgumentError, /nope/)
+    end
+  end
 end

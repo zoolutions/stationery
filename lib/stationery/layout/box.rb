@@ -45,12 +45,13 @@ module Stationery
         @height || (@content.measure(inner_width(width)) + vertical)
       end
 
-      def paint(canvas, x, y, width, height = nil, valign: nil, **)
+      def paint(canvas, x, y, width, height = nil, valign: nil, debug_kind: :box, **)
         height ||= measure(width)
         paint_background(canvas, x, y, width, height)
         paint_border(canvas, x, y, width, height)
         paint_content(canvas, x, y, width, height, valign || @valign)
         canvas.link(x, y, width, height, @link) if @link
+        paint_debug(canvas, Rect.new(x, y, width, height), debug_kind) if canvas.debug?
       end
 
       private
@@ -120,6 +121,14 @@ module Stationery
             paint_inner.call
           end
         end
+      end
+
+      def paint_debug(canvas, rect, kind)
+        canvas.debug_rect(rect.x, rect.y, rect.width, rect.height, kind)
+        return if insets.all?(&:zero?)
+
+        inner = rect.inset(*insets)
+        canvas.debug_rect(inner.x, inner.y, inner.width, inner.height, :padding)
       end
 
       def fitted(inner)

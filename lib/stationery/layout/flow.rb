@@ -37,7 +37,9 @@ module Stationery
           own = child.fixed_width(width)
           left = own ? x + Geometry.align_offset(@align, width, own) : x
           child.paint(canvas, left, cursor, own || width)
-          cursor += child.measure(width)
+          height = child.measure(width)
+          canvas.debug_rect(left, cursor, own || width, height, :flow)
+          cursor += height
         end
       end
 

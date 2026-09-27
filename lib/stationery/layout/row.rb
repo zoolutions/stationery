@@ -27,7 +27,7 @@ module Stationery
         height ||= measure(width)
         left = x
         @columns.zip(column_widths(width)).each do |column, w|
-          column.paint(canvas, left, y, w, height, valign: @align)
+          column.paint(canvas, left, y, w, height, valign: @align, debug_kind: :column)
           left += w + @gap
         end
       end

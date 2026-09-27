@@ -109,6 +109,16 @@ render Callout.new(color: "#F3F4F6") { text "Amount due" }
   paints under the content (full-bleed backgrounds).
 - Content taller than a page is placed anyway; `document.warnings` lists every overflow.
 
+### Debugging
+
+`to_pdf(debug: true)` outlines every layout rectangle on top of the content: boxes (red, padding dashed),
+row columns (blue), flow slots (grey, dotted), table cells (green, padding dashed), positioned boxes (pink),
+images (teal) and the page content box (cyan). Pass an Array to outline only some kinds:
+
+```ruby
+Invoice.new.to_pdf("invoice.pdf", debug: %i[cell cell_padding])
+```
+
 ## Rails
 
 ```ruby
