@@ -68,7 +68,7 @@ module Stationery
       def with_open(*sides) = with_content(@content, @open | sides)
 
       def measure(width)
-        @height || (@content.measure(inner_width(width)) + vertical)
+        @height || memoize_by_width(width) { @content.measure(inner_width(width)) + vertical }
       end
 
       def paint(canvas, x, y, width, height = nil, valign: nil, debug_kind: :box, **)

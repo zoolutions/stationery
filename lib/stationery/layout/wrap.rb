@@ -35,8 +35,10 @@ module Stationery
       end
 
       def measure(width)
-        heights = row_heights(width)
-        heights.sum + (@row_gap * [heights.size - 1, 0].max)
+        memoize_by_width(width) do
+          heights = row_heights(width)
+          heights.sum + (@row_gap * [heights.size - 1, 0].max)
+        end
       end
 
       def paint(canvas, x, y, width, _height = nil, **)

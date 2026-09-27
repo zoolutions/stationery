@@ -19,6 +19,7 @@ module Stationery
 
       def <<(child)
         @children << child
+        forget_measures
         self
       end
 
@@ -27,8 +28,10 @@ module Stationery
       def min_width = @children.map(&:min_width).max || 0
 
       def measure(width)
-        visible = @children.reject(&:page_break?)
-        visible.sum { |child| child.measure(child.width_in(width)) } + (@gap * [visible.size - 1, 0].max)
+        memoize_by_width(width) do
+          visible = @children.reject(&:page_break?)
+          visible.sum { |child| child.measure(child.width_in(width)) } + (@gap * [visible.size - 1, 0].max)
+        end
       end
 
       def paint(canvas, x, y, width, _height = nil, **)

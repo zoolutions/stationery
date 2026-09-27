@@ -48,6 +48,23 @@ module Stationery
       def avoid_break?
         break_inside == :avoid || !splittable?
       end
+
+      private
+
+      # Remembers a height per width: a page measures the same subtree for the
+      # flow splitter, keep_with_next and paint. Nodes are not changed after
+      # layout starts (Flow#<< forgets), and copies start with no measurements.
+      def memoize_by_width(width)
+        @measures ||= {}
+        @measures.fetch(width) { @measures[width] = yield }
+      end
+
+      def forget_measures = @measures = nil
+
+      def initialize_copy(source)
+        super
+        forget_measures
+      end
     end
   end
 end
