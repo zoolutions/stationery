@@ -12,6 +12,7 @@ AllCops:
     - "**/tmp/**/*"
     - "**/vendor/**/*"
     - "bin/**/*"
+    - "docs/**/*" # the docs site is its own Rails app with its own .rubocop.yml
 
 Style/Documentation:
   Enabled: false

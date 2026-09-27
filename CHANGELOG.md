@@ -2,6 +2,10 @@
 
 ## 0.2.0 (unreleased)
 
+- Documentation site at https://stationery.zoolutions.llc, a docs-kit app under `docs/` (not part of the gem): getting started, every element with its options, layout rules, pages and regions, links and bookmarks, fonts, images and SVG, Rails, testing, the CLI, warnings, a cookbook built from `examples/`, performance, limitations and this changelog, rendered from the README and CHANGELOG where they overlap.
+- Examples: `examples/report.rb` (multi-page annual report: header/footer regions, contents, bookmarks, lists, tables, a split callout, internal links, SVG icons), `examples/letter.rb` (one-page letter with a vector letterhead) and `examples/packing_slip.rb` (landscape, 120-row table with split rows, canvas barcode), each covered by an integration spec and rendered in CI by `rake examples`.
+- Font packs: `stationery fonts list` and `stationery fonts install noto_sans liberation_serif [--into DIR] [--force] [--from PATH]` copy pinned, SHA-256-verified Noto Sans/Serif/Sans Mono, Liberation Sans/Serif/Mono and Inter files (plus their OFL license) into `vendor/fonts/<pack>/`, atomically and offline-capable. `font_family "Noto Sans"` with no paths finds an installed pack through `Stationery.font_paths`, as does an unregistered family name at render time. Ruby API `Stationery::Fonts.install`/`catalog`/`paths`, Rails generator `stationery:fonts`, and `rake fonts:verify`. No runtime downloads.
+- `html` and `markdown` elements: ActionText/Trix HTML and CommonMark (GFM tables and strikethrough) rendered as paragraphs, headings, lists, blockquotes, code blocks, rules, tables and images with inline bold/italic/underline/strike/code/links/sub/sup. `styles:` deep-merges per-block defaults, `images:` resolves image sources (or `base_path:`), missing/remote images are skipped with a `SkippedImage` warning and never fetched, `bookmarks: true` outlines h1–h3. Parsers load on first use.
 Everything from the three planned milestones ("works out of the box", "typography and layout",
 "documents, Rails and testing") shipped together.
 
@@ -14,7 +18,6 @@ Everything from the three planned milestones ("works out of the box", "typograph
 
 - Inter (OFL) is bundled: documents render without any `font_family`; `font_family "Inter"` needs no paths; `Stationery.bundled_fonts`. An unknown family name without paths raises.
 - Per-character font fallback: `font_fallbacks "Noto Sans Symbols", ...` (inherited by subclasses). A character missing from the text's family is drawn from the first fallback that has it, then bundled Inter; spaces, joiners and combining marks stay with their base. Glyphs no font has are reported as `MissingGlyph` warnings counted per drawn occurrence. `Font#glyph?` is memoised per character.
-- Font packs: `stationery fonts list` and `stationery fonts install noto_sans liberation_serif [--into DIR] [--force] [--from PATH]` copy pinned, SHA-256-verified Noto Sans/Serif/Sans Mono, Liberation Sans/Serif/Mono and Inter files (plus their OFL license) into `vendor/fonts/<pack>/`, atomically and offline-capable. `font_family "Noto Sans"` with no paths finds an installed pack through `Stationery.font_paths`, as does an unregistered family name at render time. Ruby API `Stationery::Fonts.install`/`catalog`/`paths`, Rails generator `stationery:fonts`, and `rake fonts:verify`. No runtime downloads.
 - GPOS pair kerning: the `kern` feature's PairPos lookups (formats 1 and 2, also behind Extension lookups) take precedence over the `kern` table, so GPOS-only fonts such as Inter are kerned too.
 - OpenType fonts with CFF outlines (`.otf`), name-keyed and CID-keyed: embedded whole as a CIDFontType0 (`FontFile3 /OpenType`), CID-keyed text written as CIDs with the font's ROS. Variable CFF2 fonts are rejected with a named reason.
 - CFF fonts are subset: undrawn glyphs become a bare `endchar` (glyph ids, charset, FDSelect, Private DICTs and Subrs kept), embedded as `FontFile3 /CIDFontType0C` with a subset tag.
@@ -23,7 +26,6 @@ Everything from the three planned milestones ("works out of the box", "typograph
 
 - `align: :justify` on `text`, `text_style` and table cells: wrapped lines are stretched to the full width by widening their spaces (kerning is kept); the last line, lines ending in a newline and lines without spaces stay left-aligned. Link areas widen with the stretched text.
 - Markup decodes all 252 HTML 4 named entities (`&mdash;`, `&euro;`, `&hellip;`, …); the table loads on first use.
-- `html` and `markdown` elements: ActionText/Trix HTML and CommonMark (GFM tables and strikethrough) rendered as paragraphs, headings, lists, blockquotes, code blocks, rules, tables and images with inline bold/italic/underline/strike/code/links/sub/sup. `styles:` deep-merges per-block defaults, `images:` resolves image sources (or `base_path:`), missing/remote images are skipped with a `SkippedImage` warning and never fetched, `bookmarks: true` outlines h1–h3. Parsers load on first use.
 - Internal: `Stationery::Rich` block model (paragraphs, headings, lists, quotes, code, rules, tables, images; inlines with marks) with lenient `HTML.parse` (implied end tags, browser whitespace collapsing, Trix/ActionText output) and CommonMark-subset `Markdown.parse` (GFM tables and strikethrough, reference links). Loaded on demand; `html`/`markdown` elements follow.
 - Internal: `Fonts::GlyphRun` carries per-glyph advance adjustments (Tj/TJ emission) for upcoming kerning and justification; output unchanged.
 
@@ -77,7 +79,6 @@ Everything from the three planned milestones ("works out of the box", "typograph
 - `stationery` executable with a command registry; `stationery render FILE [--out PATH|-] [--class NAME] [--strict] [--debug]` renders the Document a Ruby file defines (through `self.preview` when it needs arguments) and reports pages and bytes.
 - `require "stationery/rspec"` matchers (`have_pdf_text`, `have_pdf_text_on_page`, `have_page_count`, `have_pdf_link`, `have_image_count`, `have_bookmark`, `have_no_warnings`) and `require "stationery/minitest"` assertions, built on `Stationery::Testing::Inspector`. Needs `pdf-reader` in the test group.
 - `rake bench`: reproducible benchmarks against Prawn + prawn-table (one-page invoice, 1,500-row table) and a StackProf profile script under `benchmark/`.
-- Examples: `examples/report.rb` (multi-page annual report: header/footer regions, contents, bookmarks, lists, tables, a split callout, internal links, SVG icons), `examples/letter.rb` (one-page letter with a vector letterhead) and `examples/packing_slip.rb` (landscape, 120-row table with split rows, canvas barcode), each covered by an integration spec and rendered in CI by `rake examples`.
 
 ### Fixes
 

@@ -1,0 +1,51 @@
+# BuildKit reads this (named after docs/Dockerfile) instead of a .dockerignore
+# at the context root. The context is the REPO ROOT, so paths are repo-relative.
+# docs/.dockerignore stays as docs-kit ships it for `docker build docs/`.
+
+# Git metadata — the gemspec falls back to a glob without it.
+/.git/
+**/.gitignore
+**/.gitattributes
+
+# Bundler config, env files and credentials.
+**/.bundle
+/docs/.env*
+/docs/config/master.key
+/docs/config/credentials/*.key
+
+# Logs, tempfiles, coverage.
+/tmp/
+/coverage/
+/docs/log/*
+!/docs/log/.keep
+/docs/tmp/*
+!/docs/tmp/.keep
+
+# JS deps + generated assets: `bun install` + `assets:precompile` rebuild them.
+/docs/node_modules/
+/docs/app/assets/builds/*
+!/docs/app/assets/builds/.keep
+/docs/app/assets/stylesheets/tailwind.sources.css
+/docs/public/assets
+
+# The gem's specs, benchmarks, CI lanes and rendered example PDFs.
+/spec/
+/docs/spec/
+/benchmark/
+/gemfiles/
+/examples/*.pdf
+**/.rspec
+/.rspec_status
+
+# CI / deploy / Docker meta.
+/.github/
+/docs/.dash/
+/docs/Dockerfile*
+/docs/.dockerignore
+
+# Editor + AI-assistant configs.
+**/.claude/
+**/.cursor/
+**/.vscode/
+**/.idea/
+**/.ruby-lsp/
