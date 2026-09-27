@@ -19,9 +19,9 @@ module Stationery
         pages = []
         remaining = root
         while remaining
-          page = new_page(pages.size + 1)
-          head, remaining = remaining.split(page.content_box.width, page.content_box.height, fresh: true)
-          place(page, head, pages.size + 1)
+          number = pages.size + 1
+          page, head, remaining = next_page(remaining, number)
+          place(page, head, number)
           pages << page
         end
         pages
@@ -29,8 +29,26 @@ module Stationery
 
       private
 
-      def new_page(number)
-        page = Page.new(**@page_options, reserve: @regions ? @regions.reserve(number) : [0, 0])
+      # A page whose regions differ when it is the last one tries the
+      # last-page box first: if everything left fits, it is the last page.
+      # Content that fits a normal page but not the last one moves partly on,
+      # so the last page follows.
+      def next_page(remaining, number)
+        page = new_page(number)
+        return [page, *fill(page, remaining)] unless @regions&.last_sensitive?(number)
+
+        last = new_page(number, last: true)
+        head, rest = fill(last, remaining)
+        return [last, head, nil] unless rest
+
+        normal_head, normal_rest = fill(page, remaining)
+        normal_rest ? [page, normal_head, normal_rest] : [page, head, rest]
+      end
+
+      def fill(page, remaining) = remaining.split(page.content_box.width, page.content_box.height, fresh: true)
+
+      def new_page(number, last: false)
+        page = Page.new(**@page_options, reserve: @regions ? @regions.reserve(number, last:) : [0, 0])
         return page if page.reserve.sum < page.margin_box.height
 
         raise ArgumentError, "header and footer leave no room for content on page #{number}"

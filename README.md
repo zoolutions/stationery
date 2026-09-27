@@ -120,12 +120,14 @@ render Callout.new(color: "#F3F4F6") { text "Amount due" }
   header(on: :first) {} # no header on page 1
   ```
 
-  `on:` takes `:all` (default), `:first`, `:rest`, `:odd`, `:even`, a page number, a range or
+  `on:` takes `:all` (default), `:first`, `:rest`, `:odd`, `:even`, `:last`, a page number, a range or
   `->(number) { … }`; later declarations win for the pages they match, and an empty block removes the
   region there. `gap:` (default 8) is extra space between the region and the body. Without `height:` a
   region is measured once, on the first page that uses it; pass `height:` when its content varies per
   page. The footer is bottom-aligned. A region taller than its space is still drawn and listed in
-  `document.warnings`; regions that leave no room for the body raise `ArgumentError`.
+  `document.warnings`; regions that leave no room for the body raise `ArgumentError`. With `on: :last`
+  (say, a taller footer with totals) the paginator checks whether the rest fits above it; content that
+  fits a normal page but not the last one continues onto an extra page.
 - With a header or footer, a `page_template`'s `page.content_box` excludes their space (it is the
   body's area).
 - Content taller than a page is placed anyway; `document.warnings` lists every overflow.
