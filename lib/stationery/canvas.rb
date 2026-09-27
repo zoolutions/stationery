@@ -6,6 +6,7 @@ module Stationery
   # settings never leak into the next one.
   class Canvas
     include Text
+    include Debug
 
     CAPS = { butt: 0, round: 1, square: 2 }.freeze
     JOINS = { miter: 0, round: 1, bevel: 2 }.freeze
@@ -13,10 +14,11 @@ module Stationery
     attr_reader :page
 
     # `template: true` records anchors apart, for canvases page templates draw on.
-    def initialize(page, resources, template: false)
+    def initialize(page, resources, template: false, debug: false)
       @page = page
       @resources = resources
       @template = template
+      @debug = debug
     end
 
     def save
@@ -36,8 +38,8 @@ module Stationery
       shape(fill: color, opacity:) { |p| p.rect(x, y, w, h) }
     end
 
-    def rounded_rect(x, y, w, h, radius:, fill: nil, stroke: nil, line_width: 1, opacity: nil)
-      shape(fill:, stroke:, line_width:, opacity:) { |p| p.rounded_rect(x, y, w, h, radius) }
+    def rounded_rect(x, y, w, h, radius:, fill: nil, stroke: nil, line_width: 1, dash: nil, opacity: nil)
+      shape(fill:, stroke:, line_width:, dash:, opacity:) { |p| p.rounded_rect(x, y, w, h, radius) }
     end
 
     def circle(cx, cy, r, fill: nil, stroke: nil, line_width: 1, opacity: nil)

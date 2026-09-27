@@ -21,23 +21,32 @@ module Stationery
 
     # A container with padding, background, border and radius. `at: [x, y]`
     # places it at a fixed page position outside the flow.
-    def box(at: nil, align: nil, gap: 0, width: nil, keep_with_next: nil, anchor: nil, bookmark: nil, **, &)
+    # `break_inside: :auto` splits it at any page break, `:avoid` never; by
+    # default it splits only when it does not fit on a page of its own.
+    def box(at: nil, align: nil, gap: 0, width: nil, keep_with_next: nil, break_inside: nil, anchor: nil, bookmark: nil,
+            **, &)
       node = Layout::Box.new(container(align:, gap:, &), width:, **)
       node.keep_with_next = keep_with_next
+      node.break_inside = break_inside
       node = mark(node, anchor, bookmark)
       @_builder.add(at ? Layout::Positioned.new(node, x: at[0], y: at[1], width:) : node)
     end
 
-    def row(gap: 0, align: :top)
+    # Columns side by side; splits across pages like a box (`break_inside:`).
+    def row(gap: 0, align: :top, break_inside: nil)
       columns = Builder::Columns.new
       @_builder.within(columns) { yield if block_given? }
-      @_builder.add(Layout::Row.new(columns.nodes, gap:, align:))
+      node = Layout::Row.new(columns.nodes, gap:, align:)
+      node.break_inside = break_inside
+      @_builder.add(node)
     end
 
     # A row column: `width:` in points, as a fraction (0.5), :auto or nil for
     # an equal share. Takes every box option.
-    def column(width: nil, align: nil, gap: 0, **, &)
-      @_builder.add(Layout::Box.new(container(align:, gap:, &), width:, **))
+    def column(width: nil, align: nil, gap: 0, break_inside: nil, **, &)
+      node = Layout::Box.new(container(align:, gap:, &), width:, **)
+      node.break_inside = break_inside
+      @_builder.add(node)
     end
 
     # Children kept in one vertical group; `keep_together: true` moves the

@@ -64,7 +64,7 @@ RSpec.describe Stationery::Layout::Flow do
   end
 
   it "places a child taller than a page anyway and records a warning" do
-    tall = Stationery::Layout::Box.new(flow(lines_of(40)))
+    tall = Stationery::Layout::Box.new(flow(lines_of(40))).tap { |b| b.break_inside = :avoid }
     pdf, paginator = render_layout(flow(tall, text_node("after")))
 
     expect(page_count(pdf)).to eq(2)
@@ -109,5 +109,74 @@ RSpec.describe Stationery::Layout::Flow do
 
     expect(page_count(pdf)).to eq(2)
     expect(reader_for(pdf).pages[1].text).to include("after")
+  end
+
+  it "moves a default box below other content to a fresh page before splitting it" do
+    tall = Stationery::Layout::Box.new(flow(lines_of(20)))
+    pdf, paginator = render_layout(flow(text_node("above"), tall))
+    pages = reader_for(pdf).pages
+
+    expect(pages.size).to eq(3)
+    expect(pages[0].text.strip).to eq("above")
+    expect(pages[1].text).to include("line 1")
+    expect(paginator.warnings).to be_empty
+  end
+
+  it "keeps a child with a next one that avoids breaking inside and moves" do
+    heading = text_node("Heading").tap { |t| t.keep_with_next = true }
+    kept = lines_of(5, prefix: "kept").tap { |t| t.break_inside = :avoid }
+    pdf, = render_layout(flow(spacer(100), heading, kept))
+
+    expect(reader_for(pdf).pages[1].text).to include("Heading", "kept 1")
+  end
+
+  describe "a fixed-width child" do
+    let(:narrow) { Stationery::Layout::Box.new(flow(text_node("word " * 20)), width: 100) }
+
+    it "measures at its own width" do
+      expect(narrow.measure(100)).to be > narrow.measure(260)
+      expect(flow(narrow).measure(260)).to be_within(0.001).of(narrow.measure(100))
+    end
+
+    it "advances the cursor by its height at its own width" do
+      pdf, = render_layout(flow(narrow, text_node("after")))
+      positions = positions_of(pdf)
+
+      expect(positions.first[1] - positions.last[1]).to be_within(0.5).of(narrow.measure(100))
+    end
+
+    it "moves to the next page when it only fits at the flow's width" do
+      pdf, paginator = render_layout(flow(spacer(100), narrow))
+
+      expect(page_count(pdf)).to eq(2)
+      expect(reader_for(pdf).pages[1].text).to include("word")
+      expect(paginator.warnings).to be_empty
+    end
+
+    it "counts toward a numeric keep_with_next at its own width" do
+      heading = text_node("Heading").tap { |t| t.keep_with_next = 25 }
+      short = Stationery::Layout::Box.new(flow(text_node("word " * 6)), width: 100)
+      pdf, = render_layout(flow(spacer(126), heading, short))
+
+      expect(reader_for(pdf).pages[1].text).to include("Heading", "word")
+    end
+  end
+
+  describe "fresh: on nested splits" do
+    let(:inner) { flow(lines_of(30, prefix: "inner")) }
+
+    before { allow(inner).to receive(:split).and_call_original }
+
+    it "tells a child at the top of a fresh page that it is fresh" do
+      render_layout(flow(inner))
+
+      expect(inner).to have_received(:split).with(260, 160, fresh: true)
+    end
+
+    it "tells a child below placed content that it is not fresh" do
+      render_layout(flow(text_node("above"), inner))
+
+      expect(inner).to have_received(:split).with(260, a_value < 160, fresh: false)
+    end
   end
 end
