@@ -9,6 +9,18 @@ RSpec.describe Stationery::Layout::Flow do
     expect(gapped.measure(200)).to be_within(0.001).of((line_height * 2) + 6)
   end
 
+  it "measures its children once per width and again after a child is added" do
+    child = spacer(10)
+    allow(child).to receive(:measure).and_call_original
+    stack = flow(child)
+    2.times { stack.measure(200) }
+    stack.measure(100)
+    stack << spacer(5)
+
+    expect(stack.measure(200)).to eq(15)
+    expect(child).to have_received(:measure).exactly(3).times
+  end
+
   it "paints children top to bottom" do
     pdf, = render_layout(flow(text_node("first"), spacer(20), text_node("second")))
     (x1, y1), (x2, y2) = positions_of(pdf)

@@ -30,15 +30,18 @@ module Stationery
           @options[name] = value
           @node = nil
           @padding = nil
+          @metrics = nil
         end
 
         def padding = @padding ||= Geometry.box(@options[:padding])
         def horizontal = padding[1] + padding[3]
         def vertical = padding[0] + padding[2]
 
-        def measure(context, width) = node(context).measure([width - horizontal, 0].max) + vertical
-        def natural_width(context) = node(context).natural_width + horizontal
-        def min_width(context) = node(context).min_width + horizontal
+        # Heights per width and the natural and minimum widths are remembered:
+        # every fragment of a table split across pages measures the same cells.
+        def measure(context, width) = metric(width) { node(context).measure([width - horizontal, 0].max) + vertical }
+        def natural_width(context) = metric(:natural) { node(context).natural_width + horizontal }
+        def min_width(context) = metric(:min) { node(context).min_width + horizontal }
 
         # Backgrounds overlap the next cell by SEAM so viewers do not show
         # hairline gaps between neighbouring fills.
@@ -55,6 +58,11 @@ module Stationery
         end
 
         private
+
+        def metric(key)
+          @metrics ||= {}
+          @metrics.fetch(key) { @metrics[key] = yield }
+        end
 
         def text_node(context)
           style = context.style.with(**TEXT_OPTIONS.filter_map do |key, attr|

@@ -61,6 +61,17 @@ RSpec.describe Stationery::Layout::Table do
     expect(node.cell(0, 0).padding).to eq([5, 5, 5, 5])
   end
 
+  it "measures each cell once per width across the fragments of a split" do
+    node = table(Array.new(20) { |i| ["row #{i}"] }, header: true)
+    content = node.cell(19, 0).node(ctx)
+    allow(content).to receive(:measure).and_call_original
+    _head, tail = node.split(200, 100)
+    tail.measure(200)
+    tail.split(200, 100)
+
+    expect(content).to have_received(:measure).once
+  end
+
   it "stripes rows with zebra" do
     node = table(rows + [%w[a b c]], cell: { borders: [] }) { |t| t.zebra(from: 1, color: "#F9FAFB") }
 

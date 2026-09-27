@@ -81,6 +81,11 @@ Everything from the three planned milestones ("works out of the box", "typograph
 - Examples: `examples/report.rb` (multi-page annual report: header/footer regions, contents, bookmarks, lists, tables, a split callout, internal links, SVG icons), `examples/letter.rb` (one-page letter with a vector letterhead) and `examples/packing_slip.rb` (landscape, 120-row table with split rows, canvas barcode), each covered by an integration spec and rendered in CI by `rake examples`.
 - `rake bench`: reproducible benchmarks against Prawn + prawn-table (one-page invoice, 1,500-row table) and a StackProf profile script under `benchmark/`.
 
+### Performance
+
+- Layout caches: container nodes (box, row, flow, wrap, list item) memoise their height per width; table cells remember their height per width and their natural and minimum widths across the fragments of a split table; tables memoise row heights and column metrics; table row boundaries are found in one pass. Fonts memoise style resolution and advance/kerning totals per string, and runs already split for fallback are not split again. Output is byte-identical. A 1,500-row table renders ~26x faster (17.9 s → 0.68 s, 186M → 4.5M allocations), the invoice example 1.3x faster (77k → 33k allocations).
+- `benchmark/profile.rb` profiles in wall mode by default (`MODE=cpu|object`).
+
 ### Fixes
 
 - Fixed: table cells restyled through a selection after the table had been measured kept their old style.

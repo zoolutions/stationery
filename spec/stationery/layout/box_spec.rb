@@ -8,6 +8,14 @@ RSpec.describe Stationery::Layout::Box do
     expect(box(text_node("x"), border: { width: 2 }).measure(200)).to be_within(0.001).of(line_height + 4)
   end
 
+  it "does not share its measurements with a copy holding other content" do
+    node = box(spacer(10), padding: 5)
+    node.measure(100)
+
+    expect(node.with_content(flow(spacer(30))).measure(100)).to eq(40)
+    expect(node.measure(100)).to eq(20)
+  end
+
   it "uses a fixed height and width when given" do
     fixed = box(text_node("x"), width: 100, height: 50)
 

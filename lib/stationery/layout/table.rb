@@ -45,6 +45,8 @@ module Stationery
       # Forgets measurements taken before a selection restyled cells.
       def invalidate!
         @column_widths = nil
+        @column_metrics = nil
+        @row_heights = nil
         @grid = nil
       end
 
@@ -145,11 +147,13 @@ module Stationery
       end
 
       def column_metric(metric)
-        grid.column_metric { |p| p.cell.public_send(metric, @context) }
+        @column_metrics ||= {}
+        @column_metrics[metric] ||= grid.column_metric { |p| p.cell.public_send(metric, @context) }
       end
 
       def row_heights(width)
-        grid.row_heights(column_widths(width)) { |p, span| p.cell.measure(@context, span) }
+        @row_heights ||= {}
+        @row_heights[width] ||= grid.row_heights(column_widths(width)) { |p, span| p.cell.measure(@context, span) }
       end
 
       def with_rows(rows, widths: @widths)

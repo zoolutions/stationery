@@ -15,22 +15,32 @@ module Stationery
         @fallbacks = fallbacks.map(&:to_s).freeze
         @warnings = warnings
         @fonts = {}
+        @resolved = {}
+        @split = {}.compare_by_identity
       end
 
       def inspect = "#<#{self.class} families=#{@families.keys.inspect}>"
 
       def register(name, **paths)
+        @resolved.clear
         @families[name.to_s] = Family.build(name, **paths)
       end
 
-      # Returns [Font, Family::Face] for a Text::Style.
+      # Returns [Font, Family::Face] for a Text::Style, memoised per style.
       def resolve(style)
-        face = family(style.family).face(weight: style.weight, style: style.style)
-        [@fonts[face.path] ||= Font.new(Registry.load(face.path)), face]
+        @resolved[style] ||= begin
+          face = family(style.family).face(weight: style.weight, style: style.style)
+          [@fonts[face.path] ||= Font.new(Registry.load(face.path)), face].freeze
+        end
       end
 
-      # The runs split so every character is drawn by a font that has it.
-      def fallback(runs) = (@fallback ||= Fallback.new(self)).apply(runs)
+      # The runs split so every character is drawn by a font that has it. Runs
+      # this book already split come back as they are.
+      def fallback(runs)
+        return runs if @split.key?(runs)
+
+        (@fallback ||= Fallback.new(self)).apply(runs).tap { |split| @split[split] = true }
+      end
 
       private
 

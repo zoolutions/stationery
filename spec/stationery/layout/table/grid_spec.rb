@@ -20,6 +20,7 @@ RSpec.describe Stationery::Layout::Table::Grid do
     expect(placed.at(0, 1).content).to eq("a")
     expect(placed.at(0, 2).content).to eq("b")
     expect(placed.at(1, 2).content).to eq("e")
+    expect([placed.at(-1, 0), placed.at(0, -1), placed.at(2, 0)]).to eq([nil, nil, nil])
   end
 
   it "skips slots a rowspan from above covers" do
@@ -36,6 +37,13 @@ RSpec.describe Stationery::Layout::Table::Grid do
     expect(placed.placements.first.rowspan).to eq(2)
     expect(placed.row_count).to eq(2)
     expect(placed.at(2, 0)).to be_nil
+  end
+
+  it "keeps a cut out of every row a taller rowspan covers" do
+    placed = grid([[{ content: "a", rowspan: 3 }, "b"], ["c"], ["d"], %w[e f], [{ content: "g", rowspan: 2 }, "h"],
+                   ["i"]])
+
+    expect(placed.boundaries).to eq([0, 3, 4, 6])
   end
 
   it "treats every row as a boundary without rowspans" do

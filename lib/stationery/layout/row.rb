@@ -43,7 +43,7 @@ module Stationery
       def with_columns(columns) = dup.replace_columns(columns)
 
       def measure(width)
-        @columns.zip(column_widths(width)).map { |column, w| column.measure(w) }.max || 0
+        memoize_by_width(width) { @columns.zip(column_widths(width)).map { |column, w| column.measure(w) }.max || 0 }
       end
 
       def paint(canvas, x, y, width, height = nil, **)

@@ -27,7 +27,7 @@ module Stationery
       end
 
       def measure(width)
-        [@marker ? @marker.measure(column) : 0, @body.measure(body_width(width))].max
+        memoize_by_width(width) { [@marker ? @marker.measure(column) : 0, @body.measure(body_width(width))].max }
       end
 
       def paint(canvas, x, y, width, _height = nil, **)
