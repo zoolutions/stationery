@@ -3,13 +3,16 @@
 module Stationery
   module Layout
     # Rows of cells with column widths, per-cell styling through selections,
-    # header rows repeated after a page break, and splitting between rows.
+    # header rows repeated after a page break, and splitting between rows. A
+    # row taller than a fresh page, or any row with split_rows: true, is cut
+    # through its cells and continues below the repeated header.
     class Table < Node
       DEFAULT_CELL = { padding: 5, borders: %i[top right bottom left], border_width: 0.5,
                        border_color: "#000000" }.freeze
 
-      def initialize(rows, context:, widths: nil, width: :auto, header: false, cell: {})
+      def initialize(rows, context:, widths: nil, width: :auto, header: false, split_rows: false, cell: {})
         super()
+        @split_rows = split_rows
         @context = context
         @widths = widths
         @width = width
@@ -77,7 +80,7 @@ module Stationery
         end
       end
 
-      def split(width, height)
+      def split(width, height, **options)
         heights = row_heights(width)
         used = heights.first(@header).sum
         count = @header
@@ -85,14 +88,31 @@ module Stationery
         return [self, nil] if count == row_count
 
         count = grid.boundaries.grep(@header..count).max
-        return [nil, self] if count == @header
-
-        [with_rows(@cells.first(count)), with_rows(@cells.first(@header) + @cells.drop(count))]
+        split_row(count, width, height - heights.first(count).sum, fresh: options[:fresh]) || split_before(count)
       end
 
       private
 
       def grid = @grid ||= Grid.new(@cells)
+
+      def split_before(count)
+        return [nil, self] if count == @header
+
+        [with_rows(@cells.first(count)), with_rows(@cells.first(@header) + @cells.drop(count))]
+      end
+
+      def split_row(row, width, space, fresh:)
+        return unless @split_rows || (fresh && row == @header)
+        return unless grid.boundaries.include?(row + 1)
+
+        widths = column_widths(width)
+        placements = grid.placements.select { |p| p.row == row }
+        heads, tails = RowSplitter.new(placements, widths:, context: @context).call(space)
+        return unless heads
+
+        [with_rows(@cells.first(row) + [heads], widths:),
+         with_rows(@cells.first(@header) + [tails] + @cells.drop(row + 1), widths:)]
+      end
 
       def build_cell(content, defaults)
         case content
@@ -132,8 +152,8 @@ module Stationery
         grid.row_heights(column_widths(width)) { |p, span| p.cell.measure(@context, span) }
       end
 
-      def with_rows(rows)
-        self.class.new(rows, context: @context, widths: @widths, width: @width, header: @header)
+      def with_rows(rows, widths: @widths)
+        self.class.new(rows, context: @context, widths:, width: @width, header: @header, split_rows: @split_rows)
       end
     end
   end
