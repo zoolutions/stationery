@@ -2,6 +2,7 @@
 
 RSpec.describe Stationery::Layout::Box do
   def box(*children, **) = described_class.new(flow(*children), **)
+  def num(value) = Stationery::PDF::Serializer.number(value)
 
   it "adds padding and border to its content height" do
     expect(box(text_node("x"), padding: [4, 0, 6, 0]).measure(200)).to be_within(0.001).of(line_height + 10)
@@ -237,6 +238,108 @@ RSpec.describe Stationery::Layout::Box do
       expect(tall.split(260, 100)).to eq([nil, tall])
       expect(page_count(pdf)).to eq(1)
       expect(paginator.warnings.size).to eq(1)
+    end
+  end
+
+  describe "rotate:" do
+    it "paints its background, border and content turned around its centre" do
+      pdf, = render_layout(box(text_node("x"), rotate: -3, background: "#EEEEEE", border: { width: 1 }, width: 100,
+                                               height: 40))
+      content = page_contents(pdf).first
+      cos = Math.cos(-3 * Math::PI / 180)
+      sin = Math.sin(-3 * Math::PI / 180)
+
+      matrix = [cos, -sin, sin, cos].map { |v| Regexp.escape(num(v)) }.join(" ")
+      expect(content).to match(/\Aq\n#{matrix} [-\d.]+ [-\d.]+ cm\n/)
+      expect(content.index(" cm\n")).to be < content.index(" re\nf")
+      expect(content.index("BT")).to be < content.rindex("Q")
+      expect(content).to end_with("Q\n")
+    end
+
+    it "never splits" do
+      expect(box(lines_of(20), rotate: 2).splittable?).to be(false)
+      expect(box(lines_of(20)).splittable?).to be(true)
+    end
+
+    it "keeps its link rectangle unrotated" do
+      pdf, = render_layout(box(text_node("Apply"), rotate: 45, width: 100, height: 20, link: "https://x.test"))
+
+      expect(link_rects(pdf).first).to eq([20, 160, 120, 180])
+    end
+
+    it "leaves an unrotated box byte-for-byte alone" do
+      plain, = render_layout(box(text_node("x"), background: "#EEEEEE", radius: 4, padding: 6))
+      zero, = render_layout(box(text_node("x"), background: "#EEEEEE", radius: 4, padding: 6, rotate: 0))
+
+      expect(page_contents(zero)).to eq(page_contents(plain))
+    end
+  end
+
+  describe "shadow:" do
+    let(:shadow_path) { %r{/GS\d+ gs\n0 0 0 rg\n([-\d.]+) ([-\d.]+) m\n[^\n]+ l\n[^\n]+ ([-\d.]+) [-\d.]+ c\n} }
+
+    # [x, y] of each shadow path's start and the x its first curve ends at, in PDF space.
+    def shadow_paths(pdf) = page_contents(pdf).first.scan(shadow_path).map { |values| values.map(&:to_f) }
+
+    it "paints stacked, fading rectangles under the background, taking no space" do
+      node = box(text_node("x"), shadow: true, background: "#FFFFFF", width: 100, height: 40)
+      pdf, = render_layout(node)
+      content = page_contents(pdf).first
+      paths = shadow_paths(pdf)
+
+      expect(node.measure(300)).to eq(40)
+      expect(paths.size).to eq(4)
+      # outermost first, grown by 8, 6, 4, 2 around the box offset 4 down, with corners rounded by the growth:
+      # each path starts at the box's left edge, `growth` above its top (PDF y grows upwards) and its first
+      # curve ends `growth` past the right edge
+      expect(paths.map { |x, y, _| [x, y] }).to eq([[20, 184], [20, 182], [20, 180], [20, 178]])
+      expect(paths.map(&:last)).to eq([128, 126, 124, 122])
+      expect(content.index("0 0 0 rg")).to be < content.index("1 1 1 rg")
+      expect(content.scan(%r{/GS\d+ gs}).size).to eq(4)
+    end
+
+    it "rounds its corners past the box's radius and takes explicit settings" do
+      pdf, = render_layout(box(text_node("x"), shadow: { offset: [3, 0], blur: 0, color: "#FF0000", opacity: 0.5 },
+                                               radius: 5, width: 100, height: 40))
+      content = page_contents(pdf).first
+
+      expect(content.scan(%r{/GS\d+ gs}).size).to eq(1)
+      expect(content).to include("1 0 0 rg")
+      expect(content.scan(" c\n").size).to eq(4)
+      expect(content).to match(/28 [\d.]+ m\n/).and match(/\n23 [\d.]+ l\n/)
+    end
+
+    it "is not painted on a fragment cut at a page break" do
+      head, tail = box(lines_of(20), shadow: true, background: "#EEEEEE").split(260, 100)
+      pdf, = render_layout(flow(head, tail))
+
+      expect(page_contents(pdf).first).not_to match(%r{/GS\d+ gs})
+    end
+  end
+
+  describe "overflow: :hidden" do
+    it "clips content to the rounded outline" do
+      pdf, = render_layout(box(text_node("x"), overflow: :hidden, radius: 8, background: "#EEEEEE", padding: 4))
+      content = page_contents(pdf).first
+
+      expect(content).to match(/ c\nh\nW n\n/)
+      expect(content.index("W n")).to be < content.index("BT")
+    end
+
+    it "still splits across pages and truncates to a fixed height" do
+      long = Array.new(60) { "word" }.join(" ")
+
+      expect(box(lines_of(20), overflow: :hidden, radius: 8).splittable?).to be(true)
+      expect(box(lines_of(20), overflow: :hidden, radius: 8, height: 30).splittable?).to be(false)
+      truncated, = render_layout(box(text_node(long), height: 30, overflow: :hidden))
+      expect(text_of(truncated).split.size).to be < 60
+    end
+
+    it "changes nothing without a radius or a height" do
+      plain, = render_layout(box(text_node("x"), background: "#EEEEEE", padding: 4))
+      hidden, = render_layout(box(text_node("x"), background: "#EEEEEE", padding: 4, overflow: :hidden))
+
+      expect(page_contents(hidden)).to eq(page_contents(plain))
     end
   end
 end
