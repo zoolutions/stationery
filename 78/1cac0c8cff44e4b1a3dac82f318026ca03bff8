@@ -1,0 +1,37 @@
+benchmark/invoice.rb
+  s_832305fd821824::t_0111f03ab7d29e 1-74
+Gemfile.lock
+  ai_agent 12,19,24,32-37,87,99,102-103,112,119,127,130,133-134,153
+Gemfile
+  s_832305fd821824::t_8a2a8f8697331d 23-29
+benchmark/profile.rb
+  s_832305fd821824::t_f00bc95cfc9dce 12,15
+  s_832305fd821824::t_255eed1af5d602 1-11,13-14,16-19
+benchmark/table_50_pages.rb
+  s_832305fd821824::t_1f347575320f44 1-2,4-7,17-18,20,23-26
+  s_832305fd821824::t_9ad2c19769d511 3,8-16,19,21-22,27-29
+README.md
+  s_832305fd821824::t_cdd5555ef4ab83 138-154
+CHANGELOG.md
+  s_832305fd821824::t_cdd5555ef4ab83 10
+Rakefile
+  s_832305fd821824::t_9c10e5c1f0ba83 16-21
+benchmark/support.rb
+  s_832305fd821824::t_37d7d7e5e82085 1-63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "781cac0c8cff44e4b1a3dac82f318026ca03bff8",
+  "prompts": {},
+  "sessions": {
+    "s_832305fd821824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b2907d3-a9b2-4d98-b443-722c2a3b6a46",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
