@@ -80,8 +80,8 @@ renders them all, or render one with `stationery render examples/report.rb`.
 | `text(string, **style)` | A paragraph. Plain strings are literal. |
 | `text(string, markup: true)` | Reads `<b> <i> <u> <strikethrough> <sub> <sup> <br> <color rgb=""> <font size="" name=""> <link href="">`; decodes numeric and HTML 4 named entities. |
 | `text { b "Total"; plain " due" }` | Styled runs in Ruby. Take a block argument (`{ \|t\| t.b @x }`) to keep your own `self`. |
-| `box(padding:, background:, border:, radius:, width:, height:, overflow:, at:, link:, outset:, break_inside:, decoration:) { }` | A container. Moves to the next page whole when it fits there and continues across pages when it does not; `break_inside: :auto` splits it at any page break, `:avoid` never splits it. At a cut, `decoration: :slice` (default) drops the padding and border, `:clone` keeps the padding. `overflow: :truncate` or `:shrink_to_fit` for fixed heights. `at: [x, y]` pins it to a page position. `link:` makes the whole box clickable. `outset:` bleeds the background past the box (e.g. into the page margins). |
-| `row(gap:, align:, break_inside:) { column(width:) { } }` | Columns side by side. `width:` is points, a fraction (`0.5`), `:auto` or `nil` (equal share). Splits across pages like a box, every column at once; a row with a fixed-height column never splits. |
+| `box(padding:, background:, border:, radius:, width:, height:, min_height:, overflow:, at:, link:, outset:, break_inside:, decoration:) { }` | A container. Moves to the next page whole when it fits there and continues across pages when it does not; `break_inside: :auto` splits it at any page break, `:avoid` never splits it. At a cut, `decoration: :slice` (default) drops the padding and border, `:clone` keeps the padding. `overflow: :truncate` or `:shrink_to_fit` for fixed heights; a fixed `height:` never splits. `min_height:` is a floor that still splits: the first fragment keeps as much of it as the page holds, the next carries the rest (not combinable with `height:`). `at: [x, y]` pins it to a page position. `link:` makes the whole box clickable. `outset:` bleeds the background past the box (e.g. into the page margins). |
+| `row(gap:, align:, break_inside:) { column(width:) { } }` | Columns side by side. `width:` is points, a fraction (`0.5`), `:auto` or `nil` (equal share). Splits across pages like a box, every column at once; a row with a fixed-height column never splits; columns with `min_height:` do. |
 | `table(rows, widths:, width:, header:, split_rows:, cell:) { \|t\| }` | Tables. Cells are strings, layout nodes, procs built with the DSL (`-> { image logo }`) or components. Style with `t.row(0)`, `t.rows(-1)`, `t.column(1)`, `t.columns(1..)`, chained, plus `t.zebra`. Header rows repeat after a page break. A cell may be `{ content:, colspan:, rowspan: }` plus any cell option; rows list only the cells they start, as in HTML, and pages never break through a rowspan. Spans are set in the rows, not through selections. A row taller than the page continues on the next page, cut through its cells, with the header repeated; `split_rows: true` cuts any row that reaches the page bottom instead of moving it whole. |
 | `image(path_or_io, width:, height:, fit:, align:)` | JPEG or PNG, aspect preserved. |
 | `svg(source_or_path, width:, height:, color:, align:)` | Vector icons and drawings; `currentColor` takes `color:`. Linear and radial gradients (`fill="url(#id)"`, `href` chains, both gradient units); `text`/`tspan` in the document's fonts. |
@@ -98,7 +98,7 @@ renders them all, or render one with `stationery render examples/report.rb`.
 | `markdown(source, styles:, gap:, images:, base_path:, bookmarks:)` | The same from CommonMark (plus GFM tables and strikethrough). |
 
 Text style options: `font`, `size`, `weight` (`:regular`, `:bold`), `style` (`:italic`), `color`,
-`letter_spacing`, `underline`, `strikethrough`, `link`, `opacity`, `kerning` (default `true`), `align` (`:left`, `:center`, `:right`, `:justify`), `leading`.
+`letter_spacing`, `underline`, `strikethrough`, `link`, `opacity`, `kerning` (default `true`), `ligatures` (default `true`), `align` (`:left`, `:center`, `:right`, `:justify`), `leading`.
 `align: :justify` stretches the spaces of wrapped lines to the full width; the last line, lines
 ending in a newline and lines without spaces stay left-aligned (tabs are never stretched).
 Colours are `"#RRGGBB"`, `"RRGGBB"`, `"#RGB"`, `[r, g, b]` (0-255) or `[c, m, y, k]` (0-100).
@@ -228,6 +228,27 @@ render Callout.new(color: "#F3F4F6") { text "Amount due" }
   (with `#warnings`) instead of writing a PDF that produced any; `to_pdf(strict: false)` opts one
   render out again.
 
+### Encryption
+
+```ruby
+class InvoicePdf < Stationery::Document
+  encrypt owner_password: "s3cret", permissions: [:print] # every render
+end
+
+InvoicePdf.new(invoice).to_pdf(encrypt: { user_password: "1234", owner_password: "s3cret",
+                                          permissions: %i[print copy] }) # override for one render
+InvoicePdf.new(invoice).to_pdf(encrypt: nil) # plain
+```
+
+- `owner_password:` is required (`ArgumentError` when missing or empty); it opens the file with every
+  right. `user_password:` defaults to `""`: the file opens without a prompt, but viewers enforce the
+  permissions.
+- `permissions:` is a subset of `%i[print modify copy annotate fill_forms extract_accessible assemble
+  print_high]` (default: all).
+- `algorithm:` picks the standard security handler. `:aes_256` (default, PDF 2.0 / Acrobat X+);
+  `:aes_128` for older viewers; `:rc4_128` only for legacy readers that need it.
+- Every string and stream is encrypted, the document info included.
+
 ### Debugging
 
 `to_pdf(debug: true)` outlines every layout rectangle on top of the content: boxes (red, padding dashed),
@@ -317,7 +338,14 @@ already present are kept unless `--force`. `--from` takes a directory or a
 ## Fonts and images
 
 Fonts are TrueType (`.ttf`) or OpenType/CFF (`.otf`, name-keyed or
-CID-keyed) files. Only the glyphs a document uses are embedded (a CFF font
+CID-keyed) files, WOFF 1.0 web fonts (`.woff`, unwrapped in memory), or
+faces of a TrueType collection (`.ttc`): a `#N` suffix
+on the path picks face N, counted from 0 (face 0 without a suffix):
+
+```ruby
+font_family "Brand", regular: "Brand.ttc#0", bold: "Brand.ttc#2"
+```
+ Only the glyphs a document uses are embedded (a CFF font
 keeps its glyph numbering and subroutines; unused glyphs are blanked), with a
 ToUnicode map so text copies and searches correctly. A style without its own
 file (bold, italic) is synthesised.
@@ -378,6 +406,15 @@ legacy `kern` table (`kerning: false` on an element or in `default_text`
 turns it off). Pairs that straddle a style or
 font change are not kerned. Kerning only tightens in practice, so a kerned
 line is never wider than the same line unkerned.
+
+Standard ligatures (fi, fl, ffi, …) come from the font's GSUB `liga` feature
+(LigatureSubst lookups, also behind Extension lookups) and are on by default;
+`ligatures: false` on an element or in `default_text` turns them off. Only
+`liga` applies, not `clig` or `dlig`. Ligatures form within a run of one
+style and font, never across a line break, and letter spacing turns them off.
+The PDF's ToUnicode map sends a ligature glyph back to all of its
+characters, so copied and extracted text still reads "office". Fonts
+without a `liga` feature (such as the bundled Inter) are unaffected.
 
 Images are JPEG (grey, RGB, CMYK) and PNG (every colour type, alpha as a soft
 mask). Parsed fonts and images are cached per process.
@@ -466,11 +503,11 @@ larger file. `PROFILE=1 bundle exec ruby -Ilib benchmark/profile.rb` prints the
 
 ## Limitations
 
-No ligatures, no TrueType collections, variable fonts (including CFF2) or
-WOFF; SVG covers the shapes icon sets use
-(no patterns, masks or CSS stylesheets); no encryption,
-forms or tagged PDF; fixed-height boxes, and rows holding one,
-never split across pages.
+No variable fonts (including CFF2) or
+WOFF2 (it needs Brotli; convert to `.ttf` or `.woff`); SVG covers the shapes icon sets use
+(no patterns, masks or CSS stylesheets); no forms or
+tagged PDF. A box with a fixed `height:` never splits (use
+`min_height:` for a floor that can); a row splits only when every column can.
 
 ## License
 

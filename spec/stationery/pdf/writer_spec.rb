@@ -53,4 +53,21 @@ RSpec.describe Stationery::PDF::Writer do
   it "produces a file PDF::Reader can open" do
     expect(reader_for(render(writer)).page_count).to eq(0)
   end
+
+  context "with encryption" do
+    subject(:writer) { described_class.new(encryption:) }
+
+    let(:encryption) { Stationery::PDF::Encryption::StandardSecurity.new(owner_password: "o", algorithm: :rc4_128) }
+
+    it "encrypts strings and stream data, but not the Encrypt dictionary or the file ID" do
+      writer.add(Stationery::PDF::Stream.new("q Q"))
+      pdf = render(writer)
+      id = encryption.file_id.unpack1("H*").upcase
+
+      expect(pdf).not_to include("(Stationery)")
+      expect(pdf).to match(%r{trailer\n<<.*/ID \[<#{id}> <#{id}>\] /Encrypt 5 0 R>>})
+      expect(pdf).to include("5 0 obj\n<</Filter /Standard /V 2 /R 3")
+      expect(reader_for(pdf).info).to eq(Producer: "Stationery")
+    end
+  end
 end

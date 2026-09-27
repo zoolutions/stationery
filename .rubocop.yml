@@ -52,7 +52,11 @@ Metrics/ParameterLists:
     - "lib/stationery/svg/**/*" # arcs take the SVG spec's seven arguments
 
 Naming/MethodParameterName:
-  AllowedNames: [a, d, "on", cx, cy, op, qx, qy, ux, uy, x, y, w, h, r, g, b, c, m, k, io, id, at, to, x1, y1, x2, y2, x3, y3, dx, dy, rx, ry]
+  AllowedNames: [a, d, "on", cx, cy, op, qx, qy, ux, uy, x, y, w, h, r, g, b, c, m, k, io, id, iv, at, to, x1, y1, x2, y2, x3, y3, dx, dy, rx, ry]
+
+# Encryption algorithms are named after the cipher and key size.
+Naming/VariableNumber:
+  AllowedIdentifiers: [aes_256, aes_128, rc4_128]
 
 # RSpec matcher builders read as `have_…` by convention.
 Naming/PredicatePrefix:

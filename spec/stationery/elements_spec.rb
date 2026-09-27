@@ -156,6 +156,19 @@ RSpec.describe Stationery::Elements do
     expect(boxes.map(&:break_inside)).to eq([:avoid])
   end
 
+  it "passes min_height to boxes and columns" do
+    boxes = []
+    allow(Stationery::Layout::Box).to receive(:new).and_wrap_original do |original, *args, **options|
+      original.call(*args, **options).tap { |box| boxes << box }
+    end
+    render do
+      box(min_height: 80) { text "a" }
+      row { column(min_height: 90) { text "b" } }
+    end
+
+    expect(boxes.map { |box| box.measure(100) }).to eq([80, 90])
+  end
+
   it "splits a tall row across pages unless it avoids breaking inside" do
     split = render { row { 2.times { column { 30.times { |i| text "row #{i}" } } } } }
     kept = SpecDocument.build { row(break_inside: :avoid) { column { 30.times { |i| text "row #{i}" } } } }

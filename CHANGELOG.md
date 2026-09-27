@@ -5,6 +5,17 @@
 - SVG: `linearGradient` and `radialGradient` fills (`fill="url(#id)"`, also in `style`), with stops, `href`/`xlink:href` inheritance, `objectBoundingBox` and `userSpaceOnUse` units and `gradientTransform`, drawn as PDF axial/radial shadings clipped to the shape. Approximations: `reflect`/`repeat` spreads are drawn as `pad` (reported in `unsupported`), stop opacity is the first stop's for the whole gradient, and a gradient stroke is drawn in the gradient's middle colour. A reference to a missing gradient paints its fallback colour or nothing and is reported as `url(#id)`. `Canvas#shade` paints a shading dictionary inside a path.
 - SVG: `text` and `tspan` (`x`/`y`/`dx`/`dy`, first value each; `font-family`, first family the font book knows — registered, bundled or an installed pack — else the document's default; `font-size`, `font-weight`, `font-style`, `text-anchor`, `fill`, `opacity`, transforms), drawn through the document's fonts so they subset and extract like any text. Whitespace collapses as in browsers. Glyphs stay upright: a transform moves the baseline origin and scales the size uniformly, so rotated or skewed text is approximated; `dominant-baseline` is ignored and a gradient fill uses its middle colour. `Layout::Svg` takes `context:`, `SVG::Document#draw` takes `book:` and `family:`, and `FontBook#known?` tells whether a family resolves without substitution.
 
+- Encryption with the standard security handler: `to_pdf(encrypt: { owner_password:, user_password:, permissions:, algorithm: })` or `encrypt …` at class level (`to_pdf(encrypt: nil)` opts out). AES-256 (R6, default), AES-128 (R4) and RC4-128 (R3); every string and stream, document info included, is encrypted.
+
+- Standard ligatures from the font's GSUB `liga` feature (LigatureSubst lookups, also behind Extension lookups), **on by default**: "office" in Open Sans draws the ffi ligature, so widths of affected words change slightly. `ligatures: false` on `text`/`text_style` or in `default_text` opts out; any `letter_spacing` turns them off. Text extraction and copy still yield the source characters (ToUnicode maps a ligature glyph to all of them). Fonts without `liga` ligatures, such as the bundled Inter, are unaffected.
+
+### Fonts
+
+- TrueType collections (`.ttc`): `font_family "Brand", regular: "Brand.ttc#0", bold: "Brand.ttc#2"` picks a face by a `#N` suffix (face 0 without one); each face is parsed, cached, subset and embedded on its own. `TrueType.new(data, index:)`, `TrueType.collection?` and `TrueType.faces`; an index out of range raises `ArgumentError` naming the face count.
+- WOFF 1.0 web fonts (`.woff`): `font_family "Web", regular: "Brand.woff"`. Tables are inflated with zlib into an in-memory sfnt (`Fonts::WOFF.unpack`), then measured, subset and embedded like the `.ttf`. WOFF2 is still rejected: it needs Brotli, so convert to `.ttf` or `.woff`.
+
+- `box(min_height:)` and `column(min_height:)`: a height floor that, unlike `height:`, still splits across pages. The first fragment keeps as much of the floor as the page holds and the next carries the rest, so a row of equal-height cards or an empty signature area can span a page break. Passing both `height:` and `min_height:` raises `ArgumentError`.
+
 ## 0.2.0 (2026-09-27)
 
 Everything from the three planned milestones ("works out of the box", "typography and layout",

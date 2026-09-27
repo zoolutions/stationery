@@ -36,7 +36,7 @@ module Stationery
         return [nil, self] if parts.any? { |head, _| head.nil? }
 
         heads = parts.map { |head, _| head.with_open(:bottom) }
-        tails = parts.zip(@columns).map { |(_, tail), column| tail || column.with_content(Flow.new).with_open(:top) }
+        tails = parts.zip(@columns).map { |(_, tail), column| tail || column.continued }
         [with_columns(heads).tap { |row| row.keep_with_next = nil }, with_columns(tails)]
       end
 
