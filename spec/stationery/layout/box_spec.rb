@@ -71,6 +71,50 @@ RSpec.describe Stationery::Layout::Box do
     expect(positions_of(pdf).first.first).to eq(20)
   end
 
+  describe "with min_height" do
+    def rect_heights(pdf) = page_contents(pdf).first.scan(/[\d.]+ [\d.]+ [\d.]+ ([\d.]+) re\nf/).flatten.map(&:to_f)
+
+    it "reserves its floor for short content" do
+      node = box(text_node("x"), min_height: 120, background: "#EEEEEE")
+      pdf, = render_layout(node)
+
+      expect(node.measure(260)).to eq(120)
+      expect(rect_heights(pdf)).to eq([120])
+    end
+
+    it "grows past its floor with tall content" do
+      expect(box(lines_of(5), min_height: 20).measure(260)).to be_within(0.001).of(line_height * 5)
+    end
+
+    it "aligns content inside the floor with valign" do
+      top, = render_layout(box(text_node("x"), min_height: 120))
+      bottom, = render_layout(box(text_node("x"), min_height: 120, valign: :bottom))
+
+      expect(positions_of(top).first.last - positions_of(bottom).first.last)
+        .to be_within(0.01).of(120 - line_height)
+    end
+
+    it "splits like a box without one, the tail keeping no floor" do
+      head, tail = box(lines_of(20), min_height: 100).split(260, 100)
+      _, plain_tail = box(lines_of(20)).split(260, 100)
+
+      expect(head.measure(260)).to be <= 100
+      expect(tail.measure(260)).to eq(plain_tail.measure(260))
+      expect(box(lines_of(20), min_height: 100).splittable?).to be(true)
+    end
+
+    it "carries the rest of a floor taller than the space onto the next fragment" do
+      head, tail = box(text_node("x"), min_height: 300).split(260, 160)
+
+      expect([head.measure(260), tail.measure(260)]).to eq([160, 140])
+      expect(render_layout(box(text_node("x"), min_height: 300)).last.warnings).to be_empty
+    end
+
+    it "cannot be combined with a fixed height" do
+      expect { box(height: 50, min_height: 20) }.to raise_error(ArgumentError, /min_height/)
+    end
+  end
+
   describe "across pages" do
     def top_y(pdf, page) = reader_for(pdf).pages[page].runs.map(&:y).max
     def lines_on(pdf, page, op = " l\nS") = page_contents(pdf)[page].scan(op).size

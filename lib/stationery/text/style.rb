@@ -6,9 +6,11 @@ module Stationery
 
     # How a run of text looks. Immutable; derive variants with #with.
     Style = Data.define(:family, :size, :weight, :style, :color, :letter_spacing,
-                        :underline, :strikethrough, :script, :link, :opacity, :kerning) do
+                        :underline, :strikethrough, :script, :link, :opacity, :kerning,
+                        :ligatures) do
       def initialize(family:, size: 10, weight: :regular, style: :normal, color: "#000000", letter_spacing: 0,
-                     underline: false, strikethrough: false, script: nil, link: nil, opacity: nil, kerning: true)
+                     underline: false, strikethrough: false, script: nil, link: nil, opacity: nil, kerning: true,
+                     ligatures: true)
         super
       end
 

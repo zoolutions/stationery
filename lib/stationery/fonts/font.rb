@@ -17,11 +17,11 @@ module Stationery
       def initialize(ttf)
         @ttf = ttf
         @used = {}
-        @widths = {}
         @pairs = {}
         @glyphs = {}
-        @advances = {}
-        @kerns = {}
+        @shapes = { true => {}, false => {} }
+        @advances = { true => {}, false => {} }
+        @kerns = { true => {}, false => {} }
         @cid_keyed = ttf.cff? && ttf.cff.cid_keyed?
       end
 
@@ -29,11 +29,14 @@ module Stationery
 
       # Advances and kerning are remembered per string, so measuring the same
       # word again (wrapping, then laying out the line) allocates nothing.
-      def width_of(text, size, letter_spacing: 0, kerning: false)
-        width = scale(advance_units(text), size) + (letter_spacing * text.length)
+      # Letter spacing is added per glyph, so a ligature counts once; any
+      # letter spacing turns ligatures off, as it does when drawing.
+      def width_of(text, size, letter_spacing: 0, kerning: false, ligatures: true)
+        ligatures &&= letter_spacing.zero?
+        width = scale(advance_units(text, ligatures), size) + (letter_spacing * shape(text, ligatures).first.size)
         return width unless kerning
 
-        width + (kerning_units(text) * size / 1000.0)
+        width + (kerning_units(text, ligatures) * size / 1000.0)
       end
 
       def ascender(size) = scale(@ttf.ascender, size)
@@ -53,15 +56,13 @@ module Stationery
 
       def encode(text) = glyph_run(text).gids.map { |gid| code(gid) }.pack("n*")
 
-      # `kerning:` fills the adjustments with the font's pair kerning.
-      def glyph_run(text, kerning: false)
-        gids = text.each_char.map do |char|
-          gid = @ttf.glyph_id(char.ord)
-          @used[gid] ||= char
-          gid
-        end
+      # `ligatures:` substitutes the font's standard ligatures; `kerning:`
+      # then fills the adjustments with pair kerning between the glyphs.
+      def glyph_run(text, kerning: false, ligatures: true)
+        gids, chars = shape(text, ligatures)
+        gids.each_with_index { |gid, i| @used[gid] ||= chars[i] }
         adjust = gids.each_with_index.map { |gid, i| kerning && i + 1 < gids.size ? pair(gid, gids[i + 1]) : 0 }
-        GlyphRun.new(font: self, gids:, adjust:)
+        GlyphRun.new(font: self, gids:, adjust:, chars:)
       end
 
       def used?
@@ -74,7 +75,8 @@ module Stationery
         @cid_keyed ? @ttf.cff.cid_for(gid) : gid
       end
 
-      # { code => character } for every glyph drawn so far.
+      # { code => text } for every glyph drawn so far; a ligature's text is
+      # every character it stands for.
       def used_codes
         @used.to_h { |gid, char| [code(gid), char] }
       end
@@ -91,13 +93,27 @@ module Stationery
 
       private
 
-      def advance_units(text)
-        @advances[text] ||= text.each_char.sum { |char| @widths[char] ||= @ttf.advance(@ttf.glyph_id(char.ord)) }
+      # [gids, source text of each glyph], remembered per string.
+      def shape(text, ligatures)
+        @shapes[ligatures][text] ||= begin
+          gids = text.each_char.map { |char| @ttf.glyph_id(char.ord) }
+          ligatures ? ligate(gids, text) : [gids, text.chars].each(&:freeze).freeze
+        end
       end
 
-      def kerning_units(text)
-        @kerns[text] ||= text.each_char.map { |char| @ttf.glyph_id(char.ord) }
-                             .each_cons(2).sum { |left, right| pair(left, right) }
+      def ligate(gids, text)
+        start = 0
+        glyphs = @ttf.ligatures.substitute(gids)
+        chars = glyphs.map { |_gid, count| text[start, count].tap { start += count } }
+        [glyphs.map(&:first), chars].each(&:freeze).freeze
+      end
+
+      def advance_units(text, ligatures)
+        @advances[ligatures][text] ||= shape(text, ligatures).first.sum { |gid| @ttf.advance(gid) }
+      end
+
+      def kerning_units(text, ligatures)
+        @kerns[ligatures][text] ||= shape(text, ligatures).first.each_cons(2).sum { |left, right| pair(left, right) }
       end
 
       # Kerning between two glyphs in thousandths of an em.

@@ -7,15 +7,16 @@ module Stationery
       BOLD_STROKE = 0.03
 
       # Draws `string` with its baseline at (x, y) in top-left coordinates and
-      # returns its advance width.
+      # returns its advance width. Standard ligatures form unless `ligatures:`
+      # is false or letter spacing is set.
       def text(string, x:, y:, font:, size:, color: "#000000", letter_spacing: 0, rise: 0, opacity: nil,
                synthetic_bold: false, synthetic_oblique: false, underline: false, strikethrough: false,
-               kerning: false, word_spacing: 0)
+               kerning: false, ligatures: true, word_spacing: 0)
         return 0 if string.empty?
 
         color = Color.parse(color)
-        run = font.glyph_run(string, kerning:)
-        run = run.with_word_spacing(string, word_spacing, size) unless word_spacing.zero?
+        run = font.glyph_run(string, kerning:, ligatures: ligatures && letter_spacing.zero?)
+        run = run.with_word_spacing(word_spacing, size) unless word_spacing.zero?
         width = run.width(size, letter_spacing:)
         graphics(opacity:) do |ops|
           ops << color.fill
