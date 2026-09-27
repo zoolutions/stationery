@@ -2,8 +2,9 @@
 
 module Stationery
   # The bookmarks a document declares, in build order. Each entry names an
-  # automatic anchor; once pages are painted, the entries whose anchors landed
-  # somewhere become outline items.
+  # automatic anchor, unique to this outline so a page template's bookmarks
+  # never stand in for the body's; once pages are painted, the entries whose
+  # anchors landed somewhere become outline items.
   class Outline
     # A declared bookmark: its title, depth (1 = top level), anchor and
     # whether it starts expanded.
@@ -22,7 +23,8 @@ module Stationery
       level = Integer(level)
       raise ArgumentError, "bookmark level must be 1 or more, got #{level}" if level < 1
 
-      Entry.new(title.to_s, level, "__bookmark-#{@entries.size + 1}", open ? true : false).tap { @entries << it }
+      anchor = "__bookmark-#{object_id}-#{@entries.size + 1}"
+      Entry.new(title.to_s, level, anchor, open ? true : false).tap { @entries << it }
     end
 
     def resolve(destinations)

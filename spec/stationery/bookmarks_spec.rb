@@ -41,6 +41,20 @@ RSpec.describe "Bookmarks and the document outline" do # rubocop:disable RSpec/D
     expect(doc.warnings).to be_empty
   end
 
+  it "never lets a page template's bookmark stand in for an unpainted body bookmark" do
+    klass = Class.new(SpecDocument) do
+      page_template { box(at: [20, 5]) { text "header", bookmark: "Header" } }
+      def view_template
+        box(height: 20, overflow: :hidden) do
+          spacer 30
+          text "clipped", bookmark: "Lost"
+        end
+      end
+    end
+
+    expect(outline_of(klass.new.to_pdf)).to be_nil
+  end
+
   it "skips a bookmark whose content never paints" do
     pdf = SpecDocument.build do
       box(height: 20, overflow: :hidden) do
