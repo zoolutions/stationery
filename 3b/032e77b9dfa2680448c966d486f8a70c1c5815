@@ -1,0 +1,21 @@
+README.md
+  s_f5a1e2cf907cda::t_f9bb19ac9b55dd 972-973
+docs/app/views/docs/pages/cli.rb
+  s_f5a1e2cf907cda::t_66a9c3f7b2527e 72-73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "3b032e77b9dfa2680448c966d486f8a70c1c5815",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
