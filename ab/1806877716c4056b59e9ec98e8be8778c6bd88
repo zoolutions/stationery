@@ -1,0 +1,28 @@
+spec/stationery/layout/flow_fuzz_spec.rb
+  s_f5a1e2cf907cda::t_f84b8cd1414a29 11-13,16-21,26-27,30-38,42-45,51-52,54-55
+  s_f5a1e2cf907cda::t_1fdea54f66fcdd 39
+  s_f5a1e2cf907cda::t_5078581822d1be 23-25,53
+  s_f5a1e2cf907cda::t_5bd12e29be743e 1-10,14-15,22,28-29,40-41,46-50,56-57
+spec/support/random_flow.rb
+  s_f5a1e2cf907cda::t_93926c5aee6352 3,16,57,60,62-66
+  s_f5a1e2cf907cda::t_55f8c256e9158c 1-2,14-15,17,19,21-25,27-40,53-54,56,59,61,67-71,77-85,88-91
+  s_f5a1e2cf907cda::t_d867a57ddd6b07 4-8,55,58
+  s_f5a1e2cf907cda::t_9c54daeebbdc86 9-13,18,20,41-52,72-76,86-87
+  s_f5a1e2cf907cda::t_9aa95bad66aef6 26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "ab1806877716c4056b59e9ec98e8be8778c6bd88",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
