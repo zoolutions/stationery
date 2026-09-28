@@ -21,7 +21,7 @@ module Stationery
         ul: {},
         ol: {},
         li: {},
-        img: { max_width: nil }
+        img: { max_width: nil, float_margin: 8 }
       }.freeze
 
       module_function

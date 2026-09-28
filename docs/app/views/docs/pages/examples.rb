@@ -35,6 +35,10 @@ class Views::Docs::Pages::Examples < DocsUI::Page
      "An interactive AcroForm: labelled text fields, a comb postcode, a select box, a radio group, check " \
      "boxes with labels, a multiline note and a signature field. Fill it in any viewer; every field and " \
      "option is on [Forms](/docs/forms)." ],
+    [ "Magazine article", "article",
+     "Floats: a photo floated left with justified text wrapping beside it and continuing below, a pull " \
+     "quote floated right between two paragraphs, and an image floated by CSS inside `html`. Tagged: the " \
+     "photos are figures and the quote a block quote, read where they were written." ],
     [ "Postcard", "postcard",
      "An A5 landscape card: the photo collage on its own — a rounded, shadowed base photo with two tilted, " \
      "white-framed snapshots over its corners — beside a greeting." ],
@@ -47,7 +51,7 @@ class Views::Docs::Pages::Examples < DocsUI::Page
   title "Examples"
   eyebrow "Getting started"
 
-  def lead = "Nine complete documents from the gem's examples/ directory, rendered live by this site."
+  def lead = "Ten complete documents from the gem's examples/ directory, rendered live by this site."
 
   def content
     DocsUI::Section("Running them yourself") do

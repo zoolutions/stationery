@@ -27,6 +27,11 @@ RSpec.describe "stationery in plain Ruby" do
           require "stringio" # the caller's own choice of IO
           image StringIO.new(File.binread(@photo)), width: 40, alt: "from a StringIO"
           image File.join(File.dirname(@photo), "webp/alpha.webp"), width: 40, alt: "a lossless WebP"
+          image @photo, float: :left, width: 40, margin: 6, alt: "floated"
+          box(float: :right, width: 0.3, margin: 6) { text "Beside" }
+          text "Wrapped around the floats. " * 12
+          html "<p><img src='rgb.jpg' align='right' width='30' alt='floated too'>Around it</p>",
+               base_path: File.dirname(@photo)
           html "<h2>Heading</h2><p>A <a href='https://example.test'>link</a></p><ul><li>one</li></ul>"
           markdown "> quoted\\n\\n1. first\\n2. second"
           table [%w[Item Price], %w[Tea 3.50]], header: true
@@ -60,7 +65,7 @@ RSpec.describe "stationery in plain Ruby" do
     Bundler.with_unbundled_env { Open3.capture3(RbConfig.ruby, "-I", lib, "-e", script, *, binmode: true) }
   end
 
-  it "renders images from IOs, rich text, tables, SVG, forms and attachments with no require but the gem's" do
+  it "renders images from IOs, floats, rich text, tables, SVG, forms and attachments with no require but the gem's" do
     output, errors, status = run(photo)
 
     expect(status).to be_success, "exit #{status.exitstatus}: #{errors}"

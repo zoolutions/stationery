@@ -63,4 +63,18 @@ RSpec.describe Stationery::Layout::Mark do
     mark.paint(recorder, 0, 12, 100)
     expect(recorder.calls).to eq([[:anchor, "appendix", 12]])
   end
+
+  it "wraps around floats when what it marks does" do
+    band = Stationery::Text::Exclusions::Band.new(top: 0, bottom: 100, left: 150, right: 0)
+    exclusions = Stationery::Text::Exclusions.new([band])
+    text = text_node("some words that wrap beside a float")
+    mark = described_class.new(text, ["here"])
+    head, = mark.split(200, line_height + 1, exclusions:)
+
+    expect(mark).to be_wraps
+    expect(described_class.new(spacer(1), ["there"])).not_to be_wraps
+    expect(mark.measure(200, exclusions:)).to eq(text.measure(200, exclusions:))
+    expect(mark.measure(200, exclusions:)).to be > mark.measure(200)
+    expect(head.child.send(:paragraph, 200).lines.map(&:offset)).to eq([150])
+  end
 end

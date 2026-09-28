@@ -31,6 +31,9 @@ module Stationery
         # What a block of its own takes besides.
         WITH_BOX = %i[column_gap].freeze
         INHERITED = %i[align].freeze
+        # What an image takes from its style, and what a floated one takes too.
+        IMAGE = %i[width align].freeze
+        FLOATED = %i[width float margin margin_top margin_bottom].freeze
         EMPTY = {}.freeze
 
         def self.convert(root, css = Css.parse([])) = new(css).blocks_of(root, EMPTY, EMPTY)
@@ -128,7 +131,7 @@ module Stationery
 
           Rich::Image.new(src: attributes["src"], alt: attributes["alt"],
                           width: dimension(attributes["width"]), height: dimension(attributes["height"]),
-                          style: style.slice(:width, :align))
+                          style: style.slice(*(style[:float] ? FLOATED : IMAGE)))
         end
 
         def dimension(value) = value&.[](/\A\s*(\d+)/, 1)&.to_i

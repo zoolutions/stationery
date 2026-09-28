@@ -25,7 +25,7 @@ class Views::Docs::Pages::ImagesAndSvg < DocsUI::Page
 
     DocsUI::Section("Sizing and fit") do
       md <<~'MD'
-        `image(source, width: nil, height: nil, fit: nil, align: nil, opacity: nil, radius: 0, rotate: 0, max_ppi: 300, downscale: false)`
+        `image(source, width: nil, height: nil, fit: nil, align: nil, opacity: nil, radius: 0, rotate: 0, max_ppi: 300, downscale: false, float: nil, margin: nil)`
 
         | Given | Result |
         | --- | --- |
@@ -36,13 +36,18 @@ class Views::Docs::Pages::ImagesAndSvg < DocsUI::Page
         | `fit: :cover` with `width:` and `height:` | scaled to fill the box, aspect preserved, the excess cropped around the centre (CSS `object-fit: cover`) |
         | `radius:` | corners rounded by that many points (the image is clipped) |
         | `rotate:` | turned that many degrees clockwise around its centre; the space it takes up does not change (CSS `transform: rotate`) |
+        | `float: :left` or `:right` | taken to that side of the flow; the text that follows wraps beside it, `margin:` away (CSS `float`) |
 
         An image is never wider than the space it is given; it scales down to the column. `align:`
-        (`:left`, `:center`, `:right`) positions a narrower image.
+        (`:left`, `:center`, `:right`) positions a narrower image and is not read on a floated one.
+        `margin:` is a number (kept on the sides that face the text) or names the sides as `padding:`
+        does; the rules for what wraps and what moves below are on [Elements](/docs/elements#floats).
 
         ```ruby
         image "logo.png", height: 34, align: :right
         image StringIO.new(product.photo.download), fit: [120, 80]
+        # text wraps beside the photo and continues below it
+        image photo, float: :left, width: 0.4, margin: { right: 14, bottom: 8 }, alt: "The bay at dawn"
         # a tilted, rounded snapshot cropped to 4:3
         image photo, width: 160, height: 120, fit: :cover, radius: 8, rotate: -3
         ```

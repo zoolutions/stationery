@@ -79,6 +79,18 @@ module Stationery
 
         def aligned(style) = style[:align] ? { align: style[:align] } : {}
 
+        # Where an image goes: floated to a side, its CSS margins (else
+        # `styles[:img][:float_margin]`) kept around it, or aligned.
+        def placed(style)
+          return aligned(style) unless style[:float]
+
+          margin = style[:margin]&.dup
+          margin ||= [0, 0, 0, 0] if style[:margin_top] || style[:margin_bottom]
+          margin[0] = style[:margin_top] if style[:margin_top]
+          margin[2] = style[:margin_bottom] if style[:margin_bottom]
+          { float: style[:float], margin: margin || @styles[:img][:float_margin] }
+        end
+
         def border_options(border)
           return {} unless border
           return { borders: [] } if border[:width].zero?

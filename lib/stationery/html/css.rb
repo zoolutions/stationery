@@ -6,7 +6,8 @@ module Stationery
   module HTML
     # The CSS the html element reads: `<style>` rules (element, class and id
     # selectors) and inline `style` attributes, for a small set of properties
-    # that map onto the element DSL. Everything else is ignored and reported
+    # that map onto the element DSL (`float` on an `img` only, which the
+    # `align` attribute also sets). Everything else is ignored and reported
     # once per document through the Report. Values are never fetched or
     # evaluated: `url()` and `@import` are dropped like any unknown value.
     class Css
@@ -61,6 +62,7 @@ module Stationery
       RGB = /\Argba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*[\d.]+\s*)?\)\z/i
       LENGTH = /\A(-?\d*\.?\d+)(px|pt|em|rem|%)?\z/
       ALIGN = %w[left center right justify].freeze
+      FLOAT = %w[left right].freeze
       BREAK_PAGE = %w[always page left right].freeze
       CSS_PX = 0.75
       LEGACY = %w[font center].freeze
@@ -95,6 +97,7 @@ module Stationery
 
           if INLINE.include?(name) then inline(name, value, marks)
           elsif BLOCK.include?(name) then block(name, value, block)
+          elsif name == "float" && element.name == "img" then read(name, value, block, :float) { float(value) }
           else report.property(name)
           end
         end
@@ -105,15 +108,24 @@ module Stationery
 
       # Nothing to read: no rules, no inline style, no legacy attributes.
       def plain?(element)
-        @sheet.empty? && !element.attributes.key?("style") && !LEGACY.include?(element.name)
+        @sheet.empty? && !element.attributes.key?("style") && !LEGACY.include?(element.name) &&
+          !(element.name == "img" && element.attributes.key?("align"))
       end
 
       def legacy(element)
         case element.name
         when "font" then font_attributes(element.attributes)
         when "center" then { "text-align" => "center" }
+        when "img" then image_attributes(element.attributes)
         else {}
         end
+      end
+
+      # `align="left"` and `align="right"` float an image; the vertical
+      # alignments are not read.
+      def image_attributes(attributes)
+        side = attributes["align"].to_s.strip.downcase
+        FLOAT.include?(side) ? { "float" => side } : {}
       end
 
       def font_attributes(attributes)
@@ -171,6 +183,12 @@ module Stationery
       end
 
       def align(value) = ALIGN.include?(value.downcase) ? value.downcase.to_sym : nil
+
+      def float(value)
+        return :none if value.casecmp?("none")
+
+        FLOAT.include?(value.downcase) ? value.downcase.to_sym : nil
+      end
 
       def font_size(value, marks)
         scale = KEYWORD_SIZES[value.downcase]

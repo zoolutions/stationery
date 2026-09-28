@@ -31,7 +31,9 @@ class Views::Docs::Pages::LayoutRules < DocsUI::Page
         - a **splittable** child — text, lists, tables, boxes, rows, groups, wraps — continues on the next page;
         - anything else (an image, a rule, a canvas, a fixed-height box) moves there whole;
         - a `spacer` that lands on the break is dropped;
-        - `page_break` forces what follows onto a new page.
+        - `page_break` forces what follows onto a new page;
+        - a [float](/docs/elements#floats) never splits: when it does not fit, or what wraps beside it could
+          not start there, it moves to the next page with that content.
 
         Text splits between lines. Tables split between rows (never through a rowspan) and repeat their
         header rows. Lists keep each marker with the first line of its item.
