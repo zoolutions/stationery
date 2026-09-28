@@ -253,6 +253,20 @@ module Stationery
       Raster::Render.new(self, dpi:, pages:, monochrome:, debug:, strict:, shaper:).call(target)
     end
 
+    # ZPL II for a label printer (a String, one ^XA…^XZ label per page),
+    # also written to `target` when given: a path or an IO. Each page is
+    # drawn one bit to a dot as to_png(monochrome: …) draws it, and written
+    # as a graphic field. `dpi:` is the printer's, 152, 203, 300 or 600, by
+    # default the class's monochrome dpi, else 203; `copies:` by default the
+    # class's `print copies:`, else 1; `compression:` :z64 (the default) or
+    # :hex; `monochrome:` true for the class's settings (or the defaults), or
+    # options laid over them. See ZPL.
+    def to_zpl(target = nil, dpi: nil, copies: nil, pages: nil, compression: :z64, monochrome: true, debug: false,
+               strict: self.class.config[:strict], shaper: self.class.config[:shaping][:shaper], **pdf_only)
+      Raster::Render.refuse(pdf_only, "to_zpl")
+      ZPL::Render.new(self, dpi:, copies:, pages:, compression:, monochrome:, debug:, strict:, shaper:).call(target)
+    end
+
     # Builds the document, lays it out and paints it on the canvases that
     # `canvases` makes (see PDF::Canvases and Canvas::Interface): what a
     # render does before its output is written, whatever the output is.
