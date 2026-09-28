@@ -86,8 +86,9 @@ InvoicePdf.new(invoice).to_pdf("a.pdf") # also writes a path or an IO
 ([previews and live PDFs](https://stationery.zoolutions.llc/docs/examples)); `bundle exec rake examples`
 renders them all, or render one with `stationery render examples/report.rb`.
 
-The examples ship with the gem, with the images and fonts they read, so they are there to read and to
-run in an application that has only the gem:
+The examples ship with the gem, with the images they read, so they are there to read and to run in an
+application that has only the gem. Inter is the one font the gem ships: the invoice examples are set in
+the Open Sans of the test suite in the repository and in Inter elsewhere.
 
 ```sh
 stationery examples                          # their names and what each shows
