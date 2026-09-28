@@ -198,28 +198,36 @@ module Stationery
         !font.glyph?("-") && font.glyph?("‐") ? "‐" : "-"
       end
 
-      # Moves characters that overflow the line onto following lines.
+      # Moves characters that overflow the line onto following lines. The
+      # head and the rest are measured as they are drawn, a stretch of one
+      # style whole, ligatures and kerning included, which is how `overflow`
+      # measures the line: "office" in Open Sans fits letter by letter at a
+      # width its "ffi" does not, and measured by its letters it never broke.
       def break_long_word
-        fitting = []
-        @current.each do |segment|
-          segment.text.each_char do |char|
-            piece = Segment.new(char, segment.style)
-            return keep_overflow(fitting, piece) if fitting.any? && width(fitting + [piece]) > @max + EPSILON
+        chars = @current.flat_map { |segment| segment.text.chars.map { |char| Segment.new(char, segment.style) } }
+        count = fitting(chars)
+        return @current = joined(chars) if count == chars.size
 
-            fitting << piece
-          end
-        end
-      end
-
-      def keep_overflow(fitting, piece)
-        rest = [piece, *remaining_after(fitting.size).drop(1)]
-        @current = fitting
+        rest = joined(chars.drop(count))
+        @current = joined(chars.first(count))
         finish(wrapped: true, carry: rest)
         @current = rest
       end
 
-      def remaining_after(count)
-        @current.flat_map { |segment| segment.text.chars.map { |char| Segment.new(char, segment.style) } }.drop(count)
+      # How many characters the line holds: as many as fit letter by letter
+      # (at least one), fewer while those are wider as drawn.
+      def fitting(chars)
+        count = 1
+        count += 1 while count < chars.size && width(chars.first(count + 1)) <= @max + EPSILON
+        count -= 1 while count > 1 && width(joined(chars.first(count))) > @max + EPSILON
+        count
+      end
+
+      # A segment per stretch of one style, as `fragments` draws them.
+      def joined(segments)
+        segments.chunk_while { |a, b| a.style == b.style }.map do |group|
+          group.one? ? group.first : Segment.new(group.map(&:text).join, group.first.style)
+        end
       end
 
       # `carry` is what the word broken at the end of the line has left.
