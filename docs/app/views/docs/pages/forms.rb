@@ -305,7 +305,8 @@ class Views::Docs::Pages::Forms < DocsUI::Page
           other text, and drawn as `.notdef` inside a `Span` whose `ActualText` is the character, so
           the appearance still extracts and copies as written. That holds for every line of a
           `multiline:` field and every `comb:` cell. Under a [conformance](/docs/conformance) level it
-          raises instead.
+          raises instead, unless the level is declared with `missing_glyphs: :replace`: then the
+          character is drawn as the font's stand-in (U+FFFD, else U+25A1, else `?`) in the same `Span`.
         - **Check marks and radio dots** are vector paths. No appearance uses a symbol font.
 
         ```ruby

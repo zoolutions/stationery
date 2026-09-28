@@ -65,7 +65,7 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         | A heading level that is skipped: a first heading that is not `heading: 1`, or a heading more than one level below the heading before it | PDF/UA-1 | `ConformanceError` naming the page, the level and the deepest level allowed there (ISO 14289-1, 7.4.2) |
         | A link annotation outside the structure tree: a link in the header row a table repeats on its next pages, `canvas.link` without a `tag:` | PDF/UA-1 | `ConformanceError` with an issue per link and page, naming the target and what painted it (ISO 14289-1, 7.18.5): `link to https://example.com drawn by canvas.link without a tag: on page 1 is outside the structure tree (7.18.5)`. A `link:` is tagged and is allowed, in the body and in a `header`, a `footer` or a `page_template` |
         | A form field made without a font book (`Forms::Field.new` placed with `canvas.widget`) | every level | `ConformanceError` naming the field: it draws with the standard Helvetica, which is not embedded. Fields from `text_field`, `select`, `checkbox`, `radio` and `signature_field` draw with the document's embedded fonts and are allowed |
-        | A character no font has, in body text, a page template or a form field's value | every level | `ConformanceError` naming the character, its code point and the family: it draws as `.notdef`, which text may not reference (PDF/A 6.2.11.8, PDF/UA 7.21.8). Add a font or `font_fallbacks` that covers it. Whitespace a font lacks draws as a blank and is accepted |
+        | A character no font has, in body text, a page template or a form field's value | every level | `ConformanceError` naming the character, its code point and the family: it draws as `.notdef`, which text may not reference (PDF/A 6.2.11.8, PDF/UA 7.21.8). Add a font or `font_fallbacks` that covers it, or declare the level with `missing_glyphs: :replace` (below). Whitespace a font lacks draws as a blank and is accepted |
 
         ```ruby
         begin
@@ -102,6 +102,46 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         "conformance :pdf_ua1 checks what a machine can check. Whether the alt texts describe the images, " \
           "the headings say what follows them and the reading order makes sense is still yours to review."
       end
+    end
+
+    DocsUI::Section("A character no font has", description: "Raise, or draw a stand-in.") do
+      md <<~'MD'
+        A name in a script the fonts do not cover (a customer in Tokyo on an invoice archived as PDF/A) is
+        where the raise turns up in practice. Applications rescued it and rendered again without the claim:
+
+        ```ruby
+        begin
+          InvoicePdf.new(invoice).to_pdf
+        rescue Stationery::ConformanceError => e
+          logger.warn(e.message)
+          InvoicePdf.new(invoice).to_pdf(conformance: nil)   # mislabelled no more, but no longer PDF/A
+        end
+        ```
+
+        `missing_glyphs: :replace` keeps the claim instead: a character no font has is drawn as the first
+        of U+FFFD (�), U+25A1 (□) and `?` that the font drawing it has, inside the `Span` whose
+        `ActualText` is the character, so the text still extracts, copies and reads aloud as written and
+        nothing references `.notdef`. The stand-in has its own advance, so lines are measured as they are
+        drawn.
+
+        ```ruby
+        class InvoicePdf < Stationery::Document
+          conformance :pdf_a3b, missing_glyphs: :replace   # :raise is the default
+        end
+
+        InvoicePdf.new(invoice).to_pdf(conformance: :pdf_a3b, missing_glyphs: :replace) # per render
+        ```
+
+        | `missing_glyphs:` | What a character no font has does |
+        | --- | --- |
+        | `:raise` (default) | `ConformanceError` naming the character, its code point and the family |
+        | `:replace` | Drawn as the font's stand-in in a `Span` with the character as `ActualText`; reported as a `MissingGlyph` [warning](/docs/warnings) whose `stand_in` is the character drawn, so `strict` still raises. A font that has none of the three, which a symbol font may not, still raises and says so |
+
+        veraPDF passes `2b`, `3b` and `ua1` with each of the three stand-ins, in body text, headers and
+        page templates, form field values and shaped text; the same files drawn with `.notdef` fail
+        rules 6.2.11.8-1 and 7.21.8-1. Any other value raises `ArgumentError`. Without `conformance` the
+        option changes nothing, and with `:raise` neither.
+      MD
     end
 
     DocsUI::Section("Factur-X / ZUGFeRD e-invoices", description: "One PDF for people and for accounting software.") do

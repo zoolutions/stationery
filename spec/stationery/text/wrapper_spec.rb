@@ -195,6 +195,24 @@ RSpec.describe Stationery::Text::Wrapper do
     expect(line.width).to be_within(0.001).of(width_of("ab ") + width_of("cd", style: base_style(weight: :bold)))
   end
 
+  it "cuts text into the tokens String#scan finds: words, hyphens, runs of spaces and tabs, newlines" do
+    texts = ["alpha  beta\tgamma\n\ndelta-epsilon--zeta -eta- ", "\n", " ", "-", "", "soft­hy-phen", "a\r\fb"]
+    texts.each do |text|
+      items = described_class.new(book).send(:items, [Stationery::Text::Run.new(text, base_style)])
+      tokens = items.map { |kind, segments| kind == :newline ? "\n" : segments.map(&:text).join }
+
+      expect(tokens).to eq(text.scan(described_class::TOKEN)), text.inspect
+    end
+  end
+
+  it "keeps a line of one segment as one fragment, and joins a stretch in one style" do
+    runs = Stationery::Text::Markup.parse("one <b>two three</b> <i>four</i>", base_style)
+    line = described_class.new(book).wrap(runs, 1000).first
+
+    expect(line.fragments.map(&:text)).to eq(["one ", "two three", " ", "four"])
+    expect(line.fragments.map { |fragment| fragment.text.frozen? }).to all(be(false))
+  end
+
   describe "justifiability" do
     def wrapped(source, width)
       described_class.new(book).wrap(Stationery::Text::Markup.parse(source, base_style), width)

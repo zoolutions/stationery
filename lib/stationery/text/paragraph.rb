@@ -177,10 +177,8 @@ module Stationery
       def count_missing(fragment)
         return count_shaped(fragment) if @book.shaper
 
-        fragment.text.each_char do |char|
-          next if Fonts::Fallback.carried?(char) || fragment.font.glyph?(char)
-
-          @book.warnings.missing_glyph(char, fragment.style.family)
+        Fonts::Fallback.each_missing(fragment.text, fragment.font) do |char|
+          @book.warnings.missing_glyph(char, fragment.style.family, fragment.font.stand_in&.char)
         end
       end
 
@@ -193,7 +191,7 @@ module Stationery
                                                                      ligatures: style.ligatures,
                                                                      features: style.features)
         chars = run ? run.missing : fragment.text.each_char.reject { |char| covered?(fragment.font, char) }
-        chars.each { |char| @book.warnings.missing_glyph(char, style.family) }
+        chars.each { |char| @book.warnings.missing_glyph(char, style.family, fragment.font.stand_in&.char) }
       end
 
       def covered?(font, char) = Fonts::Fallback.carried?(char) || font.glyph?(char)

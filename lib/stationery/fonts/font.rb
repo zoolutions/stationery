@@ -32,19 +32,27 @@ module Stationery
       # before it starts over: some hundreds of glyphs.
       OUTLINE_MEMO = 1 << 16
       REPLACEMENT = "\uFFFD"
+      # What is drawn for a character no font has when the render replaces
+      # missing glyphs (`missing_glyphs: :replace`): the first of these the
+      # font has a glyph for.
+      STAND_INS = [REPLACEMENT, "\u25A1", "?"].freeze
+      StandIn = Data.define(:char, :gid)
 
       attr_reader :ttf
 
       # `shaper:` places this font's glyphs instead of the font itself (see
       # Shaper); `path:` is the file the font was read from and `language:`
-      # the document's, both for the shaper.
-      def initialize(ttf, shaper: nil, path: nil, language: nil)
+      # the document's, both for the shaper. `stand_ins:` draws a character
+      # the font lacks as its #stand_in instead of .notdef.
+      def initialize(ttf, shaper: nil, path: nil, language: nil, stand_ins: false)
         @ttf = ttf
+        @stand_in = stand_ins ? find_stand_in : nil
         @shaping = shaper && Shaping.new(self, shaper, path:, language:)
         @loose = nil
         @used = {}
         @pairs = {}
         @glyphs = {}
+        @lacking = {}
         @blanks = {}
         @shapes = {}.compare_by_identity
         @metrics = {}.compare_by_identity
@@ -93,6 +101,15 @@ module Stationery
       def strikeout_size(size) = scale(@ttf.strikeout_size, size)
       def glyph?(char) = @glyphs.fetch(char) { @glyphs[char] = @ttf.glyph?(char) }
 
+      # Whether the character at `codepoint` draws as .notdef: the font has
+      # no glyph for it and nothing carries it (Fallback::CARRIED). Remembered
+      # per codepoint, so asking for every character of a text makes no String.
+      def lacks?(codepoint)
+        @lacking.fetch(codepoint) do
+          @lacking[codepoint] = !Fallback.carried?(codepoint.chr(Encoding::UTF_8)) && @ttf.glyph_id(codepoint).zero?
+        end
+      end
+
       def bold?
         @ttf.weight >= 600
       end
@@ -106,6 +123,7 @@ module Stationery
         gids, chars, blanks = shape(text, shape_key(ligatures, features))
         gids.each { |gid| @used.delete(gid) if @loose.delete(gid) } if @loose
         gids.each_with_index { |gid, i| @used[gid] ||= blanks[i] ? " " : chars[i] }
+        @used[@stand_in.gid] = @stand_in.char if @stand_in && @used.key?(@stand_in.gid)
         adjust = gids.each_with_index.map do |gid, i|
           kern = kerning && i + 1 < gids.size ? pair(gid, gids[i + 1]) : 0
           blanks[i] ? kern + (blanks[i] * 1000.0 / @ttf.units_per_em) : kern
@@ -133,6 +151,18 @@ module Stationery
           (@loose ||= {})[gid] = true
         end
         @used[gid] = text
+      end
+
+      # The glyph drawn in place of one the font lacks, and the character it
+      # is the glyph of (a StandIn); nil when missing glyphs are not replaced
+      # and when the font has none of STAND_INS, which a symbol font may not.
+      attr_reader :stand_in
+
+      # Whether `gid`, drawn for `text`, stands in for a glyph the font lacks.
+      def stands_in?(gid, text)
+        return false if @stand_in.nil? || gid != @stand_in.gid || text == @stand_in.char
+
+        !text.each_char.all? { |char| glyph?(char) }
       end
 
       # Whether a character the font lacks is drawn as a blank (see WHITESPACE).
@@ -232,7 +262,15 @@ module Stationery
       end
 
       def glyph_for(char)
-        blank?(char) ? @ttf.glyph_id(" ".ord) : @ttf.glyph_id(char.ord)
+        return @ttf.glyph_id(" ".ord) if blank?(char)
+
+        gid = @ttf.glyph_id(char.ord)
+        gid.zero? && @stand_in ? @stand_in.gid : gid
+      end
+
+      def find_stand_in
+        char = STAND_INS.find { |candidate| @ttf.glyph?(candidate) }
+        char && StandIn.new(char:, gid: @ttf.glyph_id(char.ord))
       end
 
       # How much wider (or narrower) than a space a blank's advance is.

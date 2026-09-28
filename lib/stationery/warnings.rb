@@ -9,11 +9,18 @@ module Stationery
 
     Overflow = Layout::Overflow
 
-    MissingGlyph = Data.define(:char, :family, :count) do
+    # `stand_in` is the character drawn in its place by a render that
+    # replaces missing glyphs (`missing_glyphs: :replace`), nil for .notdef.
+    MissingGlyph = Data.define(:char, :family, :count, :stand_in) do
+      def initialize(char:, family:, count:, stand_in: nil)
+        super
+      end
+
       def message
         times = count == 1 ? "once" : "#{count} times"
-        format('missing glyph "%<char>s" (U+%<code>04X) in %<family>s, drawn %<times>s as .notdef',
-               char:, code: char.ord, family:, times:)
+        drawn = stand_in ? format('"%<stand_in>s" (U+%<code>04X)', stand_in:, code: stand_in.ord) : ".notdef"
+        format('missing glyph "%<char>s" (U+%<code>04X) in %<family>s, drawn %<times>s as %<drawn>s',
+               char:, code: char.ord, family:, times:, drawn:)
       end
     end
 
@@ -101,15 +108,16 @@ module Stationery
       self
     end
 
-    def missing_glyph(char, family)
-      @glyphs[[char, family]] += 1
+    # `stand_in` is the character drawn in its place, nil for .notdef.
+    def missing_glyph(char, family, stand_in = nil)
+      @glyphs[stand_in ? [char, family, stand_in] : [char, family]] += 1
     end
 
     def each(&)
       return enum_for(:each) unless block_given?
 
       @items.each(&)
-      @glyphs.each { |(char, family), count| yield MissingGlyph.new(char:, family:, count:) }
+      @glyphs.each { |(char, family, stand_in), count| yield MissingGlyph.new(char:, family:, count:, stand_in:) }
       self
     end
 
