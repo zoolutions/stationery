@@ -132,8 +132,9 @@ class Views::Docs::Pages::Fonts < DocsUI::Page
         Whitespace no font has (an ideographic space U+3000, a figure space, a narrow no-break space, …) is
         drawn as a blank of the character's conventional width, never as `.notdef`. Any other glyph no font
         has is drawn as the family's `.notdef` and reported as a `Warnings::MissingGlyph` counting each
-        drawn occurrence (so `strict` raises on it). The characters themselves travel as the `ActualText`
-        of a `Span` around the glyphs, so the text still extracts, copies and reads aloud as written.
+        drawn occurrence (so `strict` raises on it, and a [conformance](/docs/conformance) level raises
+        `ConformanceError`). The characters themselves travel as the `ActualText` of a `Span` around the
+        glyphs, so the text still extracts, copies and reads aloud as written.
         Fallback covers every text element, table cell, list
         marker, table of contents entry and page template text; direct `canvas.text` calls draw with the font
         they are given.

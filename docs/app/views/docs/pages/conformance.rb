@@ -62,6 +62,7 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         | No `metadata title:` or `lang:` | PDF/UA-1 | `Stationery::ConformanceError` listing what is missing |
         | An image or drawing without `alt:` | PDF/UA-1 | `ConformanceError`; mark decoration with `alt: false` |
         | A form field made without a font book (`Forms::Field.new` placed with `canvas.widget`) | every level | `ConformanceError` naming the field: it draws with the standard Helvetica, which is not embedded. Fields from `text_field`, `select`, `checkbox`, `radio` and `signature_field` draw with the document's embedded fonts and are allowed |
+        | A character no font has, in body text, a page template or a form field's value | every level | `ConformanceError` naming the character, its code point and the family: it draws as `.notdef`, which text may not reference (PDF/A 6.2.11.8, PDF/UA 7.21.8). Add a font or `font_fallbacks` that covers it. Whitespace a font lacks draws as a blank and is accepted |
 
         ```ruby
         begin

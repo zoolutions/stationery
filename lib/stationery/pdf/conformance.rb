@@ -66,7 +66,7 @@ module Stationery
       # does not cover is reported; what breaks the claim outright raises.
       def audit!(pages, resources:, warnings:)
         cmyk(pages, resources).each { |subject| warnings << Warnings::ConformanceIssue.new(level: archival.first, subject:) }
-        issues = fields(pages) + alternatives(warnings)
+        issues = fields(pages) + alternatives(warnings) + glyphs(warnings)
         raise ConformanceError.new(@levels, issues) if issues.any?
       end
 
@@ -124,6 +124,16 @@ module Stationery
         return [] unless pdf_ua?
 
         warnings.grep(Warnings::MissingAlt).map(&:message)
+      end
+
+      # A character no font has draws as .notdef, which text may not reference
+      # under PDF/A (ISO 19005-2/3, 6.2.11.8) or PDF/UA (ISO 14289-1, 7.21.8).
+      # Whitespace a font lacks draws as a blank and is not among them.
+      def glyphs(warnings)
+        warnings.grep(Warnings::MissingGlyph).map do |glyph|
+          format('"%<char>s" (U+%<code>04X) is in no font of %<family>s: add a font or font_fallbacks that covers it',
+                 char: glyph.char, code: glyph.char.ord, family: glyph.family)
+        end
       end
 
       def cmyk(pages, resources)

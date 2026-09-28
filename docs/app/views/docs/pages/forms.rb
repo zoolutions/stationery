@@ -302,7 +302,7 @@ class Views::Docs::Pages::Forms < DocsUI::Page
           style around the field, in the document's own fonts: embedded, with the
           [fallbacks](/docs/fonts) applied per character. A value in any script the fonts cover is drawn;
           a character no font has is reported as a `MissingGlyph` [warning](/docs/warnings), as in any
-          other text.
+          other text, and raises under a [conformance](/docs/conformance) level.
         - **Check marks and radio dots** are vector paths. No appearance uses a symbol font.
 
         ```ruby
