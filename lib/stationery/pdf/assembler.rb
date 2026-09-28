@@ -14,12 +14,15 @@ module Stationery
       # signs it. `sink:` (anything answering `call(bytes)`) receives the file
       # in pieces as each page is written, in the order the objects are
       # flushed, instead of one String at the end; a signature needs the
-      # finished file, so it cannot be streamed.
+      # finished file, so it cannot be streamed. `writer:` is the Writer that
+      # already holds the bodies of pages sealed as they were painted; it
+      # brings its own encryption and sink.
       def initialize(pages:, resources:, info: {}, outline: [], encryption: nil, tagging: nil, lang: nil,
                      page_labels: nil, attachments: [], xmp: true, xmp_extensions: {}, xmp_schemas: [],
-                     conformance: nil, signature: nil, sink: nil)
+                     conformance: nil, signature: nil, sink: nil, writer: nil)
         raise ArgumentError, "a signed document cannot be streamed: sign needs the whole file" if signature && sink
 
+        @writer = writer
         @sink = sink
         @xmp_schemas = xmp_schemas
         @conformance = conformance
@@ -39,7 +42,7 @@ module Stationery
 
       # The file as a String, or the number of bytes streamed to the sink.
       def render
-        writer = Writer.new(encryption: @encryption, sink: @sink)
+        writer = @writer || Writer.new(encryption: @encryption, sink: @sink)
         tree = writer.reserve
         refs = @resources.build(writer)
         @form = Forms::AcroForm.new(writer, fonts: refs.fetch(:Font), signature: @signature,
@@ -81,7 +84,7 @@ module Stationery
       def write_page(writer, page, ref, tree, refs)
         dictionary = {
           Type: :Page, Parent: tree, MediaBox: [0, 0, *page.size],
-          Contents: writer.add(Stream.new(page.content)), Resources: page_resources(page, refs)
+          Contents: contents(writer, page), Resources: page_resources(page, refs)
         }
         annotations = page.annotations.map { |annot| annotation_ref(writer, annot, ref) }
         annotations << @form.sign(ref, taken: field_names) if @signature&.invisible? && ref == @kids.first
@@ -90,6 +93,19 @@ module Stationery
         dictionary.merge!(@conformance.page_entries(page, annotated: annotations.any?)) if @conformance
         writer.set(ref, dictionary)
       end
+
+      # A sealed page keeps the body it was sealed with; what was painted
+      # around it afterwards is a stream of its own, under or over the body.
+      def contents(writer, page)
+        return writer.add(Stream.new(page.content)) unless page.sealed?
+
+        under = layer(writer, page.background)
+        body = page.body.is_a?(Reference) ? page.body : writer.add(page.body)
+        layers = [under, body, layer(writer, page.content)].compact
+        layers.size == 1 ? body : layers
+      end
+
+      def layer(writer, operators) = operators.empty? ? nil : writer.add(Stream.new(operators))
 
       # Every field name of the document and the group each one starts with.
       def field_names
