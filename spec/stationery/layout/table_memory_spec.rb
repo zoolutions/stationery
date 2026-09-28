@@ -44,6 +44,19 @@ RSpec.describe "what a long table holds before its pages" do # rubocop:disable R
     expect([node.natural_width, node.min_width]).to eq([natural.sum, min.sum])
   end
 
+  it "spreads a cell spanning columns over them as the grid does" do
+    spanning = [["a", { content: "a wide cell spanning two", colspan: 2 }], %w[bb c d],
+                [{ content: "wider than both of its columns together", colspan: 2 }, "e"]]
+    node = table(spanning)
+    grid = Stationery::Layout::Table::Grid.new(node.instance_variable_get(:@cells))
+
+    %i[natural_width min_width].each do |metric|
+      expect(node.send(:column_metric, metric)).to eq(grid.column_metric { |p| p.cell.public_send(metric, ctx) })
+    end
+    expect(node.cell(0, 2)).to be(grid.at(0, 2))
+    expect(node.cell(2, 1)).to be(grid.at(2, 1))
+  end
+
   it "places no cell on a grid to resolve the columns of a table without rowspans" do
     node = table(rows, header: true) { |t| t.row(0).weight = :bold }
     allow(Stationery::Layout::Table::Grid).to receive(:new).and_call_original
