@@ -34,7 +34,8 @@ class Views::Docs::Pages::LayoutRules < DocsUI::Page
         - `page_break` forces what follows onto a new page;
         - a [float](/docs/elements#floats) never splits: when it does not fit, or what wraps beside it could
           not start there, it moves to the next page with that content. A paragraph, a list item and a box
-          beside it split as they do anywhere, and what they carry over is wrapped again at the full width.
+          beside it split as they do anywhere, and what they carry over is wrapped again at the full width;
+          a box with a background keeps the full width on both pages, the float over it on the first.
           Floats taller than a page together are cut before the first that does not fit, and only a float
           taller than a page by itself is reported as an `Overflow`.
 

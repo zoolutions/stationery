@@ -40,6 +40,8 @@ module Stationery
       attr_accessor :keep_with_next, :break_inside
       # The Tagging::Element this node paints into, shared by its fragments.
       attr_reader :tag
+      # See #placing_width.
+      attr_writer :placing_width
 
       def measure(_width) = raise(NotImplementedError, "#{self.class} must implement measure")
       def paint(_canvas, _x, _y, _width, _height = nil, **) = raise(NotImplementedError, "#{self.class}#paint")
@@ -54,8 +56,15 @@ module Stationery
       def prefer_whole? = false
       def natural_width = 0
       def min_width = 0
+      # The width a node is placed by beside floats (Flow::Placement): its
+      # least width, or the whole's for a part cut from it at a page break
+      # (Flow::Splitter), so that the part keeps the slot decided for the whole.
+      def placing_width = @placing_width || min_width
       def fixed_width(_available) = nil
       def wraps? = false
+      # Whether it wraps beside floats and paints something of its own under
+      # them, or holds a node that does: the floats are painted after it.
+      def decorated? = false
       # Whether it is taken out of the flow to one side (Floated).
       def float? = false
       # The width this node is laid out at inside a parent of `available`.

@@ -42,6 +42,22 @@ RSpec.describe Stationery::Layout::Flow do
       expect(paginator.warnings).to be_empty
     end
 
+    it "splits with a background beside the float, which spans the full width on both pages" do
+      box = boxed(text_node(words), background: "#EEEEEE", padding: [0, 0, 0, 6])
+      pdf, paginator = render_layout(flow(black(80, 60), box))
+      fills = page_contents(pdf).map do |content|
+        content.scan(/^([\d.]+) ([\d.]+) ([\d.]+) ([\d.]+) re$/).map { |rect| rect.map(&:to_f) }
+      end
+
+      expect(fills[0].map { |x, _, w, _| [x, w] }).to eq([[20.0, 260.0], [20.0, 80.0]])
+      expect(fills[0].first[1] + fills[0].first[3]).to eq(180.0)
+      expect(fills[1].map { |x, y, w, h| [x, w, y + h] }).to eq([[20.0, 260.0, 180.0]])
+      expect(pages_of(pdf)[0].map(&:first)).to eq(([100.0] * 5) + ([26.0] * 6))
+      expect(pages_of(pdf)[1].map(&:first).uniq).to eq([26.0])
+      expect(text_of(pdf).split).to eq(words.split)
+      expect(paginator.warnings).to be_empty
+    end
+
     it "wraps the lines a page break carries over again at the full width: the float stayed behind" do
       pdf, = render_layout(flow(lines_of(8), black(80, 40), boxed(text_node(words))))
       second = reader_for(pdf).pages[1].runs
@@ -108,6 +124,26 @@ RSpec.describe Stationery::Layout::Flow do
       expect(reader_for(pdf).pages[0].runs.size - 8).to be >= 2
       expect(reader_for(pdf).pages[1].runs.size).to be >= 3
       expect(pages_of(pdf)[1].map(&:first).uniq).to eq([20.0])
+    end
+
+    # Fuzz seed 444 with float widths in points (#168): the list was placed
+    # below the float for the wide float further down in it, and the part of
+    # it cut for the room there was laid out beside the float, and ran over.
+    it "keeps the part cut below a float there, where the whole was placed for what follows in it" do
+      list = flow(boxed(text_node(words)), black(200, 20))
+      pdf, paginator = render_layout(flow(black(150, 100), list))
+
+      expect(pages_of(pdf)[0].map(&:first).uniq).to eq([20.0])
+      expect(pages_of(pdf)[0].first.last).to eq(120.0)
+      expect(pages_of(pdf)[1].first.last).to eq(20.0)
+      expect(text_of(pdf).split).to eq(words.split)
+      expect(paginator.warnings).to be_empty
+    end
+
+    it "measures the part it cut below a float as it was cut" do
+      head, = flow(black(150, 100), flow(boxed(text_node(words)), black(200, 20))).split(260, 160, fresh: true)
+
+      expect(head.measure(260)).to be <= 160
     end
 
     it "moves on whole when the orphans of its text do not fit beside the float" do

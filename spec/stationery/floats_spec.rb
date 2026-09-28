@@ -175,15 +175,41 @@ RSpec.describe "Floats" do
       expect(origins(pdf).map(&:first).uniq).to eq([46.0, 30.0])
     end
 
-    it "keeps a box with a background a block of the width that is left" do
+    it "gives a box with a background the full width: its lines wrap beside the float, which sits on the background" do
       text = words.split.first(24).join(" ")
       pdf = build do
-        box(float: :left, width: 80, height: 20)
+        box(float: :left, width: 80, height: 20, background: "#DDDDDD")
         box(background: "#EEEEEE") { text text }
       end.to_pdf
 
-      expect(rects(pdf).first.values_at(0, 2)).to eq([100.0, 180.0])
-      expect(origins(pdf).map(&:first).uniq).to eq([100.0])
+      expect(rects(pdf).map { |rect| rect.values_at(0, 2) }).to eq([[20.0, 260.0], [20.0, 80.0]])
+      expect(origins(pdf).map(&:first).first(3)).to eq([100.0, 100.0, 20.0])
+    end
+
+    it "paints a float with opacity and a shadow over the background of the box beside it" do
+      text = words
+      pdf = build do
+        box(float: :right, width: 80, height: 30, background: "#FF0000", opacity: 0.5, shadow: true) { text "F" }
+        box(background: "#EEEEEE") { text text }
+      end.to_pdf
+      content = ops(pdf)
+
+      expect(content.index(/^20 [\d.]+ 260 [\d.]+ re$/)).to be < content.index(/ gs$/)
+      expect(content.index(/^20 [\d.]+ 260 [\d.]+ re$/)).to be < content.index("1 0 0 rg")
+    end
+
+    it "puts the link of a float over the link of the box beside it" do
+      text = words
+      pdf = build do
+        box(float: :left, width: 80, height: 30, link: "https://float.test", background: "#DDDDDD") { text "F" }
+        box(link: "https://box.test", background: "#EEEEEE") { text text }
+      end.to_pdf
+      objects = reader_for(pdf).objects
+      annots = reader_for(pdf).pages.first.attributes[:Annots]
+      annotations = Array(objects.deref(annots)).map { |ref| objects.deref(ref) }
+
+      expect(annotations.map { |annotation| annotation[:Rect].values_at(0, 2) }).to eq([[20.0, 280.0], [20.0, 100.0]])
+      expect(annotations.map { |annotation| annotation[:A][:URI] }).to eq(%w[https://box.test https://float.test])
     end
   end
 
@@ -256,6 +282,35 @@ RSpec.describe "Floats" do
         [[:Document, [:Figure, [:L, [[:LI, [:Lbl, [:LBody, [:P]]]]]], [:Sect, [:P]], :P]]]
       )
       expect(text_of(pdf).scan(/word\d+/)).to eq(text.split * 2)
+      expect(inspect_pdf(pdf).untagged_text).to be_empty
+    end
+
+    it "reads boxes with a background and the floats they are beside in the order written, painted the other way" do
+      source = photo
+      text = words
+      pdf = build(tagged) do
+        image source, float: :left, width: 60, alt: "A photo"
+        box(background: "#EEEEEE", role: :section) { text text }
+        box(float: :right, width: 80, background: "#DDDDDD") { text "Aside" }
+        box(border: { width: 1 }) { text text }
+        text "End"
+      end.to_pdf
+
+      expect(struct_types(pdf)).to eq([[:Document, [:Figure, [:Sect, [:P]], [:Div, [:P]], :P, :P]]])
+      expect(inspect_pdf(pdf).untagged_text).to be_empty
+      expect(text_of(pdf).scan(/word\d+/)).to eq(text.split * 2)
+      expect(ops(pdf).index(/^20 [\d.]+ 260 [\d.]+ re$/)).to be < ops(pdf).index("/Im1 Do")
+      expect(text_of(pdf).index("Aside")).to be > text_of(pdf).index("word59")
+    end
+
+    it "reads the marker of a list item before its body, which the marker is painted after beside a float" do
+      text = words
+      pdf = build(tagged) do
+        box(float: :left, width: 60, height: 20, background: "#DDDDDD")
+        ol { li { box(background: "#EEEEEE") { text text } } }
+      end.to_pdf
+
+      expect(struct_types(pdf)).to eq([[:Document, [[:L, [[:LI, [:Lbl, [:LBody, [:P]]]]]]]]])
       expect(inspect_pdf(pdf).untagged_text).to be_empty
     end
   end
