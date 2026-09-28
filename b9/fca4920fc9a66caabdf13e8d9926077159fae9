@@ -1,0 +1,9 @@
+lib/stationery/layout/flow/placement.rb
+  ai_agent 79,81,93-99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "b9fca4920fc9a66caabdf13e8d9926077159fae9",
+  "prompts": {}
+}
