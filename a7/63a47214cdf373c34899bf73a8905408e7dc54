@@ -1,0 +1,31 @@
+spec/stationery/pdf/conformance_missing_glyph_spec.rb
+  s_632dbd6e2d0597::t_969b4f9a13ad4d 60
+lib/stationery/warnings.rb
+  s_632dbd6e2d0597::t_969b4f9a13ad4d 64
+spec/stationery/tagging_spec.rb
+  s_632dbd6e2d0597::t_969b4f9a13ad4d 120-121
+spec/stationery/tagging_audit_spec.rb
+  s_632dbd6e2d0597::t_969b4f9a13ad4d 114,123-124
+  s_632dbd6e2d0597::t_f75471f81d58cb 112-113
+spec/stationery/tagging/tree_spec.rb
+  s_632dbd6e2d0597::t_969b4f9a13ad4d 56
+spec/stationery/pdf/conformance_spec.rb
+  s_632dbd6e2d0597::t_f75471f81d58cb 168-169,184-185
+  s_632dbd6e2d0597::t_969b4f9a13ad4d 95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "a763a47214cdf373c34899bf73a8905408e7dc54",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": null
+    }
+  }
+}
