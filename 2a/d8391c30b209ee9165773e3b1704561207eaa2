@@ -1,0 +1,63 @@
+lib/stationery/layout/field.rb
+  ai_agent 12-13,19
+docs/spec/requests/mcp_spec.rb
+  ai_agent 1-74
+lib/stationery/document.rb
+  ai_agent 250,269-271,278-284
+lib/stationery/elements/lists.rb
+  ai_agent 45-47,53-54,69
+lib/stationery/layout/table.rb
+  ai_agent 28,176,178-179
+lib/stationery/layout/box.rb
+  ai_agent 30,34,39
+lib/stationery/page_templates.rb
+  ai_agent 53-57
+spec/stationery/text/wrapper_ligatures_spec.rb
+  ai_agent 1-89
+lib/stationery/elements/forms.rb
+  ai_agent 51-52
+lib/stationery/layout/node.rb
+  ai_agent 7-13
+lib/stationery/layout/table_of_contents/entry.rb
+  ai_agent 20-22
+README.md
+  ai_agent 10-21
+docs/Gemfile
+  ai_agent 14-16
+lib/stationery/layout/image.rb
+  ai_agent 23,27
+lib/stationery/builder.rb
+  ai_agent 38-40,43,108-115
+lib/stationery/layout/svg.rb
+  ai_agent 12
+lib/stationery/layout/text.rb
+  ai_agent 17
+spec/stationery/tagging/untagged_render_spec.rb
+  ai_agent 1-58
+spec/support/layout_helper.rb
+  ai_agent 7
+lib/stationery/layout/table_of_contents.rb
+  ai_agent 29
+docs/Gemfile.lock
+  ai_agent 124,140-144,158-159,328,378,438,445,452,509
+benchmark/baseline.json
+  ai_agent 6,11,16,21,31,36,51,56,58,66,71
+docs/app/views/docs/pages/getting_started.rb
+  ai_agent 121-143
+docs/config/routes.rb
+  ai_agent 2-5
+lib/stationery/text/wrapper.rb
+  ai_agent 201-205,207-209,211-212,217-230
+lib/stationery/elements.rb
+  ai_agent 20,35,56,90,143
+lib/stationery/pdf/canvases.rb
+  ai_agent 20-22
+lib/stationery/text/paragraph.rb
+  ai_agent 79,96-97,99-104,108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "2ad8391c30b209ee9165773e3b1704561207eaa2",
+  "prompts": {}
+}
