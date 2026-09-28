@@ -49,6 +49,7 @@ module Stationery
         @used = {}
         @pairs = {}
         @glyphs = {}
+        @lacking = {}
         @blanks = {}
         @shapes = {}.compare_by_identity
         @metrics = {}.compare_by_identity
@@ -96,6 +97,15 @@ module Stationery
       def strikeout_position(size) = scale(@ttf.strikeout_position, size)
       def strikeout_size(size) = scale(@ttf.strikeout_size, size)
       def glyph?(char) = @glyphs.fetch(char) { @glyphs[char] = @ttf.glyph?(char) }
+
+      # Whether the character at `codepoint` draws as .notdef: the font has
+      # no glyph for it and nothing carries it (Fallback::CARRIED). Remembered
+      # per codepoint, so asking for every character of a text makes no String.
+      def lacks?(codepoint)
+        @lacking.fetch(codepoint) do
+          @lacking[codepoint] = !Fallback.carried?(codepoint.chr(Encoding::UTF_8)) && @ttf.glyph_id(codepoint).zero?
+        end
+      end
 
       def bold?
         @ttf.weight >= 600

@@ -55,18 +55,40 @@ module Stationery
       def missing_at?(index) = gids[index].zero? || (!font.stand_in.nil? && stand_in?(index))
       def stand_in?(index) = font.stands_in?(gids[index], chars[index])
 
+      # A Tj string, or a TJ array of a string per stretch of glyphs up to
+      # and including an adjusted one, each followed by its adjustment (the
+      # last one only when `trailing`). Written in one pass over the run's
+      # hex, without an Array of its parts.
       def show(trailing: false)
-        return "<#{hex(gids)}> Tj" unless adjusted?(trailing)
+        codes = hex(gids)
+        return "<#{codes}> Tj" unless adjusted?(trailing)
 
-        parts = gids.each_index.slice_after { |i| !adjust[i].zero? }.flat_map do |indices|
-          last = indices.last
-          chunk = ["<#{hex(indices.map { |i| gids[i] })}>"]
-          (last == gids.size - 1 && !trailing) || adjust[last].zero? ? chunk : chunk << PDF::Serializer.number(-adjust[last])
+        last = gids.size - 1
+        operator = +"["
+        start = 0
+        gids.each_index do |index|
+          next if adjust[index].zero? && index != last
+
+          operator << " " unless start.zero?
+          operator << "<" << codes[start * 4, (index - start + 1) * 4] << ">"
+          written = !adjust[index].zero? && (trailing || index != last)
+          operator << " " << PDF::Serializer.number(-adjust[index]) if written
+          start = index + 1
         end
-        "[#{parts.join(" ")}] TJ"
+        operator << "] TJ"
       end
 
-      def adjusted?(trailing) = (trailing ? adjust : adjust[0...-1]).any? { |a| !a.zero? }
+      # Whether any adjustment is written: the last one only when `trailing`.
+      def adjusted?(trailing)
+        index = 0
+        stop = trailing ? adjust.size : adjust.size - 1
+        while index < stop
+          return true unless adjust[index].zero?
+
+          index += 1
+        end
+        false
+      end
 
       def hex(ids) = ids.map { |gid| font.code(gid) }.pack("n*").unpack1("H*").upcase
     end
