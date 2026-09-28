@@ -33,7 +33,8 @@ class Views::Docs::Pages::Examples < DocsUI::Page
      "header, and a barcode drawn on a `canvas`." ],
     [ "Application form", "form",
      "An interactive AcroForm: labelled text fields, a comb postcode, a select box, a radio group, check " \
-     "boxes with labels, a multiline note and a signature field. Fill it in any viewer." ],
+     "boxes with labels, a multiline note and a signature field. Fill it in any viewer; every field and " \
+     "option is on [Forms](/docs/forms)." ],
     [ "Postcard", "postcard",
      "An A5 landscape card: the photo collage on its own — a rounded, shadowed base photo with two tilted, " \
      "white-framed snapshots over its corners — beside a greeting." ]
