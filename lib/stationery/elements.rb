@@ -117,6 +117,21 @@ module Stationery
       @_builder.add(align ? Layout::Flow.new([node], align:) : node)
     end
 
+    # A barcode of `data`: `type:` :code128 (the default), :ean13 or :qr
+    # (`level:` :l, :m, :q or :h), drawn as vector bars `module_size:` points a
+    # module (1 for a linear one, 2 for a QR code) or as many as fit
+    # `width:`, `height:` tall (a linear one; 36 by default), in `color:`,
+    # with its quiet zone unless `quiet_zone: false`. `native: true` asks
+    # to_zpl to have the printer draw it (see Document#to_zpl). `alt:` as
+    # for an image, by default the kind of barcode and its data.
+    def barcode(data, type: :code128, level: nil, module_size: nil, width: nil, height: nil, color: "#000000",
+                quiet_zone: true, native: nil, align: nil, alt: nil)
+      symbol = Barcode.build(type, data, level:)
+      node = Layout::Barcode.new(symbol, type:, module_size:, width:, height:,
+                                         color:, quiet_zone:, native:, context: @_builder.context, alt:)
+      @_builder.add(align ? Layout::Flow.new([node], align:) : node)
+    end
+
     # Cells are strings, layout nodes, procs built with the DSL (`-> { image … }`)
     # or components.
     def table(rows, widths: nil, width: :auto, header: false, split_rows: false, cell: {}, anchor: nil, bookmark: nil,

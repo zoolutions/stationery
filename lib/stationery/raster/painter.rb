@@ -29,6 +29,7 @@ module Stationery
           when Canvas::Glyphs then glyphs(call)
           when Canvas::Shade then shade(call)
           when Canvas::Picture then picture(call)
+          when Canvas::Native then paint(call.calls)
           end
         end
         @surface
