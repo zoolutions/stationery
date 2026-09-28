@@ -11,6 +11,7 @@ module Stationery
   #   render Callout.new(color: "#F3F4F6") { text "Amount due" }
   class Component
     include Elements
+    include Units
 
     def call(builder, &)
       @_builder = builder

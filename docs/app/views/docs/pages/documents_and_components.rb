@@ -31,7 +31,7 @@ class Views::Docs::Pages::DocumentsAndComponents < DocsUI::Page
       DocsUI::PropTable(
         [
           [ "page", "size:, margin:, layout:", "size: :letter, margin: 36, layout: :portrait",
-            [ :md, "Page size (`:a3`, `:a4`, `:a5`, `:letter`, `:legal`, `:tabloid` or `[width, height]` in points), margins (one value or CSS-style 2/4 values) and `:landscape`. See [Pages](/docs/pages)." ] ],
+            [ :md, "Page size (a name such as `:a4`, `:letter`, `:dl` or `:label_4x6`, `[width, height]` in points, or with units: `[\"102mm\", \"74mm\"]`, `\"4in x 6in\"`), margins (one value or CSS-style 2/4 values, in points or as `\"3mm\"`) and `:landscape`. Checked when the class is defined. See [Pages](/docs/pages)." ] ],
           [ "font_family", "name, regular:, bold:, italic:, bold_italic:", "—",
             [ :md, "Registers a family from `.ttf`/`.otf` files. With no paths it selects bundled Inter or an installed [font pack](/docs/fonts)." ] ],
           [ "font_fallbacks", "*names", "[]",

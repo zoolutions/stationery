@@ -381,6 +381,22 @@ render Callout.new(color: "#F3F4F6") { text "Amount due" }
 ## Pages
 
 - `page size: :a4 | :a3 | :a5 | :letter | :legal | :tabloid | [w, h], margin:, layout: :landscape`
+- Sizes are points. `mm(102)`, `cm(2)`, `inch(4)` and `pt(12)` convert to them in every component and
+  document (`include Stationery::Units` anywhere else), and `page` reads lengths with their unit:
+
+  ```ruby
+  class Label < Stationery::Document
+    page size: ["102mm", "74mm"], margin: "3mm"     # or "102 x 74 mm", "4in x 6in", [mm(102), mm(74)]
+
+    def view_template = box(at: [mm(20), mm(45)], width: mm(60)) { text "Fragile" }
+  end
+  ```
+
+  Units are `mm`, `cm`, `in` and `pt`; decimals take a point (`"101.6mm"`). Beside the office sizes there
+  are `:a6`, `:a7`, `:b5`, the envelopes `:dl`, `:c5` and `:c6` (short edge first: `layout: :landscape`
+  is the address side) and the label stock `:label_4x6`, `:label_4x3`, `:label_4x2`, `:label_100x150`
+  and `:label_100x50`. A size or margin that cannot be read raises `ArgumentError` when the class is
+  defined.
 - `page_template { |page| … }` runs on every page after pagination with `page.number`, `page.count`,
   `page.width`, `page.height`, `page.margin` and `page.content_box`. `page_template(layer: :background)`
   paints under the content (full-bleed backgrounds).
@@ -1312,10 +1328,23 @@ A lossless WebP is decoded in Ruby when it is first loaded, which a JPEG or an o
 above, by what is in it, and the image cache keeps it for the renders that follow.
 
 Time depends on the machine, so CI holds what does not: `bundle exec rake metrics`
-renders six fixed documents and compares the objects each render allocates, its
+renders fourteen fixed documents and compares the objects each render allocates, its
 page count and its bytes with `benchmark/baseline.json` (allocations may grow 3%,
 bytes 1%, pages not at all). A change that moves them on purpose records a new
 baseline with `bundle exec rake metrics:update` and says why in the commit.
+
+| Document | What it holds |
+|---|---|
+| `invoice`, `flyer`, `form` | The examples of those names: a table with a footer, images and drawings, form fields |
+| `table` | 1,500 rows × 5 columns with a repeating header, 46 pages |
+| `text`, `text_hyphenated`, `text_streamed` | Ten pages of headings and paragraphs: as they are, justified and hyphenated, and written to a block |
+| `article` | Floats: `examples/article.rb` |
+| `newsletter` | `columns`: `examples/newsletter.rb` |
+| `webp` | A lossless WebP of 320 × 240 px, decoded in the render that is measured |
+| `html` | `html` with a stylesheet, inline styles, a floated image, a table, lists and two columns, five pages |
+| `pdf_ua` | A tagged report under `conformance :pdf_ua1`, six pages |
+| `text_incremental` | The text document with a footer, rendered with `incremental` to a block |
+| `text_shaped` | The text document through a `shaper` written in Ruby, which answers the font's own glyphs |
 
 `bundle exec rake memory` reports what long documents hold while they render
 (`PAGES=5000` for more than its 1,000 pages): the peak resident set size of a render in
