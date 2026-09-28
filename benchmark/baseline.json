@@ -3,72 +3,72 @@
     "recorded_with": "ruby 3.4.2 (2025-02-15 revision d2930f8e7a) +YJIT +PRISM [arm64-darwin24]",
     "documents": {
       "invoice": {
-        "allocations": 37259,
+        "allocations": 33188,
         "pages": 1,
         "bytes": 26598
       },
       "table": {
-        "allocations": 2597014,
+        "allocations": 1985854,
         "pages": 46,
         "bytes": 133756
       },
       "text": {
-        "allocations": 299086,
+        "allocations": 259535,
         "pages": 10,
         "bytes": 26414
       },
       "text_hyphenated": {
-        "allocations": 378278,
+        "allocations": 338727,
         "pages": 10,
         "bytes": 27352
       },
       "flyer": {
-        "allocations": 101676,
+        "allocations": 97299,
         "pages": 4,
         "bytes": 127763
       },
       "form": {
-        "allocations": 33923,
+        "allocations": 32852,
         "pages": 1,
         "bytes": 42812
       },
       "text_streamed": {
-        "allocations": 299093,
+        "allocations": 259538,
         "pages": 10,
         "bytes": 26414
       },
       "article": {
-        "allocations": 49600,
+        "allocations": 47322,
         "pages": 1,
         "bytes": 39862
       },
       "newsletter": {
-        "allocations": 41959,
+        "allocations": 40205,
         "pages": 1,
         "bytes": 34514
       },
       "webp": {
-        "allocations": 12344,
+        "allocations": 11810,
         "pages": 1,
         "bytes": 19481
       },
       "html": {
-        "allocations": 228538,
+        "allocations": 206287,
         "pages": 5,
         "bytes": 38737
       },
       "pdf_ua": {
-        "allocations": 377440,
+        "allocations": 324450,
         "pages": 6,
         "bytes": 187382
       },
       "text_incremental": {
-        "allocations": 304117,
+        "allocations": 264122,
         "pages": 10,
         "bytes": 29667
       },
       "text_shaped": {
-        "allocations": 442311,
+        "allocations": 402756,
         "pages": 10,
         "bytes": 25606
       }
