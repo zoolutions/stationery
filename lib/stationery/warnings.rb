@@ -73,6 +73,16 @@ module Stationery
       end
     end
 
+    # A link annotation of a tagged render that no Link element holds.
+    # `target` is the URL or `#anchor`; `place` is what painted it: :header,
+    # :footer, :page_template, :artifact (any other artifact, such as the
+    # header row a table repeats) or :canvas (`canvas.link` without a `tag:`).
+    UntaggedLink = Data.define(:target, :place, :page) do
+      def message = "link to #{target} #{PLACES.fetch(place)} page #{page} is outside the structure tree"
+    end
+    PLACES = { header: "in the header of", footer: "in the footer of", page_template: "in a page template of",
+               artifact: "in an artifact of", canvas: "drawn by canvas.link without a tag: on" }.freeze
+
     MissingLanguage = Data.define do
       def message = "tagged PDF has no language: set metadata lang:"
     end

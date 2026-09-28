@@ -37,9 +37,25 @@ module Stationery
           warnings << Warnings::MissingAlt.new(kind: figure.kind, page:)
         end
         headings(@root, 0, pages, warnings)
+        links(pages, warnings)
       end
 
       private
+
+      # Every link annotation belongs to a Link element (ISO 14289-1, 7.18.5;
+      # veraPDF rule 7.18.5-1), which gives it its /StructParent. What a
+      # header, a footer or a page template paints is an artifact, and so is
+      # a link drawn with `canvas.link` without a `tag:`: neither has one.
+      # Counted by hand, so that an audit that finds nothing allocates nothing.
+      def links(pages, warnings)
+        pages.size.times do |index|
+          pages[index].annotations.each do |link|
+            next if link.key?(:widget) || link[:tag]&.type == :Link
+
+            warnings << Warnings::UntaggedLink.new(target: link[:target], place: link[:place], page: index + 1)
+          end
+        end
+      end
 
       def figures(element)
         element.elements.flat_map { |kid| kid.type == :Figure ? [kid] : figures(kid) }
