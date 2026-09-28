@@ -1,0 +1,38 @@
+Rakefile
+  s_600b6bfbec0b19::t_381b527f604ec0 29
+  s_600b6bfbec0b19::t_3dafd76123c730 22-28,30-38
+docs/app/models/doc.rb
+  s_600b6bfbec0b19::t_90be2a4fc9d925 18
+docs/app/controllers/examples_controller.rb
+  s_600b6bfbec0b19::t_2d9ba4bc92cc66 5,28-29,35-36,39
+  s_600b6bfbec0b19::t_537ed79a322624 1-4,6-8,10-27,30-34,37-38,40-44
+  s_600b6bfbec0b19::t_e04629f81778d9 9
+docs/app/views/docs/pages/examples.rb
+  s_600b6bfbec0b19::t_cfa4c0712070e1 3-7,9-11,13-15,18,21-22,25,28,31,34,36-37,41,44,46-56,58-73
+  s_600b6bfbec0b19::t_664b76f5ea71f6 1-2,8,38-40,42-43,45,57,74-76
+  s_600b6bfbec0b19::t_3f3123eb39fa7e 12,16-17,19-20,23-24,26-27,29-30,32-33,35
+docs/config/routes.rb
+  s_600b6bfbec0b19::t_16da880935c491 11
+  s_600b6bfbec0b19::t_54f0a120a85951 10
+docs/app/views/docs/pages/getting_started.rb
+  s_600b6bfbec0b19::t_5b518b49033354 123
+docs/spec/requests/examples_spec.rb
+  s_600b6bfbec0b19::t_7ceba165a9396d 20,23-24
+  s_600b6bfbec0b19::t_e392321f52036e 1-19,21-22,25-45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "27ae1e0aaa9c48c1740167e959529d1fc3f23c14",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
