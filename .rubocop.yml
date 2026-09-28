@@ -90,12 +90,14 @@ RSpec/SpecFilePathFormat:
 ThreadSafety/MutableClassInstanceVariable:
   Exclude: &caches
     - "lib/stationery.rb" # font_paths is appended to once, at boot
+    - "lib/stationery/color.rb" # the colours parsed from Strings
     - "lib/stationery/fonts/registry.rb"
     - "lib/stationery/images/cache.rb"
 # Document configuration is written while the class body is evaluated and
 # only read afterwards.
 ThreadSafety/ClassInstanceVariable:
   Exclude:
+    - "lib/stationery/color.rb"
     - "lib/stationery/fonts/registry.rb"
     - "lib/stationery/images/cache.rb"
     - "lib/stationery/document.rb"
