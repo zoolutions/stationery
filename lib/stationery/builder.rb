@@ -35,9 +35,12 @@ module Stationery
     # `images` are the document's bitmap defaults (max_ppi:, downscale:).
     attr_reader :root, :book, :list_depth, :images
 
-    def initialize(book:, text: {}, images: {})
+    # `tagged:` is whether the render writes a structure tree; without one
+    # the nodes built here carry no Tagging::Element.
+    def initialize(book:, text: {}, images: {}, tagged: true)
       @book = book
       @images = images
+      @tagged = tagged
       @root = Layout::Flow.new
       @containers = [@root]
       @text = [text]
@@ -102,6 +105,13 @@ module Stationery
       Text::Style.new(family: family.to_s, **options.slice(*STYLE_KEYS))
     end
 
-    def context(style = self.style) = Layout::Context.new(book: @book, style:)
+    def context(style = self.style) = Layout::Context.new(book: @book, style:, tagged: @tagged)
+
+    def tagged? = @tagged
+
+    # A structure element for a node, nil when the render writes no tree. An
+    # element with attributes is built where it is asked for: forwarding
+    # keywords would cost a Hash more than building it there.
+    def element(type) = @tagged ? Tagging::Element.new(type) : nil
   end
 end

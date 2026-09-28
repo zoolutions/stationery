@@ -4,8 +4,13 @@ module Stationery
   module Layout
     EPSILON = 0.0001
 
-    # What text nodes need to measure: the document's fonts and the base style.
-    Context = Data.define(:book, :style)
+    # What text nodes need to measure: the document's fonts and the base
+    # style; and whether the render writes a structure tree (`tagged`), so a
+    # node builds its Tagging::Element only when one will hold it.
+    Context = Data.define(:book, :style, :tagged) do
+      # A structure element of `type` for a node, nil when nothing will be written.
+      def element(type) = tagged ? Tagging::Element.new(type) : nil
+    end
 
     # A node placed taller than the space a page had for it.
     Overflow = Data.define(:page, :height, :available) do

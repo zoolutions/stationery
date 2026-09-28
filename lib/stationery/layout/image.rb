@@ -20,11 +20,11 @@ module Stationery
 
       # `alt:` describes the image in a tagged PDF; `alt: false` marks it decorative.
       def initialize(source, width: nil, height: nil, fit: nil, opacity: nil, alt: nil, radius: 0, rotate: 0,
-                     max_ppi: DEFAULT_MAX_PPI, downscale: false)
+                     max_ppi: DEFAULT_MAX_PPI, downscale: false, tagged: true)
         raise ArgumentError, "fit: :cover needs width: and height:" if fit == :cover && !(width && height)
 
         super()
-        @tag = alt == false ? nil : Tagging::Element.new(:Figure, alt:, kind: :image)
+        @tag = alt == false || !tagged ? nil : Tagging::Element.new(:Figure, alt:, kind: :image)
         @image = source.respond_to?(:build) ? source : Images.load(source)
         @name = name_of(source)
         @max_ppi = max_ppi
