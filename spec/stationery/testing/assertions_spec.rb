@@ -130,6 +130,17 @@ RSpec.describe Stationery::Testing::Assertions do
     expect(host.calls.last.last).to eq('expected PDF to have page labels ["I", "II"], got none')
   end
 
+  it "asserts print preferences" do
+    hinted = SpecDocument.build { text "x" }.to_pdf(print: { scaling: :none })
+    host.assert_print_preference(hinted, scaling: :none)
+    host.assert_print_preference(pdf, scaling: :none)
+    host.assert_print_preference(pdf, "unscaled please", scaling: :none)
+
+    expect(host.calls.map(&:first)).to eq([true, false, false])
+    expect(host.calls[1].last).to eq("expected PDF to have print preference scaling: :none, got none")
+    expect(host.calls.last.last).to eq("unscaled please")
+  end
+
   it "asserts the language" do
     german = Class.new(SpecDocument) do
       metadata lang: "de"

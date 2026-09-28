@@ -4,7 +4,7 @@ class Views::Docs::Pages::Pages < DocsUI::Page
   title "Pages, headers and footers"
   eyebrow "Guide"
 
-  def lead = "Page sizes and margins, header and footer regions that reserve space, page templates and debug outlines."
+  def lead = "Page sizes and margins, header and footer regions that reserve space, page templates, print hints and debug outlines."
 
   def content
     DocsUI::Section("Page size and margins") do
@@ -169,6 +169,10 @@ class Views::Docs::Pages::Pages < DocsUI::Page
         The labels are written as the catalog's `/PageLabels` number tree; `Inspector#page_labels`
         and `have_page_labels` read them back per page.
       MD
+    end
+
+    DocsUI::Section("Printing", description: "Scaling, copies, duplex and the print dialog: hints to the viewer.") do
+      md SourceMarkdown.readme_section("Printing")
     end
 
     DocsUI::Section("Embedded files", description: "Attachments, for Factur-X and friends.") do

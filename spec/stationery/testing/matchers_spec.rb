@@ -222,6 +222,29 @@ RSpec.describe Stationery::Testing::Matchers do
       expect(have_page_labels(%w[i]).tap { |m| m.matches?(document) }.failure_message).to end_with("got none")
     end
 
+    it "matches print preferences" do
+      hinted = document.to_pdf(print: { scaling: :none, copies: 2, pages: 1..1 })
+
+      expect(hinted).to have_print_preference(scaling: :none)
+      expect(hinted).to have_print_preference(copies: 2, pages: 1..1)
+      expect(hinted).to have_print_preference(pages: [1..1])
+      expect(hinted).not_to have_print_preference(duplex: :simplex)
+      expect(hinted).to have_print_preference(duplex: nil)
+    end
+
+    it "says which print preferences it found" do
+      hinted = document.to_pdf(print: { scaling: :none, copies: 2, pages: 1..1 })
+      matcher = have_print_preference(scaling: :none, copies: 3)
+
+      expect(matcher.matches?(hinted)).to be(false)
+      expect(matcher.description).to eq("have print preference scaling: :none, copies: 3")
+      expect(matcher.failure_message)
+        .to eq("expected PDF to have print preference scaling: :none, copies: 3, " \
+               "got scaling: :none, copies: 2, pages: [1..1]")
+      expect(have_print_preference(copies: 2).tap { |m| m.matches?(document) }.failure_message).to end_with("got none")
+      expect { have_print_preference }.to raise_error(ArgumentError, /have_print_preference needs/)
+    end
+
     it "matches when every text is tagged or an artifact" do
       matcher = have_tagged_content
 
