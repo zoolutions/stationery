@@ -1,0 +1,46 @@
+lib/stationery/raster/painter.rb
+  s_f5a1e2cf907cda::t_e8cbbc6988cf1f 32
+lib/stationery/canvas/interface.rb
+  s_f5a1e2cf907cda::t_c3b69fec0b5d6a 100-122
+lib/stationery.rb
+  s_f5a1e2cf907cda::t_cf4151bbe81541 102-107
+  s_f5a1e2cf907cda::t_373a7382fa8911 100
+  s_f5a1e2cf907cda::t_a503132c77c782 178
+lib/stationery/monochrome/painting.rb
+  s_f5a1e2cf907cda::t_d2b429e2cc4dcb 69-82
+spec/stationery/document_barcode_spec.rb
+  s_f5a1e2cf907cda::t_70257c53aaa545 41
+  s_f5a1e2cf907cda::t_6ac8e8571d1c24 21,30-31,38,76-77,98
+  s_f5a1e2cf907cda::t_7411d00e85c26f 1-20,22-29,32-37,39-40,42-75,78-97,99-104
+lib/stationery/layout/barcode.rb
+  s_f5a1e2cf907cda::t_73ad290eaf36f2 20
+  s_f5a1e2cf907cda::t_047198ce7361da 1-19,21-51,60-63,68-71
+  s_f5a1e2cf907cda::t_216743ee7fde10 52-59
+  s_f5a1e2cf907cda::t_a7c8592ac2e526 64-67
+lib/stationery/elements.rb
+  s_f5a1e2cf907cda::t_df2fe49b44200f 121,127,130
+  s_f5a1e2cf907cda::t_c9c05776a05780 120,122-126,128-129,131
+spec/stationery/canvas/interface_spec.rb
+  s_f5a1e2cf907cda::t_01b7fb6315472c 21
+lib/stationery/raster/render.rb
+  s_f5a1e2cf907cda::t_9c3dfa4987e1a8 57-60,69-71
+lib/stationery/raster/canvas.rb
+  s_f5a1e2cf907cda::t_86b10437ca3d16 21-22
+  s_f5a1e2cf907cda::t_af95867fa919c6 82-92
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "4c1c4c0b0cd16c2eb9293477e9a31316ff66839b",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
