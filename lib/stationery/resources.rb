@@ -11,6 +11,9 @@ module Stationery
       @shadings = {}
     end
 
+    # Every image drawn so far.
+    def images = @images.keys
+
     def font(font)
       @fonts[font] ||= :"F#{@fonts.size + 1}"
     end

@@ -352,8 +352,8 @@ and across page breaks: a paragraph continued on the next page stays one `P`.
 - `metadata lang:` writes the catalog's `/Lang`; the title is shown instead of the file name.
 - Every document carries an XMP packet (`/Metadata`, uncompressed) mirroring the Info dictionary:
   `dc:title`, `dc:creator`, `dc:description`, `dc:subject`, `dc:language`, the `xmp:` dates and
-  `pdf:Producer`. PDF/A and PDF/UA identification will live there; `metadata xmp: false` or
-  `to_pdf(xmp: false)` leaves it out.
+  `pdf:Producer`. PDF/A and PDF/UA identification lives there (see
+  [PDF/A and PDF/UA](#pdfa-and-pdfua)); `metadata xmp: false` or `to_pdf(xmp: false)` leaves it out.
 - An image or drawing without `alt:` (`Warnings::MissingAlt`) and a missing `lang`
   (`Warnings::MissingLanguage`) are warnings, so `strict` catches them.
 - Untagged documents (the default) are written exactly as before.
@@ -368,8 +368,55 @@ expect(ReportPdf.new).to have_structure(
 )
 ```
 
-The PDF is not labelled PDF/UA (the XMP packet has no `pdfuaid` schema yet), and nothing checks colour contrast or
-reading order you build out of positioned boxes (`box(at:)` joins the reading order where it paints).
+`tagged` alone does not label the file; `conformance :pdf_ua1` does (see
+[PDF/A and PDF/UA](#pdfa-and-pdfua)). Nothing checks colour contrast or the reading order you build
+out of positioned boxes (`box(at:)` joins the reading order where it paints).
+
+### PDF/A and PDF/UA
+
+```ruby
+class InvoicePdf < Stationery::Document
+  conformance :pdf_a3b            # archival: :pdf_a2b or :pdf_a3b
+end
+
+class ReportPdf < Stationery::Document
+  conformance :pdf_a3b, :pdf_ua1  # archival and accessible
+  metadata title: "Annual report 2026", lang: "en"
+end
+
+InvoicePdf.new(invoice).to_pdf(conformance: nil) # one render without the claim, or with another
+```
+
+A level is only claimed when the file keeps it, so what cannot conform raises instead of being
+mislabelled: `ArgumentError` for options that contradict the level, `Stationery::ConformanceError`
+(`levels`, `issues`) for content.
+
+- **PDF/A-2b and PDF/A-3b** (ISO 19005, level B: the look is reproducible): an sRGB
+  `OutputIntent` with the embedded ICC profile (the ICC's `sRGB2014.icc`), `pdfaid:part` and
+  `pdfaid:conformance` in the XMP packet (written even with `xmp: false`), the print flag on every
+  annotation. Fonts are always embedded and subsetted, and transparency is allowed from part 2 on.
+  `encrypt:` raises. Embedded files need `:pdf_a3b` (part 2 only embeds PDF/A files, so
+  `attach_file` raises there). CMYK colours and CMYK JPEGs are not covered by the sRGB intent and
+  are reported as `Warnings::ConformanceIssue`, so `strict` refuses them.
+- **PDF/UA-1** (ISO 14289): turns `tagged` on, needs `metadata title:` and `lang:`, writes
+  `pdfuaid:part`, shows the title in the viewer, orders tabs by structure (`/Tabs /S`) and gives
+  every link annotation a description (`/Contents`: the URL, or the target page). A figure without
+  `alt:` raises; mark decoration with `alt: false`. Encryption is allowed.
+- Combined, the XMP packet also describes the `pdfuaid` schema to PDF/A (`pdfaExtension:schemas`).
+- Interactive form fields raise under every level: their appearances draw with the standard
+  Helvetica and ZapfDingbats, which are not embedded.
+- Without `conformance` nothing changes: the output is byte for byte what it was.
+
+`bundle exec rake verify:conformance` renders `examples/invoice.rb` as PDF/A-3b and
+`examples/report.rb` as PDF/A-3b plus PDF/UA-1 and validates them with
+[veraPDF](https://verapdf.org) through Docker (`verapdf/cli`); CI runs it on every push. Validate
+your own documents the same way:
+
+```sh
+docker run --rm -v "$PWD:/data:ro" verapdf/cli --format text -v --flavour 3b /data/invoice.pdf
+```
+
+In tests, `have_conformance(:pdf_a3b)` checks the claim (not the validity: that is veraPDF's job).
 
 ### Debugging
 
@@ -622,6 +669,7 @@ RSpec.describe InvoicePdf do
   it { is_expected.to have_pdf_language("en") } # the catalog /Lang from `metadata lang:`
   it { is_expected.to have_page_labels(%w[i ii 1 2]) } # from `page_labels`
   it { is_expected.to have_attachment("factur-x.xml", mime: "text/xml", relationship: :alternative) }
+  it { is_expected.to have_conformance(:pdf_a3b) } # the level claimed in XMP, from `conformance`
   it { is_expected.to have_tagged_content } # a tagged PDF with every text tagged or an artifact
   it { is_expected.to have_structure([[:Document, [[:H1, "Invoice"], [:P, "INV-7"]]]]) }
 end
@@ -645,6 +693,7 @@ class InvoicePdfTest < Minitest::Test
     assert_pdf_language pdf, "en"
     assert_page_labels pdf, %w[i ii 1 2]
     assert_pdf_attachment pdf, "factur-x.xml", mime: "text/xml"
+    assert_pdf_conformance pdf, :pdf_a3b
     assert_tagged_content pdf
     assert_pdf_structure pdf, [[:Document, [[:H1, "Invoice"], [:P, "INV-7"]]]]
   end
@@ -657,7 +706,8 @@ titles. The RSpec matchers compose like the built-ins: `.and` / `.or`, and insid
 `all`, `include` or `match`. For anything else, `Stationery::Testing::Inspector.new(subject)`
 exposes `text`, `page_texts`, `page_count`, `links`, `internal_links`,
 `image_count`, `bookmarks`, `metadata`, `xmp` (the packet), `xmp_values` (`{ "dc:title" => …, "dc:creator" => […] }`),
-`lang`, `page_labels`, `attachments`, `warnings`, `tagged?`, `untagged_text` and
+`lang`, `page_labels`, `attachments`, `conformance` (`[:pdf_a3b, :pdf_ua1]`), `warnings`, `tagged?`,
+`untagged_text` and
 `structure` — a tagged PDF's structure tree as nested arrays, each element's text
 read from its marked content: `[type, "text"]`, `[type, [children]]` (its own text
 between the children, as for a `P` holding a `Link`) or `[type]` when empty; a
@@ -745,9 +795,10 @@ splits only when every column can; a rotated box and a `stack` move to the next 
 does not wrap around images. Link and form-widget rectangles stay in page space inside `rotate`
 and `transform`, and `shadow:` is stacked rectangles, not a blur.
 
-PDF: tagged output is not labelled PDF/UA (no XMP), and there is no PDF/A or PDF/X, no digital
-signing (`signature_field` is an empty field) and no JavaScript.
-Form-field appearances use Helvetica (Windows-1252), not the document's fonts.
+PDF: PDF/A-2b, PDF/A-3b and PDF/UA-1 only (no PDF/A-1, no level A or U, no PDF/UA-2, no PDF/X); no
+digital signing (`signature_field` is an empty field) and no JavaScript.
+Form-field appearances use Helvetica (Windows-1252), not the document's fonts, which also keeps
+forms out of PDF/A and PDF/UA documents.
 
 ## License
 

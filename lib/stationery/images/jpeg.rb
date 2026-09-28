@@ -21,9 +21,10 @@ module Stationery
       end
 
       def inspect = "#<#{self.class} #{@width}x#{@height}>"
+      def color_space = COLOR_SPACES.fetch(@components)
 
       def build(writer)
-        dictionary = Images.xobject(@width, @height, COLOR_SPACES.fetch(@components), @bits).merge(Filter: :DCTDecode)
+        dictionary = Images.xobject(@width, @height, color_space, @bits).merge(Filter: :DCTDecode)
         # Adobe CMYK JPEGs store inverted values.
         dictionary[:Decode] = [1, 0] * 4 if @components == 4 && @adobe
         writer.add(PDF::Stream.new(@data, dictionary))

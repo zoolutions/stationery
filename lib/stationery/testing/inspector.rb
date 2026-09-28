@@ -60,6 +60,14 @@ module Stationery
         packet.scan(XMP_PROPERTY).to_h { |name, body| [name, xmp_value(body)] }
       end
 
+      # The conformance levels the XMP packet claims, as PDF::Conformance
+      # names them: `[:pdf_a3b, :pdf_ua1]`, or [] without a claim.
+      def conformance
+        values = xmp_values
+        part, level, accessible = values.values_at("pdfaid:part", "pdfaid:conformance", "pdfuaid:part")
+        [part && :"pdf_a#{part}#{level.to_s.downcase}", accessible && :"pdf_ua#{accessible}"].compact
+      end
+
       def image_count = pdf.scan(%r{/Subtype\s*/Image\b}).size
 
       def warnings

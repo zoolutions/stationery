@@ -23,6 +23,7 @@ class Doc
   page "Links, bookmarks and contents", group: "Guide", slug: "links", view: "Links"
   page "Fonts", group: "Guide"
   page "Images and SVG", group: "Guide"
+  page "PDF/A and PDF/UA", group: "Guide", slug: "conformance", view: "Conformance"
 
   # A page class named `Rails` would shadow ::Rails inside Views::Docs::Pages.
   page "Rails", group: "Integrations", view: "RailsIntegration"

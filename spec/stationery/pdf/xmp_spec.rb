@@ -66,4 +66,19 @@ RSpec.describe Stationery::PDF::XMP do
     expect { described_class.packet(info: {}, time:, extensions: { "urn:x" => { "part" => 1 } }) }
       .to raise_error(ArgumentError, "XMP extension urn:x needs a :prefix")
   end
+
+  it "describes extension schemas PDF/A does not know in a pdfaExtension container" do
+    schema = { name: "Factur-X", uri: "urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#", prefix: "fx",
+               properties: [{ name: "DocumentType", type: "Text", category: "external", description: "Invoice & co" }] }
+
+    packet = described_class.packet(schemas: [schema])
+
+    expect(packet).to include('xmlns:pdfaExtension="http://www.aiim.org/pdfa/ns/extension/"')
+      .and include("<pdfaSchema:schema>Factur-X</pdfaSchema:schema>")
+      .and include("<pdfaSchema:prefix>fx</pdfaSchema:prefix>")
+      .and include("<pdfaProperty:name>DocumentType</pdfaProperty:name>")
+      .and include("<pdfaProperty:valueType>Text</pdfaProperty:valueType>")
+      .and include("<pdfaProperty:description>Invoice &amp; co</pdfaProperty:description>")
+    expect(described_class.packet).not_to include("pdfaExtension")
+  end
 end

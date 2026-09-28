@@ -52,7 +52,10 @@ class Views::Docs::Pages::Warnings < DocsUI::Page
             "link to \"totals\" on page 2 has no matching anchor" ],
           [ [ :code, "DuplicateAnchor" ], "name, page",
             "An anchor name was defined twice; the first is kept.",
-            "anchor \"intro\" on page 4 is already defined" ]
+            "anchor \"intro\" on page 4 is already defined" ],
+          [ [ :code, "ConformanceIssue" ], "level, subject",
+            "A PDF/A render used CMYK colour or a CMYK JPEG, which the sRGB output intent does not cover.",
+            "PDF/A-3b: CMYK colour on page 1 is not covered by the sRGB output intent" ]
         ]
       )
     end

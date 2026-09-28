@@ -26,7 +26,8 @@ class Views::Docs::Pages::Limitations < DocsUI::Page
         | Layout | A fixed `height:` box, a rotated box and a `stack` never split; a row splits only when every column can; no balanced columns | The node moves to the next page whole; taller than a page it is placed anyway and reported as an `Overflow` warning |
         | Transforms | Annotations inside `rotate`/`transform` | Link and form-widget rectangles stay in untransformed page space |
         | Shadows | Blur | `shadow:` is stacked rounded rectangles at fading opacity, which reads as a soft shadow in print |
-        | PDF features | PDF/UA labelling (no XMP `pdfuaid`), PDF/A, PDF/X, digital signing (`signature_field` is an empty `/Sig` field), JavaScript and actions | Not written |
+        | PDF features | PDF/X, digital signing (`signature_field` is an empty `/Sig` field), JavaScript and actions | Not written |
+        | Conformance | PDF/A-1, PDF/A levels A and U, PDF/UA-2; form fields, CMYK colour and CMYK JPEGs in a conforming document | Only [PDF/A-2b, PDF/A-3b and PDF/UA-1](/docs/conformance) are claimed; form fields raise `ConformanceError`, CMYK is a `ConformanceIssue` warning |
         | Forms | Field appearances in the document's fonts | Widgets draw with Helvetica and ZapfDingbats in Windows-1252, so text outside Latin-1 shows as `?` until the viewer regenerates the appearance |
 
         Anything the engine skips at render time is reported in `document.warnings` rather than dropped

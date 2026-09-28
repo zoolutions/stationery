@@ -8,9 +8,11 @@ module Stationery
       # `lang:` is the document's natural language; `page_labels:` is the
       # /PageLabels number tree from PageLabels.entries; `attachments:` are
       # PDF::Attachment files to embed; `xmp:` (true) writes the XMP packet,
-      # with `xmp_extensions:` as further schemas (see XMP).
+      # with `xmp_extensions:` as further schemas (see XMP); `conformance:` (a
+      # PDF::Conformance) adds what PDF/A and PDF/UA ask of the file.
       def initialize(pages:, resources:, info: {}, outline: [], encryption: nil, tagging: nil, lang: nil,
-                     page_labels: nil, attachments: [], xmp: true, xmp_extensions: {})
+                     page_labels: nil, attachments: [], xmp: true, xmp_extensions: {}, conformance: nil)
+        @conformance = conformance
         @tagging = tagging
         @lang = lang
         @page_labels = page_labels
@@ -38,6 +40,7 @@ module Stationery
         info = info_dictionary(now)
         entries = catalog(tree, outlines, @form.write)
                   .merge(accessibility(writer), metadata(writer, info, now), Attachments.write(writer, @attachments))
+        entries.merge!(@conformance.catalog_entries(writer)) if @conformance
         writer.render(root: writer.add(entries), info: writer.add(info))
       end
 
@@ -67,6 +70,7 @@ module Stationery
           dictionary[:Annots] = page.annotations.map { |annot| annotation_ref(writer, annot, ref) }
         end
         dictionary.merge!(@structure.page_entries(page)) if @structure
+        dictionary.merge!(@conformance.page_entries(page)) if @conformance
         writer.set(ref, dictionary)
       end
 
@@ -85,6 +89,7 @@ module Stationery
 
         ref = writer.reserve
         dictionary = annotation(annotation)
+        dictionary = dictionary.merge(@conformance.annotation_entries(annotation)) if @conformance
         dictionary = dictionary.merge(@structure.annotation(annotation, ref)) if @structure
         writer.set(ref, dictionary)
       end
@@ -105,6 +110,8 @@ module Stationery
         info
       end
 
+      def extensions = (@conformance&.xmp_extensions || {}).merge(@xmp_extensions)
+
       # The XMP packet as an uncompressed /Metadata stream, mirroring the Info
       # dictionary at the same instant. An encrypted document encrypts it like
       # every other stream (/EncryptMetadata defaults to true).
@@ -112,7 +119,7 @@ module Stationery
         return {} unless @xmp
 
         values = info.except(:CreationDate).transform_values(&:value)
-        packet = XMP.packet(info: values, lang: @lang, time: now, extensions: @xmp_extensions)
+        packet = XMP.packet(info: values, lang: @lang, time: now, extensions:, schemas: @conformance&.xmp_schemas || [])
         { Metadata: writer.add(Stream.new(packet, { Type: :Metadata, Subtype: :XML }, compress: false)) }
       end
     end

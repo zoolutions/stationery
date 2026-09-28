@@ -119,6 +119,18 @@ module Stationery
         def actual = @inspector.page_labels.empty? ? "got none" : "got #{@inspector.page_labels.inspect}"
       end
 
+      class HaveConformance < Base
+        def initialize(*levels) = super(levels.flatten.map(&:to_sym))
+
+        def description = "conform to #{labels(@expected)}"
+
+        private
+
+        def labels(levels) = levels.map { |level| PDF::Conformance.label(level) }.join(" and ")
+        def match?(pdf) = (@expected - pdf.conformance).empty?
+        def actual = @inspector.conformance.empty? ? "got no claim" : "got #{labels(@inspector.conformance)}"
+      end
+
       class HaveAttachment < Base
         def initialize(name, mime: nil, relationship: nil)
           super(name)
@@ -190,6 +202,7 @@ module Stationery
       def have_pdf_language(lang) = HaveLanguage.new(lang)
       def have_page_labels(labels) = HavePageLabels.new(labels)
       def have_attachment(name, **) = HaveAttachment.new(name, **)
+      def have_conformance(*levels) = HaveConformance.new(*levels)
       def have_no_warnings = HaveNoWarnings.new
       def have_structure(expected) = HaveStructure.new(expected)
       def have_tagged_content = HaveTaggedContent.new
