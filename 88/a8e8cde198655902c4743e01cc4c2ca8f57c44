@@ -1,0 +1,28 @@
+spec/integration/flyer_spec.rb
+  s_600b6bfbec0b19::t_8c45d4e545a55d 21
+  s_600b6bfbec0b19::t_9e8f37f7bc6541 1-20,22-29
+examples/flyer.rb
+  s_600b6bfbec0b19::t_4577b4eb7cf418 28-29,33-34
+  s_600b6bfbec0b19::t_381b527f604ec0 242,270-272,309-310
+  s_600b6bfbec0b19::t_a349ba778dc02e 1-27,30-32,35-174,176-241,243-269,273-308,311-326,328-336
+  s_600b6bfbec0b19::t_a7c9ac624f3b18 175
+  s_600b6bfbec0b19::t_851bab00a800dc 327
+README.md
+  s_600b6bfbec0b19::t_74ea25d854ee7c 73-74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "88a8e8cde198655902c4743e01cc4c2ca8f57c44",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
