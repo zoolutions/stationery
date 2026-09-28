@@ -26,9 +26,14 @@ module Stationery
         @families[name.to_s] = Family.build(name, **paths)
       end
 
-      # Returns [Font, Family::Face] for a Text::Style, memoised per style.
+      # Returns [Font, Family::Face] for a Text::Style, memoised by the three
+      # fields that pick a face (family, weight, style) in nested hashes: a
+      # style's size, colour and the rest do not matter here, and hashing a
+      # 13-field Data on every text measurement did.
       def resolve(style)
-        @resolved[style] ||= begin
+        weights = (@resolved[style.family] ||= {})
+        styles = (weights[style.weight] ||= {})
+        styles[style.style] ||= begin
           face = family(style.family).face(weight: style.weight, style: style.style)
           [@fonts[face.path] ||= Font.new(Registry.load(face.path)), face].freeze
         end
