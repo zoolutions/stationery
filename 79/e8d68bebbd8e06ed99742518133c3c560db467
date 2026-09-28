@@ -1,0 +1,29 @@
+docs/app/models/doc.rb
+  s_600b6bfbec0b19::t_a772cc71633207 37
+docs/app/views/docs/pages/getting_started.rb
+  s_600b6bfbec0b19::t_11e30f02a6c605 128
+README.md
+  s_600b6bfbec0b19::t_6b2c9dce252299 942-944,986-989,991,1003,1005,1007-1008,1012-1022
+  ai_agent 990,992-1002,1004,1006,1009-1011
+docs/app/views/docs/pages/performance.rb
+  s_600b6bfbec0b19::t_11e30f02a6c605 7,14,17-18,22-32
+docs/app/views/docs/pages/comparison.rb
+  s_600b6bfbec0b19::t_5c93b631d1599f 10,13-130
+  s_600b6bfbec0b19::t_53e54a8960b7f5 1-9,11-12,131-134
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "79e8d68bebbd8e06ed99742518133c3c560db467",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
