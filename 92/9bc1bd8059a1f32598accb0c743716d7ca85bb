@@ -1,0 +1,41 @@
+lib/stationery/rich/renderer/boxes.rb
+  s_632dbd6e2d0597::t_394fa731db2961 6-8,13,19,22,36-41,46,52-53,56-57,60-77,111-112
+spec/stationery/html/css_spec.rb
+  s_632dbd6e2d0597::t_394fa731db2961 52-55,118-130,168-192
+lib/stationery/html/css.rb
+  s_632dbd6e2d0597::t_394fa731db2961 40-46,86-88,90-96,164,166,260-269
+spec/stationery/html/tree_builder/blocks_spec.rb
+  s_632dbd6e2d0597::t_394fa731db2961 80-95
+lib/stationery/rich/nodes.rb
+  s_632dbd6e2d0597::t_394fa731db2961 18-21
+spec/stationery/rich/renderer_margins_spec.rb
+  s_632dbd6e2d0597::t_394fa731db2961 1-158
+README.md
+  s_632dbd6e2d0597::t_394fa731db2961 215,218,224-225,227,1260-1261
+spec/stationery/css/stylesheet_spec.rb
+  s_632dbd6e2d0597::t_394fa731db2961 27-34
+lib/stationery/html/tree_builder/blocks.rb
+  s_632dbd6e2d0597::t_394fa731db2961 30,36
+lib/stationery/css/stylesheet.rb
+  s_632dbd6e2d0597::t_394fa731db2961 55-63
+lib/stationery/rich/renderer.rb
+  s_632dbd6e2d0597::t_394fa731db2961 50-52
+docs/app/views/docs/pages/limitations.rb
+  s_632dbd6e2d0597::t_394fa731db2961 26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "929bc1bd8059a1f32598accb0c743716d7ca85bb",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
