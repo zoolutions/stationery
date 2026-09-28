@@ -28,6 +28,9 @@ module Stationery
       # over. They exist for the words and lines a document repeats; without a
       # limit a long document would keep every line it ever drew.
       MEMO_BYTES = 1 << 16
+      # The numbers (coordinates and segment kinds) the outline memo holds
+      # before it starts over: some hundreds of glyphs.
+      OUTLINE_MEMO = 1 << 16
       REPLACEMENT = "\uFFFD"
 
       attr_reader :ttf
@@ -139,6 +142,20 @@ module Stationery
 
       def used?
         @used.any?
+      end
+
+      # The contours of a glyph (a frozen Outline in font units), remembered
+      # per glyph id up to OUTLINE_MEMO numbers. A document that never asks
+      # for one keeps nothing.
+      def outline(gid)
+        (@outlines ||= {}).fetch(gid) do
+          outline = @ttf.outline(gid).freeze
+          if (@outlined = (@outlined || 0) + outline.size) > OUTLINE_MEMO
+            @outlines.clear
+            @outlined = outline.size
+          end
+          @outlines[gid] = outline
+        end
       end
 
       # The two-byte character code a glyph is written as: its CID in a
