@@ -12,7 +12,7 @@ class Views::Docs::Pages::Comparison < DocsUI::Page
   def content
     DocsUI::Section("The three", description: "Different shapes of the same job.") do
       md <<~'MD'
-        | | Stationery 0.10 | Prawn 2.5 + prawn-table 0.2 | sghtmltopdf 0.5 |
+        | | Stationery 0.11 | Prawn 2.5 + prawn-table 0.2 | sghtmltopdf 0.5 |
         | --- | --- | --- | --- |
         | What it is | A layout engine with a Phlex-style component DSL | A cursor API over a PDF writer | An HTML and CSS renderer written in Rust |
         | Input | Ruby components; `html` and `markdown` elements for user content | Ruby calls: `text`, `bounding_box`, `table` | An HTML document with CSS |
