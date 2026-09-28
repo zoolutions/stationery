@@ -1,0 +1,34 @@
+docs/app/views/docs/pages/examples.rb
+  s_f5a1e2cf907cda::t_449b5dda82cf95 70-72
+README.md
+  s_f5a1e2cf907cda::t_8d4f11271cb510 89-91
+CHANGELOG.md
+  s_f5a1e2cf907cda::t_f359eed85fc863 5
+stationery.gemspec
+  s_f5a1e2cf907cda::t_1caee3ecd1278a 39,48
+  s_f5a1e2cf907cda::t_463418f4d9bbf9 44-45
+spec/fixtures/fonts/README.md
+  s_f5a1e2cf907cda::t_8d4f11271cb510 17-20
+spec/stationery/gemspec_spec.rb
+  s_f5a1e2cf907cda::t_bfbd72333c01c6 3-5,28-29,36,38,43-50,52,54-55
+  s_f5a1e2cf907cda::t_b67daffe03df7e 51,53
+examples/invoice.rb
+  s_f5a1e2cf907cda::t_b67daffe03df7e 30-31
+  s_f5a1e2cf907cda::t_ae889c4ef1f03b 22-25,27-29,32-33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "29fef7520ac096bc5a5928b568570985993a1fd9",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
