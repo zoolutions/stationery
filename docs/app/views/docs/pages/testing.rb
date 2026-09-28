@@ -23,6 +23,7 @@ class Views::Docs::Pages::Testing < DocsUI::Page
           [ [ :code, "have_bookmark(title)" ], [ :code, "assert_bookmark" ], "an outline entry has that title" ],
           [ [ :code, "have_pdf_language(lang)" ], [ :code, "assert_pdf_language" ], "the catalog /Lang (from metadata lang:) equals it" ],
           [ [ :code, "have_page_labels(labels)" ], [ :code, "assert_page_labels" ], "the /PageLabels tree names the pages exactly so (nil for a page before the first range)" ],
+          [ [ :code, "have_print_preference(**hints)" ], [ :code, "assert_print_preference" ], "the catalog has every print hint given, as print takes them (nil for a hint it must not have)" ],
           [ [ :code, "have_attachment(name, mime:, relationship:)" ], [ :code, "assert_pdf_attachment" ], "an embedded file has that name (and type / relationship when given)" ],
           [ [ :code, "have_conformance(*levels)" ], [ :code, "assert_pdf_conformance" ], "the XMP packet claims every level (:pdf_a2b, :pdf_a3b, :pdf_ua1)" ],
           [ [ :code, "have_factur_x(profile:)" ], [ :code, "assert_factur_x" ], "the XMP packet names a Factur-X invoice and its XML is embedded (of that profile when given)" ],
@@ -55,6 +56,7 @@ class Views::Docs::Pages::Testing < DocsUI::Page
         pdf.xmp_values       # => { "dc:title" => "Invoice", "dc:creator" => ["Acme"], "xmp:CreateDate" => "…", … }
         pdf.lang             # => "en", the catalog /Lang, or nil
         pdf.page_labels      # => ["i", "ii", "1", "2"] from page_labels, [] without
+        pdf.print_preferences # => { scaling: :none, copies: 2, pages: [1..3] } from print, {} without
         pdf.attachments      # => [{ name: "factur-x.xml", mime: "text/xml", bytes: "<…>", … }]
         pdf.conformance      # => [:pdf_a3b, :pdf_ua1], the levels claimed in XMP
         pdf.factur_x         # => { profile: :en16931, filename: "factur-x.xml", version: "1.0", xml: "<?xml …" } or nil
