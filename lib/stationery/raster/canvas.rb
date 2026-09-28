@@ -61,14 +61,14 @@ module Stationery
         @list << Shade.new(path, shading, matrix, even_odd, opacity, @matrix, @clip)
       end
 
-      # A JPEG, whose data is not decoded here, is drawn as a placeholder and
-      # reported.
+      # A JPEG of a kind that is not decoded (lossless, arithmetic-coded,
+      # 12-bit) is drawn as a placeholder and reported.
       def image(image, x:, y:, width:, height:, opacity: nil)
-        unless image.respond_to?(:pixels)
+        reason = Images.unreadable(image)
+        if reason
           @warnings&.<<(Warnings::SkippedImage.new(source: "#{image.class.name.split("::").last} " \
                                                            "#{image.width}x#{image.height}",
-                                                   reason: "a JPEG is not decoded for a picture yet; " \
-                                                           "drawn as a crossed box"))
+                                                   reason: "#{reason}; drawn as a crossed box"))
         end
         @list << Picture.new(image, x, y, width, height, opacity, @matrix, @clip)
       end

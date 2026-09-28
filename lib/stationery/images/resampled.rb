@@ -7,8 +7,8 @@ module Stationery
     # A decoded image scaled down to a pixel width with a box filter (every
     # source pixel of a block weighs the same), embedded as 8-bit grey or RGB
     # with the alpha, when there is one, in a soft mask. Built by
-    # PNG#resample and WebP#resample; JPEG data is never decoded, so it
-    # never comes here.
+    # PNG#resample and WebP#resample (a JPEG is embedded as it is, never
+    # resampled), and by a raster render for any bitmap it draws smaller.
     class Resampled
       attr_reader :width, :height
 
