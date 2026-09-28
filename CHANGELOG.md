@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.7.0 (2026-09-28)
+
+Typography and images: hyphenation, OpenType features, oversized-image warnings, page labels.
+
+- Hyphenation: `hyphenate: true | "en" | "de" | "sv"` on `text`, `text_style`, `default_text` and the rich `styles:` (`p`, `li`). Liang's algorithm over the TeX `hyph-utf8` patterns for English, German and Swedish (bundled with their licences), so a word that does not fit breaks at the longest hyphenation point that does, with the font's hyphen. A soft hyphen (U+00AD, `&shy;` in HTML) is a break point in any language: never drawn or measured unless the line breaks there, and absent from extracted text. Off by default; unchanged output otherwise.
+- OpenType features: `features: %i[smcp onum tnum ss01]` on the same entry points applies the font's GSUB single substitutions (formats 1 and 2, also behind Extension lookups) before ligatures; `Font#features` lists what a font offers, an absent feature is ignored. Substituted glyphs keep their source characters in ToUnicode. Contextual lookups (`calt`, `clig`, `frac`) stay unsupported and are listed as such.
+- Oversized images: a bitmap drawn at more than twice `max_ppi` (300 by default; `images max_ppi: 220` per document, `image(max_ppi:)` per call, `nil` disables) reports `Warnings::OversizedImage` naming the source, pixel width, effective ppi and the limit, so `strict` catches a 1600 px photo drawn 160 pt wide. `downscale: true` resamples a PNG (grey, RGB, palette, alpha) to the limit before embedding; JPEG is never re-encoded and only warns.
+- Page labels: `page_labels 1 => { style: :roman_lower }, 4 => { style: :decimal }, 12 => { style: :alpha, prefix: "Appendix " }` (or `to_pdf(page_labels:)`) writes the `/PageLabels` number tree; `Inspector#page_labels`, `have_page_labels` and `assert_page_labels` read it back.
+- `text(…, markup: true)` decodes HTML character references (`&amp;`, `&#39;`, `&#x27;`, the named entities the HTML parser knows), so data escaped with `html_escape` before adding your own `<b>` tags renders as intended instead of showing `&#39;`.
+
 ## 0.6.0 (2026-09-28)
 
 Instrumentation, so a render shows up in AppSignal and friends, and a faster text pipeline.
