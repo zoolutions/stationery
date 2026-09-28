@@ -17,6 +17,10 @@ class Views::Docs::Pages::Examples < DocsUI::Page
     [ "Invoice", "invoice",
      "A row with a logo, an amount-due callout with a status pill, a summary table without borders and a " \
      "line-item table with a coloured header, right-aligned money columns, zebra rows and a bold totals row." ],
+    [ "Factur-X e-invoice", "e_invoice",
+     "The invoice above as an e-invoice: one `factur_x` line makes it PDF/A-3b, embeds the EN 16931 invoice " \
+     "XML built from the same line items and identifies it in XMP, so accounting software books what people " \
+     "read. Validated with veraPDF and Mustang in CI; see [PDF/A and PDF/UA](/docs/conformance)." ],
     [ "Annual report", "report",
      "A header that skips the cover, a footer on every page, a contents page from `table_of_contents`, " \
      "headings with bookmarks and `keep_with_next`, nested lists, a table with a `colspan` total row and a " \
@@ -38,7 +42,7 @@ class Views::Docs::Pages::Examples < DocsUI::Page
   title "Examples"
   eyebrow "Getting started"
 
-  def lead = "Seven complete documents from the gem's examples/ directory, rendered live by this site."
+  def lead = "Eight complete documents from the gem's examples/ directory, rendered live by this site."
 
   def content
     DocsUI::Section("Running them yourself") do

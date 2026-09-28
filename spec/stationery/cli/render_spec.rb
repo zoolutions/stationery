@@ -47,6 +47,14 @@ RSpec.describe Stationery::CLI::Render do
     expect(out.string[/(\d+) page/, 1].to_i).to eq(page_count(File.binread(target)))
   end
 
+  it "renders the document the file defines, not the one it requires and extends" do
+    target = File.join(dir, "extended.pdf")
+
+    expect(render(fixture("extends.rb"), "--out", target)).to eq(0)
+    expect(inspect_pdf(File.binread(target)).metadata[:Title]).to eq("Extended")
+    expect(err.string).to be_empty
+  end
+
   context "with several documents in the file" do
     it "refuses to guess and lists them" do
       expect(render(fixture("two.rb"), "--out", File.join(dir, "x.pdf"))).to eq(1)

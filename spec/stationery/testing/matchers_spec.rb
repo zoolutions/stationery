@@ -170,6 +170,21 @@ RSpec.describe Stationery::Testing::Matchers do
       expect(have_conformance(:pdf_ua1).tap { |m| m.matches?(document) }.failure_message).to end_with("got no claim")
     end
 
+    it "matches a Factur-X invoice, and optionally its profile" do
+      pdf = document.to_pdf(factur_x: { xml: "<rsm:CrossIndustryInvoice/>", profile: :basic })
+
+      expect(pdf).to have_factur_x
+      expect(pdf).to have_factur_x(profile: :basic)
+      expect(pdf).not_to have_factur_x(profile: :en16931)
+      matcher = have_factur_x(profile: :en16931)
+      expect(matcher.matches?(pdf)).to be(false)
+      expect(matcher.description).to eq("be a Factur-X invoice of profile :en16931")
+      expect(matcher.failure_message)
+        .to eq("expected PDF to be a Factur-X invoice of profile :en16931, got profile :basic")
+      expect(have_factur_x.tap { |m| m.matches?(document) }.failure_message)
+        .to eq("expected PDF to be a Factur-X invoice, got no invoice")
+    end
+
     it "matches page labels" do
       labelled = Class.new(SpecDocument) do
         page_labels 1 => { style: :roman_lower }, 3 => { style: :decimal }

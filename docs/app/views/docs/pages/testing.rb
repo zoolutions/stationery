@@ -24,6 +24,8 @@ class Views::Docs::Pages::Testing < DocsUI::Page
           [ [ :code, "have_pdf_language(lang)" ], [ :code, "assert_pdf_language" ], "the catalog /Lang (from metadata lang:) equals it" ],
           [ [ :code, "have_page_labels(labels)" ], [ :code, "assert_page_labels" ], "the /PageLabels tree names the pages exactly so (nil for a page before the first range)" ],
           [ [ :code, "have_attachment(name, mime:, relationship:)" ], [ :code, "assert_pdf_attachment" ], "an embedded file has that name (and type / relationship when given)" ],
+          [ [ :code, "have_conformance(*levels)" ], [ :code, "assert_pdf_conformance" ], "the XMP packet claims every level (:pdf_a2b, :pdf_a3b, :pdf_ua1)" ],
+          [ [ :code, "have_factur_x(profile:)" ], [ :code, "assert_factur_x" ], "the XMP packet names a Factur-X invoice and its XML is embedded (of that profile when given)" ],
           [ [ :code, "have_no_warnings" ], [ :code, "assert_no_pdf_warnings" ], "the render produced no warnings (documents only)" ]
         ]
       )
@@ -52,6 +54,8 @@ class Views::Docs::Pages::Testing < DocsUI::Page
         pdf.lang             # => "en", the catalog /Lang, or nil
         pdf.page_labels      # => ["i", "ii", "1", "2"] from page_labels, [] without
         pdf.attachments      # => [{ name: "factur-x.xml", mime: "text/xml", bytes: "<…>", … }]
+        pdf.conformance      # => [:pdf_a3b, :pdf_ua1], the levels claimed in XMP
+        pdf.factur_x         # => { profile: :en16931, filename: "factur-x.xml", version: "1.0", xml: "<?xml …" } or nil
         pdf.warnings         # the document's warnings after rendering it
         ```
 

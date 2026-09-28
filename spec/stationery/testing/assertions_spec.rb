@@ -77,6 +77,16 @@ RSpec.describe Stationery::Testing::Assertions do
     expect(host.calls.last.last).to eq("expected PDF to conform to PDF/A-3b and PDF/UA-1, got no claim")
   end
 
+  it "asserts a Factur-X invoice" do
+    invoice = SpecDocument.build { text "x" }.to_pdf(factur_x: { xml: "<rsm:CrossIndustryInvoice/>" })
+    host.assert_factur_x(invoice)
+    host.assert_factur_x(invoice, profile: :en16931)
+    host.assert_factur_x(pdf, profile: :basic)
+
+    expect(host.calls.map(&:first)).to eq([true, true, false])
+    expect(host.calls.last.last).to eq("expected PDF to be a Factur-X invoice of profile :basic, got no invoice")
+  end
+
   it "asserts page labels" do
     labelled = Class.new(SpecDocument) do
       page_labels 1 => { style: :roman }

@@ -37,6 +37,11 @@ namespace :docs do
 end
 
 namespace :verify do
+  example = lambda do |name|
+    load File.expand_path("examples/#{name}.rb", __dir__)
+    Object.const_get("Example#{name.split("_").map(&:capitalize).join}").preview
+  end
+
   desc "Validate PDF/A-3b and PDF/UA-1 renders of the examples with veraPDF (needs Docker)"
   task :conformance do
     $LOAD_PATH.unshift(File.expand_path("lib", __dir__))
@@ -44,11 +49,10 @@ namespace :verify do
     out = File.expand_path("tmp/conformance", __dir__)
     mkdir_p out
     image = ENV.fetch("VERAPDF_IMAGE", "verapdf/cli:latest")
-    renders = { "invoice" => { pdf_a3b: "3b" }, "report" => { pdf_ua1: "ua1", pdf_a3b: "3b" } }
+    renders = { "invoice" => { pdf_a3b: "3b" }, "report" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
+                "e_invoice" => { pdf_a3b: "3b" } }
     failures = renders.flat_map do |name, levels|
-      load File.expand_path("examples/#{name}.rb", __dir__)
-      document = Object.const_get("Example#{name.capitalize}").preview
-      document.to_pdf(File.join(out, "#{name}.pdf"), conformance: levels.keys)
+      example.call(name).to_pdf(File.join(out, "#{name}.pdf"), conformance: levels.keys)
       failed = levels.values.reject do |flavour|
         sh("docker", "run", "--rm", "--platform", "linux/amd64", "-v", "#{out}:/data:ro", image,
            "--format", "text", "-v", "--flavour", flavour, "/data/#{name}.pdf") { |ok, _| ok }
@@ -56,6 +60,39 @@ namespace :verify do
       failed.map { |flavour| "#{name}.pdf is not #{flavour}" }
     end
     abort failures.join("\n") if failures.any?
+  end
+
+  desc "Validate the Factur-X example (PDF/A-3 and its EN 16931 XML) with Mustang (needs Docker)"
+  task :factur_x do
+    require "digest"
+    require "open-uri"
+    require "open3"
+    $LOAD_PATH.unshift(File.expand_path("lib", __dir__))
+    require "stationery"
+    out = File.expand_path("tmp/factur_x", __dir__)
+    mkdir_p out
+    version = ENV.fetch("MUSTANG_VERSION", "2.26.0")
+    jar = File.join(out, "Mustang-CLI-#{version}.jar")
+    unless File.exist?(jar)
+      url = "https://github.com/ZUGFeRD/mustangproject/releases/download/core-#{version}/Mustang-CLI-#{version}.jar"
+      File.binwrite(jar, URI.parse(url).open("rb", &:read))
+    end
+    sha = "42d7868cb68264874a7b8cab4c3587b03b23ccc7cd72373da917f66758bb9736"
+    if version == "2.26.0" && Digest::SHA256.file(jar).hexdigest != sha
+      rm jar
+      abort "Mustang-CLI-#{version}.jar does not match its pinned SHA-256; removed it, run the task again"
+    end
+
+    example.call("e_invoice").to_pdf(File.join(out, "e_invoice.pdf"))
+    image = ENV.fetch("MUSTANG_IMAGE", "eclipse-temurin:21-jre")
+    report, status = Open3.capture2e(
+      "docker", "run", "--rm", "-v", "#{out}:/data", "-w", "/data", image,
+      "java", "-Xmx1G", "-Dfile.encoding=UTF-8", "-jar", "/data/#{File.basename(jar)}",
+      "--action", "validate", "--source", "/data/e_invoice.pdf", "--no-notices"
+    )
+    puts report[/<validation.*/m] || report
+    valid = report.scan(/<summary status="(\w+)"/).flatten
+    abort "e_invoice.pdf is not a valid Factur-X invoice" unless status.success? && valid.any? && valid.all?("valid")
   end
 end
 
