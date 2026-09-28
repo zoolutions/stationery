@@ -1,0 +1,69 @@
+README.md
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 444-445,511-570,1345,1374,1391-1392,1402-1406
+lib/stationery/testing/inspector.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 21-24,102-111,205-240
+lib/stationery/monochrome/bitmap.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 1-68
+spec/stationery/monochrome/grid_spec.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 1-64
+spec/stationery/monochrome_spec.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 1-64
+spec/stationery/testing/inspector_colors_spec.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 1-68
+lib/stationery/testing/matchers.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 107-122,295
+docs/app/views/docs/pages/pages.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 7,178-179
+lib/stationery/monochrome/canvas.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 1-19
+lib/stationery.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 73-79
+lib/stationery/images/resampled.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 37-42,45
+lib/stationery/monochrome/rules.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 1-140
+lib/stationery/monochrome/grid.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 1-131
+docs/app/views/docs/pages/testing.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 27,61
+lib/stationery/monochrome.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 1-87
+lib/stationery/pdf/canvases.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 9-10,12,17,22,30,36-44
+lib/stationery/images/webp.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 51-56
+lib/stationery/monochrome/painting.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 1-126
+lib/stationery/minitest.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 21
+lib/stationery/monochrome/dither.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 1-74
+docs/app/views/docs/pages/warnings.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 76-82
+spec/stationery/document_monochrome_spec.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 1-223
+lib/stationery/images/png.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 48-51,69
+lib/stationery/warnings.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 93-113
+spec/stationery/monochrome/dither_spec.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 1-43
+lib/stationery/document.rb
+  s_f5a1e2cf907cda::t_7a13b27f91fe09 83-90,213-215,221-222,235-236,285,291-292
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "4b2e4de4f2eea651b595b4a3b942b9a9b2c7bafe",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
