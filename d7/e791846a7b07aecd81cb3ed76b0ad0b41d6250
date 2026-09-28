@@ -1,0 +1,63 @@
+Rakefile
+  s_600b6bfbec0b19::t_86440fdee2eec1 86-87,110-137
+lib/stationery/errors.rb
+  s_600b6bfbec0b19::t_7690a57063677c 24-27
+spec/stationery/pdf/signature_spec.rb
+  s_600b6bfbec0b19::t_d4198f1e3a91f9 140-141,288-290,293,295-307,310-317,319,321-340,344-345,350,354-357,363-364
+  s_600b6bfbec0b19::t_aecdee53bfe2a2 291-292,294,308-309,318,320,341
+  s_600b6bfbec0b19::t_413ae160f91831 342-343,358-362
+  s_600b6bfbec0b19::t_f12c53e79e8b86 346-349,351-353
+lib/stationery/document.rb
+  s_600b6bfbec0b19::t_48a4fa1befa57a 116-117
+docs/app/views/docs/pages/limitations.rb
+  s_600b6bfbec0b19::t_86440fdee2eec1 32
+docs/app/views/docs/pages/testing.rb
+  s_600b6bfbec0b19::t_1676bbb5e62f72 60-61
+lib/stationery/testing/inspector.rb
+  s_600b6bfbec0b19::t_aecdee53bfe2a2 15-16
+  s_600b6bfbec0b19::t_8f955e77cd767b 139-141,143-145,215-216,220-221,223-225,228-230,233-234,239,242,249-253,255-257,259
+  s_600b6bfbec0b19::t_7ddad86e1718df 226-227,231-232,235-238,240-241,243-248,254,258
+lib/stationery/pdf/signature/cms.rb
+  s_600b6bfbec0b19::t_7690a57063677c 13-15,24,35-37,40,46,55,79,81-90
+spec/stationery/pdf/signature/timestamp_spec.rb
+  s_600b6bfbec0b19::t_a6bf6488e7c546 1-26,28-40,42-44,46-53,55,57,59,61-87
+  s_600b6bfbec0b19::t_59a7f6786ffcdb 27,45,54,56,58,60
+  s_600b6bfbec0b19::t_aecdee53bfe2a2 41
+lib/stationery/pdf/signature.rb
+  s_600b6bfbec0b19::t_7690a57063677c 11-14,20-21,23-24,30,80,87-88,118-119,142-143
+docs/app/views/docs/pages/conformance.rb
+  s_600b6bfbec0b19::t_86440fdee2eec1 147,151-155
+README.md
+  s_600b6bfbec0b19::t_1676bbb5e62f72 514-515,563-565,868-869
+  s_600b6bfbec0b19::t_86440fdee2eec1 541-552,556-560,969
+lib/stationery/pdf/signature/timestamp.rb
+  s_600b6bfbec0b19::t_1e57d82c9e4ea0 1-51,56-86,90-120
+  s_600b6bfbec0b19::t_413ae160f91831 52-55,88-89
+  s_600b6bfbec0b19::t_4d1b0b9cc145ac 87
+spec/stationery/testing/inspector_spec.rb
+  s_600b6bfbec0b19::t_1a1f426bea83b7 136,141-146
+spec/support/timestamp_helpers.rb
+  s_600b6bfbec0b19::t_198a56f8bb6725 1-50,52-56,58-63,68-109,112-115
+  s_600b6bfbec0b19::t_413ae160f91831 51
+  s_600b6bfbec0b19::t_1f9e0d4781d47d 57
+  s_600b6bfbec0b19::t_aecdee53bfe2a2 64-67,111
+  s_600b6bfbec0b19::t_c7eb067a6ae625 110
+lib/stationery.rb
+  s_600b6bfbec0b19::t_c7d183feec30a1 71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "d7e791846a7b07aecd81cb3ed76b0ad0b41d6250",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
