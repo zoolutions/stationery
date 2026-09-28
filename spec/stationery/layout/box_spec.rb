@@ -222,6 +222,51 @@ RSpec.describe Stationery::Layout::Box do
       expect(paginator.warnings).to be_empty
     end
 
+    # A head is open at the bottom, so the content is cut at the height less
+    # the top of the box alone. Content that ends on the page by that measure
+    # may still leave no room for what closes the box under it.
+    describe "when the content ends on the page and the padding under it does not fit" do
+      let(:fitting) { (160 / line_height).floor }
+
+      it "carries the last line over with the padding, and reports no overflow" do
+        pdf, paginator = render_layout(box(lines_of(fitting), padding: [0, 0, 12, 0], background: "#EEEEEE"))
+        reader = reader_for(pdf)
+
+        expect(fitting * line_height).to be < 160
+        expect(reader.page_count).to eq(2)
+        expect(paginator.warnings.map(&:message)).to eq([])
+        expect(reader.pages[0].text).to include("line #{fitting - 1}")
+        expect(reader.pages[1].text).to include("line #{fitting}")
+        expect(strings_of(pdf)).to eq(Array.new(fitting) { |i| "line #{i + 1}" })
+      end
+
+      it "does the same for the border that closes it, and in a box inside another" do
+        bordered, first = render_layout(box(lines_of(fitting), border: { width: 12, sides: %i[bottom] }))
+        nested, second = render_layout(box(box(lines_of(fitting), padding: [0, 0, 8, 0]), padding: [0, 0, 8, 0]))
+
+        expect([page_count(bordered), page_count(nested)]).to eq([2, 2])
+        expect(first.warnings.map(&:message) + second.warnings.map(&:message)).to eq([])
+      end
+
+      it "moves whole below other content when none of it can be carried over" do
+        image = Stationery::Layout::Image.new(image_path("rgb.jpg"), width: 100, height: 100)
+        node = box(image, padding: [0, 0, 20, 0]).tap { |b| b.break_inside = :auto }
+        pdf, paginator = render_layout(flow(spacer(50), node))
+
+        expect(node.split(260, 110)).to eq([nil, node])
+        expect(page_count(pdf)).to eq(2)
+        expect(paginator.warnings.map(&:message)).to eq([])
+      end
+
+      it "is kept, and reported, first on a fresh page when none of it can be carried over" do
+        image = Stationery::Layout::Image.new(image_path("rgb.jpg"), width: 100, height: 150)
+        pdf, paginator = render_layout(box(image, padding: [0, 0, 20, 0]))
+
+        expect(page_count(pdf)).to eq(1)
+        expect(paginator.warnings.size).to eq(1)
+      end
+    end
+
     it "hands keep_with_next to the tail" do
       tall = box(lines_of(20)).tap { |b| b.keep_with_next = true }
       head, tail = tall.split(260, 100)

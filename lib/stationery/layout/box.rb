@@ -79,7 +79,7 @@ module Stationery
         available = height - vertical(cut)
         head, tail = split_content(width, available, fresh, exclusions)
         return [nil, self] unless head
-        return [with_content(head), nil] unless tail || @min_height.to_f > height + EPSILON
+        return closed(width, height, head, fresh, exclusions) unless tail || @min_height.to_f > height + EPSILON
 
         fragments(width, height, head, tail || Flow.new, cut, exclusions)
       end
@@ -128,6 +128,23 @@ module Stationery
       private
 
       def fragment(content, open, min_height) = dup.reopen(content, open, min_height)
+
+      # The content ends on this page. A head is open at the bottom, so the
+      # content was cut at the height less the top of the box alone: it fits
+      # with the box closed under it (what it dropped at the cut made the
+      # room), or the padding and border that close the box do not. Then the
+      # content is cut again with their room kept, and the last of it goes to
+      # the next page with them. Content that cannot be cut there moves whole;
+      # first on a fresh page it is kept as it is, and reported.
+      def closed(width, height, head, fresh, exclusions)
+        whole = with_content(head)
+        return [whole, nil] if whole.measure(width, exclusions:) <= height + EPSILON
+
+        head, tail = split_content(width, height - vertical, fresh, exclusions)
+        return fragments(width, height, head, tail, @open | [:bottom], exclusions) if head && tail
+
+        fresh ? [whole, nil] : [nil, self]
+      end
 
       def fragments(width, height, head, tail, cut, exclusions)
         first = fragment(head, cut, @min_height && [@min_height, height].min).tap { |part| part.keep_with_next = nil }
