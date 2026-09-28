@@ -1,0 +1,77 @@
+lib/stationery/images/webp/predictor.rb
+  s_632dbd6e2d0597::t_b7cb272e02aed9 1-49,51-112,114-118
+  s_632dbd6e2d0597::t_060f1b3e6e8c11 50,113
+lib/stationery/images/webp/bit_reader.rb
+  s_632dbd6e2d0597::t_70caf2b4676cbb 1-78
+spec/stationery/images/webp/image_stream_spec.rb
+  s_632dbd6e2d0597::t_ff6315ea4b25ed 1-24,26-59,61-66,68-90,92-102
+  s_632dbd6e2d0597::t_86cc3fad7d81a0 25,60,67,91
+spec/stationery/images/webp/lossless_spec.rb
+  s_632dbd6e2d0597::t_3ca67fe19cbc0b 1-81
+spec/stationery/images_spec.rb
+  s_632dbd6e2d0597::t_060f1b3e6e8c11 25-28
+lib/stationery/images/webp/image_stream.rb
+  s_632dbd6e2d0597::t_3518d8f285ab84 1-88,90-126,128-168
+  s_632dbd6e2d0597::t_060f1b3e6e8c11 89,127
+lib/stationery.rb
+  s_632dbd6e2d0597::t_f296deb6a02230 51
+lib/stationery/images/resampled.rb
+  s_632dbd6e2d0597::t_95e11ec8b846b5 10-11,77
+lib/stationery/images/webp.rb
+  s_632dbd6e2d0597::t_829e53d30aaf06 1-71
+lib/stationery/images/webp/prefix_code.rb
+  s_632dbd6e2d0597::t_3d699a7b4f0e38 1-84,86-168
+  s_632dbd6e2d0597::t_7b5545f2aca6a7 85
+spec/support/webp_helpers.rb
+  s_632dbd6e2d0597::t_5e9c73f553eba0 1-6,14-51
+  s_632dbd6e2d0597::t_86cc3fad7d81a0 7-10,12-13
+  s_632dbd6e2d0597::t_f39a4106ae67d5 11
+.rubocop.yml
+  s_632dbd6e2d0597::t_060f1b3e6e8c11 76-77
+lib/stationery/images/webp/lossless.rb
+  s_632dbd6e2d0597::t_e6550dc886a28a 1-14,18-101
+  s_632dbd6e2d0597::t_060f1b3e6e8c11 15-17
+lib/stationery/images/webp/transforms.rb
+  s_632dbd6e2d0597::t_74969c4db5f23a 1-93
+spec/integration/plain_ruby_spec.rb
+  s_632dbd6e2d0597::t_7a837b4abbd0fe 29
+spec/stationery/images/webp/container_spec.rb
+  s_632dbd6e2d0597::t_81d9eab60f4b40 1-3,5-82
+  s_632dbd6e2d0597::t_86cc3fad7d81a0 4
+lib/stationery/layout/image.rb
+  s_632dbd6e2d0597::t_95e11ec8b846b5 16
+spec/support/webp_factory.rb
+  s_632dbd6e2d0597::t_6af48f9390b492 1-9,12-46,48-53,55-121
+  s_632dbd6e2d0597::t_060f1b3e6e8c11 10-11,47,54
+spec/stationery/images/webp_spec.rb
+  s_632dbd6e2d0597::t_8f45d9516e4268 1-20,22-33,37-42,45-83,85,88-94,96-110
+  s_632dbd6e2d0597::t_f39a4106ae67d5 21
+  s_632dbd6e2d0597::t_e06c67a91330f2 34-36,43-44,95
+lib/stationery/images/images.rb
+  s_632dbd6e2d0597::t_f296deb6a02230 4,8-9,19,41,46
+lib/stationery/document.rb
+  s_632dbd6e2d0597::t_95e11ec8b846b5 71
+lib/stationery/images/webp/container.rb
+  s_632dbd6e2d0597::t_3cf7fd304a62ab 1-55,58-62
+  s_632dbd6e2d0597::t_f296deb6a02230 56-57
+lib/stationery/errors.rb
+  s_632dbd6e2d0597::t_95e11ec8b846b5 9
+spec/stationery/images/webp/prefix_code_spec.rb
+  s_632dbd6e2d0597::t_7256e9a3d8a95a 1-105
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "f6ef44f753478622ec569a42c700e9741a03d49d",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
