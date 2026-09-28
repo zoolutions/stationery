@@ -58,6 +58,75 @@ RSpec.describe Stationery::Text::Wrapper do
     expect(line.height).to be_within(0.001).of(big.line_height(20))
   end
 
+  describe "hyphenation" do
+    let(:german) { base_style(hyphenate: "de") }
+
+    it "is off by default: an overflowing word is broken between characters" do
+      expect(lines("Silbentrennung", width_of("Silben-") + 0.5)).to eq(%w[Silbent rennu ng])
+    end
+
+    it "breaks a word that does not fit at the longest pattern point that does, drawing a hyphen" do
+      expect(lines("Die Silbentrennung", width_of("Die Silben-") + 0.5, style: german))
+        .to eq(["Die Silben-", "trennung"])
+      expect(lines("Die Silbentrennung", width_of("Die Sil-") + 0.5, style: german))
+        .to eq(["Die Sil-", "ben-", "tren-", "nung"])
+    end
+
+    it "hyphenates a word alone on its line before breaking characters" do
+      expected = join_fitting(["Do-", "nau-", "dampf-", "schiff-", "fahrt"], width_of("Donaudampf-"))
+
+      expect(lines("Donaudampfschifffahrt", width_of("Donaudampf-") + 0.5, style: german)).to eq(expected)
+    end
+
+    it "never breaks inside the minimum letters at either end" do
+      expect(lines("Silbentrennung", width_of("Sil-") - 0.5, style: german)).not_to include("Si-")
+      expect(lines("Silbentrennung", width_of("Silbentrennung") - 0.5, style: german).first).not_to eq("Silbentrennun-")
+    end
+
+    it "keeps punctuation around the word out of the patterns" do
+      expect(lines("(Silbentrennung),", width_of("(Silben-") + 0.5, style: german))
+        .to eq(["(Silben-", "tren-", "nung),"])
+    end
+
+    it "marks a hyphenated line justifiable" do
+      runs = Stationery::Text::Markup.parse("Die Silbentrennung", german)
+      result = described_class.new(book).wrap(runs, width_of("Die Silben-") + 0.5)
+
+      expect(result.map(&:justifiable?)).to eq([true, false])
+    end
+
+    # The greedy wrapper takes the longest prefix that fits each time.
+    def join_fitting(parts, max)
+      parts.each_with_object([]) do |part, out|
+        candidate = out.last && "#{out.last.delete_suffix("-")}#{part}"
+        if candidate && width_of(candidate) <= max + 0.001 then out[-1] = candidate
+        else out << part
+        end
+      end
+    end
+  end
+
+  describe "soft hyphens" do
+    it "are never measured or drawn while the word fits" do
+      result = described_class.new(book).wrap(Stationery::Text::Markup.parse("Zei\u00ADtungsleser", base_style), 1000)
+
+      expect(result.first.fragments.map(&:text)).to eq(["Zeitungsleser"])
+      expect(result.first.width).to be_within(0.001).of(width_of("Zeitungsleser"))
+    end
+
+    it "name the break points of a word that does not fit and draw a hyphen there" do
+      expect(lines("Zei\u00ADtungs\u00ADleser wird", width_of("Zeitungs-") + 0.5)).to eq(["Zeitungs-", "leser", "wird"])
+    end
+
+    it "suppress the patterns for that word" do
+      result = lines("Silben\u00ADtrennung", width_of("Silben-") + 0.5, style: base_style(hyphenate: "de"))
+
+      expect(result.first).to eq("Silben-")
+      expect(result).not_to include("tren-")
+      expect(result.join).to eq("Silben-trennung")
+    end
+  end
+
   it "measures each fragment and places it along the line" do
     line = described_class.new(book).wrap(Stationery::Text::Markup.parse("ab <b>cd</b>", base_style), 1000).first
 

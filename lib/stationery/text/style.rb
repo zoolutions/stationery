@@ -6,17 +6,18 @@ module Stationery
     NO_FEATURES = [].freeze
 
     # How a run of text looks. Immutable; derive variants with #with.
+    # `hyphenate` is a bundled hyphenation language (see Hyphenation) or nil.
     Style = Data.define(:family, :size, :weight, :style, :color, :letter_spacing,
                         :underline, :strikethrough, :script, :link, :opacity, :kerning,
-                        :ligatures, :features) do
+                        :ligatures, :features, :hyphenate) do
       # `features:` are OpenType feature tags (`:smcp`, `"onum"`, …) applied on
       # top of `ligatures:`; kept as sorted frozen Strings so equal sets are
       # equal styles.
       def initialize(family:, size: 10, weight: :regular, style: :normal, color: "#000000", letter_spacing: 0,
                      underline: false, strikethrough: false, script: nil, link: nil, opacity: nil, kerning: true,
-                     ligatures: true, features: NO_FEATURES)
+                     ligatures: true, features: NO_FEATURES, hyphenate: nil)
         super(family:, size:, weight:, style:, color:, letter_spacing:, underline:, strikethrough:, script:, link:,
-              opacity:, kerning:, ligatures:, features: Style.features(features))
+              opacity:, kerning:, ligatures:, features: Style.features(features), hyphenate: Hyphenation.tag(hyphenate))
       end
 
       def self.features(tags)

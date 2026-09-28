@@ -3,11 +3,16 @@
 module Stationery
   module Text
     # Greedy line breaking over styled runs. Breaks at spaces (the space is
-    # dropped at the break) and after hyphens; a word wider than the line is
-    # broken between characters. A word that changes style midway ("<b>Tot</b>al")
-    # is still one word.
+    # dropped at the break) and after hyphens; a word that does not fit is
+    # hyphenated when it may be (a soft hyphen U+00AD names the break points,
+    # else the style's `hyphenate` language), and a word wider than the line
+    # is broken between characters. A word that changes style midway
+    # ("<b>Tot</b>al") is still one word. Soft hyphens are never measured or
+    # drawn: a broken word draws "-" at the break and nothing otherwise.
     class Wrapper
       TOKEN = /\n|[ \t]+|[^ \t\n-]*-+|[^ \t\n-]+/
+      SOFT_HYPHEN = "­"
+      EPSILON = 0.0001
 
       Segment = Data.define(:text, :style)
 
@@ -53,16 +58,70 @@ module Stationery
         end
       end
 
-      def place_word(word)
+      # A word holding soft hyphens breaks only at them, even once the part
+      # after a break carries none (TeX's rule: a discretionary hyphen exempts
+      # the whole word from the patterns).
+      def place_word(word, explicit: word.any? { |segment| segment.text.include?(SOFT_HYPHEN) })
+        @explicit = explicit
         needed = width(@pending_space) + width(word)
-        if @current.empty? || line_width + needed <= @max + 0.0001
+        if @current.empty? || line_width + needed <= @max + EPSILON
           @current.concat(@pending_space, word)
+        elsif (head, tail = hyphenated(word, @max - line_width - width(@pending_space)))
+          @current.concat(@pending_space, head)
+          finish(wrapped: true)
+          return place_word(tail, explicit:)
         else
           finish(wrapped: true)
           @current.concat(word)
         end
         @pending_space = []
-        break_long_word while line_width > @max + 0.0001 && characters(@current) > 1
+        overflow
+      end
+
+      # A word alone on its line and still too wide: hyphenate what fits,
+      # else move the characters that overflow onto following lines.
+      def overflow
+        while line_width > @max + EPSILON && characters(@current) > 1
+          head, tail = hyphenated(@current, @max)
+          if head
+            @current = head
+            finish(wrapped: true)
+            @current = tail
+          else
+            break_long_word
+          end
+        end
+      end
+
+      # [head, tail] with the longest hyphenation of `word` whose head (and
+      # its hyphen) fits `available`; nil when the word offers no break that
+      # fits. Soft hyphens name the breaks and suppress the patterns.
+      def hyphenated(word, available)
+        chars = word.flat_map { |segment| segment.text.chars.map { |char| Segment.new(char, segment.style) } }
+        break_points(chars).reverse_each do |index|
+          head = chars.first(index).reject { |segment| segment.text == SOFT_HYPHEN }
+          head << Segment.new(hyphen_for(chars[index - 1].style), chars[index - 1].style)
+          return [head, chars.drop(index)] if width(head) <= available + EPSILON
+        end
+        nil
+      end
+
+      # Indexes into the word's characters before which it may break: after
+      # each soft hyphen, else where the language's patterns allow.
+      def break_points(chars)
+        return (1...chars.length).select { |index| chars[index - 1].text == SOFT_HYPHEN } if @explicit
+
+        text = chars.map(&:text).join
+        language = chars.first.style.hyphenate or return []
+        core = text[/\p{L}+/] or return []
+        offset = text.index(core)
+        Hyphenation.points(core, language).map { |point| point + offset }
+      end
+
+      # The font's hyphen, or the dedicated U+2010 when it lacks "-".
+      def hyphen_for(style)
+        font = @book.resolve(style).first
+        !font.glyph?("-") && font.glyph?("‐") ? "‐" : "-"
       end
 
       # Moves characters that overflow the line onto following lines.
@@ -71,7 +130,7 @@ module Stationery
         @current.each do |segment|
           segment.text.each_char do |char|
             piece = Segment.new(char, segment.style)
-            return keep_overflow(fitting, piece) if fitting.any? && width(fitting + [piece]) > @max + 0.0001
+            return keep_overflow(fitting, piece) if fitting.any? && width(fitting + [piece]) > @max + EPSILON
 
             fitting << piece
           end
@@ -104,8 +163,10 @@ module Stationery
 
       def fragments(segments)
         x = 0
-        segments.chunk_while { |a, b| a.style == b.style }.map do |group|
-          text = group.map(&:text).join
+        segments.chunk_while { |a, b| a.style == b.style }.filter_map do |group|
+          text = group.map(&:text).join.delete(SOFT_HYPHEN)
+          next if text.empty?
+
           font, face = @book.resolve(group.first.style)
           fragment_width = measure(text, group.first.style)
           Fragment.new(text, group.first.style, font, face, fragment_width, x).tap { x += fragment_width }
@@ -117,10 +178,10 @@ module Stationery
       end
 
       def line_width = width(@current)
-      def characters(segments) = segments.sum { |segment| segment.text.length }
+      def characters(segments) = segments.sum { |segment| segment.text.delete(SOFT_HYPHEN).length }
 
       def width(segments)
-        segments.sum { |segment| measure(segment.text, segment.style) }
+        segments.sum { |segment| measure(segment.text.delete(SOFT_HYPHEN), segment.style) }
       end
 
       def measure(text, style)

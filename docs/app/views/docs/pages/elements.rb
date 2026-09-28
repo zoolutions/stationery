@@ -59,7 +59,8 @@ class Views::Docs::Pages::Elements < DocsUI::Page
           [ "link", "String", "—", [ :md, "A URL, or `\"#name\"` for an [internal link](/docs/links)." ] ],
           [ "opacity", "0..1", "1", "Text transparency." ],
           [ "kerning", "Boolean", "true", "GPOS / kern-table pair kerning." ],
-          [ "ligatures", "Boolean", "true", "GSUB `liga` standard ligatures (off with letter spacing)." ]
+          [ "ligatures", "Boolean", "true", "GSUB `liga` standard ligatures (off with letter spacing)." ],
+          [ "hyphenate", "true, \"en\", \"de\", \"sv\"", "off", [ :md, "Breaks a word that does not fit at a point the language's patterns allow, drawing a hyphen; a soft hyphen (U+00AD, `&shy;`) names the points yourself. See [Fonts](/docs/fonts#hyphenation)." ] ]
         ]
       )
     end

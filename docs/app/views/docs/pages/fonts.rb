@@ -51,6 +51,28 @@ class Views::Docs::Pages::Fonts < DocsUI::Page
         A ligature glyph maps back to all of its characters, so extracted and copied text is unchanged. Fonts
         without `liga` ligatures, such as bundled Inter, are unaffected.
 
+        ### Hyphenation
+
+        Off unless asked for. `hyphenate: "de"` on `text`, `text_style`, `default_text` or an `html`/`markdown`
+        style (`styles: { p: { hyphenate: "de" } }`) breaks a word that does not fit at the longest point
+        Liang's algorithm allows over the bundled TeX `hyph-utf8` patterns — `true` or `"en"` for American
+        English, `"de"` for German (2006 orthography), `"sv"` for Swedish — and draws a hyphen at the break.
+        Two letters stay together at the start of a word and two (three in English) at its end. A soft hyphen
+        (U+00AD, `&shy;` in HTML) names the break points of a word yourself and, as in TeX, exempts that word
+        from the patterns; it is never measured or drawn and never reaches the PDF, so an unbroken word
+        copies out whole. A hyphenated line is justifiable like any other wrapped line.
+
+        ```ruby
+        default_text hyphenate: "de"
+        text "Die Silbentrennung der Donaudampfschifffahrt"   # Silben- / trennung … at a narrow width
+        text "Zei\u00ADtungsleser"                             # breaks only after "Zei"
+        Stationery::Hyphenation.hyphenate("Silbentrennung", "de") # => ["Sil", "ben", "tren", "nung"]
+        ```
+
+        The pattern sets ship with the gem under `lib/stationery/hyphenation/patterns/` with their authors'
+        notices (`LICENSES.md`: the American English patterns' own permissive notice, MIT for German, LPPL
+        for Swedish). Another language raises `ArgumentError` naming the bundled ones.
+
         `align: :justify` (on `text`, `text_style` and table cells) stretches the spaces of wrapped lines to
         the full width, keeping kerning. The last line, lines ending in a newline and lines without spaces stay
         left-aligned; tabs are never stretched.

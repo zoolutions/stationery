@@ -99,6 +99,25 @@ RSpec.describe "Stationery::Rich::Renderer" do
     end
   end
 
+  it "turns &shy; into a soft hyphen the wrapper may break at" do
+    pdf = render { box(width: 50) { html "<p>Zei&shy;tungs&shy;leser</p>" } }
+
+    expect(text_of(pdf)).to eq("Zeitungs-\nleser")
+    expect(text_of(render { html "<p>Zei&shy;tungsleser</p>" })).to eq("Zeitungsleser")
+  end
+
+  it "hyphenates paragraphs and list items through styles:" do
+    pdf = render do
+      box(width: 70) do
+        html "<p>Silbentrennung</p><ul><li>Donaudampfschifffahrt</li></ul>",
+             styles: { p: { hyphenate: "de" }, li: { hyphenate: "de" } }
+      end
+    end
+
+    expect(text_of(pdf)).to match(/Sil-|ben-|tren-/)
+    expect(text_of(pdf)).to match(/Do-|nau-|dampf-|schiff-/)
+  end
+
   it "renders ordered, bulleted and nested lists with markers" do
     pdf = render { markdown "3. three\n4. four\n   - inner\n" }
 

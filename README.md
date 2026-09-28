@@ -106,7 +106,7 @@ renders them all, or render one with `stationery render examples/report.rb`.
 | `markdown(source, styles:, gap:, images:, base_path:, bookmarks:, links:)` | The same from CommonMark (plus GFM tables and strikethrough). |
 
 Text style options: `font`, `size`, `weight` (`:regular`, `:bold`), `style` (`:italic`), `color`,
-`letter_spacing`, `underline`, `strikethrough`, `link`, `opacity`, `kerning` (default `true`), `ligatures` (default `true`), `features` (OpenType feature tags, e.g. `%i[smcp onum]`), `align` (`:left`, `:center`, `:right`, `:justify`), `leading`.
+`letter_spacing`, `underline`, `strikethrough`, `link`, `opacity`, `kerning` (default `true`), `ligatures` (default `true`), `features` (OpenType feature tags, e.g. `%i[smcp onum]`), `hyphenate` (`true` for English, or `"de"`, `"sv"`; default off), `align` (`:left`, `:center`, `:right`, `:justify`), `leading`.
 `align: :justify` stretches the spaces of wrapped lines to the full width; the last line, lines
 ending in a newline and lines without spaces stay left-aligned (tabs are never stretched).
 Colours are `"#RRGGBB"`, `"RRGGBB"`, `"#RGB"`, `[r, g, b]` (0-255) or `[c, m, y, k]` (0-100).
@@ -544,6 +544,17 @@ their source characters in ToUnicode, so "2026" in oldstyle figures still
 extracts as "2026". Contextual features (`calt`, `clig`, `frac`) need
 lookup types the reader does not implement and do nothing.
 
+Hyphenation is off unless asked for: `hyphenate: "de"` on `text`, `text_style`,
+`default_text` or an `html`/`markdown` style (`styles: { p: { hyphenate: "de" } }`)
+breaks a word that does not fit at the longest point Liang's algorithm allows
+over the bundled TeX patterns (`true` or `"en"` for American English, `"de"`
+for German, `"sv"` for Swedish; `lib/stationery/hyphenation/patterns/LICENSES.md`
+names their authors and licences), drawing a hyphen at the break. A soft hyphen
+(U+00AD, `&shy;` in HTML) names the break points of a word yourself and, as in
+TeX, exempts that word from the patterns; it is never measured or drawn and
+never reaches the PDF. `Stationery::Hyphenation.hyphenate("Silbentrennung", "de")`
+answers `["Sil", "ben", "tren", "nung"]` for your own use.
+
 Images are JPEG (grey, RGB, CMYK) and PNG (every colour type, alpha as a soft
 mask). Parsed fonts and images are cached per process.
 
@@ -693,8 +704,9 @@ Fonts: no variable fonts (including CFF2) and no WOFF2 (it needs Brotli; convert
 `.woff`); shaping stops at pair kerning and single or ligature substitutions (`liga` by default,
 `smcp`, `onum`, `tnum`, `ss01`… on request), so contextual alternates (`calt`, `clig`, `frac`) do
 nothing and scripts that need contextual shaping (Arabic, Indic, Thai) draw glyph by glyph, and colour or emoji glyphs no font
-in the chain has are drawn as `.notdef` and reported. Text runs left to right; there is no
-hyphenation (lines break at spaces and after hyphens) and justification only widens spaces.
+in the chain has are drawn as `.notdef` and reported. Text runs left to right; hyphenation
+patterns are bundled for English, German and Swedish only (a soft hyphen works in any language),
+and justification only widens spaces.
 
 SVG covers the shapes, gradients, text and stylesheets icon sets use, nothing else: `use`,
 `image`, `clipPath`, `mask`, `pattern`, `filter` and `textPath` are skipped and reported.

@@ -290,4 +290,36 @@ RSpec.describe Stationery::Elements do
       expect(xs.uniq.size).to eq(3)
     end
   end
+
+  describe "hyphenation" do
+    it "hyphenates a paragraph in the given language, drawing hyphens at the breaks" do
+      pdf = render { box(width: 70) { text "Die Silbentrennung der Donaudampfschifffahrt", hyphenate: "de" } }
+
+      expect(text_of(pdf)).to include("-\n")
+      expect(text_of(pdf).delete("- \n")).to eq("DieSilbentrennungderDonaudampfschifffahrt")
+      expect(text_of(pdf)).to match(/Sil-|ben-|tren-|Do-|nau-|dampf-|schiff-/)
+    end
+
+    it "comes from default_text and takes true for English" do
+      doc = Class.new(SpecDocument) do
+        default_text hyphenate: true
+        def view_template = box(width: 60) { text "philanthropic concatenation" }
+      end
+
+      expect(text_of(doc.new.to_pdf)).to match(/phil-|an-|con-|cate-|na-/)
+    end
+
+    it "keeps soft hyphens out of the PDF and breaks at them" do
+      wide = render { text "Zei\u00ADtungsleser" }
+      narrow = render { box(width: 50) { text "Zei\u00ADtungs\u00ADleser" } }
+
+      expect(text_of(wide)).to eq("Zeitungsleser")
+      expect(wide.b).not_to include("\u00AD".b)
+      expect(text_of(narrow)).to eq("Zeitungs-\nleser")
+    end
+
+    it "refuses a language that is not bundled" do
+      expect { render { text "x", hyphenate: "fr" } }.to raise_error(ArgumentError, /unknown hyphenation language/)
+    end
+  end
 end
