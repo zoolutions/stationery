@@ -62,6 +62,22 @@ RSpec.describe Stationery::Layout::Columns do
       expect(lines_in(columns(lines_of(7)).fragment(260))).to eq([4, 3])
     end
 
+    it "fills the columns evenly, the earlier ones taking what cannot be shared" do
+      expect(lines_in(columns(lines_of(10), count: 3, gap: 10).fragment(260))).to eq([4, 3, 3])
+      expect(columns(lines_of(10), count: 3, gap: 10).measure(260)).to be_within(0.001).of(4 * line_height)
+      expect(lines_in(columns(lines_of(5)).fragment(260))).to eq([3, 2])
+    end
+
+    it "levels the columns when they are placed, not when they are measured" do
+      node = columns(lines_of(10), count: 3, gap: 10)
+      allow(Stationery::Layout::Columns::Leveller).to receive(:new).and_call_original
+
+      expect(node.measure(260)).to be_within(0.001).of(4 * line_height)
+      expect(Stationery::Layout::Columns::Leveller).not_to have_received(:new)
+      expect(node.fragment(260).measure(260)).to eq(node.measure(260))
+      expect(Stationery::Layout::Columns::Leveller).to have_received(:new).at_least(:once)
+    end
+
     it "behaves like a group with one column" do
       node = columns(lines_of(3), text_node("more"), count: 1)
 
@@ -189,6 +205,31 @@ RSpec.describe Stationery::Layout::Columns do
       expect(paginator.warnings).to be_empty
     end
 
+    it "fills every column of a full page and evens those of the last one" do
+      head, tail = columns(lines_of(43), count: 3, gap: 10).split(260, 160, fresh: true)
+
+      expect(lines_in(head)).to eq([11, 11, 11])
+      expect(tail.split(260, 160, fresh: true)).to eq([tail, nil])
+      expect(lines_in(tail.fragment(260))).to eq([4, 3, 3])
+    end
+
+    it "evens the columns of a last page that is full" do
+      node = columns(lines_of(31), Stationery::Layout::PageBreak.new, text_node("next"), count: 3, gap: 10)
+      head, tail = node.split(260, 160, fresh: true)
+
+      expect(lines_in(head)).to eq([11, 10, 10])
+      expect(lines_in(tail.fragment(260))).to eq([1])
+    end
+
+    it "fills the last page in order when balance is off" do
+      node = columns(lines_of(43), count: 3, gap: 10, balance: false)
+      head, tail = node.split(260, 160, fresh: true)
+
+      expect(lines_in(head)).to eq([11, 11, 11])
+      expect(lines_in(tail.fragment(260))).to eq([10])
+      expect(lines_in(columns(lines_of(16), count: 3, gap: 10, balance: false).split(260, 80).first)).to eq([5, 5, 5])
+    end
+
     it "fills every column of the last page when balance is off" do
       pdf, = render_layout(columns(lines_of(36), balance: false))
 
@@ -242,6 +283,15 @@ RSpec.describe Stationery::Layout::Columns do
       expect(places(pdf, 0)["a 4"]).to eq([160, places(pdf, 0)["a 1"].last])
       expect(places(pdf, 1)["b 3"]).to eq([160, places(pdf, 1)["b 1"].last])
       expect(places(pdf, 1)["after"].last - places(pdf, 1)["b 2"].last).to be_within(0.01).of(line_height)
+    end
+
+    it "evens the columns before a page break inside and after it" do
+      node = columns(lines_of(10, prefix: "a"), Stationery::Layout::PageBreak.new, lines_of(7, prefix: "b"),
+                     count: 3, gap: 10)
+      head, tail = node.split(260, 160, fresh: true)
+
+      expect(lines_in(head)).to eq([4, 3, 3])
+      expect(lines_in(tail.fragment(260))).to eq([3, 2, 2])
     end
 
     it "keeps a page break behind content that runs over the page" do
