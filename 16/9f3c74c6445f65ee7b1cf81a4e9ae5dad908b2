@@ -1,0 +1,31 @@
+benchmark/baseline.json
+  s_600b6bfbec0b19::t_ed35388f19e03c 1-37
+benchmark/metrics.rb
+  s_600b6bfbec0b19::t_c6ac9b69a96706 87,92,94-100
+  s_600b6bfbec0b19::t_63c1575f186160 1-84,88-91,93,101-134
+  s_600b6bfbec0b19::t_55cb021bd10c73 85-86
+benchmark/documents.rb
+  s_600b6bfbec0b19::t_3c76619125a9c7 1-52
+benchmark/support.rb
+  s_600b6bfbec0b19::t_ed35388f19e03c 9
+Rakefile
+  s_600b6bfbec0b19::t_ed35388f19e03c 107-118
+.github/workflows/main.yml
+  s_600b6bfbec0b19::t_ed35388f19e03c 51-64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "169f3c74c6445f65ee7b1cf81a4e9ae5dad908b2",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}

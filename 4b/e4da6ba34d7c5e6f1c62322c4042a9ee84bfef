@@ -1,0 +1,29 @@
+spec/stationery/fonts/font_spec.rb
+  s_600b6bfbec0b19::t_d0b6f1853e5df9 116-136,138-149
+  s_600b6bfbec0b19::t_38e008cd956c5e 137
+spec/stationery/text/wrapper_spec.rb
+  s_600b6bfbec0b19::t_d0b6f1853e5df9 15-40
+lib/stationery/text/wrapper.rb
+  s_600b6bfbec0b19::t_639c5671214dd9 29,101,186-187,189
+  s_600b6bfbec0b19::t_fcd5bace3366f8 170,184,192-194
+  s_600b6bfbec0b19::t_cc32323db46915 102
+lib/stationery/fonts/font.rb
+  s_600b6bfbec0b19::t_968aeb6374e58c 36-39,53-55,58,132-135,137,140-146,184-187,189-190
+  s_600b6bfbec0b19::t_906e297cc6ecda 139,147
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "4be4da6ba34d7c5e6f1c62322c4042a9ee84bfef",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
