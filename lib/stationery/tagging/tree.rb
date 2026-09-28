@@ -12,6 +12,7 @@ module Stationery
       def initialize
         @root = Element.new(:Document)
         @pages = {}.compare_by_identity
+        @followed = 0
       end
 
       # The next MCID on `page`, recorded as marked content of `element`.
@@ -23,6 +24,21 @@ module Stationery
       end
 
       def marked(page) = @pages.fetch(page, [])
+
+      # Joins `link`, which a header, a footer or a page template paints on
+      # `page`, to the Document: after the element the body painted last on
+      # that page, and after the links that followed before it. A reader so
+      # comes to the link of a page when it has read what the page holds.
+      # Pages are followed in their order; an element that goes on from the
+      # page before was followed there, and the link comes after that one's.
+      def follow(page, link)
+        return if link.attached?
+
+        last = top(marked(page).last)
+        index = last && position(last)
+        link.attach(@root, at: @followed = index ? index + 1 : @followed)
+        @followed += 1
+      end
 
       # Records the accessibility gaps `strict` should catch, which PDF/UA
       # refuses (PDF::Conformance#audit!). A figure needs an alt text (ISO
@@ -41,6 +57,19 @@ module Stationery
       end
 
       private
+
+      # The element of the Document that holds `element`.
+      def top(element)
+        element = element.parent while element && !element.parent.equal?(@root)
+        element
+      end
+
+      # Where `element` is among the Document's elements, from the last link
+      # that followed on; nil when it is before that.
+      def position(element)
+        kids = @root.kids
+        (@followed...kids.size).find { |index| kids[index].equal?(element) }
+      end
 
       # Every link annotation belongs to a Link element (ISO 14289-1, 7.18.5;
       # veraPDF rule 7.18.5-1), which gives it its /StructParent. What a

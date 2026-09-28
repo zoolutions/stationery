@@ -155,13 +155,15 @@ RSpec.describe "Tagged PDF audit" do # rubocop:disable RSpec/DescribeClass
   describe "links" do
     def untagged(target, place, page) = Stationery::Warnings::UntaggedLink.new(target:, place:, page:)
 
-    it "warns about a link painted by a header, a footer or a page template, on every page" do
+    it "warns about a link drawn on the canvas of a header, a footer or a page template, on every page" do
+      draw = ->(target) { proc { |canvas, rect| canvas.link(rect.x, rect.y, 50, 10, target) } }
       klass = Class.new(tagged) do
-        header { text "Home", link: "https://example.com/head" }
-        footer { text "example.com", link: "https://example.com" }
-        page_template { |page| box(at: [36, page.height - 20], link: "https://example.com/stamp") { text "Stamp" } }
+        header { canvas(height: 10, &draw.call("https://example.com/head")) }
+        footer { canvas(height: 10, &draw.call("#top")) }
+        page_template { box(at: [36, 20]) { canvas(height: 10, &draw.call("https://example.com/stamp")) } }
       end
       doc = build(klass) do
+        anchor "top"
         text "Report", heading: 1
         page_break
         text "More"
@@ -169,23 +171,29 @@ RSpec.describe "Tagged PDF audit" do # rubocop:disable RSpec/DescribeClass
 
       expect(warnings_of(doc))
         .to eq(["link to https://example.com/head in the header of page 1 is outside the structure tree",
-                "link to https://example.com in the footer of page 1 is outside the structure tree",
+                "link to #top in the footer of page 1 is outside the structure tree",
                 "link to https://example.com/stamp in a page template of page 1 is outside the structure tree",
                 "link to https://example.com/head in the header of page 2 is outside the structure tree",
-                "link to https://example.com in the footer of page 2 is outside the structure tree",
+                "link to #top in the footer of page 2 is outside the structure tree",
                 "link to https://example.com/stamp in a page template of page 2 is outside the structure tree"])
       expect(doc.warnings.first).to eq(untagged("https://example.com/head", :header, 1))
       expect { doc.to_pdf(strict: true) }.to raise_error(Stationery::WarningsError)
+      expect { doc.to_pdf(conformance: :pdf_ua1) }.to raise_error(Stationery::ConformanceError, /\(7\.18\.5\)/)
     end
 
-    it "names the anchor of a link inside the document" do
-      klass = Class.new(tagged) { footer { text "Top", link: "#top" } }
+    it "accepts the links a header, a footer and a page template paint as text and boxes" do
+      klass = Class.new(tagged) do
+        header { text "Home", link: "https://example.com/head" }
+        footer { text %(See <link href="#top">the top</link>), markup: true }
+        page_template { |page| box(at: [36, page.height - 20], link: "https://example.com/stamp") { text "Stamp" } }
+      end
       doc = build(klass) do
         anchor "top"
         text "Report", heading: 1
       end
 
-      expect(warnings_of(doc)).to eq(["link to #top in the footer of page 1 is outside the structure tree"])
+      expect(warnings_of(doc)).to be_empty
+      expect { doc.to_pdf(conformance: :pdf_ua1, strict: true) }.not_to raise_error
     end
 
     it "warns about a link drawn on the canvas without a Link element" do
