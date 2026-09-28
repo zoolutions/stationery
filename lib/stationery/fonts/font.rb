@@ -104,7 +104,11 @@ module Stationery
 
       def build(writer)
         embedding = (@ttf.cff? ? Embedding::CFF : Embedding::TrueType).new(self)
-        name, cid_font = embedding.build(writer, @used.keys.sort)
+        gids = @used.keys.sort
+        name, cid_font = Stationery.instrument("font.stationery", font: @ttf.postscript_name, action: :subset,
+                                                                  glyphs: gids.size) do
+          embedding.build(writer, gids)
+        end
 
         writer.add(
           Type: :Font, Subtype: :Type0, BaseFont: name, Encoding: :"Identity-H",
