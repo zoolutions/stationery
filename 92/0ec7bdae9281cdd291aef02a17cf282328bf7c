@@ -1,0 +1,21 @@
+lib/stationery/layout/flow/splitter.rb
+  s_f5a1e2cf907cda::t_ca11eb4a799a27 12,63-65,67-69,71,76-85,88-97,209-210,214,219
+spec/stationery/layout/flow_floats_run_split_spec.rb
+  s_f5a1e2cf907cda::t_ca11eb4a799a27 51,54-55,60-74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "920ec7bdae9281cdd291aef02a17cf282328bf7c",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
