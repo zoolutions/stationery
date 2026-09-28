@@ -152,6 +152,40 @@ RSpec.describe "Stationery::Rich::Renderer" do
     end
   end
 
+  describe "columns" do
+    def lines(count) = Array.new(count) { |i| "line #{i + 1}" }.join("<br>")
+
+    it "pours a container through balanced columns with column-count and column-gap" do
+      body = lines(6)
+      pdf = render { html %(<div style="column-count: 2; column-gap: 20pt"><p>#{body}</p></div><p>after</p>) }
+      left, right = origins(pdf).first(6).partition { |x, _| x < 100 }
+
+      expect(right.map(&:first)).to eq([160.0] * 3)
+      expect(right.map(&:last)).to eq(left.map(&:last))
+      expect(origins(pdf).last.first).to eq(20.0)
+      expect(origins(pdf).last.last).to be < left.last.last
+    end
+
+    it "reads columns: <n> on a paragraph and a list, with the default gap" do
+      body = lines(4)
+      pdf = render { html %(<style>p { columns: 2 }</style><p>#{body}</p>) }
+      list = render { html %(<ul style="columns: 2"><li>one</li><li>two</li></ul>) }
+
+      expect(origins(pdf).map(&:first)).to eq([20.0, 20.0, 156.0, 156.0])
+      expect(origins(list).map(&:last).uniq.size).to eq(1)
+    end
+
+    it "draws one column as it drew before and reports what it does not read" do
+      document = self.document do
+        html %(<div style="column-count: 1"><p>one</p></div><div style="columns: 12em; column-gap: -2px">x</div>)
+      end
+      plain = render { html "<p>one</p><div>x</div>" }
+
+      expect(ops(document.to_pdf)).to eq(ops(plain))
+      expect(document.warnings.map(&:properties)).to eq([["columns: 12em", "column-gap: -2px"]])
+    end
+  end
+
   describe "page breaks" do
     it "starts a new page before or after a block" do
       pdf = render do

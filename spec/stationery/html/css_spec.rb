@@ -62,7 +62,11 @@ RSpec.describe Stationery::HTML::Css do
       ["break-after: page", { break_after: true }],
       ["page-break-before: auto", {}],
       ["break-inside: avoid", { keep_together: true }],
-      ["page-break-inside: avoid", { keep_together: true }]
+      ["page-break-inside: avoid", { keep_together: true }],
+      ["column-count: 3", { columns: 3 }],
+      ["columns: 2; column-gap: 16px", { columns: 2, column_gap: 12.0 }],
+      ["column-count: 2; column-count: auto", {}],
+      ["column-gap: 10pt; column-gap: normal", {}]
     ].each do |style, block|
       it "reads #{style.inspect}" do
         expect(inline(style)).to eq([{}, block])

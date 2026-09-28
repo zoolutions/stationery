@@ -27,7 +27,9 @@ module Stationery
         ALIGN = /\A\s*(left|center|right|justify)\s*\z/i
         # What makes a container a block of its own instead of flattening into its parent.
         BOXED = %i[background padding padding_top padding_right padding_bottom padding_left margin margin_top
-                   margin_bottom break_before break_after keep_together].freeze
+                   margin_bottom break_before break_after keep_together columns].freeze
+        # What a block of its own takes besides.
+        WITH_BOX = %i[column_gap].freeze
         INHERITED = %i[align].freeze
         EMPTY = {}.freeze
 
@@ -72,7 +74,7 @@ module Stationery
         end
 
         # A `p` hands its whole style to its paragraphs. Any other container with a box of its own
-        # (a background, padding, margins, a page-break rule) becomes a Container; without one it
+        # (a background, padding, margins, a page-break rule, columns) becomes a Container; without one it
         # flattens into its parent, as it always did.
         def container(node, marks, inherited, style, out)
           return out.boundary(style) { children(node, marks, inherited, out) } if node.name == "p"
@@ -80,6 +82,7 @@ module Stationery
           boxed = style.slice(*BOXED)
           return out.boundary(inherited) { children(node, marks, inherited, out) } if boxed.empty?
 
+          boxed = style.slice(*BOXED, *WITH_BOX)
           out.block(Rich::Container.new(blocks: blocks_of(node, marks, inherited, inherited), style: boxed))
         end
 
