@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-# An invoice built with stationery. Run it to write examples/invoice.pdf:
+# An invoice: a logo beside an amount-due callout, a summary table without
+# borders, a line-item table with a coloured header, zebra rows and a totals
+# row, in a font family of its own. Run it to write examples/invoice.pdf:
 #
 #   ruby -Ilib examples/invoice.rb
 #   ruby -Ilib exe/stationery render examples/invoice.rb
