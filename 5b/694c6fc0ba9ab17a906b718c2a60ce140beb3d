@@ -1,0 +1,19 @@
+docs/app/views/docs/pages/documents_and_components.rb
+  s_632dbd6e2d0597::t_7e096197f2e94b 39-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "5b694c6fc0ba9ab17a906b718c2a60ce140beb3d",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "unknown"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
