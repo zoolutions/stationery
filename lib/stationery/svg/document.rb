@@ -3,14 +3,17 @@
 module Stationery
   module SVG
     # A parsed SVG drawn as vector paths on a canvas. Supports the subset icon
-    # sets use: path, rect (with rx), circle, ellipse, line, polyline, polygon
-    # and g, with fill, stroke, stroke width/caps/joins, fill-rule, opacity,
-    # inline styles, <style> stylesheets, transforms, linear/radial gradients
-    # and text/tspan. `currentColor` takes the colour you pass.
+    # sets and exports use: path, rect (with rx), circle, ellipse, line,
+    # polyline, polygon and g, with fill, stroke, stroke width/caps/joins,
+    # fill-rule, opacity, inline styles, <style> stylesheets, transforms,
+    # linear/radial gradients and text/tspan; `use` (of shapes, groups, text,
+    # symbols and other uses), `symbol` and nested `svg` viewports with
+    # `preserveAspectRatio`, and `clipPath`. `currentColor` takes the colour
+    # you pass, or the `color` an element sets.
     class Document
-      SHAPES = %w[path rect circle ellipse line polyline polygon].freeze
+      SHAPES = Shapes::NAMES
       QUIET = (SHAPES + %w[svg g title desc metadata style defs linearGradient radialGradient stop text
-                           tspan]).freeze
+                           tspan use symbol clipPath]).freeze
 
       def self.parse(source)
         root = Parser.parse(source)
@@ -26,6 +29,7 @@ module Stationery
         @view_box = read_view_box
         @sheet = Stylesheet.parse(style_text)
         @gradients = Gradient.collect(root, @sheet)
+        @ids = index
         @unsupported = (element_names(root).uniq - QUIET).sort + approximations
       end
 
@@ -41,7 +45,7 @@ module Stationery
         style = Style.new(Style::DEFAULTS, [scale, 0, 0, scale, e, f], color:, sheet: @sheet).child(@root)
         painter = Painter.new(canvas, @gradients, @view_box.last(2))
         text = Text.new(canvas, painter, book || Fonts::FontBook.new, family || Fonts::Bundled::DEFAULT)
-        shapes(@root, style) do |element, own|
+        walker(painter.method(:clip)).children(@root, style) do |element, own|
           element.name == "text" ? text.draw(element, own) : painter.paint(element, own)
         end
       end
@@ -61,6 +65,14 @@ module Stationery
         styles.flat_map(&:children).join(" ")
       end
 
+      # Every element with an id, the first of a repeated id.
+      def index
+        ids = {}
+        Parser.walk(@root) { |element| ids[element.attributes["id"]] ||= element }
+        ids.delete(nil)
+        ids
+      end
+
       def element_names(element)
         element.children.grep(Parser::Element).flat_map { |child| [child.name, *element_names(child)] }
       end
@@ -71,23 +83,15 @@ module Stationery
       end
 
       # Yields every drawn shape and text with its resolved style, in paint
-      # order, skipping undisplayed subtrees and hidden elements.
-      def shapes(parent, parent_style, &)
-        parent.children.each do |element|
-          style = parent_style.child(element)
-          next unless style.displayed?
+      # order; `clipper` paints what is clipped (see Walker).
+      def walker(clipper = nil) = Walker.new(@ids, @view_box.last(2), clipper:)
 
-          if element.name == "g" then shapes(element, style, &)
-          elsif (SHAPES.include?(element.name) || element.name == "text") && style.visible? then yield element, style
-          end
-        end
-      end
-
-      # Paint references to missing gradients, gradient spreads drawn as pad
-      # and stylesheet selectors ignored.
+      # Paint references to missing gradients, gradient spreads drawn as pad,
+      # uses and clip paths that lead nowhere, and stylesheet selectors ignored.
       def approximations
+        walker = self.walker
         missing = []
-        shapes(@root, Style.new(sheet: @sheet).child(@root)) do |_element, style|
+        walker.children(@root, Style.new(sheet: @sheet).child(@root)) do |_element, style|
           [style.fill, style.stroke].grep(Style::Reference).each do |reference|
             missing << "url(##{reference.id})" unless @gradients.key?(reference.id)
           end
@@ -96,7 +100,7 @@ module Stationery
           "#{gradient.kind}Gradient spreadMethod=#{gradient.approximated_spread}" if gradient.approximated_spread
         end
         selectors = @sheet.unsupported.empty? ? [] : ["style selectors: #{@sheet.unsupported.join(", ")}"]
-        (missing + spreads).uniq.sort + selectors
+        (missing + spreads + walker.issues).uniq.sort + selectors
       end
     end
   end

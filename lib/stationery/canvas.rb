@@ -67,6 +67,25 @@ module Stationery
       end
     end
 
+    # A path the block traces in top-left space, under `transform` when given,
+    # for #clip_to.
+    def outline(transform: nil, &)
+      Path.new(self, transform:).tap(&)
+    end
+
+    # Paints the block inside `outlines` (see #outline), joined into one
+    # clipping path under the nonzero rule or, with `even_odd:`, the even-odd
+    # one. Without a path to clip to, nothing is inside and the block is skipped.
+    def clip_to(outlines, even_odd: false)
+      paths = outlines.map(&:to_s).reject(&:empty?)
+      return if paths.empty?
+
+      save do
+        emit(*paths, even_odd ? "W* n" : "W n")
+        yield self
+      end
+    end
+
     def fill_rect(x, y, w, h, color:, opacity: nil)
       shape(fill: color, opacity:) { |p| p.rect(x, y, w, h) }
     end

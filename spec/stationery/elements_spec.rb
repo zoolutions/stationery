@@ -136,22 +136,41 @@ RSpec.describe Stationery::Elements do
   it "warns about SVG elements it cannot draw, naming the file or inline markup" do
     file = File.expand_path("../fixtures/svg/check.svg", __dir__)
     doc = SpecDocument.build do
-      svg '<svg viewBox="0 0 10 10"><text>Hi</text><use href="#a"/><rect width="5" height="5"/></svg>', width: 10
+      svg '<svg viewBox="0 0 10 10"><text>Hi</text><image href="a.png"/><rect width="5" height="5"/></svg>', width: 10
       svg file, width: 10
     end
     doc.to_pdf
 
-    expect(doc.warnings.to_a).to eq([Stationery::Warnings::UnsupportedSvg.new(elements: %w[use],
+    expect(doc.warnings.to_a).to eq([Stationery::Warnings::UnsupportedSvg.new(elements: %w[image],
                                                                               source: "inline")])
+  end
+
+  it "draws sprites and clipped artwork without warnings, tagged or not" do
+    sprite = File.expand_path("../fixtures/svg/sprite.svg", __dir__)
+    clipped = File.expand_path("../fixtures/svg/clipped.svg", __dir__)
+    doc = SpecDocument.build do
+      svg sprite, width: 120, alt: "Icons"
+      svg clipped, width: 100, alt: false
+    end
+    tagged = doc.to_pdf(tagged: true)
+
+    expect(doc.warnings.grep(Stationery::Warnings::UnsupportedSvg)).to eq([])
+    expect(tagged).to have_tagged_content
+    expect(inspect_pdf(tagged).structure).to eq([[:Document, [[:Figure, "Icons"]]]])
+    [tagged, doc.to_pdf].each do |pdf|
+      content = page_contents(pdf).first
+      expect(content.scan("W n\n").size).to eq(6)
+      expect(content.scan(/^q$/).size).to eq(content.scan(/^Q$/).size)
+    end
   end
 
   it "names the file of an SVG with unsupported elements" do
     path = File.join(Dir.mktmpdir, "logo.svg")
-    File.write(path, '<svg viewBox="0 0 10 10"><use href="#a"/></svg>')
+    File.write(path, '<svg viewBox="0 0 10 10"><use href="#a"/><mask id="m"/></svg>')
     doc = SpecDocument.build { svg path, width: 10 }
     doc.to_pdf
 
-    expect(doc.warnings.map(&:message)).to eq(['SVG "logo.svg" uses unsupported elements: use'])
+    expect(doc.warnings.map(&:message)).to eq(['SVG "logo.svg" uses unsupported elements: mask, use: #a not found'])
   end
 
   it "wraps chips and centres groups" do

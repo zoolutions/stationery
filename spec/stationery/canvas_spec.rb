@@ -162,6 +162,36 @@ RSpec.describe Stationery::Canvas do
     expect(ops).to match(/q\n10 70 50 20 re\nW n\n.*0 0 200 100 re\nf\nQ\nQ\n/m)
   end
 
+  describe "#clip_to" do
+    it "clips to the outlines traced, each under its own transform, as one path" do
+      square = canvas.outline { |path| path.rect(0, 0, 10, 10) }
+      triangle = canvas.outline(transform: [2, 0, 0, 2, 20, 0]) do |path|
+        path.move_to(0, 0)
+        path.line_to(5, 0)
+        path.line_to(0, 5)
+        path.close
+      end
+      canvas.clip_to([square, triangle]) { canvas.fill_rect(0, 0, 200, 100, color: "#000") }
+
+      expect(ops).to eq(
+        "q\n0 90 10 10 re\n20 100 m\n30 100 l\n20 90 l\nh\nW n\nq\n0 0 0 rg\n0 0 200 100 re\nf\nQ\nQ\n"
+      )
+    end
+
+    it "clips with the even-odd rule on request" do
+      canvas.clip_to([canvas.outline { |path| path.rect(0, 0, 10, 10) }], even_odd: true) { nil }
+
+      expect(ops).to eq("q\n0 90 10 10 re\nW* n\nQ\n")
+    end
+
+    it "paints nothing when no outline has a path" do
+      canvas.clip_to([canvas.outline { nil }]) { canvas.fill_rect(0, 0, 1, 1, color: "#000") }
+      canvas.clip_to([]) { canvas.fill_rect(0, 0, 1, 1, color: "#000") }
+
+      expect(ops).to eq("")
+    end
+  end
+
   it "applies opacity through an ExtGState registered on the page" do
     canvas.fill_rect(0, 0, 1, 1, color: "#000", opacity: 0.5)
 
