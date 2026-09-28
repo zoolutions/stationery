@@ -37,9 +37,13 @@ module Stationery
       # Properties read on text (inherited by everything inside the element).
       INLINE = %w[color font-size font-weight font-style text-decoration].freeze
       # Properties read on the block an element becomes.
-      BLOCK = %w[text-align background-color margin margin-top margin-bottom padding padding-top padding-right
-                 padding-bottom padding-left border width page-break-before page-break-after break-before
-                 break-after page-break-inside break-inside column-count column-gap columns].freeze
+      BLOCK = %w[text-align background-color margin margin-top margin-right margin-bottom margin-left padding
+                 padding-top padding-right padding-bottom padding-left border width page-break-before
+                 page-break-after break-before break-after page-break-inside break-inside column-count column-gap
+                 columns].freeze
+      # The sides `margin` sets, and the two that indent a block: a negative one is not drawn.
+      MARGINS = %w[margin-top margin-right margin-bottom margin-left].freeze
+      INDENTS = %w[margin-left margin-right].freeze
       FONT_SIZES = { "1" => 0.625, "2" => 0.8125, "3" => 1.0, "4" => 1.125, "5" => 1.5, "6" => 2.0,
                      "7" => 3.0 }.freeze
       KEYWORD_SIZES = { "xx-small" => 0.5625, "x-small" => 0.625, "small" => 0.8125, "medium" => 1.0,
@@ -79,9 +83,17 @@ module Stationery
       end
 
       # The declarations that apply to `element`: legacy attributes, then the
-      # stylesheet by specificity, then its inline style.
+      # stylesheet by specificity, then its inline style. A margin declared
+      # again stands where it was declared last, since `margin` and its sides
+      # are read in that order.
       def declarations(element)
-        legacy(element).merge(@sheet.declarations(element), CSS.declarations(element.attributes["style"]))
+        layers = [legacy(element), *@sheet.matching(element), CSS.declarations(element.attributes["style"])]
+        layers.each_with_object({}) do |layer, merged|
+          layer.each do |name, value|
+            merged.delete(name) if name.start_with?("margin")
+            merged[name] = value
+          end
+        end
       end
 
       # [marks, block]: the text marks the element's content inherits and the
@@ -149,8 +161,9 @@ module Stationery
         case name
         when "text-align" then read(name, value, block, :align) { align(value) }
         when "background-color" then read(name, value, block, :background) { color(value) }
-        when "margin" then read(name, value, block, :margin) { box(value) }
+        when "margin" then margin(value, block)
         when "padding" then read(name, value, block, :padding) { box(value) }
+        when *INDENTS then read(name, value, block, name.tr("-", "_").to_sym) { indent(value) }
         when /\A(margin|padding)-/ then read(name, value, block, name.tr("-", "_").to_sym) { points(value) }
         when "border" then read(name, value, block, :border) { border(value) }
         when "width" then read(name, value, block, :width) { width(value) }
@@ -242,6 +255,18 @@ module Stationery
         when "pt" then match[1].to_f
         when "px", nil then match[1].to_f * CSS_PX
         end
+      end
+
+      # `margin` sets every side, so it takes back the sides declared before
+      # it; one with a value that is not read leaves them as they are.
+      def margin(value, block)
+        sides = read("margin", value, block, :margin) { box(value) }
+        MARGINS.each { |name| block.delete(name.tr("-", "_").to_sym) } if sides
+      end
+
+      def indent(value)
+        length = points(value)
+        length unless length&.negative?
       end
 
       # One to four lengths as [top, right, bottom, left].

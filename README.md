@@ -212,17 +212,19 @@ ignored and reported. At-rules are skipped, except that rules inside `@media pri
 | `text-align` | `left`, `center`, `right`, `justify` | paragraphs, headings, cells, images; inherited from a container |
 | `background-color` | as `color`, or `transparent` | `p`, `div` and other containers, `blockquote`, `pre`, `table`, `td`, `th` |
 | `padding`, `padding-top` … `padding-left` | one to four lengths in `px` or `pt` | the same |
-| `margin`, `margin-top`, `margin-bottom` | lengths in `px` or `pt`; top and bottom only, added to `gap:` | blocks |
+| `margin`, `margin-top` … `margin-left` | one to four lengths in `px` or `pt`: top and bottom are added to `gap:`, left and right indent the block. A negative margin is drawn as none | blocks, and a floated `img` |
 | `border` | `1px solid #ccc` in any order, `none` | `table` (every cell), `td`, `th` |
 | `width` | `px`, `pt`, `%`, `auto` | `img`, `table`, and `td`/`th` (column widths, when every cell of the first row has one) |
-| `float` | `left`, `right`, `none` | `img` only: the text that follows wraps beside it. Its `margin` (all four sides) is kept around it, else `styles: { img: { float_margin: 8 } }` towards the text |
+| `float` | `left`, `right`, `none` | `img` only: the text that follows wraps beside it. Its `margin`, with `margin-top` … `margin-left` over it, is kept around it, else `styles: { img: { float_margin: 8 } }` towards the text |
 | `page-break-before`, `page-break-after`, `break-before`, `break-after` | `always`, `page`, `auto` | blocks |
 | `page-break-inside`, `break-inside` | `avoid`, `auto` | blocks |
 | `column-count`, `columns` | a number of columns, `auto` (a column width is not read) | `div` and other containers, `p`, headings, lists, tables, `blockquote`, `pre` |
 | `column-gap` | a length in `px` or `pt`, `normal` | the same |
 
+`margin` and its sides are read in the order of the cascade: a side wins over a `margin` declared
+before it or by a lesser rule, and a `margin` takes back the sides declared before it.
 `<font color size>`, `<center>` and `<img align="left|right">` (a float) are read the same way.
-Everything else (`display`, `float` on anything but an image, `position`, `font-family`, `line-height`, `em` lengths outside `font-size`, `url()` values,
+Everything else (`display`, `float` on anything but an image, `position`, `font-family`, `line-height`, `em` lengths outside `font-size`, `auto` margins, a negative `margin-left` or `margin-right`, `url()` values,
 inline backgrounds) is ignored and named in the `UnsupportedCss` warning, so `strict` catches
 content that expects more than this. No value is ever fetched: `url()` and `@import` are dropped.
 
@@ -1275,8 +1277,8 @@ Images are JPEG, PNG (non-interlaced) and lossless WebP (not lossy or animated W
 than 33 megapixels) and never fetched from a URL; a JPEG is embedded at its
 source resolution (only PNG and WebP can be downscaled), so an oversized one is reported, not resized. `html` reads a fixed subset of CSS (colours, sizes, weights, alignment, margins, padding, table
 borders and widths, page breaks; see [What CSS is read](#what-css-is-read)), not a layout
-engine's worth: no `display`, positioning, `font-family` or selectors with combinators, and floats
-for images only.
+engine's worth: no `display`, positioning, `font-family`, `auto` or negative margins or selectors
+with combinators, and floats for images only, with their `margin` around them.
 `markdown` reads no CSS, and raw HTML inside Markdown stays literal text.
 
 Layout: a box with a fixed `height:` never splits (use `min_height:` for a floor that can); a row
