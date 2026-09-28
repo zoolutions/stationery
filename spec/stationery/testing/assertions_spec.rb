@@ -37,6 +37,21 @@ RSpec.describe Stationery::Testing::Assertions do
     expect(host.calls.last.last).to eq("expected PDF not to have text \"Hello\", got text:\nHello")
   end
 
+  it "asserts and refutes what form fields show with fields: true" do
+    form = SpecDocument.build { text_field "name", value: "Astrid" }.to_pdf
+    host.assert_pdf_text(form, "Astrid", fields: true)
+    host.assert_pdf_text(form, "Astrid")
+    host.refute_pdf_text(form, "Astrid")
+    host.refute_pdf_text(form, "Astrid", "not her", fields: true)
+
+    expect(host.calls).to eq(
+      [[true, "expected PDF to have text \"Astrid\", form fields included, got text:\nAstrid"],
+       [false, "expected PDF to have text \"Astrid\", got text:\n\n" \
+               "(a form field shows it: read what the fields show with fields: true)"],
+       [true, "expected PDF not to have text \"Astrid\", got text:\n"], [false, "not her"]]
+    )
+  end
+
   it "asserts page count, links, images, bookmarks and warnings" do
     host.assert_page_count(pdf, 1)
     host.assert_pdf_link(pdf, "https://example.com")

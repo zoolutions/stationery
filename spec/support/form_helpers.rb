@@ -1,33 +1,23 @@
 # frozen_string_literal: true
 
+require "delegate"
 require "stringio"
+require "stationery/testing/inspector"
 
 module FormHelpers
   UTF16_BOM = "\xFE\xFF".b
 
-  # Collects the strings a form XObject shows, decoded through its fonts. A
-  # sequence with ActualText reads as that text, whatever it shows.
-  class ShownText
-    attr_reader :strings
-
-    def initialize(fonts)
-      @fonts = fonts
-      @strings = []
+  # A form XObject in place of the page it is on, so that the receiver the
+  # Inspector reads a page with reads the form alone.
+  class FormAlone < SimpleDelegator
+    def initialize(page, stream)
+      super(page)
+      @form = PDF::Reader::FormXObject.new(page, stream)
     end
 
-    def begin_marked_content_with_pl(_tag, properties) = @actual = properties[:ActualText]
-    def end_marked_content = @actual = nil
-    def set_text_font_and_size(label, _size) = @font = @fonts.fetch(label)
-    def show_text(string) = @strings << shown([string])
-    def show_text_with_positioning(parts) = @strings << shown(parts.grep(String))
-
-    private
-
-    def shown(parts)
-      return parts.map { |part| @font.to_utf8(part) }.join unless @actual
-
-      @actual.b.delete_prefix(UTF16_BOM).force_encoding(Encoding::UTF_16BE).encode(Encoding::UTF_8)
-    end
+    def fonts = @form.fonts
+    def xobjects = @form.xobjects
+    def walk(*) = @form.walk(*)
   end
 
   def form_objects(pdf, password: "") = PDF::Reader.new(StringIO.new(pdf), password:).objects
@@ -70,11 +60,13 @@ module FormHelpers
     (objects.deref(resources[:Font]) || {}).transform_values { |ref| objects.deref(ref) }
   end
 
-  # The strings a widget's normal appearance shows, decoded to UTF-8.
+  # The strings a widget's normal appearance shows, one for each operator
+  # that shows any: decoded through its fonts, a sequence with ActualText as
+  # that text.
   def appearance_text(pdf, widget, state = nil)
     reader = PDF::Reader.new(StringIO.new(pdf))
-    form = PDF::Reader::FormXObject.new(reader.pages.first, appearance_stream(reader.objects, widget, state))
-    ShownText.new(form.font_objects).tap { |shown| form.walk(shown) }.strings
+    form = FormAlone.new(reader.pages.first, appearance_stream(reader.objects, widget, state))
+    Stationery::Testing::MarkedText.read(form).shown
   end
 
   # The characters a font's ToUnicode map covers: what its subset can show.

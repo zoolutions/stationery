@@ -39,8 +39,9 @@ module Stationery
         end
       end
 
-      # { MCID => text } and the strings shown outside marked content.
-      attr_reader :texts, :unmarked
+      # { MCID => text }, the strings shown outside marked content, and what
+      # each operator showed, in the order drawn.
+      attr_reader :texts, :unmarked, :shown
 
       def self.read(page) = new(page).tap { |receiver| page.walk(receiver) }
 
@@ -52,6 +53,7 @@ module Stationery
         @texts = {}
         @baselines = {}
         @unmarked = []
+        @shown = []
         @sequences = []
       end
 
@@ -104,7 +106,9 @@ module Stationery
       private
 
       def show(params)
-        params.grep(String).each { |string| append(string) }
+        strings = params.grep(String).map { |string| read(string) }
+        @shown << strings.join
+        strings.each { |text| append(text) }
         return @glyphs.show_text_with_positioning(params) unless @sequence
 
         @sequence.from ||= pen
@@ -117,8 +121,7 @@ module Stationery
         @actual = @sequence = nil
       end
 
-      def append(string)
-        text = shown(string)
+      def append(text)
         return @unmarked << text if @open.empty?
 
         mcid = @open.compact.last
@@ -131,7 +134,7 @@ module Stationery
       end
 
       # The characters a string shows: its ActualText once, when it has one.
-      def shown(string)
+      def read(string)
         if @actual
           text = @actual
           @actual = ""

@@ -4,6 +4,7 @@ require "pathname"
 require "stringio"
 require "stationery"
 require_relative "structure_reader"
+require_relative "field_page"
 
 module Stationery
   module Testing
@@ -41,9 +42,18 @@ module Stationery
       end
 
       def page_count = reader.page_count
-      def page_texts = @page_texts ||= reader.pages.map { |page| MarkedText.read(page).layout.squeeze(" ").strip }
-      def text = page_texts.join("\n")
       def metadata = reader.info
+
+      # The text of each page's content. `fields: true` reads what the
+      # page's form fields show as well, each where it is on the page: a
+      # field's value is drawn by its widget, not by the page content.
+      def page_texts(fields: false)
+        (@page_texts ||= {})[fields] ||= reader.pages.map do |page|
+          MarkedText.read(fields ? FieldPage.new(page) : page).layout.squeeze(" ").strip
+        end
+      end
+
+      def text(fields: false) = page_texts(fields:).join("\n")
 
       # The XMP packet (the catalog's /Metadata stream) as a String, or nil.
       def xmp
