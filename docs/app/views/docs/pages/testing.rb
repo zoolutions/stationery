@@ -15,8 +15,8 @@ class Views::Docs::Pages::Testing < DocsUI::Page
       DocsUI::Table(
         %w[RSpec Minitest Passes when],
         [
-          [ [ :code, "have_pdf_text(str_or_regexp)" ], [ :code, "assert_pdf_text / refute_pdf_text" ], "the text of all pages contains it" ],
-          [ [ :code, "have_pdf_text_on_page(n, str_or_regexp)" ], "—", "page n (1-based) contains it" ],
+          [ [ :code, "have_pdf_text(str_or_regexp, fields: false)" ], [ :code, "assert_pdf_text / refute_pdf_text" ], "the text of all pages contains it (with fields: true, what the form fields show is part of the text)" ],
+          [ [ :code, "have_pdf_text_on_page(n, str_or_regexp, fields: false)" ], "—", "page n (1-based) contains it" ],
           [ [ :code, "have_page_count(n)" ], [ :code, "assert_page_count" ], "the PDF has n pages" ],
           [ [ :code, "have_pdf_link(url_or_regexp)" ], [ :code, "assert_pdf_link" ], "a URI link annotation matches" ],
           [ [ :code, "have_image_count(n)" ], [ :code, "assert_image_count" ], "n image XObjects are embedded" ],
@@ -45,6 +45,7 @@ class Views::Docs::Pages::Testing < DocsUI::Page
         pdf.page_count       # => 2
         pdf.page_texts       # => ["Invoice INV-7 …", "…"]
         pdf.text             # all pages, joined with newlines
+        pdf.text(fields: true) # with what the form fields show, as page_texts(fields: true)
         pdf.links            # => ["mailto:hello@acme.test"]
         pdf.internal_links   # named destinations the document links to
         pdf.image_count      # => 1

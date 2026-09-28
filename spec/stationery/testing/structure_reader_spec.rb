@@ -39,6 +39,12 @@ RSpec.describe Stationery::Testing::StructureReader do
     expect(structure(doc)).to eq([[:Document, [[:P, "Boldly going"]]]])
   end
 
+  it "keeps a line together where it is turned, around a sequence with ActualText" do
+    doc = build { box(rotate: 30) { text "café au lait" } }
+
+    expect(structure(doc.to_pdf(shaper: FakeShapers::MARKING))).to eq([[:Document, [[:P, "café au lait"]]]])
+  end
+
   it "lists an element without content by its type alone" do
     doc = build { table([["", "x"]]) }
 

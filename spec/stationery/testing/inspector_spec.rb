@@ -67,6 +67,34 @@ RSpec.describe Stationery::Testing::Inspector do
     end
   end
 
+  # A shaper's reordered stretch is shown in a Span whose ActualText is the
+  # text as written (see Fonts::ShapedRun).
+  describe "#text of a sequence with ActualText" do
+    def shaped(shaper, &) = Class.new(SpecDocument) { shaper(shaper) }.build(&)
+
+    it "is the ActualText when the first glyph shown has no advance" do
+      pdf = shaped(FakeShapers::MARK_FIRST) { text "café au lait" }.to_pdf
+
+      expect(page_contents(pdf).first).to match(%r{/Span <</ActualText <FEFF00650301>>> BDC\n\S+ Ts\n\[\S+ <0264>\] TJ})
+      expect(described_class.new(pdf).text).to eq("café au lait")
+    end
+
+    it "is the ActualText when nothing shown has an advance" do
+      pdf = shaped(FakeShapers::STACKED) { text "abc" }.to_pdf
+
+      expect(described_class.new(pdf).text).to eq("abc")
+    end
+
+    it "is read once, between the text around it, however many glyphs the sequence shows" do
+      doc = shaped(FakeShapers::REVERSED) do
+        text "before <b>right to left, a long stretch</b> after", markup: true
+        text "below"
+      end
+
+      expect(described_class.new(doc).text).to eq("before right to left, a long stretch after\nbelow")
+    end
+  end
+
   describe "#lang" do
     it "reads the catalog /Lang as UTF-8" do
       doc = Class.new(SpecDocument) do
