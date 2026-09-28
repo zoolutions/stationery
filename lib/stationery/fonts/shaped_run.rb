@@ -167,7 +167,7 @@ module Stationery
     end
 
     # The glyph a font draws where the shaper answered glyph 0.
-    class ShapedRun::StandIn < Shaper::Glyph # rubocop:disable Style/ClassAndModuleChildren
+    ShapedRun::StandIn = Class.new(Shaper::Glyph) do
       def self.for(font, glyphs)
         gid = font.stand_in.gid
         advance = font.ttf.advance(gid)

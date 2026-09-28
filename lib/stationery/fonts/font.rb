@@ -147,7 +147,9 @@ module Stationery
 
       # Whether `gid`, drawn for `text`, stands in for a glyph the font lacks.
       def stands_in?(gid, text)
-        gid == @stand_in.gid && text != @stand_in.char && !text.each_char.all? { |char| glyph?(char) }
+        return false if @stand_in.nil? || gid != @stand_in.gid || text == @stand_in.char
+
+        !text.each_char.all? { |char| glyph?(char) }
       end
 
       # Whether a character the font lacks is drawn as a blank (see WHITESPACE).
