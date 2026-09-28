@@ -102,6 +102,16 @@
         "objects": "3e44477c475f525a69a43bb0a2d296e8c1edd306770e211a97130bec5d877865"
       }
     },
+    "shipping_label": {
+      "string": {
+        "bytes": "68a2e4ace5842f76516f73a854b6008d27d9317ccc7a89a107a66f6b56c52dcd",
+        "objects": "d96746930b125ce5a4300b8a356de52d639ca173fafeff4be6e84a95ace70227"
+      },
+      "block": {
+        "bytes": "e3ea40756535aa937aff08ac2dde1da55f0bebd7ca5f57e80f1ac991c5b1e4dd",
+        "objects": "5c1b7b78ddffa7ffdb5fe6756a23086dec7e0dd146a0bbffbfb3613db1c234c2"
+      }
+    },
     "table": {
       "string": {
         "bytes": "b6cf5820bf90dbc1358c367d82d2f7ece3d4fd27a2d210049e7151073d94dcfa",

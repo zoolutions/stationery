@@ -3,6 +3,7 @@
 /pkg/
 /tmp/
 /examples/*.pdf
+/examples/*.zpl
 *.gem
 .rspec_status
 gemfiles/*.lock

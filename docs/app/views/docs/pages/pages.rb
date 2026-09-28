@@ -4,7 +4,7 @@ class Views::Docs::Pages::Pages < DocsUI::Page
   title "Pages, headers and footers"
   eyebrow "Guide"
 
-  def lead = "Page sizes and margins, header and footer regions that reserve space, page templates, print hints, monochrome mode and debug outlines."
+  def lead = "Page sizes and margins, header and footer regions that reserve space, page templates, print hints, monochrome mode, ZPL for label printers and debug outlines."
 
   def content
     DocsUI::Section("Page size and margins") do
@@ -177,6 +177,10 @@ class Views::Docs::Pages::Pages < DocsUI::Page
 
     DocsUI::Section("Monochrome", description: "Black or nothing: thermal label printers and other one-bit devices.") do
       md SourceMarkdown.readme_section("Monochrome")
+    end
+
+    DocsUI::Section("Label printers: to_zpl", description: "ZPL II for Zebra and compatible thermal printers.") do
+      md SourceMarkdown.readme_section("Label printers: to_zpl")
     end
 
     DocsUI::Section("Embedded files", description: "Attachments, for Factur-X and friends.") do
