@@ -1,0 +1,27 @@
+lib/stationery/layout/node.rb
+  s_f5a1e2cf907cda::t_ab1ab4d5444b99 12
+lib/stationery/elements/lists.rb
+  s_f5a1e2cf907cda::t_f5c153326c8f76 53-54
+lib/stationery/builder.rb
+  s_f5a1e2cf907cda::t_70f4ba4b3104b8 112-115
+lib/stationery/elements/forms.rb
+  s_f5a1e2cf907cda::t_796c913e4e47c5 51-52
+CHANGELOG.md
+  s_f5a1e2cf907cda::t_c0215810545cd6 5-6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "4590c43dd511845e9aab380dd304245444027c8d",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
