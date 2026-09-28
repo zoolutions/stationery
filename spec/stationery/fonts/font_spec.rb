@@ -81,6 +81,38 @@ RSpec.describe Stationery::Fonts::Font do
     end
   end
 
+  describe "OpenType features" do
+    def gids(text, **) = font.glyph_run(text, **).gids
+
+    it "lists the font's GSUB features" do
+      expect(font.features).to include("liga", "onum", "tnum", "lnum")
+    end
+
+    it "substitutes oldstyle figures that still stand for their digits" do
+      run = font.glyph_run("2026", features: ["onum"])
+
+      expect(run.gids).not_to eq(gids("2026"))
+      expect(run.gids.size).to eq(4)
+      expect(run.chars).to eq(%w[2 0 2 6])
+      expect(font.used_codes.values).to include("2", "0", "6")
+    end
+
+    it "takes Symbols, measures with the substituted advances and keeps features under letter spacing" do
+      expect(gids("2026", features: [:onum])).to eq(gids("2026", features: ["onum"]))
+      # Open Sans figures are tabular by default; pnum narrows the ones
+      expect(font.width_of("1111", 10, features: ["pnum"])).to be < font.width_of("1111", 10)
+      expect(font.width_of("1111", 10, features: ["pnum"], letter_spacing: 1))
+        .to be_within(1e-9).of(font.width_of("1111", 10, features: ["pnum"]) + 4)
+      expect(gids("office", features: ["onum"], ligatures: false).size).to eq(6)
+      expect(gids("office", features: ["onum"]).size).to eq(4)
+    end
+
+    it "ignores a feature the font does not have" do
+      expect(gids("2026", features: ["smcp"])).to eq(gids("2026"))
+      expect(font.glyph_run("2026", features: []).gids).to eq(gids("2026"))
+    end
+  end
+
   it "exposes vertical metrics scaled to a size" do
     expect(font.ascender(10)).to be_between(9, 12)
     expect(font.descender(10)).to be_between(2, 4)

@@ -117,7 +117,7 @@ module Stationery
                                            color: style.color, letter_spacing: style.letter_spacing, rise: style.rise,
                                            opacity: style.opacity, underline: style.underline,
                                            strikethrough: style.strikethrough, kerning: style.kerning,
-                                           ligatures: style.ligatures,
+                                           ligatures: style.ligatures, features: style.features,
                                            synthetic_bold: fragment.face.synthetic_bold,
                                            synthetic_oblique: fragment.face.synthetic_oblique, word_spacing:)
         canvas.link(x, top, width, line.height, style.link, tag: link) if style.link

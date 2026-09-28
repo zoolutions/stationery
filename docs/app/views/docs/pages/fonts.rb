@@ -48,13 +48,36 @@ class Views::Docs::Pages::Fonts < DocsUI::Page
 
         Standard ligatures (fi, fl, ffi, …) come from the font's GSUB `liga` feature and are on by default;
         `ligatures: false` on an element or in `default_text` turns them off, and any `letter_spacing` does too.
-        Only `liga` applies, not `clig` or `dlig`. A ligature glyph maps back to all of its characters, so
-        extracted and copied text is unchanged. Fonts without `liga` ligatures, such as bundled Inter, are
-        unaffected.
+        A ligature glyph maps back to all of its characters, so extracted and copied text is unchanged. Fonts
+        without `liga` ligatures, such as bundled Inter, are unaffected.
 
         `align: :justify` (on `text`, `text_style` and table cells) stretches the spaces of wrapped lines to
         the full width, keeping kerning. The last line, lines ending in a newline and lines without spaces stay
         left-aligned; tabs are never stretched.
+      MD
+    end
+
+    DocsUI::Section("OpenType features", description: "Small caps, figure styles, stylistic sets.") do
+      md <<~'MD'
+        `features:` on `text`, `text_style` and `default_text` applies the font's other GSUB features on top of
+        `liga`: `smcp` small caps, `onum`/`lnum` oldstyle or lining figures, `tnum`/`pnum` tabular or
+        proportional figures (tabular for the number columns of a table), `zero` a slashed zero, `dlig`
+        discretionary ligatures, `ss01`… stylistic sets, `case` case-sensitive punctuation. Tags are Symbols
+        or Strings.
+
+        ```ruby
+        default_text font: "Open Sans", features: %i[onum]
+        text "Total 2,026.00", features: %i[tnum lnum], align: :right
+        text "Chapter One", features: [:smcp], letter_spacing: 0.5
+        ```
+
+        The reader applies single (SingleSubst formats 1 and 2) and ligature (LigatureSubst) lookups, also
+        behind Extension lookups, in the font's own lookup order; a feature the font does not have is ignored
+        without a warning, and `Stationery::Fonts::Font#features` lists the tags a font offers (bundled Inter:
+        `tnum`, `zero`, `dlig`, `case` and stylistic sets; Open Sans: `onum`, `lnum`, `pnum`, `tnum`, `salt`).
+        A substituted glyph keeps its source characters in the ToUnicode map, so extracted text is unchanged.
+        Contextual features (`calt`, `clig`, `frac`) need lookup types the reader does not implement and do
+        nothing.
       MD
     end
 

@@ -8,14 +8,15 @@ module Stationery
 
       # Draws `string` with its baseline at (x, y) in top-left coordinates and
       # returns its advance width. Standard ligatures form unless `ligatures:`
-      # is false or letter spacing is set.
+      # is false or letter spacing is set; `features:` are further OpenType
+      # feature tags (Strings) to apply.
       def text(string, x:, y:, font:, size:, color: "#000000", letter_spacing: 0, rise: 0, opacity: nil,
                synthetic_bold: false, synthetic_oblique: false, underline: false, strikethrough: false,
-               kerning: false, ligatures: true, word_spacing: 0)
+               kerning: false, ligatures: true, features: Fonts::Font::NO_FEATURES, word_spacing: 0)
         return 0 if string.empty?
 
         color = Color.parse(color)
-        run = font.glyph_run(string, kerning:, ligatures: ligatures && letter_spacing.zero?)
+        run = font.glyph_run(string, kerning:, ligatures: ligatures && letter_spacing.zero?, features:)
         run = run.with_word_spacing(word_spacing, size) unless word_spacing.zero?
         width = run.width(size, letter_spacing:)
         graphics(opacity:) do |ops|
