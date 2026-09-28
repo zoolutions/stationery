@@ -68,6 +68,7 @@ namespace :verify do
     image = ENV.fetch("VERAPDF_IMAGE", "verapdf/cli:latest")
     renders = { "invoice" => { pdf_a3b: "3b" }, "report" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
                 "e_invoice" => { pdf_a3b: "3b" }, "form" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
+                "article" => { pdf_ua1: "ua1", pdf_a3b: "3b" }, "newsletter" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
                 "signed_invoice" => { pdf_a3b: "3b" }, "signed_form" => { pdf_ua1: "ua1", pdf_a3b: "3b" } }
     failures = renders.flat_map do |name, levels|
       options = { conformance: levels.keys }

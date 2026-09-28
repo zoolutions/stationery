@@ -177,7 +177,8 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
     DocsUI::Section("Validating with veraPDF", description: "The reference validator, through Docker.") do
       md <<~'MD'
         `bundle exec rake verify:conformance` renders `examples/invoice.rb` and `examples/e_invoice.rb`
-        as PDF/A-3b, and `examples/report.rb` and `examples/form.rb` as PDF/A-3b plus PDF/UA-1, the
+        as PDF/A-3b, and `examples/report.rb`, `examples/form.rb`, `examples/article.rb` (floats) and
+        `examples/newsletter.rb` (columns) as PDF/A-3b plus PDF/UA-1, the
         invoice and the form once more with a signature, and validates them with
         [veraPDF](https://verapdf.org) in a container (`verapdf/cli`); the gem's CI runs it on every push.
         Validate your own documents the same way:

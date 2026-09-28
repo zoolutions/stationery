@@ -34,7 +34,7 @@ class ExampleArticle < Stationery::Document
   ].freeze
 
   NOTES = <<~HTML
-    <h3>Getting there</h3>
+    <h2>Getting there</h2>
     <p><img src="stone.png" alt="A sandstone wall beside the track" style="float: right; width: 96pt;
     margin: 0 0 6pt 12pt">Leave the car at the last farm and carry what you need: there is no water on the
     shore and no shade before the evening. The track is easy underfoot, but it is an hour each way and the
@@ -58,7 +58,7 @@ class ExampleArticle < Stationery::Document
     spacer 14
     story
     spacer 6
-    html NOTES, base_path: ASSETS, styles: { h3: { color: ACCENT } }
+    html NOTES, base_path: ASSETS, styles: { h2: { color: ACCENT, scale: 1.3 } }
   end
 
   private

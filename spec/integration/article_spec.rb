@@ -35,6 +35,6 @@ RSpec.describe "the example article" do
     structure = inspect_pdf(pdf).structure.to_s
 
     expect(structure.scan("Figure").size).to eq(2)
-    expect(structure).to match(/H1.*Figure.*BlockQuote.*H3.*Figure/m)
+    expect(structure).to match(/H1.*Figure.*BlockQuote.*H2.*Figure/m)
   end
 end
