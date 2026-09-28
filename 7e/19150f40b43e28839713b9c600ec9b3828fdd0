@@ -1,0 +1,21 @@
+AGENTS.md
+  s_f5a1e2cf907cda::t_ad6fbc905f806b 17-20
+CHANGELOG.md
+  s_f5a1e2cf907cda::t_eb0cc56a4012aa 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "7e19150f40b43e28839713b9c600ec9b3828fdd0",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
