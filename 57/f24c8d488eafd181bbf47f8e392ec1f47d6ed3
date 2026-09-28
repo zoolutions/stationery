@@ -1,0 +1,24 @@
+README.md
+  s_f5a1e2cf907cda::t_c32e6a175ce232 981-984,987-992
+CHANGELOG.md
+  ai_agent 5
+docs/app/views/docs/pages/performance.rb
+  s_f5a1e2cf907cda::t_f6c7173f6e0612 59-62
+  s_f5a1e2cf907cda::t_a246cb3311dee9 69-73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "57f24c8d488eafd181bbf47f8e392ec1f47d6ed3",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
