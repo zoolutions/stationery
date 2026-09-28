@@ -1,0 +1,27 @@
+CHANGELOG.md
+  ai_agent 3-8
+docs/app/views/docs/pages/conformance.rb
+  ai_agent 64,77-83,91
+  s_632dbd6e2d0597::t_abf9bb6ed3edf0 63
+docs/app/views/docs/pages/warnings.rb
+  ai_agent 62-70
+README.md
+  s_632dbd6e2d0597::t_abf9bb6ed3edf0 492-493,546
+  ai_agent 494-500,547-548
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "077325b11ec71001021395022cec7e7ed9a6dfa5",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
