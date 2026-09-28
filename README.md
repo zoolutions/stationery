@@ -86,8 +86,9 @@ InvoicePdf.new(invoice).to_pdf("a.pdf") # also writes a path or an IO
 ([previews and live PDFs](https://stationery.zoolutions.llc/docs/examples)); `bundle exec rake examples`
 renders them all, or render one with `stationery render examples/report.rb`.
 
-The examples ship with the gem, with the images and fonts they read, so they are there to read and to
-run in an application that has only the gem:
+The examples ship with the gem, with the images they read, so they are there to read and to run in an
+application that has only the gem. Inter is the one font the gem ships: the invoice examples are set in
+the Open Sans of the test suite in the repository and in Inter elsewhere.
 
 ```sh
 stationery examples                          # their names and what each shows
@@ -109,6 +110,7 @@ ls "$(bundle show stationery)/examples"      # or: gem contents stationery
 | `table(rows, widths:, width:, header:, split_rows:, cell:) { \|t\| }` | Tables. Cells are strings, layout nodes, procs built with the DSL (`-> { image logo }`) or components. Style with `t.row(0)`, `t.rows(-1)`, `t.column(1)`, `t.columns(1..)`, chained, plus `t.zebra`. Header rows repeat after a page break. A cell may be `{ content:, colspan:, rowspan: }` plus any cell option; rows list only the cells they start, as in HTML, and pages never break through a rowspan. Spans are set in the rows, not through selections. A row taller than the page continues on the next page, cut through its cells, with the header repeated; `split_rows: true` cuts any row that reaches the page bottom instead of moving it whole. |
 | `image(path_or_io, width:, height:, fit:, align:, radius:, rotate:, max_ppi:, downscale:, float:, margin:)` | JPEG, PNG or lossless WebP, aspect preserved. `fit: [w, h]` scales to fit inside; `fit: :cover` fills `width:` × `height:` and crops around the centre. `radius:` rounds the corners; `rotate:` turns it (degrees, clockwise) without changing the space it takes. Drawn at more than twice `max_ppi:` (300) it is reported as oversized; `downscale: true` resamples a PNG or WebP to that resolution instead. |
 | `svg(source_or_path, width:, height:, color:, align:)` | Vector icons and drawings; `currentColor` takes `color:` (or the `color` an element sets). Linear and radial gradients (`fill="url(#id)"`, `href` chains, both gradient units); `text`/`tspan` in the document's fonts; `<style>` stylesheets (element, class, id and `*` selectors); `use`, `symbol` sprites and nested `svg` viewports (`viewBox`, `preserveAspectRatio`); `clipPath` (both `clipPathUnits`). |
+| `barcode(data, type:, level:, module_size:, width:, height:, color:, quiet_zone:, native:, align:, alt:)` | A barcode drawn as vector bars, encoded in Ruby: `type: :code128` (the default; printable ASCII, digit runs in code set C), `:ean13` (12 digits and the check digit, or 13 checked) or `:qr` (byte mode, `level: :l, :m, :q, :h`, versions 1 to 40, UTF-8 marked with an ECI). `module_size:` points a module (1, or 2 for a QR code) or as many as fit `width:`; a linear one is `height:` (36) tall. The quiet zone is part of its size unless `quiet_zone: false`, and it shrinks to fit the space. Monochrome renders put it on the dot grid, a whole number of dots a module. `native: true` has `to_zpl` write the printer's own command for it: see [Label printers](#label-printers-to_zpl). A figure in a tagged PDF, its `alt:` by default the kind and the data. |
 | `wrap(gap:, row_gap:, align:) { }` | Children side by side at their own widths, wrapping onto new rows (chips, tags). |
 | `stack(gap:, align:) { }` | A base with layers painted over it: ordinary children set the height, `layer` children float over them and take no space. Moves to the next page whole. |
 | `layer(top:, right:, bottom:, left:, width:, height:, **box) { }` | Inside `stack`: a box placed by insets from the stack's edges, in points or as a fraction (`0.4`, `1/3r`) of its width/height; negative insets overhang. Takes every box option (`rotate:`, `shadow:`, `radius:`, …). |
@@ -593,8 +595,8 @@ ShelfLabel.new.to_pdf(monochrome: false)           # as it was, byte for byte
 What it does not do: it does not dither a lossless, arithmetic-coded or 12-bit JPEG, does not look at form
 fields (their widget draws them, not the page), does not put dashes, line caps or curves on the grid,
 and does not make small text bolder. It changes nothing without `monochrome`. The rules live in
-`Stationery::Monochrome::Rules` and `Monochrome::Grid`, apart from the PDF canvas, and `to_png`
-applies the same ones (see below).
+`Stationery::Monochrome::Rules` and `Monochrome::Grid`, apart from the PDF canvas, and `to_png` and
+`to_zpl` apply the same ones (see below).
 
 ### Pictures of a render: to_png
 
@@ -640,6 +642,83 @@ ShelfLabel.new.to_png(monochrome: { dpi: 203, snap: true }) # one bit to a dot, 
 `Stationery::Raster` has the pieces: `Raster::Canvases` and `Raster::Canvas` record, `Raster::Painter`
 replays onto a `Raster::Surface` through `Raster::Scanner` (coverage), `Raster::Stroker` and
 `Raster::Flattener`, and `Raster::PNG` writes the file.
+
+### Label printers: to_zpl
+
+A thermal label printer (Zebra, and the many makes that emulate ZPL II) is driven in its own
+language, not PDF. `to_zpl` writes the document as ZPL: each page is drawn one bit to a dot, as
+`to_png(monochrome: …)` draws it, and sent as one graphic field, so the label is the layout `to_pdf`
+produces, in any font the document uses. One document class serves the preview on screen and the
+printer.
+
+```ruby
+class ShippingLabel < Stationery::Document
+  page size: "4in x 6in", margin: mm(4)
+  monochrome dpi: 203
+end
+
+label = ShippingLabel.new(parcel)
+label.to_zpl                                # => "^XA^PW812^LL1218^LH0,0^FO0,0^GFA,…^XZ\n", one label per page
+label.to_zpl("label.zpl", dpi: 300, copies: 2)
+label.to_zpl(compression: :hex, pages: 1)   # plain hex, for printers that do not take Z64
+```
+
+How the ZPL reaches the printer is the application's business: a socket to port 9100, a print
+server, a browser print agent. For example, over the network:
+
+```ruby
+require "socket"
+TCPSocket.open("printer.local", 9100) { |socket| label.to_zpl(socket) }
+```
+
+- **What is written.** Per page `^XA`, `^PW` and `^LL` (the page's width and length in dots,
+  `Raster.pixels(points, dpi)`), `^LH0,0`, `^FO0,0`, one `^GFA` graphic field, `^FS`, `^PQ` (copies)
+  and `^XZ`, then a newline. The field's dots are 1 for black, each row padded to a byte with white.
+  `compression: :z64` (the default) deflates the rows with zlib and writes them in Base64, followed
+  by the CRC Zebra's software writes (CRC-16/XMODEM of the Base64 text, checked against a ZebraDesigner
+  print file); `:hex` writes them as plain hex, about 20 times larger.
+- **Always monochrome.** A label printer prints one bit, so `to_zpl` renders with the class's
+  `monochrome` settings when it declares them and with the defaults when it does not (`snap: false`,
+  `dither: :floyd_steinberg`): a colour is reported as `Warnings::NotMonochrome` and dithered, as
+  `to_png(monochrome: true)` shows it. `monochrome:` takes options laid over them (`{ snap: true }`);
+  `monochrome: false` raises.
+- **`dpi:`** is the printer's: 152, 203, 300 or 600 (6, 8, 12 or 24 dots a millimetre); anything else
+  raises `ArgumentError` naming them. It defaults to the class's `monochrome dpi:`, else 203, and
+  replaces it when given, so `to_zpl(dpi: 300)` and `to_png(monochrome: { dpi: 300 })` are the same
+  dots.
+- **`copies:`** is `^PQ`, by default the class's `print copies:`, else 1. **`pages:`** a page number,
+  a Range or an Array, in the order given; `target` a path or anything answering `write` (a socket).
+- `strict:`, `debug:` and `shaper:` are those of `to_pdf`; what only a PDF has raises, as for `to_png`.
+- **Speed.** A 4 × 6 in label takes about 25 ms at 203 dpi and 35 ms at 300 dpi (Ruby 3.4, Apple
+  M-series), and is 10 to 20 KB of ZPL.
+- The labels were read back and compared with `to_png` dot for dot, and rendered by
+  [Labelary](http://labelary.com/viewer.html), a ZPL viewer, identically. They were not printed on a
+  printer by the gem's specs.
+
+**Barcodes the printer draws.** A `barcode` is part of the picture unless it asks otherwise:
+`barcode "SX0042771903", native: true`, or `to_zpl(native: true)` for every barcode that does not
+say `native: false`. Such a barcode is left out of the graphic field and written after it as the
+printer's own command, where the picture had it, so the printer puts the bars on its own dot grid:
+
+```
+^FO146,874^BY4^BCN,124,N,N,N,N^FD>:SX>50042771903^FS             Code 128, its code sets named
+^FO65,197^BY3^BEN,113,N,N^FD400638133393^FS                       EAN-13, the printer adds the check digit
+^FO650,625^BQN,2,4^FDMM,B0034https://track.example/SX0042771903^FS  QR code, byte mode, level M
+```
+
+- `^BY` is the module in whole dots, the height in dots, and data ZPL would read as a command is
+  escaped with `^FH`. A QR code's `^FO` is 10 dots above it, since `^BQ` draws that far below its
+  origin.
+- It stays in the picture when the printer could not draw it as it is: rotated or otherwise
+  transformed, clipped, lighter than half grey, a module over 10 dots, or a QR code of UTF-8 text
+  (its ECI has no field in `^BQ`).
+- Rendered by Labelary, the Code 128 is the same dots as `to_png` draws; the EAN-13's guard bars come
+  out 13 dots longer, as the printer draws them; a QR code covers the same modules' square, its
+  modules chosen by the printer's own encoder (another mask). All three decode with ZBar to the data.
+- Rules and boxes are not written as `^GB`: a box drawn natively would print over white text on it,
+  which the picture keeps.
+
+`stationery render label.rb --zpl --dpi 300` writes `label.zpl` (see [CLI](#cli)).
 
 ### Encryption
 
@@ -1034,13 +1113,18 @@ two runs of the same render peak up to a fifth apart, what is alive repeats):
 | | | alive | 222 MB | 44 MB | 11 MB |
 | | 5,189 | peak | 1,643 MB | 614 MB | 446 MB |
 | | | alive | 1,080 MB | 180 MB | 20 MB |
-| One table of 33,000 rows | 1,000 | peak | 901 MB | 653 MB | 648 MB |
-| | | alive | 494 MB | 28 MB | 25 MB |
-| One table of 165,000 rows | 5,000 | peak | 3,792 MB | 2,952 MB | 2,955 MB |
-| | | alive | 2,437 MB | 65 MB | 49 MB |
+| One table of 33,000 rows | 1,000 | peak | 901 MB | 174 MB | 174 MB |
+| | | alive | 494 MB | 26 MB | 23 MB |
+| One table of 165,000 rows | 5,000 | peak | 3,792 MB | 584 MB | 586 MB |
+| | | alive | 2,437 MB | 40 MB | 25 MB |
 
 What is left is the document as it was built: every node exists before the first page is
-painted, and a table resolves its column widths from every cell.
+painted. A table resolves its column widths from every cell, and keeps the widths, not the
+cell's text: a cell's node is built when a page reaches its row and let go with the page
+(the table of 165,000 rows holds 105 MB when its columns are resolved, its cells and their
+text, where it held 913 MB). In a tagged render the `TR`, `TH` and `TD` of a row are built
+when a page paints it, and the structure tree holds them until the file is written: the
+same table tagged peaks at 2.2 GB.
 
 Controllers gain `render pdf:` and `send_pdf`:
 
@@ -1105,13 +1189,57 @@ The gem has no Rails dependency; the Railtie loads only inside a Rails app.
 stationery render app/pdfs/invoice_pdf.rb                # writes app/pdfs/invoice_pdf.pdf
 stationery render invoice.rb --out - > invoice.pdf       # PDF to stdout
 stationery render pdfs.rb --class InvoicePdf --strict    # pick one; fail on layout warnings
+stationery render invoice.rb --png                       # also invoice-1.png, … beside the PDF
+stationery render report.rb --png-only --pages 1,3-4 --dpi 144
+stationery render label.rb --zpl --dpi 300               # writes label.zpl for a label printer
 ```
 
 `render` loads the file and renders the `Stationery::Document` it defines. A
 document whose `initialize` needs arguments renders from `def self.preview`,
 which returns an instance built with sample data. Layout warnings print to
-stderr; `--strict` exits 1 instead of writing. `stationery help` lists the
-commands.
+stderr; `--strict` exits 1 instead of writing. `--zpl` writes ZPL instead of a
+PDF (see [Label printers](#label-printers-to_zpl)), at `--dpi` 152, 203 (the
+default), 300 or 600. `stationery help` lists the commands.
+
+`--png` writes a picture of each page beside the PDF with `to_png` (see
+[Pictures of a render](#pictures-of-a-render-to_png)), pure Ruby with nothing to
+install, named after the PDF with the number of the page, and prints one line
+per file (`wrote invoice-1.png (page 1, 794 x 1123 px)`), so an agent that
+rendered a document can open what it made. `--dpi` is 96 by default (an A4 page
+is 794 × 1123 px), `--pages` takes `2` or `1,3-4`, and `--png-only` writes the
+pictures without the PDF.
+
+```sh
+stationery inspect invoice.pdf                           # what is on each page, as text
+stationery inspect invoice.rb                            # render it first, with its warnings
+stationery inspect invoice.pdf --json                    # Inspector#layout as JSON
+```
+
+`inspect` prints what is on each page for an agent that cannot read a picture,
+and for a diff between two renders: the file's metadata, conformance claims,
+print hints, attachments and signatures, the outline, then each page with its
+size, its text lines (x, baseline y, font, size), images, links and form fields
+with their rectangles in points from the top-left corner, the structure tree of
+a tagged PDF and the warnings of the render. A section with nothing in it is
+left out, and the dates are, so two renders of one document print the same.
+It is `Inspector#layout` (see [Testing](#testing)) and needs the `pdf-reader`
+gem.
+
+```text
+examples/invoice.rb
+  pages     1
+  title     Invoice
+
+Page 1  595.3 x 841.9 pt
+  Text (x, baseline y, font, size, text)
+      44.0   65.5  OpenSans-Bold      22  Invoice INV-2026-042
+      44.0  115.6  OpenSans-Bold       9  Invoice date
+     134.0  115.6  OpenSans-Regular    9  26 September 2026
+  Images (x, y, width x height, pixels)
+     437.9   40.0  113.3 x 34  240 x 72 px
+  Links (x, y, width x height, target)
+     329.2  596.5  65.6 x 11.6  mailto:hello@acme.test
+```
 
 ```sh
 stationery fonts list                                    # packs, licenses, what is in vendor/fonts
@@ -1512,6 +1640,29 @@ of every widget that is not hidden, in the state the widget is in, and never a b
 (the marks of a `checkbox` and a `radio` are paths and read as nothing). Without `fields: true` the
 text is what it always was, and the failure of `have_pdf_text` over a text that a field shows says
 so.
+
+`Inspector#layout` is what is on each page and what the file says of itself, as plain data in a
+stable order: what `stationery inspect` prints (see [CLI](#cli)), for a spec that asks where
+something landed. Places are in points from the top-left corner of the page, as the gem's API
+speaks, rounded to a tenth; a text line's `y` is its baseline.
+
+```ruby
+layout = Stationery::Testing::Inspector.new(InvoicePdf.new(invoice)).layout
+layout[:pages].first[:text].first
+# => { x: 44.0, y: 65.5, font: "OpenSans-Bold", size: 22.0, text: "Invoice INV-2026-042" }
+layout[:pages].first.keys  # => [:number, :label, :width, :height, :text, :images, :links, :fields]
+layout.keys                # => [:metadata, :conformance, :tagged, :print, :outline, :attachments,
+                           #     :signatures, :structure, :warnings, :pages]
+```
+
+A text line is a run of one font and size on one baseline, so a word set in bold is a line of its
+own; lines read top to bottom, then left to right. An image is `{ x:, y:, width:, height:, pixels:
+[w, h] }` in the order drawn (the rectangle it fills, before any clip); a link has its `uri:`, or the
+`page:` and `top:` it goes to; a field has its full `name:`, `type:` (`:text`, `:choice`,
+`:checkbox`, `:radio`, `:button`, `:signature`), `value:` and, for a button, the `state:` that turns
+it on. `outline` is the bookmarks as `{ title:, page:, top:, children: }`. `metadata` leaves out the
+dates, which change with every render, so two renders of one document have the same layout.
+`warnings` are the render's messages when the subject is a document.
 
 ## Why not Prawn, Chrome or Typst?
 

@@ -36,20 +36,16 @@ Gem::Specification.new do |spec|
 
       tracked.split("\x0")
     rescue StandardError
-      Dir.glob("{lib,exe,examples,spec/fixtures/fonts}/**/*", base: __dir__)
+      Dir.glob("{lib,exe,examples}/**/*", base: __dir__)
          .select { |f| File.file?(File.join(__dir__, f)) } +
         %w[CHANGELOG.md LICENSE.txt README.md].select { |f| File.file?(File.join(__dir__, f)) }
     end
 
-  # The examples ship with what they read and without their renders:
-  # examples/invoice.rb, and e_invoice.rb on top of it, set their text in the
-  # Open Sans of the test fonts.
-  example_fonts = %w[Regular.ttf Bold.ttf Italic.ttf BoldItalic.ttf LICENSE.txt]
-                  .map { |f| "spec/fixtures/fonts/OpenSans-#{f}" }
-
+  # The examples ship with what they read and without their renders; nothing
+  # of spec/ does, so Inter is the one font in the gem.
   spec.files = gem_files.select do |f|
     f.start_with?("lib/", "exe/") || (f.start_with?("examples/") && !f.end_with?(".pdf")) ||
-      example_fonts.include?(f) || %w[CHANGELOG.md LICENSE.txt README.md].include?(f)
+      %w[CHANGELOG.md LICENSE.txt README.md].include?(f)
   end
   spec.bindir = "exe"
   spec.executables = ["stationery"]

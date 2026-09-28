@@ -18,7 +18,7 @@ RSpec.describe Stationery::Canvas::Interface do
   it "names every operation a canvas may be asked for" do
     expect(described_class.public_instance_methods).to contain_exactly(
       :page_width, :page_height, :warnings, :outline, :rotate, :clip, :fill_rect, :rounded_rect, :circle, :line,
-      :path, :shade, :text, :link, :widget, :anchor, :number_slot, :tagging?, :tag, :tag_runs, :structure,
+      :path, :shade, :text, :barcode, :link, :widget, :anchor, :number_slot, :tagging?, :tag, :tag_runs, :structure,
       :artifact, :debug?, :debug_rect
     )
   end

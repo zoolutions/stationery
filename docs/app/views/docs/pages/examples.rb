@@ -32,6 +32,11 @@ class Views::Docs::Pages::Examples < DocsUI::Page
     [ "Packing slip", "packing_slip",
      "Landscape A4, page numbers in the header, a 120-row table with `split_rows: true` and a repeating " \
      "header, and a barcode drawn on a `canvas`." ],
+    [ "Shipping label", "shipping_label",
+     "A 4 × 6 in label in black and white only, sized with `page size: \"4in x 6in\"` and `mm()`, declared " \
+     "`monochrome dpi: 203`, with a Code 128 and a QR code from `barcode`, and written both as a PDF and, " \
+     "with `to_zpl`, as ZPL for a thermal label printer, which draws the two barcodes itself (`native: " \
+     "true`): `stationery render examples/shipping_label.rb --zpl`. See [Label printers](/docs/pages)." ],
     [ "Application form", "form",
      "An interactive AcroForm: labelled text fields, a comb postcode, a select box, a radio group, check " \
      "boxes with labels, a multiline note and a signature field. Fill it in any viewer; every field and " \
@@ -52,7 +57,7 @@ class Views::Docs::Pages::Examples < DocsUI::Page
   title "Examples"
   eyebrow "Getting started"
 
-  def lead = "Ten complete documents from the gem's examples/ directory, rendered live by this site."
+  def lead = "Eleven complete documents from the gem's examples/ directory, rendered live by this site."
 
   def content
     DocsUI::Section("Running them yourself") do
@@ -67,8 +72,9 @@ class Views::Docs::Pages::Examples < DocsUI::Page
         ruby -Ilib examples/flyer.rb              # each file also runs on its own
         ```
 
-        They ship with the gem, with the images and fonts they read, so an application that has only the
-        gem has them too:
+        They ship with the gem, with the images they read, so an application that has only the gem has
+        them too. Inter is the one font the gem ships, so there the invoice examples are set in Inter
+        rather than the Open Sans of the repository:
 
         ```shell
         stationery examples                          # their names and what each shows

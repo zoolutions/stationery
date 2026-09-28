@@ -19,11 +19,18 @@ class ExampleInvoice < Stationery::Document
   ZEBRA = "#F9FAFB"
   CALLOUT = "#F3F4F6"
 
+  # Open Sans lives with the test suite, so an installed gem sets the invoice
+  # in the Inter it bundles.
+  FAMILY = File.exist?(File.join(FONTS, "OpenSans-Regular.ttf")) ? "Open Sans" : "Inter"
+
   page size: :a4, margin: [40, 44, 56, 44]
-  font_family "Open Sans",
-              regular: File.join(FONTS, "OpenSans-Regular.ttf"), bold: File.join(FONTS, "OpenSans-Bold.ttf"),
-              italic: File.join(FONTS, "OpenSans-Italic.ttf"), bold_italic: File.join(FONTS, "OpenSans-BoldItalic.ttf")
-  default_text font: "Open Sans", size: 9, color: INK
+  if FAMILY == "Open Sans"
+    font_family "Open Sans",
+                regular: File.join(FONTS, "OpenSans-Regular.ttf"), bold: File.join(FONTS, "OpenSans-Bold.ttf"),
+                italic: File.join(FONTS, "OpenSans-Italic.ttf"),
+                bold_italic: File.join(FONTS, "OpenSans-BoldItalic.ttf")
+  end
+  default_text font: FAMILY, size: 9, color: INK
   metadata title: "Invoice", creator: "stationery example"
 
   page_template do |page|

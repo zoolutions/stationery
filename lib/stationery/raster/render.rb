@@ -21,12 +21,12 @@ module Stationery
       DARK = "\x00-\x7F".b
       LIGHT = "\x80-\xFF".b
 
-      def self.refuse(options)
+      def self.refuse(options, output = "to_png")
         key = options.keys.first
         return unless key
         raise ArgumentError, "unknown keyword: #{key.inspect}" unless PDF_ONLY.include?(key)
 
-        raise ArgumentError, "to_png does not take #{key}: (it is what a PDF has, not a picture)"
+        raise ArgumentError, "#{output} does not take #{key}: (it is what a PDF has, not a picture)"
       end
 
       def initialize(document, dpi:, pages:, monochrome:, debug:, strict:, shaper:)
@@ -47,19 +47,41 @@ module Stationery
       # one page to the path itself, several to "name-N.png", N the number
       # of the page in the document.
       def call(target = nil)
+        pictures = paint { |surface| encode(surface) }
+        pictures.each { |number, png| write(png, target, pictures.size == 1 ? nil : number) } if target
+        pictures.map(&:last)
+      end
+
+      # Paints the document, then each page chosen onto a Surface, one at a
+      # time, and answers [number, what the block makes of it] for each.
+      # The barcodes (Canvas::Native) that `native` answers true for are
+      # left off the surface and handed to the block after it, for an output
+      # that draws them with commands of its own.
+      def paint(native: nil)
         warnings = Warnings.new
         rules = Monochrome::Rules.new(@settings, warnings) if @settings
         canvases = Canvases.new(debug: @debug, warnings:, monochrome: rules)
         pages = @document.paint_on(canvases, warnings:, shaper: @shaper)
         raise WarningsError, warnings if @strict && warnings.any?
 
-        numbers = chosen(pages.size)
-        numbers.map do |number|
+        chosen(pages.size).map do |number|
           page = pages[number - 1]
-          png = picture(page, canvases.release(page))
-          write(png, target, numbers.size == 1 ? nil : number) if target
-          png
+          list = canvases.release(page)
+          natives = native ? list.select { |call| call.is_a?(Canvas::Native) && native.call(call) } : []
+          [number, yield(surface(page, natives.empty? ? list : list - natives), natives)]
         end
+      end
+
+      # The pixels of a monochrome `surface` one bit to a pixel, 1 for white:
+      # cut at half where the page is only black and white, dithered where it
+      # has grey.
+      def bits(surface)
+        grey = surface.data
+        width = surface.width
+        return Monochrome::Dither.call(grey, width, surface.height, @settings.dither) if grey.count(GREY).positive?
+
+        cut = grey.tr(DARK, "0").tr(LIGHT, "1")
+        Array.new(surface.height) { |y| [cut.byteslice(y * width, width)].pack("B*") }.join
       end
 
       private
@@ -78,23 +100,18 @@ module Stationery
         numbers
       end
 
-      def picture(page, list)
-        width = Raster.pixels(page.width, @dpi)
-        height = Raster.pixels(page.height, @dpi)
-        surface = Surface.new(width, height, @settings ? 1 : 3)
+      def surface(page, list)
+        surface = Surface.new(Raster.pixels(page.width, @dpi), Raster.pixels(page.height, @dpi), @settings ? 1 : 3)
         Painter.new(surface, dpi: @dpi, antialias: @settings.nil?, cache: @cache).paint(list)
-        return PNG.encode(surface.data, width:, height:, channels: 3) unless @settings
-
-        PNG.encode(bits(surface.data, width, height), width:, height:, channels: 1, depth: 1)
+        surface
       end
 
-      # One bit to a pixel, 1 for white: cut at half where the page is only
-      # black and white, dithered where it has grey.
-      def bits(grey, width, height)
-        return Monochrome::Dither.call(grey, width, height, @settings.dither) if grey.count(GREY).positive?
+      def encode(surface)
+        width = surface.width
+        height = surface.height
+        return PNG.encode(surface.data, width:, height:, channels: 3) unless @settings
 
-        cut = grey.tr(DARK, "0").tr(LIGHT, "1")
-        Array.new(height) { |y| [cut.byteslice(y * width, width)].pack("B*") }.join
+        PNG.encode(bits(surface), width:, height:, channels: 1, depth: 1)
       end
 
       def write(png, target, number)
