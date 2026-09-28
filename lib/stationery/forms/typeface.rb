@@ -30,7 +30,12 @@ module Stationery
       def embedded? = true
       def ascent(size) = primary.ascender(size)
       def descent(size) = primary.descender(size)
-      def width(text, size) = runs(text, size).sum { |font, run| font.width_of(run.text, size, ligatures: false) }
+
+      # A field is not shaped (see Shaper): a viewer that redraws it after an
+      # edit would not shape it either.
+      def width(text, size)
+        runs(text, size).sum { |font, run| font.width_of(run.text, size, ligatures: false, shape: false) }
+      end
 
       # The resource names of the fonts drawn or kept so far.
       def names = @names.values

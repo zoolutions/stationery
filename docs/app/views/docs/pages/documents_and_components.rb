@@ -36,6 +36,8 @@ class Views::Docs::Pages::DocumentsAndComponents < DocsUI::Page
             [ :md, "Registers a family from `.ttf`/`.otf` files. With no paths it selects bundled Inter or an installed [font pack](/docs/fonts)." ] ],
           [ "font_fallbacks", "*names", "[]",
             [ :md, "Families tried, in order, for characters the text's own family has no glyph for; bundled Inter is tried last." ] ],
+          [ "shaper", "shaper", "nil",
+            [ :md, "An object answering `call(text, font, **options)` that places the glyphs of every text, for complex scripts; also `to_pdf(shaper:)`. See [Fonts](/docs/fonts)." ] ],
           [ "default_text", "**style", "{}",
             [ :md, "Base text style for the whole document: `font`, `size`, `color`, `align`, `leading`, `kerning`, …" ] ],
           [ "metadata", "title:, author:, subject:, keywords:, creator:, producer:", "{}",

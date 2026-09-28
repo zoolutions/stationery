@@ -864,6 +864,94 @@ before embedding it, alpha included; a JPEG is embedded byte for byte, so
 resize it before you embed it (an ActiveStorage variant per drawn size,
 preprocessed, keeps a render to a download).
 
+### Complex scripts: the shaper hook
+
+Stationery places glyphs itself: one per character, the font's ligatures and single substitutions,
+pair kerning. Arabic, Hebrew, Indic and Thai text need a shaper, and the gem does not have one. An
+application that does (HarfBuzz) plugs it in, for a document class or for one render:
+
+```ruby
+class Invoice < Stationery::Document
+  shaper HarfBuzzShaper.new            # inherited; `shaper nil` takes an inherited one away
+end
+
+Invoice.new.to_pdf(shaper: my_shaper)  # this render only
+```
+
+A shaper is anything that answers `call`:
+
+```ruby
+def call(text, font, size:, features:, language:, **)
+  # => [Stationery::Shaper::Glyph.new(gid:, advance:, cluster:, x_offset: 0, y_offset: 0), …] or nil
+end
+```
+
+| Argument | What it is |
+|---|---|
+| `text` | One stretch of a line in one font and style |
+| `font` | A `Stationery::Shaper::Face`: `path` (the font file, nil when there is none), `index` (the face of a collection), `data` (the sfnt bytes; a WOFF is already unpacked), `units_per_em`, `postscript_name`, `glyph_count` |
+| `size:` | The size drawn at, in points |
+| `features:` | A frozen Hash of OpenType tags to switches: `"kern"` and `"liga"` always, following `kerning:` and `ligatures:` (letter spacing switches `liga` off), and the style's `features:` as `true` |
+| `language:` | The document's `metadata lang:`, or nil |
+
+The answer is the glyphs in **visual order**, left to right. `gid` is the glyph id in the font,
+`advance` and the offsets are in font units, and `cluster` is the index, in characters, of the first
+character of `text` the glyph stands for; glyphs of the same cluster stand together for the
+characters up to the next cluster. A Hash of the same fields does for a `Glyph`. Answering `nil`
+declines a text, which is then drawn as without a shaper. Anything else (a glyph id the font does
+not have, a cluster outside the text, an advance that is not a number) raises
+`Stationery::ShaperError`. Direction and script are not passed, because stationery knows neither:
+the shaper works them out from the text.
+
+What is shaped, and when:
+
+- Line breaking works on the text as written and measures each word and each stretch of spaces on
+  its own. Each line is then cut where the font or the style changes, and every such stretch is
+  shaped whole. That one answer is the stretch's width (alignment, underline, link rectangle) and
+  what is drawn, so the two always agree. The width a break was decided on is the sum of the words',
+  which can differ a little from the shaped line's, as kerning across a space already does.
+- The shaper is asked once per text, size and set of features in a render, and must answer the
+  same for the same.
+- Every text a document draws goes through it: `text`, table cells, lists, `html`, `markdown`,
+  headers and footers, the table of contents, text in `svg`. Form fields do not: a viewer that
+  redraws a field after an edit would not shape it either.
+
+In the PDF the glyph ids are written as the shaper gave them. The font's widths stay its own, so an
+advance the shaper changed is a `TJ` adjustment, an x offset moves the pen before the glyph and back
+after it, and a y offset is a text rise (`Ts`) around it, which keeps marks in place under a
+synthetic oblique, a superscript or letter spacing. Glyphs the shaper placed are embedded whether or
+not a character maps to them. Where the ToUnicode map cannot give the text (glyphs out of logical
+order, several glyphs for one cluster, a glyph that already stands for another text, glyph 0) the
+glyphs are shown in a `Span` whose `ActualText` is the characters in logical order. Glyph 0 is
+reported as a `Warnings::MissingGlyph`, like any other.
+
+The limits of a hook:
+
+- The shaper reorders within the stretch it is given and nowhere else. Stretches on a line are placed
+  left to right in the order written and lines break in that order, so there is no bidirectional
+  reordering across a change of font or style; a right-to-left paragraph is set with `align: :right`,
+  and the last line of a justified one is set left.
+- Fallback fonts are chosen per character from the fonts' cmaps before anything is shaped. Give the
+  text the family that covers its script, or digits and punctuation the first family has are drawn
+  from it, as stretches of their own.
+- Justification widens U+0020 spaces only (no kashida). Letter spacing is added after each cluster,
+  so a mark stays on its base, but it pulls cursive letters apart.
+- Hyphenation and the breaking of a word wider than the line cut the text as written; the pieces are
+  shaped as separate words.
+- Vertical advances are not read: text runs horizontally.
+- A reader that takes `ActualText` for the text (the gem's `Inspector`) gets it as written. poppler
+  (`pdftotext` 26.09) and MuPDF (1.28) run their own reordering over it and return a right-to-left
+  stretch reversed. pdf-reader, and so `Inspector#text`, drops a `Span` whose first glyph has no
+  advance (a mark drawn first); `Inspector#structure` does not.
+
+[`examples/shaping/harfbuzz_shaper.rb`](https://github.com/zoolutions/stationery/blob/main/examples/shaping/harfbuzz_shaper.rb)
+is an adapter for HarfBuzz through the [`harfbuzz-ruby`](https://github.com/ydah/harfbuzz) gem
+(`gem "harfbuzz-ruby"`, `require "harfbuzz"`; not the older `harfbuzz` gem, which answers to the same
+`require`), about a hundred lines to copy into an application; stationery does not depend on it. It
+was run with harfbuzz-ruby 1.1.0 and HarfBuzz 14.5.0 against Noto Sans Arabic and draws joined,
+right-to-left Arabic with its marks and with left-to-right digits inside it. It cuts a stretch into
+runs of one direction by its letters alone, not by the Unicode bidirectional algorithm.
+
 ## Testing
 
 `stationery/rspec` and `stationery/minitest` read a rendered PDF back for
@@ -1047,8 +1135,11 @@ baseline with `bundle exec rake metrics:update` and says why in the commit.
 Fonts: no variable fonts (including CFF2) and no WOFF2 (it needs Brotli; convert to `.ttf` or
 `.woff`); shaping stops at pair kerning and single or ligature substitutions (`liga` by default,
 `smcp`, `onum`, `tnum`, `ss01`… on request), so contextual alternates (`calt`, `clig`, `frac`) do
-nothing and scripts that need contextual shaping (Arabic, Indic, Thai) draw glyph by glyph, and colour or emoji glyphs no font
-in the chain has are drawn as `.notdef` and reported. Text runs left to right (CJK text wraps between
+nothing and scripts that need contextual shaping (Arabic, Indic, Thai) draw glyph by glyph unless the
+application brings a shaper (`shaper`, see [the shaper hook](#complex-scripts-the-shaper-hook): the gem
+shapes none of them itself), and colour or emoji glyphs no font
+in the chain has are drawn as `.notdef` and reported. Text runs left to right: a shaper orders the glyphs
+within a stretch of one font and style, nothing reorders stretches or lines (CJK text wraps between
 ideographs, but there is no vertical layout); hyphenation
 patterns are bundled for English, German and Swedish only (a soft hyphen works in any language),
 and justification only widens spaces.
