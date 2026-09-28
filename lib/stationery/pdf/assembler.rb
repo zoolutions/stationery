@@ -6,12 +6,14 @@ module Stationery
     class Assembler
       # `tagging:` (a Tagging::Tree) writes the structure tree of a tagged PDF;
       # `lang:` is the document's natural language; `page_labels:` is the
-      # /PageLabels number tree from PageLabels.entries.
+      # /PageLabels number tree from PageLabels.entries; `attachments:` are
+      # PDF::Attachment files to embed.
       def initialize(pages:, resources:, info: {}, outline: [], encryption: nil, tagging: nil, lang: nil,
-                     page_labels: nil)
+                     page_labels: nil, attachments: [])
         @tagging = tagging
         @lang = lang
         @page_labels = page_labels
+        @attachments = attachments
         @pages = pages
         @resources = resources
         @info = info
@@ -29,7 +31,8 @@ module Stationery
         @pages.each_with_index { |page, index| write_page(writer, page, kids[index], tree, refs) }
         writer.set(tree, { Type: :Pages, Kids: kids, Count: kids.size })
         outlines = OutlineWriter.new(writer, @outline, kids).write
-        root = writer.add(catalog(tree, outlines, @form.write).merge(accessibility(writer)))
+        catalog = catalog(tree, outlines, @form.write).merge(accessibility(writer))
+        root = writer.add(catalog.merge(Attachments.write(writer, @attachments)))
         writer.render(root:, info: writer.add(info_dictionary))
       end
 

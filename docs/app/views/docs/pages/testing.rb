@@ -23,6 +23,7 @@ class Views::Docs::Pages::Testing < DocsUI::Page
           [ [ :code, "have_bookmark(title)" ], [ :code, "assert_bookmark" ], "an outline entry has that title" ],
           [ [ :code, "have_pdf_language(lang)" ], [ :code, "assert_pdf_language" ], "the catalog /Lang (from metadata lang:) equals it" ],
           [ [ :code, "have_page_labels(labels)" ], [ :code, "assert_page_labels" ], "the /PageLabels tree names the pages exactly so (nil for a page before the first range)" ],
+          [ [ :code, "have_attachment(name, mime:, relationship:)" ], [ :code, "assert_pdf_attachment" ], "an embedded file has that name (and type / relationship when given)" ],
           [ [ :code, "have_no_warnings" ], [ :code, "assert_no_pdf_warnings" ], "the render produced no warnings (documents only)" ]
         ]
       )
@@ -48,6 +49,7 @@ class Views::Docs::Pages::Testing < DocsUI::Page
         pdf.metadata         # => { Title: "Invoice", … }
         pdf.lang             # => "en", the catalog /Lang, or nil
         pdf.page_labels      # => ["i", "ii", "1", "2"] from page_labels, [] without
+        pdf.attachments      # => [{ name: "factur-x.xml", mime: "text/xml", bytes: "<…>", … }]
         pdf.warnings         # the document's warnings after rendering it
         ```
 

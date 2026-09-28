@@ -116,6 +116,28 @@ class Views::Docs::Pages::Pages < DocsUI::Page
       MD
     end
 
+    DocsUI::Section("Embedded files", description: "Attachments, for Factur-X and friends.") do
+      md <<~'MD'
+        `attach_file name, data, mime:, description:, relationship:, modified_at:` embeds a file in
+        every render; `to_pdf(attachments: [{ name:, data:, … }])` adds more for one render. Each file
+        is a `/Filespec` with an `/EmbeddedFile` stream, listed in the catalog's `/EmbeddedFiles`
+        name tree and `/AF` array. `relationship:` writes `/AFRelationship`: `:alternative` (the
+        machine-readable twin Factur-X and ZUGFeRD require), `:source`, `:data`, `:supplement` or
+        `:unspecified` (default). The same name twice raises `ArgumentError`; an encrypted document
+        encrypts the embedded streams too.
+
+        ```ruby
+        class InvoicePdf < Stationery::Document
+          attach_file "factur-x.xml", invoice_xml, mime: "text/xml", description: "Factur-X",
+                      relationship: :alternative
+        end
+        ```
+
+        `Inspector#attachments` reads them back as `{ name:, mime:, bytes:, description:, relationship: }`;
+        `have_attachment` and `assert_pdf_attachment` assert one by name, type and relationship.
+      MD
+    end
+
     DocsUI::Section("Accessibility (tagged PDF)", description: "A structure tree for screen readers.") do
       md SourceMarkdown.readme_section("Accessibility (tagged PDF)")
     end

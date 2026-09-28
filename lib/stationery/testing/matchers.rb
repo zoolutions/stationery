@@ -119,6 +119,35 @@ module Stationery
         def actual = @inspector.page_labels.empty? ? "got none" : "got #{@inspector.page_labels.inspect}"
       end
 
+      class HaveAttachment < Base
+        def initialize(name, mime: nil, relationship: nil)
+          super(name)
+          @mime = mime
+          @relationship = relationship
+        end
+
+        def description
+          extra = { mime: @mime, relationship: @relationship }.compact.map { |k, v| " #{k} #{v.inspect}" }.join
+          "have an attachment #{show(@expected)}#{extra}"
+        end
+
+        private
+
+        def match?(pdf)
+          pdf.attachments.any? do |file|
+            file[:name] == @expected && (@mime.nil? || file[:mime] == @mime) &&
+              (@relationship.nil? || file[:relationship] == @relationship)
+          end
+        end
+
+        def actual
+          files = @inspector.attachments
+          return "got none" if files.empty?
+
+          "got #{files.map { |file| "#{file[:name]} (#{file[:mime]}, #{file[:relationship]})" }.inspect}"
+        end
+      end
+
       class HaveNoWarnings < Base
         def description = "have no warnings"
 
@@ -160,6 +189,7 @@ module Stationery
       def have_bookmark(title) = HaveBookmark.new(title)
       def have_pdf_language(lang) = HaveLanguage.new(lang)
       def have_page_labels(labels) = HavePageLabels.new(labels)
+      def have_attachment(name, **) = HaveAttachment.new(name, **)
       def have_no_warnings = HaveNoWarnings.new
       def have_structure(expected) = HaveStructure.new(expected)
       def have_tagged_content = HaveTaggedContent.new

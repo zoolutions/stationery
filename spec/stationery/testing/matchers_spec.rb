@@ -139,6 +139,22 @@ RSpec.describe Stationery::Testing::Matchers do
       expect(have_pdf_language("en").tap { |m| m.matches?(document) }.failure_message).to end_with("got none")
     end
 
+    it "matches an attachment by name, and optionally by type and relationship" do
+      pdf = document.to_pdf(attachments: [{ name: "invoice.xml", data: "<i/>", mime: "text/xml",
+                                            relationship: :alternative }])
+
+      expect(pdf).to have_attachment("invoice.xml")
+      expect(pdf).to have_attachment("invoice.xml", mime: "text/xml", relationship: :alternative)
+      expect(pdf).not_to have_attachment("invoice.xml", mime: "text/plain")
+      matcher = have_attachment("other.xml", mime: "text/xml")
+      expect(matcher.matches?(pdf)).to be(false)
+      expect(matcher.description).to eq('have an attachment "other.xml" mime "text/xml"')
+      expect(matcher.failure_message).to eq(
+        'expected PDF to have an attachment "other.xml" mime "text/xml", got ["invoice.xml (text/xml, alternative)"]'
+      )
+      expect(have_attachment("x").tap { |m| m.matches?(document) }.failure_message).to end_with("got none")
+    end
+
     it "matches page labels" do
       labelled = Class.new(SpecDocument) do
         page_labels 1 => { style: :roman_lower }, 3 => { style: :decimal }

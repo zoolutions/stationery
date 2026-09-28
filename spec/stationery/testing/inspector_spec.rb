@@ -81,6 +81,18 @@ RSpec.describe Stationery::Testing::Inspector do
     end
   end
 
+  describe "#attachments" do
+    it "lists every embedded file with its inflated bytes" do
+      pdf = document.to_pdf(attachments: [{ name: "invoice.xml", data: "<i/>", mime: "text/xml",
+                                            description: "e-invoice", relationship: :alternative }])
+
+      expect(described_class.new(pdf).attachments)
+        .to eq([{ name: "invoice.xml", mime: "text/xml", bytes: "<i/>", description: "e-invoice",
+                  relationship: :alternative }])
+      expect(described_class.new(document).attachments).to eq([])
+    end
+  end
+
   describe "#page_labels" do
     it "computes one label per page from the /PageLabels tree, nil before the first range" do
       doc = Class.new(SpecDocument) do

@@ -58,6 +58,16 @@ RSpec.describe Stationery::Testing::Assertions do
     expect(host.calls.map(&:first)).to eq([true, true, false])
   end
 
+  it "asserts an attachment" do
+    attached = SpecDocument.build { text "x" }
+                           .to_pdf(attachments: [{ name: "invoice.xml", data: "<i/>", mime: "text/xml" }])
+    host.assert_pdf_attachment(attached, "invoice.xml", mime: "text/xml")
+    host.assert_pdf_attachment(pdf, "invoice.xml")
+
+    expect(host.calls.map(&:first)).to eq([true, false])
+    expect(host.calls.last.last).to eq('expected PDF to have an attachment "invoice.xml", got none')
+  end
+
   it "asserts page labels" do
     labelled = Class.new(SpecDocument) do
       page_labels 1 => { style: :roman }

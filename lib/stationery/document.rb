@@ -24,7 +24,7 @@ module Stationery
                       superclass.config.transform_values(&:dup)
                     else
                       { page: { size: :letter, margin: 36 }, families: {}, fallbacks: [], text: {}, metadata: {},
-                        templates: [], regions: [], strict: false, tagged: false, images: {} }
+                        templates: [], regions: [], strict: false, tagged: false, images: {}, attachments: [] }
                     end
       end
 
@@ -56,6 +56,14 @@ module Stationery
       def page_labels(spec)
         PDF::PageLabels.entries(spec)
         config[:page_labels] = spec
+      end
+
+      # Embeds a file in every render: `attach_file "invoice.xml", xml,
+      # mime: "text/xml", description: "Factur-X", relationship: :alternative`.
+      # `relationship:` is :alternative, :source, :data, :supplement or
+      # :unspecified (the /AFRelationship); `modified_at:` a Time.
+      def attach_file(name, data, **)
+        config[:attachments] << PDF::Attachments.build(name, data, **)
       end
 
       # Bitmap defaults: `max_ppi:` (300; nil disables) is the resolution
@@ -109,9 +117,10 @@ module Stationery
     def metadata = self.class.config[:metadata]
 
     def to_pdf(target = nil, strict: self.class.config[:strict], debug: false, encrypt: self.class.config[:encrypt],
-               tagged: self.class.config[:tagged], page_labels: self.class.config[:page_labels])
+               tagged: self.class.config[:tagged], page_labels: self.class.config[:page_labels], attachments: [])
+      attachments = PDF::Attachments.merge(self.class.config[:attachments], attachments)
       Stationery.instrument("render.stationery", document: self.class.name) do |event|
-        write(render_pdf(event, strict:, debug:, encrypt:, tagged:, page_labels:), target)
+        write(render_pdf(event, strict:, debug:, encrypt:, tagged:, page_labels:, attachments:), target)
       end
     end
 
@@ -136,7 +145,7 @@ module Stationery
     def builder_for(book) = Builder.new(book:, text: self.class.config[:text], images: self.class.config[:images])
 
     # The PDF bytes; `event` is the render.stationery payload it fills in.
-    def render_pdf(event, strict:, debug:, encrypt:, tagged:, page_labels:)
+    def render_pdf(event, strict:, debug:, encrypt:, tagged:, page_labels:, attachments:)
       tagging = Tagging::Tree.new if tagged
       warnings = Warnings.new
       book = Fonts::FontBook.new(self.class.config[:families], fallbacks: self.class.config[:fallbacks], warnings:)
@@ -152,13 +161,15 @@ module Stationery
       event[:warnings] = warnings.size
       raise WarningsError, warnings if strict && warnings.any?
 
-      assemble(pages, resources, outline, encrypt:, tagging:, page_labels:).tap { |pdf| event[:bytes] = pdf.bytesize }
+      assemble(pages, resources, outline, encrypt:, tagging:, page_labels:, attachments:)
+        .tap { |pdf| event[:bytes] = pdf.bytesize }
     end
 
-    def assemble(pages, resources, outline, encrypt:, tagging:, page_labels:)
+    def assemble(pages, resources, outline, encrypt:, tagging:, page_labels:, attachments:)
       encryption = encrypt && PDF::Encryption::StandardSecurity.new(**encrypt)
       assembler = PDF::Assembler.new(pages:, resources:, info:, outline:, encryption:, tagging:,
-                                     lang: metadata[:lang], page_labels: PDF::PageLabels.entries(page_labels))
+                                     lang: metadata[:lang], page_labels: PDF::PageLabels.entries(page_labels),
+                                     attachments:)
       Stationery.instrument("write.stationery", document: self.class.name) do |event|
         assembler.render.tap { |pdf| event[:bytes] = pdf.bytesize }
       end
