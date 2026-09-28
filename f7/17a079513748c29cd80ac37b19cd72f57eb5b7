@@ -1,0 +1,53 @@
+lib/stationery/images/images.rb
+  s_600b6bfbec0b19::t_0941b90e0792f7 17-25
+lib/stationery/instrumentation.rb
+  s_600b6bfbec0b19::t_70ac7ccec2b188 17-19,22,33
+  s_600b6bfbec0b19::t_7beb730dce81b7 1-16,20-21,23-32,34-41
+spec/stationery/instrumentation_spec.rb
+  s_600b6bfbec0b19::t_e79e8ed83969f5 1-38,40-61,64-72,75-78,80-87,89-94,96-98
+  s_600b6bfbec0b19::t_70ac7ccec2b188 39,62-63,73-74,79,88
+  s_600b6bfbec0b19::t_d0dcd8127599b9 95
+docs/app/views/docs/pages/performance.rb
+  s_600b6bfbec0b19::t_470b4577044468 7,26-27
+lib/stationery/markdown/document.rb
+  s_600b6bfbec0b19::t_29bae528e1e174 10-13
+lib/stationery/railtie.rb
+  s_600b6bfbec0b19::t_470b4577044468 26-30
+lib/stationery/fonts/font.rb
+  s_600b6bfbec0b19::t_f99cdab3c92606 108
+  s_600b6bfbec0b19::t_890c5b5207527c 107,109-111
+spec/rails/instrumentation_spec.rb
+  s_600b6bfbec0b19::t_470b4577044468 3-4
+  ai_agent 5,26-27
+  s_600b6bfbec0b19::t_0b349801eea7ea 1-2,6-25,28-31
+README.md
+  s_600b6bfbec0b19::t_470b4577044468 609-643
+lib/stationery.rb
+  s_600b6bfbec0b19::t_dd1a459115c217 5
+lib/stationery/document.rb
+  s_600b6bfbec0b19::t_4818b255bfe078 151-157
+  s_600b6bfbec0b19::t_301a2e2a97ba70 98,100
+  s_600b6bfbec0b19::t_ec8a4f5e3aa29e 99,122
+  s_600b6bfbec0b19::t_70ac7ccec2b188 121,123-148
+lib/stationery/html/document.rb
+  s_600b6bfbec0b19::t_0fad28ee3ffef7 9-13
+lib/stationery/fonts/registry.rb
+  s_600b6bfbec0b19::t_f417c89277098e 39
+  s_600b6bfbec0b19::t_abc5fdd9dd67d8 44-49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "f717a079513748c29cd80ac37b19cd72f57eb5b7",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
