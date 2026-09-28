@@ -12,7 +12,7 @@
 # platforms); pages must not change. Baselines are kept per Ruby minor version,
 # because a new Ruby allocates differently.
 require "json"
-require_relative "documents"
+require_relative "features"
 
 module Bench
   module Metrics
@@ -39,10 +39,17 @@ module Bench
       "text_hyphenated" => -> { StationeryHyphenated.new },
       "flyer" => -> { example("flyer") },
       "form" => -> { example("form") },
-      "text_streamed" => -> { StationeryText.new }
+      "text_streamed" => -> { StationeryText.new },
+      "article" => -> { example("article") },
+      "newsletter" => -> { example("newsletter") },
+      "webp" => -> { undecoded { StationeryWebp.new } },
+      "html" => -> { StationeryHtml.new },
+      "pdf_ua" => -> { StationeryAccessible.new },
+      "text_incremental" => -> { StationeryIncremental.new },
+      "text_shaped" => -> { StationeryShaped.new }
     }.freeze
     # Rendered through `to_pdf { |chunk| }` instead of to a String.
-    STREAMED = %w[text_streamed].freeze
+    STREAMED = %w[text_streamed text_incremental].freeze
 
     module_function
 
@@ -52,18 +59,28 @@ module Bench
       Object.const_get(constant).preview
     end
 
+    # With no image decoded yet, so the render that follows decodes its own.
+    def undecoded
+      Stationery::Images::Cache.clear
+      yield
+    end
+
     def ruby = RUBY_VERSION[/\A\d+\.\d+/]
 
     # { document => { "allocations" =>, "pages" =>, "bytes" => } }, each from one
     # render after two that warm the font, image and pattern caches.
     def measure
       Time.singleton_class.prepend(FrozenTime) unless Time.singleton_class.include?(FrozenTime)
-      DOCUMENTS.to_h do |name, document|
-        render = STREAMED.include?(name) ? method(:stream) : :to_pdf.to_proc
-        2.times { render.call(document.call) }
-        pdf, allocations = allocations_of { render.call(document.call) }
+      DOCUMENTS.keys.to_h do |name|
+        2.times { render(name) }
+        pdf, allocations = allocations_of { render(name) }
         [name, { "allocations" => allocations, "pages" => pdf.b.scan(PAGE).size, "bytes" => pdf.bytesize }]
       end
+    end
+
+    def render(name)
+      document = DOCUMENTS.fetch(name).call
+      STREAMED.include?(name) ? stream(document) : document.to_pdf
     end
 
     def stream(document)
