@@ -46,9 +46,10 @@ module Stationery
       # veraPDF rule 7.18.5-1), which gives it its /StructParent. What a
       # header, a footer or a page template paints is an artifact, and so is
       # a link drawn with `canvas.link` without a `tag:`: neither has one.
+      # Counted by hand, so that an audit that finds nothing allocates nothing.
       def links(pages, warnings)
-        pages.each_with_index do |page, index|
-          page.annotations.each do |link|
+        pages.size.times do |index|
+          pages[index].annotations.each do |link|
             next if link.key?(:widget) || link[:tag]&.type == :Link
 
             warnings << Warnings::UntaggedLink.new(target: link[:target], place: link[:place], page: index + 1)
