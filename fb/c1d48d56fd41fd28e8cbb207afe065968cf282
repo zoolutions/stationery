@@ -1,0 +1,13 @@
+spec/stationery/document_to_pdf_bytes_spec.rb
+  ai_agent 1-61
+spec/support/render_digests.rb
+  ai_agent 1-89
+spec/fixtures/renders/main.json
+  ai_agent 1-146
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "fbc1d48d56fd41fd28e8cbb207afe065968cf282",
+  "prompts": {}
+}
