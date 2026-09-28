@@ -1,0 +1,42 @@
+spec/stationery/cli/inspect_spec.rb
+  s_f5a1e2cf907cda::t_daa1fb4c634992 28-29,31-32
+  s_f5a1e2cf907cda::t_0bc3aa4c327ecb 52-59
+  s_f5a1e2cf907cda::t_6fa24c23827536 1-27,30,33-46,48-51,60-128
+  s_f5a1e2cf907cda::t_07a9c83a5b374d 47
+spec/stationery/cli/render_spec.rb
+  s_f5a1e2cf907cda::t_067f40c5f620f3 125-172
+lib/stationery/cli/render.rb
+  s_f5a1e2cf907cda::t_a6263d6a934c97 9-10,43,56,58-59,63-64
+  s_f5a1e2cf907cda::t_c84ebee36a3427 57
+lib/stationery/cli.rb
+  s_f5a1e2cf907cda::t_e7827f7f5f1381 77-78
+  s_f5a1e2cf907cda::t_8a08406f0dc5eb 73
+lib/stationery/cli/pictures.rb
+  s_f5a1e2cf907cda::t_3f544b58a52646 1-20,22-37,42-52
+  s_f5a1e2cf907cda::t_16c61f013bc161 21
+  s_f5a1e2cf907cda::t_c84ebee36a3427 38-41
+lib/stationery/cli/inspect.rb
+  s_f5a1e2cf907cda::t_cab4970d686be5 1-2,6-65
+  s_f5a1e2cf907cda::t_070446a6379b48 3-5
+lib/stationery/cli/layout_text.rb
+  s_f5a1e2cf907cda::t_a07116bb166c3b 1-50,59-132
+  s_f5a1e2cf907cda::t_ab817f64d24948 51-58
+spec/fixtures/cli/inspected.rb
+  s_f5a1e2cf907cda::t_6ba655c83ab889 1-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "d052a3f47c07246cc84859e81d27299e4889eb0e",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
