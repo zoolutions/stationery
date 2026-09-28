@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.8.0 (2026-09-28)
+
+Compliance: PDF/A-3b, PDF/UA-1 and Factur-X e-invoices, verified with veraPDF and Mustang in CI.
+
+- Factur-X / ZUGFeRD: `factur_x(profile: :en16931) { @invoice.to_cii_xml }` (a block, a method name or the XML itself; also `to_pdf(factur_x:)`) embeds the invoice XML as `factur-x.xml` (`xrechnung.xml` for `:xrechnung`) with the relationship the profile requires, writes the `fx:` XMP properties with their extension-schema description and turns on PDF/A-3b. Profiles `:minimum`, `:basic_wl`, `:basic`, `:en16931`, `:extended`, `:xrechnung`. The gem does not build the XML; `examples/e_invoice.rb` shows a minimal EN 16931 document. `Inspector#factur_x`, `have_factur_x`, `assert_factur_x`; `rake verify:factur_x` validates with Mustang.
+- PDF/A and PDF/UA: `conformance :pdf_a3b` (or `:pdf_a2b`) and `conformance :pdf_ua1`, combinable, at class level or `to_pdf(conformance:)`. PDF/A writes an sRGB output intent (the ICC's `sRGB2014.icc`, bundled with its licence), `pdfaid` identification and printable link annotations, and refuses encryption and, under A-2b, attachments. PDF/UA turns `tagged` on, requires `metadata title:` and `lang:`, writes `pdfuaid:part 1`, tab order and link descriptions, and raises `ConformanceError` for a figure without `alt:`. CMYK colour under PDF/A is reported as `Warnings::ConformanceIssue`. Form fields are refused under every level until their appearances embed their fonts. `Inspector#conformance`, `have_conformance`, `assert_pdf_conformance`; `rake verify:conformance` runs veraPDF through Docker, and CI runs it on the examples.
+- XMP metadata: every document carries an XMP packet mirroring the Info dictionary (`dc:title`, `dc:creator`, `dc:description`, `dc:subject`, `dc:language`, `xmp:CreateDate`/`ModifyDate`/`MetadataDate`, `xmp:CreatorTool`, `pdf:Producer`, `pdf:Keywords`) as an uncompressed `/Metadata` stream; `metadata xmp: false` or `to_pdf(xmp: false)` opts out. `Inspector#xmp` and `#xmp_values`.
+- Embedded files: `attach_file "terms.pdf", data, mime:, description:, relationship:, modified_at:` at class level, `to_pdf(attachments: [...])` per render. Each file is a `/Filespec` in the catalog's `/EmbeddedFiles` name tree and `/AF`, with `/AFRelationship`, size, checksum and date; streams are compressed and encrypted with the document. `Inspector#attachments`, `have_attachment`, `assert_pdf_attachment`.
+- SVG: `use` (`href` or `xlink:href`, onto shapes, groups, text, symbols and other `use` elements, with cycle detection), `symbol` and nested `svg` viewports (`viewBox`, `preserveAspectRatio` with `meet`/`slice`/`none`, clipped unless `overflow="visible"`), and `clipPath` (`clip-path="url(#id)"` on shapes, groups, text and `use`; `clip-rule`, `clipPathUnits="objectBoundingBox"`, nested clip paths). The `color` property feeds `currentColor`, so one sprite symbol can be drawn in several colours. `image`, `mask`, `pattern`, `filter` and `textPath` stay unsupported and reported.
+- CLI: `stationery render file.rb` renders the document the file itself defines, so a file that subclasses a document from another file no longer asks for `--class`.
+
 ## 0.7.0 (2026-09-28)
 
 Typography and images: hyphenation, OpenType features, oversized-image warnings, page labels.
