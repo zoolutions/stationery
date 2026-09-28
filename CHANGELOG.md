@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.10.1 (2026-09-28)
+
+- Extracted text keeps characters no font has: each run of `.notdef` glyphs is wrapped in a `/Span` with `/ActualText` holding the written characters, and ToUnicode maps glyph 0 to U+FFFD instead of the first missing character drawn, so `日本語` set in a font without those glyphs copies out as `日本語`, not `日日日`. The `MissingGlyph` warning and the bytes of text the fonts cover are unchanged.
+
 ## 0.10.0 (2026-09-28)
 
 CSS for `html`, better line and page breaking, timestamped signatures, and streaming to a block.
