@@ -1,0 +1,38 @@
+spec/stationery/text/wrapper_rest_spec.rb
+  s_632dbd6e2d0597::t_9b256766997c2e 76
+  s_632dbd6e2d0597::t_8d7ab5da89fc3a 1-75,77-95
+spec/stationery/floats_spec.rb
+  s_632dbd6e2d0597::t_fe2122cf79d0e6 142
+  s_632dbd6e2d0597::t_1caef6ec0c028a 135-139
+lib/stationery/text/paragraph.rb
+  s_632dbd6e2d0597::t_c3cab0590d5e9a 9-13,19-20,27-30,34-43,56,64,115,120-125,130-133,136,138
+spec/stationery/text/paragraph_exclusions_spec.rb
+  s_632dbd6e2d0597::t_bdb59565b70896 104-153
+spec/stationery/layout/text_spec.rb
+  s_632dbd6e2d0597::t_bdb59565b70896 112-141
+spec/stationery/layout/flow_floats_split_spec.rb
+  s_632dbd6e2d0597::t_bdb59565b70896 203-219,221-224
+  s_632dbd6e2d0597::t_ae488ec805b55b 220
+lib/stationery/text/wrapper.rb
+  s_632dbd6e2d0597::t_e66e6516071bce 3-4,23-24,44,131,134,148,205,207-208,215-216,219
+lib/stationery/text/wrapper/remainder.rb
+  s_632dbd6e2d0597::t_003c2225159bf8 1-59
+lib/stationery/layout/text.rb
+  s_632dbd6e2d0597::t_c3cab0590d5e9a 11-12,58,103-105,108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "83520e489da268a358365699948d7c9bb8261d47",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
