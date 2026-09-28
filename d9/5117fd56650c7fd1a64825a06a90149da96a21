@@ -1,0 +1,72 @@
+spec/support/recording_canvas.rb
+  s_f5a1e2cf907cda::t_f867b15f0803ab 80-81
+  s_f5a1e2cf907cda::t_0578a3de6cc52e 79,82
+  s_f5a1e2cf907cda::t_9603437f84d3c1 1-78,83-91
+lib/stationery/structure.rb
+  s_f5a1e2cf907cda::t_9d22676cb3eb97 17,20,23
+  s_f5a1e2cf907cda::t_fc25d55ec1ae20 14-16,64
+lib/stationery/canvas.rb
+  s_f5a1e2cf907cda::t_fb0a8cf7a4da6c 4-8,10-11,17,78-85,89-92
+lib/stationery/canvas/path.rb
+  s_f5a1e2cf907cda::t_245dccfa90e6ca 5-7,9,13-20,25-27,30-34,38,41-42,48-50
+  s_f5a1e2cf907cda::t_9c06b59179531c 28-29,37,43-45
+lib/stationery/page_templates.rb
+  s_f5a1e2cf907cda::t_9d22676cb3eb97 16
+  s_f5a1e2cf907cda::t_fc25d55ec1ae20 10-13,57-59
+lib/stationery/pdf/canvases.rb
+  s_f5a1e2cf907cda::t_722d291f6ce062 1-9,11-37
+  s_f5a1e2cf907cda::t_9d22676cb3eb97 10
+spec/stationery/canvas/path_spec.rb
+  s_f5a1e2cf907cda::t_f867b15f0803ab 1-23
+lib/stationery/svg/gradient.rb
+  s_f5a1e2cf907cda::t_1d7d85dc95f9f7 15-26
+.rubocop.yml
+  s_f5a1e2cf907cda::t_f867b15f0803ab 34
+spec/stationery/document_paint_on_spec.rb
+  s_f5a1e2cf907cda::t_f867b15f0803ab 13,16,34-35,117
+  s_f5a1e2cf907cda::t_0578a3de6cc52e 65,75,101
+  s_f5a1e2cf907cda::t_d5bcc0d6277acf 1-12,14-15,17-33,36-57,59,61-64,66,68-74,76-100,102-116,118-130
+  s_f5a1e2cf907cda::t_71d7f75d58b94b 58,60,67
+lib/stationery/canvas/glyphs.rb
+  s_f5a1e2cf907cda::t_cb97748a60cec4 1-40
+spec/stationery/path_spec.rb
+  s_f5a1e2cf907cda::t_ade14e1288fd1f 1-48
+lib/stationery/canvas/interface.rb
+  s_f5a1e2cf907cda::t_f89aa52607d876 44
+  s_f5a1e2cf907cda::t_bf071595bcedce 1-43,45-101,103-104,106-146
+  s_f5a1e2cf907cda::t_f867b15f0803ab 102,105
+lib/stationery/path.rb
+  s_f5a1e2cf907cda::t_e94b7f0966076d 15-16,105,110
+  s_f5a1e2cf907cda::t_f82ee071727ebf 1-14,17-104,106-109,111-138
+lib/stationery/canvas/text.rb
+  s_f5a1e2cf907cda::t_f89aa52607d876 5-6,29-30
+lib/stationery/svg/painter.rb
+  s_f5a1e2cf907cda::t_1d7d85dc95f9f7 68
+lib/stationery/layout/paginator.rb
+  s_f5a1e2cf907cda::t_9d22676cb3eb97 15
+  s_f5a1e2cf907cda::t_fc25d55ec1ae20 10-14,72
+spec/stationery/canvas/interface_spec.rb
+  s_f5a1e2cf907cda::t_85306fcd9138fe 1-114,116-146
+  s_f5a1e2cf907cda::t_8ff0a21c1fe4de 115
+lib/stationery/document.rb
+  s_f5a1e2cf907cda::t_9d22676cb3eb97 270
+  s_f5a1e2cf907cda::t_bffb387ab43bfe 226-242,269,271,312,315-317
+lib/stationery.rb
+  s_f5a1e2cf907cda::t_1d7d85dc95f9f7 64,68-69,73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "d95117fd56650c7fd1a64825a06a90149da96a21",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
