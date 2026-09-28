@@ -73,7 +73,13 @@ class Views::Docs::Pages::Warnings < DocsUI::Page
             "tagged PDF has no language: set metadata lang:" ],
           [ [ :code, "ConformanceIssue" ], "level, subject",
             "A PDF/A render used CMYK colour or a CMYK JPEG, which the sRGB output intent does not cover.",
-            "PDF/A-3b: CMYK colour on page 1 is not covered by the sRGB output intent" ]
+            "PDF/A-3b: CMYK colour on page 1 is not covered by the sRGB output intent" ],
+          [ [ :code, "NotMonochrome" ], "color, kind, page",
+            "A monochrome render (without snap: true) painted a colour that is not black or white, or at an opacity below 1, or drew a JPEG, which is not dithered. color is \"#RRGGBB\" (with \" at opacity 0.5\"), or names the image; kind is :text, :rule, :background, :border, :gradient or :image. Reported once per colour, kind and page.",
+            "text in #888888 on page 1 is not black or white" ],
+          [ [ :code, "ThinLine" ], "width, kind, page, dpi",
+            "A monochrome render (without snap: true) drew a stroke or a rule thinner than one of the printer's dots (72/dpi pt), which prints or not depending on where it lands. snap: true widens it to a dot.",
+            "a rule 0.2 pt wide on page 1 is thinner than a dot at 203 dpi (0.355 pt): widen it, or snap: true" ]
         ]
       )
     end
