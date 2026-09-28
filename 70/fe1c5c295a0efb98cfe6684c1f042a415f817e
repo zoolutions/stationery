@@ -1,0 +1,38 @@
+lib/stationery/layout/columns/pour.rb
+  s_632dbd6e2d0597::t_2a05d956226298 44-50
+lib/stationery/layout/columns.rb
+  s_632dbd6e2d0597::t_739ca2dd2b5466 12-15,37,77-79,83,95,103,106-107,115-127,136-137,139-142
+lib/stationery.rb
+  s_632dbd6e2d0597::t_739ca2dd2b5466 104
+spec/stationery/layout/columns_spec.rb
+  s_632dbd6e2d0597::t_0bbfa7b8c7c7d1 65-70,208,210-211,214-216,219-220,222-225,227,230-232,288-293
+  s_632dbd6e2d0597::t_58d2289d40cd9c 71-80
+  s_632dbd6e2d0597::t_2df0401197d659 209,212-213,217-218,221,226,228-229,294
+spec/stationery/layout/columns/pour_spec.rb
+  s_632dbd6e2d0597::t_c683d1b4621d8c 42-66
+spec/stationery/columns_spec.rb
+  s_632dbd6e2d0597::t_2df0401197d659 33-34,36
+  s_632dbd6e2d0597::t_ab7bdd8cb2cf77 110-118
+  s_632dbd6e2d0597::t_0bbfa7b8c7c7d1 30-32,35,37-38
+spec/stationery/layout/columns/leveller_spec.rb
+  s_632dbd6e2d0597::t_75e661a438eb81 1-73,75-76,80-261
+  s_632dbd6e2d0597::t_3fa09583de46e2 74,77-79
+lib/stationery/layout/columns/leveller.rb
+  s_632dbd6e2d0597::t_ae78aad65e0848 1-65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "70fe1c5c295a0efb98cfe6684c1f042a415f817e",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
