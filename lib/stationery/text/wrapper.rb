@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "strscan"
+require_relative "wrapper/one_word"
 require_relative "wrapper/remainder"
 
 module Stationery
@@ -20,6 +22,7 @@ module Stationery
     # lines from `free_from` on are wrapped as if the floats were gone: what
     # is left of a paragraph after a page break.
     class Wrapper
+      include OneWord
       include Remainder
 
       TOKEN = /\n|[ \t]+|[^ \t\n-]*-+|[^ \t\n-]+/
@@ -34,6 +37,10 @@ module Stationery
       end
 
       def wrap(runs, max_width, fallback_style: runs.first&.style, exclusions: nil, leading: 0, free_from: nil)
+        @fallback = fallback_style
+        lines = one_word(runs, max_width) unless exclusions || @stop
+        return lines if lines
+
         @max = max_width
         @lines = []
         @current = []
@@ -71,8 +78,11 @@ module Stationery
         items
       end
 
+      # A StringScanner hands each token over as one String; `String#scan`
+      # made three objects of it.
       def tokens(items, text, style)
-        text.scan(TOKEN) do |token|
+        scanner = StringScanner.new(text)
+        while (token = scanner.scan(TOKEN))
           if token == "\n"
             items << [:newline]
             @join = false
@@ -113,7 +123,7 @@ module Stationery
         @ended_with_newline = kind == :newline
         case kind
         when :newline then finish
-        when :space then @pending_space += segments
+        when :space then @pending_space.concat(segments)
         else place_word(segments)
         end
       end
@@ -125,9 +135,9 @@ module Stationery
         @explicit = explicit
         needed = width(@pending_space) + width(word)
         if @current.empty? || line_width + needed <= @max + EPSILON
-          @current.concat(@pending_space, word)
+          @current.concat(@pending_space).concat(word) # one call with both would make an Array of them
         elsif (head, tail = hyphenated(word, @max - line_width - width(@pending_space)))
-          @current.concat(@pending_space, head)
+          @current.concat(@pending_space).concat(head)
           finish(wrapped: true, carry: tail)
           return place_word(tail, explicit:)
         else
@@ -257,16 +267,26 @@ module Stationery
         segments
       end
 
+      # A fragment per stretch of segments in one style. A stretch of one
+      # segment keeps the segment's own String.
       def fragments(segments)
         x = 0
-        segments.chunk_while { |a, b| a.style == b.style }.filter_map do |group|
-          text = plain(group.map(&:text).join)
+        fragments = []
+        start = 0
+        while start < segments.size
+          style = segments[start].style
+          stop = start + 1
+          stop += 1 while stop < segments.size && segments[stop].style == style
+          text = plain(stop - start == 1 ? +segments[start].text : segments[start...stop].map(&:text).join)
+          start = stop
           next if text.empty?
 
-          font, face = @book.resolve(group.first.style)
-          fragment_width = measure(text, group.first.style)
-          Fragment.new(text, group.first.style, font, face, fragment_width, x).tap { x += fragment_width }
+          font, face = @book.resolve(style)
+          fragment_width = measure(text, style)
+          fragments << Fragment.new(text, style, font, face, fragment_width, x)
+          x += fragment_width
         end
+        fragments
       end
 
       def fallback_metrics
