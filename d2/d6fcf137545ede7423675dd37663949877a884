@@ -1,0 +1,49 @@
+spec/stationery/pdf/conformance_missing_glyph_spec.rb
+  s_632dbd6e2d0597::t_462256192967e0 60
+spec/integration/plain_ruby_spec.rb
+  s_632dbd6e2d0597::t_462256192967e0 35
+spec/stationery/tagging_audit_spec.rb
+  s_632dbd6e2d0597::t_462256192967e0 1-154
+spec/stationery/tagging_spec.rb
+  s_632dbd6e2d0597::t_462256192967e0 120-121
+docs/app/views/docs/pages/conformance.rb
+  s_632dbd6e2d0597::t_462256192967e0 63-65,74,78-84,92
+README.md
+  s_632dbd6e2d0597::t_462256192967e0 490-492,500-508,554-557
+spec/stationery/html/tree_builder/blocks_spec.rb
+  s_632dbd6e2d0597::t_462256192967e0 69,77-78
+lib/stationery/tagging/element.rb
+  s_632dbd6e2d0597::t_462256192967e0 21-26
+docs/app/views/docs/pages/warnings.rb
+  s_632dbd6e2d0597::t_462256192967e0 62-70
+lib/stationery/warnings.rb
+  s_632dbd6e2d0597::t_462256192967e0 64-73
+spec/stationery/html/tree_builder_spec.rb
+  s_632dbd6e2d0597::t_462256192967e0 39-41
+lib/stationery/html/tree_builder/blocks.rb
+  s_632dbd6e2d0597::t_462256192967e0 132,137-139
+spec/stationery/pdf/conformance_spec.rb
+  s_632dbd6e2d0597::t_462256192967e0 85-99,168-169,173-220
+lib/stationery/pdf/conformance.rb
+  s_632dbd6e2d0597::t_462256192967e0 69,123-126,129
+lib/stationery/tagging/tree.rb
+  s_632dbd6e2d0597::t_462256192967e0 8-9,27-30,34,39,47-90
+spec/stationery/tagging/tree_spec.rb
+  s_632dbd6e2d0597::t_462256192967e0 56,64-153
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "d2d6fcf137545ede7423675dd37663949877a884",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
