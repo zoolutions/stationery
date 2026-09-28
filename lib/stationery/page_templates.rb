@@ -50,7 +50,11 @@ module Stationery
       @warnings << Layout::Overflow.new(page: number, height:, available: reserved)
     end
 
-    def root(info, block) = @document.template_root(info, book: @book, &block)
+    # A template's nodes carry structure elements only when the canvases
+    # build a tree (the links of a region join it).
+    def root(info, block) = @document.template_root(info, book: @book, tagged: tagging?, &block)
+
+    def tagging? = @canvases.respond_to?(:tagging?) ? @canvases.tagging? : true
 
     # Everything a template paints is a pagination artifact in a tagged PDF.
     def paint(page, root, rect, layer = :foreground, subtype: nil)

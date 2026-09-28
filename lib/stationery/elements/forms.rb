@@ -48,7 +48,8 @@ module Stationery
 
     def field_node(field, width:, height:, at:, label: nil)
       label &&= field_label(label)
-      node = Layout::Field.new(field, height:, width:, label:)
+      tag = @_builder.tagged? ? Tagging::Element.new(:Form, kind: :field) : nil
+      node = Layout::Field.new(field, height:, width:, label:, tag:)
       @_builder.add(at ? Layout::Positioned.new(node, x: at[0], y: at[1]) : node)
     end
 

@@ -76,7 +76,7 @@ module Stationery
       # `tag` is the structure element the text belongs to in a tagged PDF;
       # linked runs become Link elements inside it.
       def draw(canvas, x, y, tag: nil)
-        links = Links.new
+        links = Links.new(canvas.tagging?)
         canvas.tag_runs(tag) do |mark|
           top = y
           @lines.each do |line|
@@ -93,12 +93,19 @@ module Stationery
         end
       end
 
-      # One Link element per run of fragments with the same link target.
+      # One Link element per run of fragments with the same link target;
+      # none when the canvas builds no structure tree.
       class Links
+        # `tagging` is whether the canvas builds a tree; a keyword here would
+        # cost a Hash per paragraph drawn.
+        def initialize(tagging)
+          @tagging = tagging
+        end
+
         def for(target)
           @element = nil unless target == @target
           @target = target
-          @element = target && (@element || Tagging::Element.new(:Link))
+          @element = target && @tagging && (@element || Tagging::Element.new(:Link))
         end
       end
 

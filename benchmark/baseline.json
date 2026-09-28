@@ -3,22 +3,22 @@
     "recorded_with": "ruby 3.4.2 (2025-02-15 revision d2930f8e7a) +YJIT +PRISM [arm64-darwin24]",
     "documents": {
       "invoice": {
-        "allocations": 30407,
+        "allocations": 29870,
         "pages": 1,
         "bytes": 26598
       },
       "table": {
-        "allocations": 1738893,
+        "allocations": 1672825,
         "pages": 46,
         "bytes": 133756
       },
       "text": {
-        "allocations": 146749,
+        "allocations": 145950,
         "pages": 10,
         "bytes": 26414
       },
       "text_hyphenated": {
-        "allocations": 174491,
+        "allocations": 173692,
         "pages": 10,
         "bytes": 27352
       },
@@ -28,12 +28,12 @@
         "bytes": 127763
       },
       "form": {
-        "allocations": 29401,
+        "allocations": 29265,
         "pages": 1,
         "bytes": 42812
       },
       "text_streamed": {
-        "allocations": 146751,
+        "allocations": 145952,
         "pages": 10,
         "bytes": 26414
       },
@@ -48,14 +48,14 @@
         "bytes": 34514
       },
       "webp": {
-        "allocations": 10212,
+        "allocations": 10196,
         "pages": 1,
         "bytes": 19481
       },
       "html": {
-        "allocations": 165943,
+        "allocations": 164202,
         "pages": 5,
-        "bytes": 38737
+        "bytes": 38733
       },
       "pdf_ua": {
         "allocations": 291310,
@@ -63,12 +63,12 @@
         "bytes": 187382
       },
       "text_incremental": {
-        "allocations": 150936,
+        "allocations": 150097,
         "pages": 10,
         "bytes": 29667
       },
       "text_shaped": {
-        "allocations": 357507,
+        "allocations": 356708,
         "pages": 10,
         "bytes": 25606
       }
