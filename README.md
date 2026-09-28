@@ -106,7 +106,8 @@ renders them all, or render one with `stationery render examples/report.rb`.
 | `markdown(source, styles:, gap:, images:, base_path:, bookmarks:, links:, max_depth:)` | The same from CommonMark (plus GFM tables and strikethrough). |
 
 Text style options: `font`, `size`, `weight` (`:regular`, `:bold`), `style` (`:italic`), `color`,
-`letter_spacing`, `underline`, `strikethrough`, `link`, `opacity`, `kerning` (default `true`), `ligatures` (default `true`), `features` (OpenType feature tags, e.g. `%i[smcp onum]`), `hyphenate` (`true` for English, or `"de"`, `"sv"`; default off), `align` (`:left`, `:center`, `:right`, `:justify`), `leading`.
+`letter_spacing`, `underline`, `strikethrough`, `link`, `opacity`, `kerning` (default `true`), `ligatures` (default `true`), `features` (OpenType feature tags, e.g. `%i[smcp onum]`), `hyphenate` (`true` for English, or `"de"`, `"sv"`; default off), `align` (`:left`, `:center`, `:right`, `:justify`), `leading`,
+`orphans` and `widows` (the fewest lines a page break may leave behind and carry over; default 1, a paragraph that cannot meet them moves whole).
 `align: :justify` stretches the spaces of wrapped lines to the full width; the last line, lines
 ending in a newline and lines without spaces stay left-aligned (tabs are never stretched).
 Colours are `"#RRGGBB"`, `"RRGGBB"`, `"#RGB"`, `[r, g, b]` (0-255) or `[c, m, y, k]` (0-100).

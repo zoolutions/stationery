@@ -55,6 +55,7 @@ class Views::Docs::Pages::Elements < DocsUI::Page
           [ "color", "Color", "\"#000000\"", [ :md, "`\"#RRGGBB\"`, `\"RRGGBB\"`, `\"#RGB\"`, `[r, g, b]` (0-255) or `[c, m, y, k]` (0-100)." ] ],
           [ "align", ":left, :center, :right, :justify", ":left", [ :md, "`:justify` widens spaces on wrapped lines; the last line, lines ending in a newline and lines without spaces stay left." ] ],
           [ "leading", "Numeric", "0", "Extra points between lines." ],
+          [ "orphans / widows", "Integer", "1", [ :md, "The fewest lines a page break may leave at the foot of a page and carry to the next; a paragraph that cannot meet them moves whole. See [Page breaks in text](/docs/layout-rules#page-breaks-in-text)." ] ],
           [ "letter_spacing", "Numeric", "0", "Extra points between characters." ],
           [ "underline / strikethrough", "Boolean", "false", "Decoration lines." ],
           [ "link", "String", "—", [ :md, "A URL, or `\"#name\"` for an [internal link](/docs/links)." ] ],

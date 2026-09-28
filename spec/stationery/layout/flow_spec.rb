@@ -191,4 +191,34 @@ RSpec.describe Stationery::Layout::Flow do
       expect(inner).to have_received(:split).with(260, a_value < 160, fresh: false)
     end
   end
+
+  describe "orphans and widows across pages" do
+    # A 300×200 page with a 20pt margin holds 160pt of 10pt Open Sans lines.
+    def pages_of(root) = inspect_pdf(render_layout(root).first).page_texts.map { |t| t.scan(/[a-z]+ \d+/).size }
+    let(:per_page) { (160 / line_height).floor }
+
+    it "moves a paragraph that would leave too few lines behind" do
+      root = flow(lines_of(per_page - 2, prefix: "a"), lines_of(6, prefix: "b", orphans: 3))
+
+      expect(pages_of(root)).to eq([per_page - 2, 6])
+    end
+
+    it "carries extra lines so the widows are met" do
+      root = flow(lines_of(per_page - 4, prefix: "a"), lines_of(6, prefix: "b", widows: 3))
+
+      expect(pages_of(root)).to eq([per_page - 1, 3])
+    end
+
+    it "splits a long paragraph that starts a page, honouring the widows only" do
+      root = flow(lines_of(per_page + 7, orphans: 5, widows: 5))
+
+      expect(pages_of(root)).to eq([per_page, 7])
+    end
+
+    it "breaks anywhere at the defaults" do
+      root = flow(lines_of(per_page - 2, prefix: "a"), lines_of(6, prefix: "b"))
+
+      expect(pages_of(root)).to eq([per_page, 4])
+    end
+  end
 end

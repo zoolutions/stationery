@@ -89,6 +89,61 @@ RSpec.describe Stationery::Elements do
     expect(page_contents(pdf).first).to include("0 1 0 rg", "/F1 12 Tf", "/F1 10 Tf")
   end
 
+  describe "orphans and widows" do
+    # An A4 page with the spec margins takes many lines; fill most of it, then
+    # add a paragraph whose break would strand lines.
+    def counts(pdf) = inspect_pdf(pdf).page_texts.map { |t| t.scan(/[a-z]+ \d+/).size }
+    def lines(count, prefix) = Array.new(count) { |i| "#{prefix} #{i + 1}" }.join("\n")
+
+    it "takes orphans: and widows: per paragraph, from text_style and from default_text" do
+      probe = lines(200, "a")
+      per_page = counts(render { text probe }).first
+      filler = lines(per_page - 2, "a")
+      tail = lines(6, "b")
+
+      plain = render do
+        text filler
+        text tail
+      end
+      per_text = render do
+        text filler
+        text tail, orphans: 3
+      end
+      styled = render do
+        text filler
+        text_style(orphans: 3) { text tail }
+      end
+      defaulted = Class.new(SpecDocument) do
+        default_text orphans: 3
+        define_method(:view_template) do
+          text filler
+          text tail
+        end
+      end.new.to_pdf
+
+      expect(counts(plain)).to eq([per_page, 4])
+      expect([counts(per_text), counts(styled), counts(defaulted)]).to all(eq([per_page - 2, 6]))
+    end
+
+    it "reaches html and markdown paragraphs through styles:" do
+      probe = lines(200, "a")
+      per_page = counts(render { text probe }).first
+      filler = lines(per_page - 2, "a")
+      html_tail = "<p>#{Array.new(6) { |i| "b #{i + 1}" }.join("<br>")}</p>"
+
+      pdf = render do
+        text filler
+        html html_tail, styles: { p: { orphans: 3 } }
+      end
+
+      expect(counts(pdf)).to eq([per_page - 2, 6])
+    end
+
+    it "rejects anything but a positive whole number" do
+      expect { render { text "x", widows: 0 } }.to raise_error(ArgumentError, /widows: must be an Integer/)
+    end
+  end
+
   it "places a positioned box without taking up flow space" do
     pdf = render do
       box(at: [200, 150], width: 80) { text "floating" }

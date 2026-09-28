@@ -3,18 +3,21 @@
 module Stationery
   # The element DSL available inside every component's view_template.
   module Elements
-    PARAGRAPH_DEFAULTS = { align: :left, leading: 0 }.freeze
+    PARAGRAPH_DEFAULTS = { align: :left, leading: 0, orphans: 1, widows: 1 }.freeze
 
     # A paragraph. Plain strings are always literal; pass `markup: true` to
     # read inline tags, or a block to build styled runs in Ruby. `heading: 1..6`
-    # tags it as a heading in a tagged PDF.
+    # tags it as a heading in a tagged PDF. `orphans:` and `widows:` are the
+    # fewest lines a page break may leave behind and carry over (default 1).
     def text(content = nil, markup: false, keep_with_next: nil, break_inside: nil, anchor: nil, bookmark: nil,
              heading: nil, **options, &)
-      settings = PARAGRAPH_DEFAULTS.merge(@_builder.text_defaults.slice(:align, :leading)).merge(options)
+      settings = PARAGRAPH_DEFAULTS.merge(@_builder.text_defaults.slice(:align, :leading, :orphans, :widows))
+                                   .merge(options)
       style = @_builder.style(options)
       runs = text_runs(content, style, markup, &)
       node = Layout::Text.new(runs, context: @_builder.context(style), align: settings[:align],
-                                    leading: settings[:leading], tag: Tagging::Element.new(Tagging.heading(heading)))
+                                    leading: settings[:leading], orphans: settings[:orphans], widows: settings[:widows],
+                                    tag: Tagging::Element.new(Tagging.heading(heading)))
       node.keep_with_next = keep_with_next
       node.break_inside = break_inside
       @_builder.add(mark(node, anchor, bookmark))
