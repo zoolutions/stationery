@@ -125,6 +125,7 @@ class Views::Docs::Pages::GettingStarted < DocsUI::Page
         - [Elements](/docs/elements) — every element and its options.
         - [Forms](/docs/forms) — fillable fields, their options and how they behave in a viewer.
         - [Layout rules](/docs/layout-rules) — how measuring, splitting and pagination decide where things land.
+        - [Comparison](/docs/comparison) — Stationery next to Prawn and sghtmltopdf, feature by feature.
       MD
     end
   end

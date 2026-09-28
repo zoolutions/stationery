@@ -34,6 +34,7 @@ class Doc
   page "Warnings and strict mode", group: "Reference", slug: "warnings", view: "Warnings"
   page "Cookbook", group: "Reference"
   page "Performance", group: "Reference"
+  page "Comparison", group: "Reference"
   page "Limitations", group: "Reference"
   page "Changelog", group: "Reference"
 end

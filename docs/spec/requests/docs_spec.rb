@@ -31,7 +31,7 @@ RSpec.describe "Docs site" do
 
   it "renders README and CHANGELOG content from the repo" do
     get "/docs/performance"
-    expect(response.body).to include("Renders/s")
+    expect(response.body).to include("Best render")
 
     get "/docs/changelog"
     expect(response.body).to include("0.1.0")

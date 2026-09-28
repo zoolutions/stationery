@@ -939,6 +939,9 @@ between the children, as for a `P` holding a `Link`) or `[type]` when empty; a
 
 - **Prawn** is an imperative cursor API: every document does its own layout
   arithmetic. Stationery is a layout engine with a component DSL.
+- **sghtmltopdf** renders HTML and CSS in Rust, fast and with a real CSS layout
+  engine, but writes no outline, forms, tagged PDF, PDF/A, encryption or
+  signatures, and is a native extension.
 - **Headless Chrome** (Grover, ferrum_pdf) renders HTML beautifully but runs
   a browser per worker; stray processes and memory are the price.
 - **Typst** is excellent but a native extension and a second template language.
@@ -980,21 +983,43 @@ events attached is the most useful thing to put in an issue.
 
 ## Performance
 
-`bundle exec rake bench` renders two documents with Stationery and with Prawn
-2.5 + prawn-table, both embedding the same Open Sans TTF files
-(`benchmark/`, not part of CI). Apple M2 Max, Ruby 3.4.2 +YJIT, 28 September 2026:
+`bundle exec rake bench` renders three documents with Stationery, with Prawn 2.5 +
+prawn-table, and with [sghtmltopdf](https://github.com/waka/sghtmltopdf) 0.5.1, an
+HTML-to-PDF engine written in Rust, given HTML/CSS twins of the same documents. Every
+engine embeds the same Open Sans TTF files (`benchmark/`, not part of CI). Apple M2 Max,
+Ruby 3.4.2 +YJIT, 28 September 2026, warm caches, the best of three runs:
 
-| Document | Engine | Renders/s | Objects allocated | PDF bytes |
-|---|---|---:|---:|---:|
-| Invoice (1 page, `examples/invoice.rb`) | Stationery | 66.5 | 39,574 | 26,599 |
-| | Prawn | 41.3 (1.61x slower) | 88,558 | 33,034 |
-| Table, 1,500 rows × 5 columns, repeating header | Stationery | 2.31 (46 pages) | 2,596,554 | 133,754 |
-| | Prawn | 0.58 (40 pages; 4.01x slower) | 6,901,811 | 2,689,487 |
+| Document | Engine | Best render | Renders/s | Objects allocated | PDF bytes | Pages |
+|---|---|---:|---:|---:|---:|---:|
+| Invoice (`examples/invoice.rb`) | Stationery | 13.1 ms | 70.1 | 39,562 | 26,599 | 1 |
+| | Prawn | 18.3 ms | 45.2 | 88,558 | 33,034 | 1 |
+| | sghtmltopdf | 3.4 ms | 259.4 | 53 | 36,693 | 1 |
+| Table, 1,500 rows × 5 columns, repeating header | Stationery | 395 ms | 2.45 | 2,596,598 | 133,754 | 46 |
+| | Prawn | 1,373 ms | 0.71 | 6,901,807 | 2,689,487 | 40 |
+| | sghtmltopdf | 96 ms | 9.99 | 53 | 369,338 | 45 |
+| Cover photo and six illustrated sections | Stationery | 9.0 ms | 99.8 | 45,866 | 41,531 | 3 |
+| | Prawn | 29.7 ms | 30.9 | 102,967 | 55,391 | 2 |
+| | sghtmltopdf | 6.7 ms | 136.8 | 53 | 43,031 | 2 |
 
-Stationery compresses content streams; Prawn does not by default, hence the
-larger file. `PROFILE=1 bundle exec ruby -Ilib benchmark/profile.rb` prints the
-20 hottest frames of the table render under StackProf (wall mode; `MODE=cpu` or
-`MODE=object` for the others).
+sghtmltopdf is the fastest: 3.9x Stationery on the invoice, 4.1x on the table and 1.3x on
+the photo document. That is native code against Ruby, and its 53 objects are the binding's:
+the engine allocates outside the Ruby heap. Stationery is 1.4x, 3.5x and 3.3x faster than
+Prawn and writes the smallest files of the three (28%, 64% and 3% smaller than
+sghtmltopdf's). Stationery compresses content streams; Prawn does not by default, hence its
+larger files. Page counts differ where the engines' line heights and table padding do.
+"Best render" is the fastest single render, the figure other work on the machine disturbs
+least; renders per second is the average over five seconds.
+
+What Stationery optimises for is not the last millisecond: it is pure Ruby with no native
+extension to compile or precompile, its output is the same bytes on every platform, and the
+PDF features (tagged output, PDF/A, forms, signatures) live in the same process as your
+models. See the [comparison](https://stationery.zoolutions.llc/docs/comparison) for what
+each engine does.
+
+`PROFILE=1 bundle exec ruby -Ilib benchmark/profile.rb` prints the 20 hottest frames of the
+table render under StackProf (wall mode; `MODE=cpu` or `MODE=object` for the others).
+`SGHTMLTOPDF=0 bundle exec rake bench` leaves the third engine out, as does a machine
+without its gem.
 
 Time depends on the machine, so CI holds what does not: `bundle exec rake metrics`
 renders six fixed documents and compares the objects each render allocates, its
