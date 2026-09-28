@@ -46,6 +46,10 @@ module Stationery
       def size(value, text = nil, &) = styled({ size: value }, text, &)
       def font(family, text = nil, &) = styled({ family: family.to_s }, text, &)
       def link(url, text = nil, &) = styled({ link: url.to_s }, text, &)
+      # The current size multiplied: `scale(1.5) { … }` is one and a half times the text around it.
+      def scale(factor, text = nil, &) = styled({ size: @styles.last.size * factor }, text, &)
+      # Any style fields at once, also to switch a mark off: `with({ weight: :regular }) { … }`.
+      def with(overrides, text = nil, &) = styled(overrides, text, &)
 
       private
 

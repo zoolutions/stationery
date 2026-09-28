@@ -2,6 +2,9 @@
 
 module Stationery
   module SVG
+    Selector = CSS::Selector
+    Stylesheet = CSS::Stylesheet
+
     # Presentation attributes an element inherits from its ancestors, and the
     # transform it draws with. An element's own values cascade: presentation
     # attributes, then stylesheet rules, then its inline `style`. `color` sets
@@ -27,12 +30,7 @@ module Stationery
         NAMED.fetch(value.downcase, value)
       end
 
-      def self.declarations(style)
-        style.to_s.split(";").filter_map do |declaration|
-          key, value = declaration.split(":", 2).map(&:strip)
-          [key, value] if key && value
-        end.to_h
-      end
+      def self.declarations(style) = CSS.declarations(style)
 
       attr_reader :values, :matrix, :color
 

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Stationery
-  module SVG
+  module CSS
     # A compound CSS selector: an element name or `*`, then any number of
     # `.class` and `#id` parts. Combinators, pseudo-classes and attribute
     # selectors are not read.

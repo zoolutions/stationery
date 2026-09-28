@@ -21,8 +21,21 @@ module Stationery
 
       def <<(child)
         @children << child
+        @breaks = nil
         forget_measures
         self
+      end
+
+      # A flow holding a page break (at any depth) is cut there even when it
+      # would fit on the page it is on.
+      def breaks?
+        @breaks = @children.any? { |child| child.page_break? || child.breaks? } if @breaks.nil?
+        @breaks
+      end
+
+      def leading_break?
+        first = @children.first
+        !first.nil? && (first.page_break? || first.leading_break?)
       end
 
       def splittable? = true
@@ -93,6 +106,8 @@ module Stationery
 
           gap = @placed.empty? ? 0 : @flow.gap
           remaining = @height - @used - gap
+          return broken(child, gap, remaining, rest) if child.breaks?
+
           height = child.measure(child.width_in(@width))
           return fits(child, height + gap, remaining - height, rest) if height <= remaining + EPSILON
           return [part(@placed), part(rest)] if child.is_a?(Spacer)
@@ -104,6 +119,20 @@ module Stationery
           return nil if @placed.empty?
 
           [part(@placed), part(rest)]
+        end
+
+        # A child holding a page break: what comes before the break stays on
+        # this page, the rest goes to the next, however much room is left. One
+        # that starts with the break goes to the next page whole.
+        def broken(child, gap, remaining, rest)
+          return [part(@placed), part([child, *rest])] if child.leading_break? && !@placed.empty?
+
+          head, tail = child.split(child.width_in(@width), remaining, fresh: @fresh && @placed.empty?)
+          return split_or_move(child, remaining, rest) unless head
+          return [part(@placed + [head]), part([tail, *rest])] if tail
+
+          height = head.measure(head.width_in(@width))
+          fits(head, height + gap, remaining - height, rest)
         end
 
         def fits(child, consumed, left_after, rest)

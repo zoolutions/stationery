@@ -51,6 +51,10 @@ RSpec.describe Stationery::Warnings do
       .to eq('link to "terms" on page 3 has no matching anchor')
     expect(described_class::DuplicateAnchor.new(name: "top", page: 2).message)
       .to eq('anchor "top" on page 2 is already defined')
+    expect(described_class::UnsupportedCss.new(properties: %w[float display], selectors: ["a > b"]).message)
+      .to eq("html styles not read: properties float, display; selectors a > b")
+    expect(described_class::UnsupportedCss.new(properties: [], selectors: ["a b"]).message)
+      .to eq("html styles not read: selectors a b")
     expect(described_class::DroppedLink.new(href: "javascript:alert(1)").message)
       .to eq('link "javascript:alert(1)" dropped: scheme not allowed')
   end

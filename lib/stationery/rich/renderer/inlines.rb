@@ -15,8 +15,12 @@ module Stationery
           font: ->(value) { [:font, value] if value }
         }.freeze
 
+        # A true mark switches the style on, a false one (from CSS) switches it off again.
         MARK_STEPS = {
-          bold: [[:b]], italic: [[:i]], underline: [[:u]], strike: [[:strikethrough]]
+          bold: { true => [[:b]], false => [[:with, { weight: :regular }]] },
+          italic: { true => [[:i]], false => [[:with, { style: :normal }]] },
+          underline: { true => [[:u]], false => [[:with, { underline: false }]] },
+          strike: { true => [[:strikethrough]], false => [[:with, { strikethrough: false }]] }
         }.freeze
 
         def initialize(runs, styles, links = Links.new(:all, nil))
@@ -50,7 +54,10 @@ module Stationery
           when :link then [[:link, value], *style_steps(@styles[:a])]
           when :code then style_steps(@styles[:code])
           when :script then [[value]]
-          else MARK_STEPS.fetch(mark, [])
+          when :color then [[:color, value]]
+          when :size then [[:size, value]]
+          when :scale then [[:scale, value]]
+          else MARK_STEPS.dig(mark, value) || []
           end
         end
 

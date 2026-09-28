@@ -19,6 +19,17 @@ RSpec.describe Stationery::Layout::Image do
     expect(described_class.new(image_path("rgb.jpg"), width: 400).size(200)).to eq([200, 150])
   end
 
+  it "takes a Float width up to 1 as a share of the space it is given" do
+    half = image(width: 0.5)
+
+    expect(half.fixed_width(260)).to eq(130.0)
+    expect(half.size(130)).to eq([130, 97.5])
+    expect(half.measure(130)).to eq(97.5)
+    expect(half.natural_width).to eq(2.0)
+    expect(paint(half)).to eq("q\n130 0 0 97.5 20 82.5 cm\n/Im1 Do\nQ\n")
+    expect(image(width: 1.5).fixed_width(260)).to eq(1.5)
+  end
+
   it "paints a plain image as one placed XObject" do
     expect(paint(image(width: 40))).to eq("q\n40 0 0 30 20 150 cm\n/Im1 Do\nQ\n")
   end

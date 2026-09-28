@@ -30,6 +30,7 @@ module Stationery
           blocks.map do |block|
             case block
             when Blockquote then 1 + indents_of(block.blocks)
+            when Container then indents_of(block.blocks)
             when List then 1 + (block.items.map { |item| indents_of(item) }.max || 0)
             when Table then block.rows.flatten.map { |cell| indents_of(cell.blocks) }.max || 0
             else 0

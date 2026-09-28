@@ -10,10 +10,18 @@ module Stationery
     # `#anchor` always is); `:all` keeps every href for trusted sources.
     # Elements nested deeper than `max_depth:` are flattened into the deepest
     # one kept (text stays, structure goes) and reported as a NestingLimit
-    # warning, so content from users cannot exhaust the stack.
+    # warning, so content from users cannot exhaust the stack. `<style>`
+    # rules and inline styles are read for the properties HTML::Css knows;
+    # the rest is reported once as an UnsupportedCss warning.
     def html(source, max_depth: 64, **)
       require_relative "../html/document"
-      rich(HTML.parse(source.to_s, max_depth:) { |depth| nesting_limit(depth, max_depth) }, **)
+      css = HTML::Css::Report.new
+      blocks = HTML.parse(source.to_s, max_depth:, css:) { |depth| nesting_limit(depth, max_depth) }
+      if css.any?
+        @_builder.warnings << Warnings::UnsupportedCss.new(properties: css.properties,
+                                                           selectors: css.selectors)
+      end
+      rich(blocks, **)
     end
 
     # CommonMark (plus GFM tables and strikethrough); options as for html.

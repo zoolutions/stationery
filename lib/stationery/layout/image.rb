@@ -4,7 +4,8 @@ module Stationery
   module Layout
     # An image sized by width, height, both, or a box to fit into (aspect
     # preserved), never wider than the space it is given. One pixel is one
-    # point when no size is given. `fit: :cover` fills `width:` × `height:`
+    # point when no size is given; a Float width up to 1 is a fraction of the
+    # space (`width: 0.5`), as for boxes and columns. `fit: :cover` fills `width:` × `height:`
     # instead, scaling up and clipping the excess around the centre.
     # `radius:` clips to rounded corners and `rotate:` (degrees, clockwise)
     # turns the painted image around the centre of its rectangle; neither
@@ -37,14 +38,16 @@ module Stationery
       end
 
       def size(available)
-        width, height = requested
+        width, height = requested(available)
         return [width, height] if width <= available
 
         [available, height * available / width]
       end
 
       def measure(width) = size(width)[1]
-      def fixed_width(available) = size(available)[0]
+      # A fractional width is a share of the space offered here; measuring and
+      # painting are then given the width that came out of it.
+      def fixed_width(available) = fraction? ? tidy(available * @width) : size(available)[0]
       def natural_width = requested[0]
       def min_width = 0
 
@@ -100,18 +103,21 @@ module Stationery
         @image
       end
 
-      def requested
+      def requested(available = nil)
         iw = @image.width.to_f
         ih = @image.height.to_f
+        width = fraction? ? (available || tidy(iw * @width)) : @width
         if @fit.is_a?(Array)
           scale = [@fit[0] / iw, @fit[1] / ih].min
           [iw * scale, ih * scale].map { |v| tidy(v) }
-        elsif @width && @height then [@width, @height]
-        elsif @width then [@width, tidy(ih * @width / iw)]
+        elsif width && @height then [width, @height]
+        elsif width then [width, tidy(ih * width / iw)]
         elsif @height then [tidy(iw * @height / ih), @height]
         else [@image.width, @image.height]
         end
       end
+
+      def fraction? = @width.is_a?(Float) && @width <= 1
 
       def tidy(value) = value.round(6)
     end

@@ -37,8 +37,9 @@ RSpec.describe Stationery::HTML::TreeBuilder do
       [%(<img src="a.png" alt="A" width="10" height="20px">), [image("a.png", "A", width: 10, height: 20)]],
       ["<img alt='no source'>", []],
       [%(<p>before <img src="x.png"> after</p>), [para("before"), image("x.png"), para("after")]],
-      ["<font color=red>kept</font> <center>centered</center> <blink>too</blink>",
-       [para("kept"), para("centered"), para("too")]],
+      ["<font color=red size=5>kept</font> <center>centered</center> <blink>too</blink>",
+       [para(txt("kept", color: "#FF0000", scale: 1.5)),
+        Stationery::Rich::Paragraph.new(inlines: [txt("centered")], style: { align: :center }), para("too")]],
       ["a</b></div></p>b", [para("ab")]]
     ].each do |source, expected|
       it "parses #{source.inspect}" do
@@ -58,7 +59,8 @@ RSpec.describe Stationery::HTML::TreeBuilder do
       ["H<sub>2</sub>O x<sup>2</sup>", [["H", {}], ["2", { script: :sub }], ["O x", {}], ["2", { script: :sup }]]],
       [%(<span style="font-weight: bold; font-style:italic">a</span><span style="font-weight:700">b</span>),
        [["a", { bold: true, italic: true }], ["b", { bold: true }]]],
-      [%(<span style="color: red">plain</span><span>too</span>), [["plaintoo", {}]]],
+      [%(<span style="color: red">tinted</span><span>plain</span>),
+       [["tinted", { color: "#FF0000" }], ["plain", {}]]],
       ["<b>bold <i>both</i></b>", [["bold ", { bold: true }], ["both", { bold: true, italic: true }]]]
     ].each do |source, expected|
       it "marks #{source.inspect}" do
@@ -112,7 +114,7 @@ RSpec.describe Stationery::HTML::TreeBuilder do
       expect(parse(html)).to eq(
         [table(
           [cell(para("H1"), header: true, align: :right), cell(para("H2"), header: true, align: :center)],
-          [cell(para("a")), cell(para(txt("b", bold: true)), align: :left)],
+          [cell(para(txt("a", color: "#FF0000"))), cell(para(txt("b", bold: true)), align: :left)],
           [cell(para("f")), cell]
         )]
       )

@@ -3,32 +3,32 @@
     "recorded_with": "ruby 3.4.2 (2025-02-15 revision d2930f8e7a) +YJIT +PRISM [arm64-darwin24]",
     "documents": {
       "invoice": {
-        "allocations": 37285,
+        "allocations": 37277,
         "pages": 1,
         "bytes": 26596
       },
       "table": {
-        "allocations": 2596558,
+        "allocations": 2596603,
         "pages": 46,
         "bytes": 133754
       },
       "text": {
-        "allocations": 299194,
+        "allocations": 299203,
         "pages": 10,
         "bytes": 26412
       },
       "text_hyphenated": {
-        "allocations": 378386,
+        "allocations": 378395,
         "pages": 10,
         "bytes": 27350
       },
       "flyer": {
-        "allocations": 101361,
+        "allocations": 101725,
         "pages": 4,
         "bytes": 127761
       },
       "form": {
-        "allocations": 33942,
+        "allocations": 33779,
         "pages": 1,
         "bytes": 42810
       },

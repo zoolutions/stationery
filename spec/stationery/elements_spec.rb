@@ -80,6 +80,17 @@ RSpec.describe Stationery::Elements do
     expect(positions_of(pdf).map(&:first)).to eq([20, 22, 150])
   end
 
+  it "takes a cell as a Hash of options around any kind of content" do
+    pdf = render do
+      table([[{ content: -> { text "proc" }, background: "#FFFF00", padding: 10 },
+              { content: "plain", borders: [] }]], cell: { padding: 2 })
+    end
+
+    expect(strings_of(pdf)).to eq(%w[proc plain])
+    expect(page_contents(pdf).first).to include("1 1 0 rg")
+    expect(positions_of(pdf).first.first).to eq(30)
+  end
+
   it "scopes text defaults to a block" do
     pdf = render do
       text_style(color: "#00FF00", size: 12) { text "green" }
