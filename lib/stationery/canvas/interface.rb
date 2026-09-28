@@ -97,6 +97,29 @@ module Stationery
         shade_path(outline(transform:, &), shading, matrix:, even_odd:, opacity:)
       end
 
+      # Draws a barcode (see Barcode) with its first module's top left
+      # corner at (x, y), `module_size` points a module: a linear one's bars
+      # `height` tall, a QR code's modules square. One path, filled in
+      # `color`. `native:` is whether an output with barcodes of its own
+      # (ZPL) should draw it with those: true, false, or nil for the render's
+      # choice.
+      def barcode(symbol, x:, y:, module_size:, height: nil, color: "#000000", native: nil) # rubocop:disable Lint/UnusedMethodArgument
+        path(fill: color) do |path|
+          if symbol.linear?
+            symbol.bars.each { |start, wide| path.rect(x + (start * module_size), y, wide * module_size, height) }
+          else
+            symbol.modules.each_with_index do |row, index|
+              row.each_with_index.chunk_while { |a, b| a[0] == b[0] }.each do |run|
+                next unless run[0][0]
+
+                path.rect(x + (run[0][1] * module_size), y + (index * module_size), run.size * module_size,
+                          module_size)
+              end
+            end
+          end
+        end
+      end
+
       # A clickable area opening `target`: a URL, or `#name` for an anchor in
       # this document. `tag:` is the Link element it belongs to when tagged.
       def link(_x, _y, _w, _h, _target, tag: nil) = nil # rubocop:disable Lint/UnusedMethodArgument
