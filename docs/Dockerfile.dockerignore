@@ -28,8 +28,13 @@
 /docs/app/assets/stylesheets/tailwind.sources.css
 /docs/public/assets
 
-# The gem's specs, benchmarks, CI lanes and rendered example PDFs.
-/spec/
+# The gem's specs, benchmarks, CI lanes and rendered example PDFs. The font
+# fixtures stay: examples/invoice.rb (and e_invoice.rb on top of it) set their
+# text in them, and /examples/<name>.pdf renders the examples in this image.
+/spec/*
+!/spec/fixtures/
+/spec/fixtures/*
+!/spec/fixtures/fonts/
 /docs/spec/
 /benchmark/
 /gemfiles/
