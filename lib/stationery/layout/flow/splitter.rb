@@ -9,9 +9,13 @@ module Stationery
       # following content would not start beside it there, moves to the next
       # page with that content; floats left last on a page by a child that
       # moves on go with it.
+      #
+      # The children after the one being placed are named by its index and
+      # copied only where the flow is cut: once a page, not once a child.
       class Splitter
         def initialize(flow, width, height, fresh, exclusions = nil)
           @flow = flow
+          @children = flow.children
           @width = width
           @height = height
           @fresh = fresh
@@ -21,10 +25,8 @@ module Stationery
         end
 
         def call
-          children = @flow.children
-          children.each_with_index do |child, index|
-            rest = children.drop(index + 1)
-            result = place(child, rest)
+          @children.each_with_index do |child, index|
+            result = place(child, index)
             return result if result
           end
           [part(@placed), nil]
@@ -32,30 +34,33 @@ module Stationery
 
         private
 
-        def place(child, rest)
-          return page_break(rest) if child.page_break?
-          return float(child, rest) if child.float?
+        def place(child, index)
+          return page_break(index) if child.page_break?
+          return float(child, index) if child.float?
 
           @slot = @placement&.slot(child)
           gap = @placed.empty? ? 0 : @flow.gap
           remaining = @slot ? @height - @slot.top : @height - @used - gap
-          return broken(child, gap, remaining, rest) if child.breaks?
+          return broken(child, gap, remaining, index) if child.breaks?
 
-          height = measure(child)
-          return fits(child, height, gap, remaining - height, rest) if height <= remaining + EPSILON
-          return [part(@placed), part(rest)] if child.is_a?(Spacer)
+          height = within(child, remaining)
+          return fits(child, height, gap, remaining - height, index) if height <= remaining + EPSILON
+          return [part(@placed), part(after(index))] if child.is_a?(Spacer)
 
-          split_or_move(child, remaining, rest)
+          split_or_move(child, remaining, index)
         end
 
-        def page_break(rest)
+        # The children that follow the one at `index`.
+        def after(index) = @children.drop(index + 1)
+
+        def page_break(index)
           return nil if @placed.empty?
 
-          [part(@placed), part(rest)]
+          [part(@placed), part(after(index))]
         end
 
-        def float(child, rest)
-          return move([child, *rest]) unless top? || lands?([child, *rest], @placement)
+        def float(child, index)
+          return move(@children.drop(index)) unless top? || lands?(@children.drop(index), @placement)
 
           @placement.float(child)
           @placed << child
@@ -65,20 +70,20 @@ module Stationery
         # A child holding a page break: what comes before the break stays on
         # this page, the rest goes to the next, however much room is left. One
         # that starts with the break goes to the next page whole.
-        def broken(child, gap, remaining, rest)
-          return [part(@placed), part([child, *rest])] if child.leading_break? && !@placed.empty?
+        def broken(child, gap, remaining, index)
+          return [part(@placed), part([child, *after(index)])] if child.leading_break? && !@placed.empty?
 
           head, tail = cut(child, remaining)
-          return split_or_move(child, remaining, rest) unless head
-          return [part(@placed + [head]), part([tail, *rest])] if tail
+          return split_or_move(child, remaining, index) unless head
+          return [part(@placed + [head]), part([tail, *after(index)])] if tail
 
           height = measure(head)
-          fits(head, height, gap, remaining - height, rest)
+          fits(head, height, gap, remaining - height, index)
         end
 
-        def fits(child, height, gap, left_after, rest)
+        def fits(child, height, gap, left_after, index)
           @placement&.advance(@slot, height)
-          return move([child, *rest]) if strand?(child, left_after, rest)
+          return move([child, *after(index)]) if strand?(child, left_after, index)
 
           @placed << child
           @used += height + gap
@@ -87,20 +92,22 @@ module Stationery
 
         # keep_with_next: true needs the start of the next child on this page; a
         # number needs that many points of what follows (or all of it, if less).
-        def strand?(child, left_after, rest)
+        def strand?(child, left_after, index)
           want = child.keep_with_next
-          return false unless want && rest.any? && !top?
-          return !starts?(rest, left_after) unless want.is_a?(Numeric)
+          return false unless want && index + 1 < @children.size && !top?
+          return !starts?(index + 1, left_after) unless want.is_a?(Numeric)
 
           following = 0
-          rest.each do |node|
-            following += node.measure(node.width_in(@width))
+          (index + 1).upto(@children.size - 1) do |at|
+            node = @children[at]
+            following += node.height_within(node.width_in(@width), want - following)
             break if following >= want
           end
           left_after + EPSILON < [want, following].min
         end
 
-        def split_or_move(child, remaining, rest)
+        def split_or_move(child, remaining, index)
+          rest = after(index)
           if may_split?(child)
             head, tail = cut(child, remaining)
             # A nested flow can finish on this page (its trailing spacer
@@ -121,6 +128,12 @@ module Stationery
 
         def measure(child) = @slot ? @slot.measure(child) : child.measure(child.width_in(@width))
 
+        # The child's height, or any height above `limit` when it is taller:
+        # a long table then leaves the rows beyond the page unmeasured.
+        def within(child, limit)
+          @slot ? @slot.measure(child) : child.height_within(child.width_in(@width), limit)
+        end
+
         def cut(child, remaining)
           return @slot.split(child, remaining, fresh: top?) if @slot
 
@@ -136,11 +149,12 @@ module Stationery
           [part(kept), part(@placed.drop(kept.size) + nodes)]
         end
 
-        # Whether any of what follows would be placed in `height` below other content.
-        def starts?(rest, height)
-          return lands?(rest, @placement) if @placement
+        # Whether any of what follows from `index` would be placed in `height`
+        # below other content.
+        def starts?(index, height)
+          return lands?(@children.drop(index), @placement) if @placement
 
-          start?(rest.first, rest.first.width_in(@width), height)
+          start?(@children[index], @children[index].width_in(@width), height)
         end
 
         def start?(node, width, height)

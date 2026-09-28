@@ -19,7 +19,7 @@ module Stationery
         @warnings = warnings
         @fonts = {}
         @resolved = {}
-        @split = {}.compare_by_identity
+        @split = ObjectSpace::WeakMap.new
       end
 
       def inspect = "#<#{self.class} families=#{@families.keys.inspect}>"

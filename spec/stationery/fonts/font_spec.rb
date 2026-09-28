@@ -192,4 +192,31 @@ RSpec.describe Stationery::Fonts::Font do
     expect(jp.encode("日").unpack("n*")).to eq([20_220])
     expect(jp.used_codes).to eq(20_220 => "日")
   end
+
+  describe "the shape and metrics memos" do
+    def memoised(name) = font.instance_variable_get(name).each_value.sum(&:size)
+
+    it "start over once they hold MEMO_BYTES of text, answering as before" do
+      stub_const("#{described_class}::MEMO_BYTES", 64)
+      words = Array.new(40) { |index| "word#{index}" }
+      fresh = described_class.new(font.ttf)
+
+      widths = words.map { |word| font.width_of(word, 10, kerning: true) }
+      runs = words.map { |word| font.glyph_run(word, kerning: true) }
+
+      expect(memoised(:@shapes)).to be < 12
+      expect(memoised(:@metrics)).to be < 12
+      expect(widths).to eq(words.map { |word| fresh.width_of(word, 10, kerning: true) })
+      expect(runs.map(&:gids)).to eq(words.map { |word| fresh.glyph_run(word, kerning: true).gids })
+      expect(font.used_codes).to eq(fresh.used_codes)
+    end
+
+    it "keep what a document repeats" do
+      3.times { font.width_of("Invoice", 10) }
+
+      expect(memoised(:@shapes)).to eq(1)
+      expect(font.send(:shape, "Invoice", Stationery::Fonts::Gsub::LIGA))
+        .to equal(font.send(:shape, "Invoice", Stationery::Fonts::Gsub::LIGA))
+    end
+  end
 end

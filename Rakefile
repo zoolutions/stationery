@@ -193,6 +193,11 @@ namespace :metrics do
   end
 end
 
+desc "Report what long documents hold in memory while they render (PAGES=1000; not part of CI)"
+task :memory do
+  ruby "-Ilib benchmark/memory.rb"
+end
+
 namespace :fonts do
   desc "Download every font pack in the catalog and check its SHA-256s (needs network; not run in CI)"
   task :verify do

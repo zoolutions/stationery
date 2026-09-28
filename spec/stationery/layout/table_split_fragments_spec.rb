@@ -39,6 +39,7 @@ RSpec.describe Stationery::Layout::Table, "#split" do
 
   it "measures nothing again for a page break at the same width" do
     node = table(Array.new(20) { |i| ["row #{i}"] }, header: true)
+    node.measure(200)
     _head, tail = node.split(200, 100)
     cell = node.cell(19, 0)
     allow(cell).to receive(:measure).and_call_original
@@ -49,6 +50,32 @@ RSpec.describe Stationery::Layout::Table, "#split" do
     rest.measure(200)
 
     expect(cell).not_to have_received(:measure)
+  end
+
+  it "measures a row when a page reaches it, and the rows beyond the page not at all" do
+    node = table(Array.new(20) { |i| ["row #{i}"] }, header: true)
+    cells = [4, 5, 19].map { |row| node.cell(row, 0) }
+    cells.each { |cell| allow(cell).to receive(:measure).and_call_original }
+
+    expect(node.height_within(200, 100)).to be > 100
+    head, tail = node.split(200, 100)
+    expect(head.row_count).to eq(4)
+    expect(cells[0]).to have_received(:measure).once
+    expect(cells[1..]).to all(have_received(:measure).exactly(0).times)
+
+    tail.split(200, 100)
+    expect(cells[1]).to have_received(:measure).once
+    expect(cells[2]).not_to have_received(:measure)
+    expect(tail.measure(200)).to eq(table(Array.new(20) { |i| ["row #{i}"] }, header: true).measure(200) -
+                                    head.measure(200) + head.send(:row_heights, 200).first)
+  end
+
+  it "answers its whole height when that is within the limit, and measures every row of a rowspan at once" do
+    node = table(Array.new(5) { |i| ["row #{i}"] })
+    spanning = table([[{ content: "tall", rowspan: 2 }, "a"], ["b"], %w[c d]])
+
+    expect(node.height_within(200, 1_000)).to eq(node.measure(200))
+    expect(spanning.height_within(200, 1)).to eq(spanning.measure(200))
   end
 
   it "places the rows still to come on no grid while no cell spans rows" do

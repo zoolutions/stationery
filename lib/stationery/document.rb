@@ -24,8 +24,8 @@ module Stationery
                       superclass.config.transform_values(&:dup)
                     else
                       { page: { size: :letter, margin: 36 }, families: {}, fallbacks: [], text: {}, metadata: {},
-                        templates: [], regions: [], strict: false, tagged: false, images: {}, attachments: [],
-                        shaping: {} }
+                        templates: [], regions: [], strict: false, tagged: false, incremental: false, images: {},
+                        attachments: [], shaping: {} }
                     end
       end
 
@@ -85,6 +85,13 @@ module Stationery
       # Raise WarningsError instead of writing a PDF that produced warnings.
       def strict(value = true) # rubocop:disable Style/OptionalBooleanParameter
         config[:strict] = value
+      end
+
+      # Writes each page as soon as it is painted and lets go of it, so a long
+      # document peaks far lower: see #to_pdf for what the file looks like and
+      # which renders take the usual path all the same.
+      def incremental(value = true) # rubocop:disable Style/OptionalBooleanParameter
+        config[:incremental] = value
       end
 
       # Writes a tagged (accessible) PDF: a structure tree of headings,
@@ -167,12 +174,20 @@ module Stationery
     # path or an IO. With a block the file is streamed to it in pieces as it
     # is written and the call answers the number of bytes: the first bytes
     # leave before the last page is assembled and no output buffer is built.
-    # Layout runs in full first either way, so peak memory does not drop.
+    #
+    # `incremental: true` writes each page's body as soon as the page is
+    # painted and lets go of its operators, to a block before the next page is
+    # painted. The file is the same document with its objects in another
+    # order, and what is painted once every page is known (headers, footers,
+    # page templates, contents page numbers) is a content stream of its own.
+    # A render that must be checked before anything is written takes the
+    # usual path instead: one with `conformance:` or `sign:`, and a `strict`
+    # one that goes to a block.
     def to_pdf(target = nil, strict: self.class.config[:strict], debug: false, encrypt: self.class.config[:encrypt],
                tagged: self.class.config[:tagged], page_labels: self.class.config[:page_labels], attachments: [],
                xmp: metadata[:xmp] != false, conformance: self.class.config[:conformance],
                factur_x: self.class.config[:factur_x], sign: self.class.config[:sign],
-               shaper: self.class.config[:shaping][:shaper], &block)
+               shaper: self.class.config[:shaping][:shaper], incremental: self.class.config[:incremental], &block)
       invoice = PDF::FacturX.for(factur_x, self)
       attachments = PDF::Attachments.merge(self.class.config[:attachments], attachments, invoice&.attachment)
       conformance = PDF::Conformance.for(invoice ? invoice.conformance(conformance) : conformance)
@@ -183,7 +198,8 @@ module Stationery
       raise ArgumentError, "pass a target or a block, not both" if target && block
 
       options = { strict:, debug:, encrypt:, tagged: tagged || conformance&.pdf_ua?, page_labels:, attachments:,
-                  xmp: xmp || !conformance.nil?, conformance:, invoice:, signature:, sink: block, shaper: }
+                  xmp: xmp || !conformance.nil?, conformance:, invoice:, signature:, sink: block, shaper:,
+                  incremental: incremental && !conformance && !signature && !(strict && block) }
       Stationery.instrument("render.stationery", document: self.class.name) do |event|
         block ? render_pdf(event, **options) : write(render_pdf(event, **options), target)
       end
@@ -210,7 +226,7 @@ module Stationery
     def builder_for(book) = Builder.new(book:, text: self.class.config[:text], images: self.class.config[:images])
 
     # The PDF bytes; `event` is the render.stationery payload it fills in.
-    def render_pdf(event, strict:, debug:, tagged:, conformance:, shaper:, **assembly)
+    def render_pdf(event, strict:, debug:, tagged:, conformance:, shaper:, incremental:, **assembly)
       tagging = Tagging::Tree.new if tagged
       warnings = Warnings.new
       book = Fonts::FontBook.new(self.class.config[:families], fallbacks: self.class.config[:fallbacks], warnings:,
@@ -218,7 +234,8 @@ module Stationery
       builder = builder_for(book)
       Stationery.instrument("build.stationery", document: self.class.name) { call(builder) }
       resources = Resources.new
-      pages = paginate(builder.root, book:, resources:, warnings:, debug:, tagging:)
+      sealer = sealer_for(incremental, conformance, **assembly)
+      pages = paginate(builder, sealer, book:, resources:, warnings:, debug:, tagging:)
       outline = builder.outline.resolve(Structure.resolve(pages, warnings:, resources:, book:, tagging:))
       tagging&.audit(pages, warnings, lang: metadata[:lang])
       @warnings = warnings
@@ -228,15 +245,15 @@ module Stationery
       event[:warnings] = warnings.size
       raise WarningsError, warnings if strict && warnings.any?
 
-      pdf = assemble(pages, resources, outline, tagging:, conformance:, **assembly)
+      pdf = assemble(pages, resources, outline, tagging:, conformance:, writer: sealer.writer, **assembly)
       event[:bytes] = byte_count(pdf)
       pdf
     end
 
     def assemble(pages, resources, outline, encrypt:, tagging:, page_labels:, attachments:, xmp:, conformance:,
-                 invoice:, signature:, sink:)
-      encryption = encrypt && PDF::Encryption::StandardSecurity.new(**encrypt)
-      assembler = PDF::Assembler.new(pages:, resources:, info:, outline:, encryption:, tagging:, xmp:,
+                 invoice:, signature:, sink:, writer:)
+      assembler = PDF::Assembler.new(pages:, resources:, info:, outline:, tagging:, xmp:, writer:,
+                                     encryption: writer ? nil : encryption(encrypt),
                                      lang: metadata[:lang], page_labels: PDF::PageLabels.entries(page_labels),
                                      attachments:, conformance:, xmp_extensions: invoice&.xmp_extensions || {},
                                      xmp_schemas: [invoice&.xmp_schema].compact, signature:, sink:)
@@ -246,12 +263,26 @@ module Stationery
     end
 
     def byte_count(pdf) = pdf.is_a?(String) ? pdf.bytesize : pdf
+    def encryption(options) = options && PDF::Encryption::StandardSecurity.new(**options)
 
-    def paginate(root, book:, resources:, warnings:, debug:, tagging:)
+    # What closes each page as it is painted. An incremental render writes
+    # every body at once, to the writer the rest of the file follows on; any
+    # other seals the pages nothing paints on again (no header, footer or
+    # page template, and no conformance audit to read them).
+    def sealer_for(incremental, conformance, encrypt:, sink:, **)
+      return PDF::PageSealer.new(writer: PDF::Writer.new(encryption: encryption(encrypt), sink:)) if incremental
+
+      config = self.class.config
+      PDF::PageSealer.new(final: conformance.nil? && config[:templates].empty? && config[:regions].empty?)
+    end
+
+    # Takes the root from the builder as it hands it to the paginator, so
+    # nothing here keeps the nodes of a page that has been painted.
+    def paginate(builder, sealer, book:, resources:, warnings:, debug:, tagging:)
       Stationery.instrument("paginate.stationery", document: self.class.name) do |event|
         regions = Regions.new(self.class.config[:regions], measure: region_measure(book))
         paginator = Layout::Paginator.new(resources:, page: page_options, warnings:, debug:, regions:, tagging:)
-        paginator.paginate(root).tap do |pages|
+        paginator.paginate(builder.release) { |page| sealer.call(page) }.tap do |pages|
           PageTemplates.new(self, book:, resources:, debug:, regions:, warnings:, tagging:).apply(pages)
           event[:pages] = pages.size
         end

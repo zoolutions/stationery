@@ -57,7 +57,7 @@ module Stationery
       canvas = Canvas.new(page, @resources, template: true, debug: @debug, tagging: @tagging,
                                             warnings: @warnings)
       canvas.artifact(type: :pagination, subtype:) { root.paint(canvas, rect.x, rect.y, rect.width) }
-      page.content.prepend(page.content.slice!(mark..)) if layer == :background
+      page.lower(mark) if layer == :background
     end
   end
 end

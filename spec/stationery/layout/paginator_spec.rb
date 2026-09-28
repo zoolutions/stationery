@@ -13,6 +13,20 @@ RSpec.describe Stationery::Layout::Paginator do
                    .paginate(root)
   end
 
+  it "hands each page to a block as soon as it is painted, before the next one is" do
+    seen = []
+    paginator = described_class.new(resources: Stationery::Resources.new, page: { size: [300, 200], margin: 20 })
+
+    pages = paginator.paginate(flow(lines_of(30))) do |page|
+      seen << [page, page.content.scan("BT").size]
+      page.content.clear
+    end
+
+    expect(seen.map(&:first)).to eq(pages)
+    expect(seen.map(&:last)).to eq([11, 11, 8])
+    expect(pages.map(&:content)).to all(be_empty)
+  end
+
   it "splits once per page when the last page reserves the same space" do
     root = flow(lines_of(3))
     allow(root).to receive(:split).and_call_original

@@ -26,6 +26,7 @@ module Stationery
       end
 
       def measure(width, **) = @child.measure(width, **)
+      def height_within(width, limit) = @child.height_within(width, limit)
       def wraps? = @child.wraps?
       def natural_width = @child.natural_width
       def min_width = @child.min_width

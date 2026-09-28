@@ -84,6 +84,16 @@ RSpec.describe Stationery::Fonts::FontBook do
     expect(face).to have_attributes(path: end_with(".ttc#1"), synthetic_bold: false)
   end
 
+  it "lets go of the runs it split once nothing else holds them" do
+    book = open_sans_book
+    held = book.fallback([Stationery::Text::Run.new("held", base_style)])
+    200.times { |index| book.fallback([Stationery::Text::Run.new("run #{index}", base_style)]) }
+    GC.start(full_mark: true, immediate_sweep: true)
+
+    expect(book.instance_variable_get(:@split).keys.size).to be < 100
+    expect(book.fallback(held)).to equal(held)
+  end
+
   it "returns runs it already split for fallback as they are" do
     book = open_sans_book
     split = book.fallback([Stationery::Text::Run.new("a → b", base_style)])
