@@ -661,10 +661,26 @@ larger file. `PROFILE=1 bundle exec ruby -Ilib benchmark/profile.rb` prints the
 
 ## Limitations
 
-No variable fonts (including CFF2) or
-WOFF2 (it needs Brotli; convert to `.ttf` or `.woff`); SVG covers the shapes icon sets use
-(no patterns or masks). A box with a fixed `height:` never splits (use
-`min_height:` for a floor that can); a row splits only when every column can.
+Fonts: no variable fonts (including CFF2) and no WOFF2 (it needs Brotli; convert to `.ttf` or
+`.woff`); shaping stops at pair kerning and standard `liga` ligatures, so scripts that need
+contextual shaping (Arabic, Indic, Thai) draw glyph by glyph, and colour or emoji glyphs no font
+in the chain has are drawn as `.notdef` and reported. Text runs left to right; there is no
+hyphenation (lines break at spaces and after hyphens) and justification only widens spaces.
+
+SVG covers the shapes, gradients, text and stylesheets icon sets use, nothing else: `use`,
+`image`, `clipPath`, `mask`, `pattern`, `filter` and `textPath` are skipped and reported.
+Images are JPEG and PNG (non-interlaced), embedded at their source resolution and never fetched
+from a URL. `html` and `markdown` render structure and inline marks, not CSS: only `text-align`
+and inline `font-weight`/`font-style` are read, and raw HTML inside Markdown stays literal text.
+
+Layout: a box with a fixed `height:` never splits (use `min_height:` for a floor that can); a row
+splits only when every column can; a rotated box and a `stack` move to the next page whole. Text
+does not wrap around images. Link and form-widget rectangles stay in page space inside `rotate`
+and `transform`, and `shadow:` is stacked rectangles, not a blur.
+
+PDF: tagged output is not labelled PDF/UA (no XMP), and there is no PDF/A or PDF/X, no digital
+signing (`signature_field` is an empty field), no embedded files, JavaScript or page labels.
+Form-field appearances use Helvetica (Windows-1252), not the document's fonts.
 
 ## License
 
