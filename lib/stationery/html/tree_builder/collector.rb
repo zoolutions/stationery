@@ -7,11 +7,13 @@ module Stationery
   module HTML
     class TreeBuilder
       # Gathers the blocks of one container: loose inline content between blocks becomes a paragraph,
-      # with its whitespace collapsed the way a browser would.
+      # with its whitespace collapsed the way a browser would. The paragraphs of a boundary take the
+      # style it was opened with (a `p` with a text-align, a margin, a background).
       class Collector
         def initialize
           @blocks = []
           @pending = []
+          @style = {}
         end
 
         def text(string, marks) = @pending << Rich::Inline.new(text: string, marks:)
@@ -27,10 +29,14 @@ module Stationery
           @blocks << block
         end
 
-        def boundary
+        def boundary(style = {})
           flush
+          outer = @style
+          @style = style
           yield
           flush
+        ensure
+          @style = outer
         end
 
         def blocks
@@ -41,7 +47,7 @@ module Stationery
         private
 
         def flush
-          @blocks.concat(Rich::Inlines.paragraphs(@pending) { |run| Whitespace.collapse(run) })
+          @blocks.concat(Rich::Inlines.paragraphs(@pending, style: @style) { |run| Whitespace.collapse(run) })
           @pending = []
         end
       end

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Stationery::SVG::Selector do
+RSpec.describe Stationery::CSS::Selector do
   def element(markup) = Stationery::SVG::Parser.parse(markup)
 
   it "reads element, class, id and universal selectors with their specificity" do

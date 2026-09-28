@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative "css"
 require_relative "tree_builder/blocks"
 
 module Stationery
@@ -27,13 +28,21 @@ module Stationery
         "thead" => [SECTIONS, %w[table]], "tbody" => [SECTIONS, %w[table]], "tfoot" => [SECTIONS, %w[table]]
       }.freeze
 
-      def self.parse(tokens, nesting = Rich::Nesting.new) = Blocks.convert(new(nesting).build(tokens))
+      # `css` is the Css::Report unsupported styles are told to.
+      def self.parse(tokens, nesting = Rich::Nesting.new, css: nil)
+        builder = new(nesting)
+        root = builder.build(tokens)
+        Blocks.convert(root, Css.parse(builder.sheets, css || Css::Report.new))
+      end
+
+      attr_reader :sheets
 
       def initialize(nesting = Rich::Nesting.new)
         @root = Element.new("#root", {}, [])
         @stack = [@root]
         @nesting = nesting
         @flattened = [] # the names of the open elements left out of the tree
+        @sheets = []
       end
 
       def build(tokens)
@@ -41,6 +50,7 @@ module Stationery
           case type
           when :start then start(*args)
           when :end then finish(*args)
+          when :style then @sheets << args.first
           else @stack.last.children << args.first
           end
         end

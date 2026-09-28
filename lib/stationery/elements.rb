@@ -186,10 +186,12 @@ module Stationery
       end
     end
 
+    # A Hash is a cell with options: `{ content:, background:, borders:, padding:, … }`.
     def cell_content(content)
       case content
       when Proc then container(&content)
       when Component then container { render content }
+      when Hash then content.merge(content: cell_content(content[:content]))
       else content
       end
     end

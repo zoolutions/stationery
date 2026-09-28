@@ -31,6 +31,8 @@ module Stationery
       def fixed_width(available) = @child.fixed_width(available)
       def splittable? = @child.splittable?
       def page_break? = @child.page_break?
+      def breaks? = @child.breaks?
+      def leading_break? = @child.leading_break?
       def avoid_break? = @child.avoid_break?
       def keep_with_next = @child.keep_with_next
 

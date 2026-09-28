@@ -47,6 +47,15 @@ module Stationery
       def message = "content nested #{depth} levels deep was flattened below level #{limit}"
     end
 
+    UnsupportedCss = Data.define(:properties, :selectors) do
+      def message
+        parts = []
+        parts << "properties #{properties.join(", ")}" if properties.any?
+        parts << "selectors #{selectors.join(", ")}" if selectors.any?
+        "html styles not read: #{parts.join("; ")}"
+      end
+    end
+
     DuplicateAnchor = Data.define(:name, :page) do
       def message = %(anchor "#{name}" on page #{page} is already defined)
     end

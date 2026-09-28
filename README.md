@@ -102,7 +102,7 @@ renders them all, or render one with `stationery render examples/report.rb`.
 | `radio(name, value, checked:, size:, label:, at:)` | One choice of a radio group: radios sharing `name` form one field whose value is the checked `value`. |
 | `select(name, options:, value:, width:, height:, editable:, at:)` | A drop-down (combo box); `editable: true` also accepts typed values. |
 | `signature_field(name, width:, height:, label:, at:)` | An empty signature field for the signer to fill, drawn as a rule over the label. |
-| `html(source, styles:, gap:, images:, base_path:, bookmarks:, links:, max_depth:)` | Rich text from HTML (ActionText/Trix, CMS output): paragraphs, headings, lists, quotes, code, rules, tables, images, inline marks and links. See [HTML and Markdown](#html-and-markdown). |
+| `html(source, styles:, gap:, images:, base_path:, bookmarks:, links:, max_depth:)` | Rich text from HTML (ActionText/Trix, CMS output): paragraphs, headings, lists, quotes, code, rules, tables, images, inline marks and links, styled by a CSS subset (`<style>` rules and inline `style`). See [HTML and Markdown](#html-and-markdown). |
 | `markdown(source, styles:, gap:, images:, base_path:, bookmarks:, links:, max_depth:)` | The same from CommonMark (plus GFM tables and strikethrough). |
 
 Text style options: `font`, `size`, `weight` (`:regular`, `:bold`), `style` (`:italic`), `color`,
@@ -139,11 +139,58 @@ end
   `DroppedLink` warning. `links: %w[http https]` changes the list, `links: :all` keeps every href
   from a trusted source.
 - `gap:` spaces the blocks (default 6); `bookmarks: true` adds h1–h3 to the PDF outline.
+- `html` reads a subset of CSS from `<style>` elements and inline `style` attributes (see
+  [What CSS is read](#what-css-is-read)); what it does not read is reported once as an
+  `UnsupportedCss` warning. `markdown` reads none.
 - `max_depth:` (default 64) is how deep the source may nest: HTML elements inside one another,
   or Markdown block quotes and lists. What lies deeper is flattened into the deepest element
   kept, so its text stays and its structure goes, and a `NestingLimit` warning says how deep the
   source went. Block quotes and lists also stop indenting after twelve levels, where they would
   leave their text no width; that is reported the same way.
+
+#### What CSS is read
+
+`html` applies `<style>` rules and inline `style` attributes on top of `styles:`. The cascade is
+the usual one: the element's defaults from `styles:`, then stylesheet rules by specificity (id over
+class over element, the later rule winning a tie), then the inline style, then the element's own
+mark (`<b>`, `<i>`, `<u>`, `<s>`).
+
+Selectors are an element name, `.class`, `#id`, any compound of them (`p.lead`, `td.n.total`),
+comma lists and `*`. Selectors with combinators or pseudo-classes (`ul li`, `a > b`, `a:hover`) are
+ignored and reported. At-rules are skipped, except that rules inside `@media print` and
+`@media all` are read.
+
+| Property | Values | Applies to |
+| --- | --- | --- |
+| `color` | `#rgb`, `#rrggbb`, `rgb()`, `rgba()` (alpha ignored), the common colour names | text, inherited |
+| `font-size` | `px` (0.75 pt), `pt`, `em`, `%`, `xx-small` to `xx-large`, `smaller`, `larger`; relative sizes multiply the size around them | text, inherited |
+| `font-weight` | `bold`, `normal`, `100`–`900` (600 and up is bold) | text, inherited |
+| `font-style` | `italic`, `oblique`, `normal` | text, inherited |
+| `text-decoration` | `underline`, `line-through`, `none` | text, inherited |
+| `text-align` | `left`, `center`, `right`, `justify` | paragraphs, headings, cells, images; inherited from a container |
+| `background-color` | as `color`, or `transparent` | `p`, `div` and other containers, `blockquote`, `pre`, `table`, `td`, `th` |
+| `padding`, `padding-top` … `padding-left` | one to four lengths in `px` or `pt` | the same |
+| `margin`, `margin-top`, `margin-bottom` | lengths in `px` or `pt`; top and bottom only, added to `gap:` | blocks |
+| `border` | `1px solid #ccc` in any order, `none` | `table` (every cell), `td`, `th` |
+| `width` | `px`, `pt`, `%`, `auto` | `img`, `table`, and `td`/`th` (column widths, when every cell of the first row has one) |
+| `page-break-before`, `page-break-after`, `break-before`, `break-after` | `always`, `page`, `auto` | blocks |
+| `page-break-inside`, `break-inside` | `avoid`, `auto` | blocks |
+
+`<font color size>` and `<center>` are read the same way. Everything else (`display`, `float`,
+`position`, `font-family`, `line-height`, `em` lengths outside `font-size`, `url()` values,
+inline backgrounds) is ignored and named in the `UnsupportedCss` warning, so `strict` catches
+content that expects more than this. No value is ever fetched: `url()` and `@import` are dropped.
+
+```ruby
+html <<~HTML
+  <style>
+    .note { background-color: #FEF3C7; padding: 8pt; margin: 6pt 0; break-inside: avoid }
+    td.amount { text-align: right; width: 25% }
+    h2 { page-break-before: always; color: #0F766E }
+  </style>
+  <div class="note"><p><b>Note.</b> Prices include VAT.</p></div>
+HTML
+```
 
 #### Untrusted input
 
@@ -155,9 +202,10 @@ process down:
   under `base_path:`, and a path that climbs out of it is skipped (`SkippedImage`).
 - **No surprising links.** Only `http`, `https`, `mailto` and `tel` hrefs (and `#anchor`) become
   links (`DroppedLink` for the rest), so a `javascript:` or `file:` href is plain text.
-- **No scripts or styles.** `script`, `style`, `template` and `title` content is dropped, raw HTML
-  inside Markdown stays literal text, and no CSS is evaluated beyond `text-align` and inline
-  bold and italic.
+- **No scripts, no fetched styles.** `script`, `template` and `title` content is dropped and raw
+  HTML inside Markdown stays literal text. CSS is read only for the fixed list of properties
+  above: `url()` and `@import` are dropped unread, and nothing in a style can position content
+  outside the flow or hide it.
 - **Bounded nesting.** Five thousand nested `<div>`s, block quotes or lists render flattened,
   with a `NestingLimit` warning, instead of exhausting the stack (the `svg` element guards its
   own nesting the same way, at 128 levels). Emphasis nests without recursion, at most 64
@@ -970,8 +1018,10 @@ sets and exports use, nothing else: `image`, `mask`, `pattern`, `filter` and `te
 and reported, text inside a `clipPath` does not clip, and the shapes of a clip path join into one
 path, so overlapping shapes wound in opposite directions cancel where they overlap.
 Images are JPEG and PNG (non-interlaced) and never fetched from a URL; a JPEG is embedded at its
-source resolution (only PNGs can be downscaled), so an oversized one is reported, not resized. `html` and `markdown` render structure and inline marks, not CSS: only `text-align`
-and inline `font-weight`/`font-style` are read, and raw HTML inside Markdown stays literal text.
+source resolution (only PNGs can be downscaled), so an oversized one is reported, not resized. `html` reads a fixed subset of CSS (colours, sizes, weights, alignment, margins, padding, table
+borders and widths, page breaks; see [What CSS is read](#what-css-is-read)), not a layout
+engine's worth: no `display`, floats, positioning, `font-family` or selectors with combinators.
+`markdown` reads no CSS, and raw HTML inside Markdown stays literal text.
 
 Layout: a box with a fixed `height:` never splits (use `min_height:` for a floor that can); a row
 splits only when every column can; a rotated box and a `stack` move to the next page whole. Text

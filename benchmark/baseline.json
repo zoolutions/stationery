@@ -8,27 +8,27 @@
         "bytes": 26596
       },
       "table": {
-        "allocations": 2596558,
+        "allocations": 2596604,
         "pages": 46,
         "bytes": 133754
       },
       "text": {
-        "allocations": 299194,
+        "allocations": 299204,
         "pages": 10,
         "bytes": 26412
       },
       "text_hyphenated": {
-        "allocations": 378386,
+        "allocations": 378396,
         "pages": 10,
         "bytes": 27350
       },
       "flyer": {
-        "allocations": 101361,
+        "allocations": 101724,
         "pages": 4,
         "bytes": 127761
       },
       "form": {
-        "allocations": 33942,
+        "allocations": 33953,
         "pages": 1,
         "bytes": 42810
       },

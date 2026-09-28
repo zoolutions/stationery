@@ -21,6 +21,24 @@ RSpec.describe Stationery::Layout::Flow do
     expect(child).to have_received(:measure).exactly(3).times
   end
 
+  it "cuts the page at a page break inside a nested flow, even when the flow would fit" do
+    nested = flow(text_node("one"), Stationery::Layout::PageBreak.new, text_node("two"), gap: 4)
+    deep = flow(flow(Stationery::Layout::PageBreak.new, text_node("three")))
+    pdf, = render_layout(flow(text_node("top"), nested, text_node("after"), deep, text_node("last")))
+
+    expect(inspect_pdf(pdf).page_texts).to eq(%W[top\none two\nafter three\nlast])
+    expect(flow(text_node("a")).breaks?).to be(false)
+    expect(flow(flow(spacer(1), Stationery::Layout::PageBreak.new)).breaks?).to be(true)
+  end
+
+  it "knows about a page break added after it was asked" do
+    stack = flow(text_node("a"))
+    stack.breaks?
+    stack << Stationery::Layout::PageBreak.new
+
+    expect(stack.breaks?).to be(true)
+  end
+
   it "paints children top to bottom" do
     pdf, = render_layout(flow(text_node("first"), spacer(20), text_node("second")))
     (x1, y1), (x2, y2) = positions_of(pdf)

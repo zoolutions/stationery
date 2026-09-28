@@ -5,6 +5,7 @@ require_relative "styles"
 require_relative "renderer/indents"
 require_relative "renderer/inlines"
 require_relative "renderer/links"
+require_relative "renderer/boxes"
 
 module Stationery
   module Rich
@@ -12,9 +13,12 @@ module Stationery
     # `images:` (a callable given the src, returning a path, an IO or nil) or
     # from files under `base_path:`; remote URLs are never fetched. Block
     # quotes and lists nested deeper than Indents::LIMIT stop indenting, which
-    # is reported as a NestingLimit warning.
+    # is reported as a NestingLimit warning. A block's `style` (from the
+    # source's CSS) adds margins, a box, an alignment or a page break around
+    # what `styles:` draws; a block without one draws exactly as before.
     class Renderer
       include Indents
+      include Boxes
 
       REMOTE = /\A[a-z][a-z0-9+.-]*:/i
       LINK_SCHEMES = %w[http https mailto tel].freeze
@@ -43,14 +47,16 @@ module Stationery
 
       def block(block)
         case block
-        when Paragraph then paragraph(block.inlines, **@styles[:p])
-        when Heading then heading(block)
-        when List then indented(block) { list(block) }
-        when Blockquote then indented(block) { blockquote(block) }
-        when CodeBlock then code(block)
+        when Paragraph then styled(block.style) { paragraph(block.inlines, **@styles[:p], **aligned(block.style)) }
+        when Heading then styled(block.style) { heading(block) }
+        when List then styled(block.style) { indented(block) { list(block) } }
+        when Blockquote then spaced(block.style) { indented(block) { blockquote(block) } }
+        when CodeBlock then spaced(block.style) { code(block) }
         when Rule then @component.rule(**@styles[:hr])
-        when Table then table(block)
+        when Table then styled(block.style.except(:border, :width)) { table(block) }
         when Image then image(block)
+        when Container then styled(block.style) { group(block.blocks) }
+        when PageBreak then @component.page_break
         end
       end
 
@@ -62,7 +68,8 @@ module Stationery
         style = @styles[:"h#{heading.level}"]
         size = style[:size] || (@builder.style.size * style.fetch(:scale, 1))
         bookmark = heading_bookmark(heading)
-        paragraph(heading.inlines, **style.except(:scale), size:, heading: heading.level, **({ bookmark: } if bookmark))
+        paragraph(heading.inlines, **style.except(:scale), size:, heading: heading.level,
+                                                           **aligned(heading.style), **({ bookmark: } if bookmark))
       end
 
       def heading_bookmark(heading)
@@ -72,7 +79,7 @@ module Stationery
       end
 
       def blockquote(quote)
-        @component.box(role: :blockquote, **@styles[:blockquote]) { group(quote.blocks) }
+        @component.box(role: :blockquote, **@styles[:blockquote], **box_options(quote.style)) { group(quote.blocks) }
       end
 
       def list(list)
@@ -86,18 +93,23 @@ module Stationery
 
       def code(block)
         font = @styles[:code][:font]
-        @component.box(**@styles[:pre]) { @component.text(block.text, **({ font: } if font)) }
+        @component.box(**@styles[:pre], **box_options(block.style)) do
+          @component.text(block.text, **({ font: } if font))
+        end
       end
 
       def table(table)
         header = table.rows.first&.all?(&:header) ? 1 : 0
         rows = table.rows.map { |row| row.map { |cell| cell_content(cell) } }
-        @component.table(rows, header:, cell: @styles[:table][:cell])
+        cell = @styles[:table][:cell].merge(border_options(table.style[:border]))
+        sized(table.style[:width]) { |width| @component.table(rows, header:, cell:, **width, **column_widths(table)) }
       end
 
       def cell_content(cell)
         style = cell.header ? @styles[:table][:header] : {}
-        -> { @component.text_style(**style, align: cell.align) { group(cell.blocks) } }
+        content = -> { @component.text_style(**style, align: cell.align) { group(cell.blocks) } }
+        options = cell_options(cell.style)
+        options.empty? ? content : { content:, **options }
       end
 
       def image(node)
@@ -105,7 +117,7 @@ module Stationery
         return unless source
 
         loaded = Images.load(source)
-        @component.image(loaded, alt: node.alt, **dimensions(node, loaded))
+        @component.image(loaded, alt: node.alt, **aligned(node.style), **dimensions(node, loaded))
       rescue UnsupportedImage => e
         skip(node.src, e.message)
       end
@@ -121,9 +133,14 @@ module Stationery
         File.file?(path) ? path : skip(src, "not found")
       end
 
+      # A CSS width wins over the width and height attributes (the height
+      # then follows the aspect ratio); a percentage is a share of the space.
       def dimensions(node, loaded)
-        width = node.width
-        height = node.height
+        styled = node.style[:width]
+        return { width: styled } if fraction?(styled)
+
+        width = styled || node.width
+        height = styled ? nil : node.height
         limit = @styles[:img][:max_width]
         natural = width || (height ? loaded.width * height.fdiv(loaded.height) : loaded.width)
         return { width:, height: } unless limit && natural > limit

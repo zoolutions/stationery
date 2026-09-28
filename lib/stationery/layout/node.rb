@@ -42,6 +42,10 @@ module Stationery
       # The width this node is laid out at inside a parent of `available`.
       def width_in(available) = fixed_width(available) || available
       def page_break? = false
+      # Whether a page break lies somewhere inside (a flow holding one).
+      def breaks? = false
+      # Whether it starts with a page break (a flow whose first node is one).
+      def leading_break? = false
 
       def split(width, height, **)
         measure(width) <= height + EPSILON ? [self, nil] : [nil, self]

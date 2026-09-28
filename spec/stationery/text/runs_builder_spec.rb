@@ -18,6 +18,22 @@ RSpec.describe Stationery::Text::RunsBuilder do
     expect(built).to eq(parsed)
   end
 
+  it "scales the size around it and sets any style field with with" do
+    runs = described_class.build(base_style(size: 10)) do
+      scale(1.5) do
+        plain "big"
+        scale(0.5) { plain "half" }
+      end
+      b { with({ weight: :regular, underline: true }) { plain "plain" } }
+      with({ color: "#00FF00" }, "green")
+    end
+
+    expect(runs.map { |run| [run.text, run.style.size, run.style.weight] })
+      .to eq([["big", 15.0, :regular], ["half", 7.5, :regular], ["plain", 10, :regular], ["green", 10, :regular]])
+    expect(runs[2].style.underline).to be(true)
+    expect(runs[3].style.color).to eq("#00FF00")
+  end
+
   it "treats a string returned from the block as plain text" do
     expect(described_class.build(base_style) { "hello" }.map(&:text)).to eq(["hello"])
   end
