@@ -2,7 +2,7 @@
 
 require_relative "spec_helper"
 
-RSpec.describe Stationery::Instrumentation, "with ActiveSupport::Notifications" do
+RSpec.describe Stationery::Instrumentation do
   let(:events) { [] }
 
   before { Stationery.instrumenter = nil }
