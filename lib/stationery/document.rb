@@ -239,6 +239,20 @@ module Stationery
       end
     end
 
+    # A picture of each page as a PNG (Strings, in page order), also written
+    # to `target` when given: one page to that path, several to "name-1.png",
+    # "name-2.png", … numbered by page. `dpi:` is 96 by default; `pages:` a
+    # page number, a Range or an Array of them. `monochrome:` as for #to_pdf
+    # makes one-bit pictures at the monochrome dpi (see Raster::Render).
+    # What only a PDF has (sign:, encrypt:, conformance:, attachments:,
+    # print:, tagged:, …) raises when it is passed and is left alone when
+    # the class declares it. See Raster.
+    def to_png(target = nil, dpi: nil, pages: nil, monochrome: self.class.config[:monochrome], debug: false,
+               strict: self.class.config[:strict], shaper: self.class.config[:shaping][:shaper], **pdf_only)
+      Raster::Render.refuse(pdf_only)
+      Raster::Render.new(self, dpi:, pages:, monochrome:, debug:, strict:, shaper:).call(target)
+    end
+
     # Builds the document, lays it out and paints it on the canvases that
     # `canvases` makes (see PDF::Canvases and Canvas::Interface): what a
     # render does before its output is written, whatever the output is.
