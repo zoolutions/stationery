@@ -1,0 +1,51 @@
+README.md
+  s_f5a1e2cf907cda::t_91167fec446af1 113
+  s_f5a1e2cf907cda::t_dcadda7c0e3061 705,710,712-713,716-718
+lib/stationery/layout/barcode.rb
+  s_f5a1e2cf907cda::t_d01a042f4e3ffd 7,9,14
+spec/stationery/barcode/data_matrix_spec.rb
+  s_f5a1e2cf907cda::t_48856c57c9da0a 1-12,14-36,38-49,53-56,58-60
+  s_f5a1e2cf907cda::t_44562399e26f12 37,57
+  s_f5a1e2cf907cda::t_c40537bf396699 50-52
+  s_f5a1e2cf907cda::t_abda61a96e79dd 13
+lib/stationery/barcode/data_matrix_placement.rb
+  s_f5a1e2cf907cda::t_760a72a2f1e42a 1-20,22-53,55-58,66-118
+  s_f5a1e2cf907cda::t_c51e4e5d592c45 54,59-65
+  s_f5a1e2cf907cda::t_bce63a80bf3ecd 21
+CHANGELOG.md
+  s_f5a1e2cf907cda::t_bd98c3ab59f158 5
+spec/stationery/barcode_spec.rb
+  s_f5a1e2cf907cda::t_c40537bf396699 129-131
+lib/stationery/elements.rb
+  s_f5a1e2cf907cda::t_d01a042f4e3ffd 120-123
+spec/stationery/document_barcode_spec.rb
+  s_f5a1e2cf907cda::t_a0b49f11703cdd 18
+  s_f5a1e2cf907cda::t_44476196e90d43 60-72
+lib/stationery/barcode/data_matrix.rb
+  s_f5a1e2cf907cda::t_898e509c530f49 1-51,53-94,96-111
+  s_f5a1e2cf907cda::t_beb803531d48e7 52,95
+docs/app/views/docs/pages/elements.rb
+  s_f5a1e2cf907cda::t_037cc63329532b 357,367,375,377-378,385-387
+lib/stationery.rb
+  s_f5a1e2cf907cda::t_bce63a80bf3ecd 108-109
+lib/stationery/zpl/native.rb
+  s_f5a1e2cf907cda::t_238d98a0057e09 6-8,13-15
+lib/stationery/barcode.rb
+  s_f5a1e2cf907cda::t_d01a042f4e3ffd 5-6,8,10,17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "0d03e0bdb1b40569e017b499cfea23c53a80a2a9",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
