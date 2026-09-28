@@ -154,19 +154,28 @@ module Stationery
     def page_options = self.class.config[:page]
     def metadata = self.class.config[:metadata]
 
+    # The PDF as a binary String, also written to `target` when given: a
+    # path or an IO. With a block the file is streamed to it in pieces as it
+    # is written and the call answers the number of bytes: the first bytes
+    # leave before the last page is assembled and no output buffer is built.
+    # Layout runs in full first either way, so peak memory does not drop.
     def to_pdf(target = nil, strict: self.class.config[:strict], debug: false, encrypt: self.class.config[:encrypt],
                tagged: self.class.config[:tagged], page_labels: self.class.config[:page_labels], attachments: [],
                xmp: metadata[:xmp] != false, conformance: self.class.config[:conformance],
-               factur_x: self.class.config[:factur_x], sign: self.class.config[:sign])
+               factur_x: self.class.config[:factur_x], sign: self.class.config[:sign], &block)
       invoice = PDF::FacturX.for(factur_x, self)
       attachments = PDF::Attachments.merge(self.class.config[:attachments], attachments, invoice&.attachment)
       conformance = PDF::Conformance.for(invoice ? invoice.conformance(conformance) : conformance)
       conformance&.validate!(encrypt:, metadata:, attachments:)
+      signature = PDF::Signature.for(sign, self)
+      raise ArgumentError, "a signed document cannot be streamed to a block: sign needs the whole file" if
+        signature && block
+      raise ArgumentError, "pass a target or a block, not both" if target && block
+
       options = { strict:, debug:, encrypt:, tagged: tagged || conformance&.pdf_ua?, page_labels:, attachments:,
-                  xmp: xmp || !conformance.nil?, conformance:, invoice:,
-                  signature: PDF::Signature.for(sign, self) }
+                  xmp: xmp || !conformance.nil?, conformance:, invoice:, signature:, sink: block }
       Stationery.instrument("render.stationery", document: self.class.name) do |event|
-        write(render_pdf(event, **options), target)
+        block ? render_pdf(event, **options) : write(render_pdf(event, **options), target)
       end
     end
 
@@ -209,21 +218,23 @@ module Stationery
       raise WarningsError, warnings if strict && warnings.any?
 
       pdf = assemble(pages, resources, outline, tagging:, conformance:, **assembly)
-      event[:bytes] = pdf.bytesize
+      event[:bytes] = byte_count(pdf)
       pdf
     end
 
     def assemble(pages, resources, outline, encrypt:, tagging:, page_labels:, attachments:, xmp:, conformance:,
-                 invoice:, signature:)
+                 invoice:, signature:, sink:)
       encryption = encrypt && PDF::Encryption::StandardSecurity.new(**encrypt)
       assembler = PDF::Assembler.new(pages:, resources:, info:, outline:, encryption:, tagging:, xmp:,
                                      lang: metadata[:lang], page_labels: PDF::PageLabels.entries(page_labels),
                                      attachments:, conformance:, xmp_extensions: invoice&.xmp_extensions || {},
-                                     xmp_schemas: [invoice&.xmp_schema].compact, signature:)
+                                     xmp_schemas: [invoice&.xmp_schema].compact, signature:, sink:)
       Stationery.instrument("write.stationery", document: self.class.name) do |event|
-        assembler.render.tap { |pdf| event[:bytes] = pdf.bytesize }
+        assembler.render.tap { |pdf| event[:bytes] = byte_count(pdf) }
       end
     end
+
+    def byte_count(pdf) = pdf.is_a?(String) ? pdf.bytesize : pdf
 
     def paginate(root, book:, resources:, warnings:, debug:, tagging:)
       Stationery.instrument("paginate.stationery", document: self.class.name) do |event|

@@ -584,6 +584,20 @@ Invoice.new.to_pdf("invoice.pdf", debug: %i[cell cell_padding])
 gem "stationery", require: "stationery/rails"
 ```
 
+### Large documents
+
+`to_pdf { |chunk| … }` streams the file to the block in pieces as it is written and answers the
+number of bytes: the first bytes leave sooner and no output buffer is built. Peak memory does
+not drop. Layout runs in full before the first byte (pagination has to see every page) and the
+laid-out pages are what a render holds: a 938-page document peaks at 187 MB as a String and
+185 MB streamed. The streamed file lists its objects in the order they were written, a page's
+before the next page's and fonts, the structure tree and the catalog last; the String keeps them
+in numbered order. Both are the same document. A signed document cannot go to a block, since the
+signature covers every byte (`ArgumentError`). `to_pdf`, `to_pdf(path)` and `to_pdf(io)` build the
+String and return it. In a controller with `ActionController::Live`,
+`document.to_pdf { |chunk| response.stream.write(chunk) }` streams a download; `send_pdf` and
+`render pdf:` buffer.
+
 Controllers gain `render pdf:` and `send_pdf`:
 
 ```ruby

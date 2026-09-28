@@ -63,6 +63,10 @@ class Views::Docs::Pages::DocumentsAndComponents < DocsUI::Page
         document.warnings.each { |warning| Rails.logger.warn(warning.message) }
         ```
 
+        With a block, `to_pdf { |chunk| … }` streams the file in pieces as it is written and answers the
+        number of bytes: the first bytes leave sooner and no output buffer is built. Peak memory does not
+        drop, because layout runs in full before the first byte. A signed document cannot go to a block.
+
         `strict: false` opts one render out of a class-level `strict`; `debug:` outlines layout rectangles
         (see [Pages](/docs/pages#debug-outlines)).
       MD

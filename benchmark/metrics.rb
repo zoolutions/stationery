@@ -38,8 +38,11 @@ module Bench
       "text" => -> { StationeryText.new },
       "text_hyphenated" => -> { StationeryHyphenated.new },
       "flyer" => -> { example("flyer") },
-      "form" => -> { example("form") }
+      "form" => -> { example("form") },
+      "text_streamed" => -> { StationeryText.new }
     }.freeze
+    # Rendered through `to_pdf { |chunk| }` instead of to a String.
+    STREAMED = %w[text_streamed].freeze
 
     module_function
 
@@ -55,11 +58,18 @@ module Bench
     # render after two that warm the font, image and pattern caches.
     def measure
       Time.singleton_class.prepend(FrozenTime) unless Time.singleton_class.include?(FrozenTime)
-      DOCUMENTS.transform_values do |document|
-        2.times { document.call.to_pdf }
-        pdf, allocations = allocations_of { document.call.to_pdf }
-        { "allocations" => allocations, "pages" => pdf.b.scan(PAGE).size, "bytes" => pdf.bytesize }
+      DOCUMENTS.to_h do |name, document|
+        render = STREAMED.include?(name) ? method(:stream) : :to_pdf.to_proc
+        2.times { render.call(document.call) }
+        pdf, allocations = allocations_of { render.call(document.call) }
+        [name, { "allocations" => allocations, "pages" => pdf.b.scan(PAGE).size, "bytes" => pdf.bytesize }]
       end
+    end
+
+    def stream(document)
+      file = String.new(encoding: Encoding::BINARY)
+      document.to_pdf { |chunk| file << chunk }
+      file
     end
 
     def allocations_of
