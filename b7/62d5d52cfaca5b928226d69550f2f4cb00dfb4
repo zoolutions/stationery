@@ -1,0 +1,21 @@
+lib/stationery/barcode/reed_solomon.rb
+  s_f5a1e2cf907cda::t_77660a5e2d5afa 5-22,25,30-39,41,45-48,56-58
+lib/stationery/barcode/qr.rb
+  s_f5a1e2cf907cda::t_c30c9933839b2e 113
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "b762d5d52cfaca5b928226d69550f2f4cb00dfb4",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
