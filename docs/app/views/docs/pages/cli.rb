@@ -69,8 +69,8 @@ class Views::Docs::Pages::Cli < DocsUI::Page
     DocsUI::Section("stationery examples", description: "The examples that ship with the gem.") do
       md <<~'MD'
         ```shell
-        stationery examples                                      # the examples in the gem, and what each shows
-        stationery examples invoice                              # the path of examples/invoice.rb in the gem
+        stationery examples                                      # the examples in the gem, what each shows
+        stationery examples invoice                              # the path of examples/invoice.rb there
         stationery examples invoice --source                     # its code
         stationery render "$(stationery examples invoice)" --out invoice.pdf
         ```
