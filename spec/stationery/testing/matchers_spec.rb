@@ -234,6 +234,56 @@ RSpec.describe Stationery::Testing::Matchers do
     end
   end
 
+  describe "what form fields show" do
+    let(:form) do
+      SpecDocument.build do
+        text "Name"
+        text_field "name", value: "Astrid"
+        page_break
+        text_field "city", value: "Malmö"
+      end.to_pdf
+    end
+    let(:hint) { "\n(a form field shows it: read what the fields show with fields: true)" }
+
+    it "is no part of the text, which the failure says" do
+      matcher = have_pdf_text("Astrid")
+
+      expect(form).not_to have_pdf_text("Astrid")
+      expect(matcher.matches?(form)).to be(false)
+      expect(matcher.failure_message).to eq("expected PDF to have text \"Astrid\", got text:\nName\n#{hint}")
+      expect(matcher.failure_message_when_negated).to eq("expected PDF not to have text \"Astrid\", got text:\nName\n")
+    end
+
+    it "is read with fields: true" do
+      matcher = have_pdf_text("Ingrid", fields: true)
+
+      expect(form).to have_pdf_text("Astrid", fields: true).and have_pdf_text(/Name\s+Astrid\s+Malmö/, fields: true)
+      expect(matcher.matches?(form)).to be(false)
+      expect(matcher.description).to eq('have text "Ingrid", form fields included')
+      expect(matcher.failure_message)
+        .to eq("expected PDF to have text \"Ingrid\", form fields included, got text:\nName\n\nAstrid\nMalmö")
+    end
+
+    it "is read on one page" do
+      expect(form).to have_pdf_text_on_page(2, "Malmö", fields: true)
+      expect(form).not_to have_pdf_text_on_page(1, "Malmö", fields: true)
+      expect(form).not_to have_pdf_text_on_page(2, "Malmö")
+      expect(have_pdf_text_on_page(2, "Malmö", fields: true).description)
+        .to eq('have text "Malmö" on page 2, form fields included')
+    end
+
+    it "is said of the page a field shows it on, and of no other" do
+      on_page = have_pdf_text_on_page(2, "Malmö").tap { |matcher| matcher.matches?(form) }
+      elsewhere = have_pdf_text_on_page(1, "Malmö").tap { |matcher| matcher.matches?(form) }
+      nowhere = have_pdf_text_on_page(3, "Malmö").tap { |matcher| matcher.matches?(form) }
+
+      expect(on_page.failure_message)
+        .to eq("expected PDF to have text \"Malmö\" on page 2, got text on page 2:\n#{hint}")
+      expect(elsewhere.failure_message).to end_with("got text on page 1:\nName")
+      expect(nowhere.failure_message).to end_with("but it has 2 page(s)")
+    end
+  end
+
   it "reuses an inspector passed as the subject" do
     inspector = Stationery::Testing::Inspector.new(pdf)
     have_page_count(2).matches?(inspector)
