@@ -340,7 +340,8 @@ signature_field "signature", label: "Signature of the applicant"
   in the text style around the field, in the document's own fonts: embedded, with the fallbacks
   applied per character, so a value in any script the fonts cover is drawn (`/V` holds it as
   Unicode). A character no font has is drawn as `.notdef` inside a `Span` whose `ActualText` is the
-  character, as in any other text, so the appearance still extracts as written. Check marks and radio dots are paths. `NeedAppearances` is set too, so viewers redraw
+  character, as in any other text (or as the font's stand-in under `conformance` with
+  `missing_glyphs: :replace`), so the appearance still extracts as written. Check marks and radio dots are paths. `NeedAppearances` is set too, so viewers redraw
   edited values; ZapfDingbats is listed for the ones that redraw a button's mark, never embedded
   and never used by the appearances themselves.
 - A field that can be edited keeps printable ASCII and Latin-1 in its font beyond the value it shows
@@ -599,8 +600,40 @@ mislabelled: `ArgumentError` for options that contradict the level, `Stationery:
   standard Helvetica.
 - A character no font has raises at every level, naming the character and the family: it draws as
   `.notdef`, which text may not reference under PDF/A (6.2.11.8) or PDF/UA (7.21.8). Add a font or
-  `font_fallbacks` that covers it. Whitespace a font lacks draws as a blank and is accepted.
+  `font_fallbacks` that covers it, or let the render draw a stand-in with `missing_glyphs: :replace`
+  (below). Whitespace a font lacks draws as a blank and is accepted.
 - Without `conformance` nothing changes: the output is byte for byte what it was.
+
+A name in a script the fonts do not cover (a customer in Tokyo on an invoice archived as PDF/A) is
+where the raise turns up in practice. Applications rescued it and rendered again without the claim:
+
+```ruby
+begin
+  InvoicePdf.new(invoice).to_pdf
+rescue Stationery::ConformanceError => e
+  logger.warn(e.message)
+  InvoicePdf.new(invoice).to_pdf(conformance: nil)   # mislabelled no more, but no longer PDF/A
+end
+```
+
+`missing_glyphs: :replace` keeps the claim instead: a character no font has is drawn as the first
+of U+FFFD (�), U+25A1 (□) and `?` that the font drawing it has, inside the `Span` whose `ActualText`
+is the character, so the text still extracts, copies and reads aloud as written and nothing
+references `.notdef`. The stand-in has its own advance, so lines are measured as they are drawn.
+
+```ruby
+class InvoicePdf < Stationery::Document
+  conformance :pdf_a3b, missing_glyphs: :replace   # :raise is the default
+end
+
+InvoicePdf.new(invoice).to_pdf(conformance: :pdf_a3b, missing_glyphs: :replace) # per render
+```
+
+The `Warnings::MissingGlyph` stays (its `stand_in` is the character drawn, and `strict` still
+raises on it), so what was replaced is on record. A font that has none of the three, which a
+symbol font may not, still raises and says so. veraPDF passes 2b, 3b and ua1 with each of the
+three stand-ins, in body text, headers and page templates, form field values and shaped text.
+Without `conformance` the option changes nothing, and with `:raise` neither.
 
 `bundle exec rake verify:conformance` renders `examples/invoice.rb` as PDF/A-3b, and
 `examples/report.rb`, `examples/form.rb`, `examples/article.rb` (floats) and `examples/newsletter.rb`
@@ -954,7 +987,9 @@ a figure space, a narrow no-break space, …) is drawn as a blank of the
 character's conventional width, never as `.notdef`. Any other glyph no font
 has is drawn as the family's `.notdef` and reported as a
 `Warnings::MissingGlyph` counting each drawn occurrence (so `strict` raises
-on it, and a `conformance` level raises `ConformanceError`). The characters
+on it, and a `conformance` level raises `ConformanceError` unless it is
+declared with `missing_glyphs: :replace`, which draws the first of U+FFFD,
+U+25A1 and `?` the font has instead; see [PDF/A and PDF/UA](#pdfa-and-pdfua)). The characters
 themselves travel as the `ActualText` of a `Span` around the glyphs, so the
 text still extracts, copies and reads aloud as written. Fallback covers every text element,
 table cell, list marker, table of contents entry and page template text;
@@ -1076,7 +1111,8 @@ synthetic oblique, a superscript or letter spacing. Glyphs the shaper placed are
 not a character maps to them. Where the ToUnicode map cannot give the text (glyphs out of logical
 order, several glyphs for one cluster, a glyph that already stands for another text, glyph 0) the
 glyphs are shown in a `Span` whose `ActualText` is the characters in logical order. Glyph 0 is
-reported as a `Warnings::MissingGlyph`, like any other.
+reported as a `Warnings::MissingGlyph`, like any other, and under `conformance` with
+`missing_glyphs: :replace` it is drawn as the font's stand-in at the stand-in's advance.
 
 The limits of a hook:
 
