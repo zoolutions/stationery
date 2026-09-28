@@ -68,7 +68,7 @@ module Stationery
 
       # Bitmap defaults: `max_ppi:` (300; nil disables) is the resolution
       # above twice of which a drawn image is reported as oversized, and
-      # `downscale: true` resamples PNGs to it. See Layout::Image.
+      # `downscale: true` resamples PNGs and WebPs to it. See Layout::Image.
       def images(**options)
         config[:images] = config[:images].merge(options)
       end

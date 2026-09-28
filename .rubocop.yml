@@ -73,6 +73,8 @@ RSpec/DescribeClass:
   Exclude:
     - "spec/integration/**/*"
 RSpec/SpecFilePathFormat:
+  CustomTransform:
+    WebP: webp
   Exclude:
     - "spec/rails/**/*" # the Rails lane lives apart from the Rails-free suite
 
