@@ -19,6 +19,23 @@ task :examples do
   Dir["examples/*.rb"].each { |file| ruby "-Ilib", file }
 end
 
+namespace :docs do
+  desc "Render the first page of every example to docs/public/examples/<name>.png (needs pdftoppm)"
+  task :examples do
+    require "tmpdir"
+    out = "docs/public/examples"
+    mkdir_p out
+    Dir.mktmpdir do |dir|
+      Dir["examples/*.rb"].each do |file|
+        name = File.basename(file, ".rb")
+        pdf = File.join(dir, "#{name}.pdf")
+        ruby "-Ilib", "exe/stationery", "render", file, "--out", pdf
+        sh "pdftoppm", "-png", "-r", "72", "-f", "1", "-l", "1", "-singlefile", pdf, File.join(out, name)
+      end
+    end
+  end
+end
+
 task default: %i[spec rubocop]
 
 desc "Benchmark against Prawn (bundle exec rake bench)"

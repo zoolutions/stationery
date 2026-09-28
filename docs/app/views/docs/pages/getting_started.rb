@@ -120,6 +120,7 @@ class Views::Docs::Pages::GettingStarted < DocsUI::Page
 
     DocsUI::Section("Where next") do
       md <<~'MD'
+        - [Examples](/docs/examples) — seven complete documents with previews and live PDFs.
         - [Documents and components](/docs/documents-and-components) — class-level configuration and reusable pieces.
         - [Elements](/docs/elements) — every element and its options.
         - [Layout rules](/docs/layout-rules) — how measuring, splitting and pagination decide where things land.

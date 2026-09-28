@@ -15,6 +15,7 @@ class Doc
 
   page "Getting started", group: "Getting started"
   page "Documents and components", group: "Getting started"
+  page "Examples", group: "Getting started"
 
   page "Elements", group: "Guide"
   page "Layout rules", group: "Guide"
