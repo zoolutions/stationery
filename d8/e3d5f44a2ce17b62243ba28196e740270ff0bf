@@ -1,0 +1,22 @@
+lib/stationery/raster/render.rb
+  s_f5a1e2cf907cda::t_c6e8e3cf02b1cd 98-99,101,104-107,109
+  s_f5a1e2cf907cda::t_8cf63396576fe3 50-51,53-55,57,66,70-79
+  s_f5a1e2cf907cda::t_4aef6e307a62f6 24,29
+  s_f5a1e2cf907cda::t_03bf94707dc98e 52,56,64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "d8e3d5f44a2ce17b62243ba28196e740270ff0bf",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
