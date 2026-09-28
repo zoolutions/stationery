@@ -335,6 +335,7 @@ class Views::Docs::Pages::Elements < DocsUI::Page
         | Several floats | The next goes beside those already there when it fits, else below them, and never above one written before it. Left and right floats share a line with the text between them. |
         | Height | The flow that holds a float is at least as tall as the float: what follows the box, column or cell starts below it. |
         | Page breaks | A float never splits. When it does not fit what is left of the page, or the content after it could not start beside it there, it moves to the next page with that content. The lines a paragraph, a list item or a box carries over a break are wrapped again at the full width. |
+        | Floats taller than the page | Floats written one after the other that are taller than a page together are cut before the first that does not fit: it starts the next page, with what was written after it, in a box, a list item, a column and a table cell as in the page body. Floats that fit a page together stay together: when one of them does not fit what is left of the page, they all go to the next. Only a float taller than a page by itself runs over it, and is reported as an `Overflow`. What does not fit below the floats at the top of a page goes to the next page and leaves them behind. |
         | Tagged PDF | The float is read where it was written: an image is a `Figure`, a box has its `role:`. |
 
         Anything but `:left` and `:right` raises `ArgumentError`, as do `margin:` without `float:` and
