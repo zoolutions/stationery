@@ -1,0 +1,28 @@
+CHANGELOG.md
+  s_f5a1e2cf907cda::t_d769c2860da60a 26
+lib/stationery/text/wrapper.rb
+  s_f5a1e2cf907cda::t_b756bb6fa71307 201-205,207-209,211-212,217-230
+spec/stationery/text/wrapper_ligatures_spec.rb
+  s_f5a1e2cf907cda::t_7a2c5adb9bba2b 1-4,11-26,28-40,42-71,73-81,83-89
+  s_f5a1e2cf907cda::t_b7cc0bab36f0d9 82
+  s_f5a1e2cf907cda::t_f2ded359887116 41
+  s_f5a1e2cf907cda::t_b59e43ea97ee5d 72
+  s_f5a1e2cf907cda::t_3d5438c920589a 5-10
+  s_f5a1e2cf907cda::t_08924b8f35be6a 27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "6b1bad9e0b74a3f012ef24b3a613bc0ca4223fd7",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
