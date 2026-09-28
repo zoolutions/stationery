@@ -72,7 +72,7 @@ module Stationery
       # are as far from a float at their left as they are from the marker.
       # nil without floats.
       def beside(width, exclusions)
-        exclusions && Flow::Placement::Slot.new(top: 0, left: @indent, width: body_width(width), exclusions:)
+        exclusions && Flow::Placement::Slot.new(top: 0, left: @indent, width: body_width(width), exclusions:, need: nil)
       end
 
       # What the floats take from the left of the marker's line.
