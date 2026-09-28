@@ -144,6 +144,36 @@ RSpec.describe "Floats" do
     end
   end
 
+  describe "columns" do
+    it "wraps the text of a column around a float in it; the next column is free of it" do
+      text = words
+      pdf = build do
+        columns(count: 2, gap: 20, balance: false) do
+          box(float: :left, width: 40, height: 30, background: "#000000")
+          text text
+        end
+      end.to_pdf
+      xs = origins(pdf).map(&:first)
+
+      expect(rects(pdf).first.first(3)).to eq([20.0, 150.0, 40.0])
+      expect(xs.first(3)).to eq([60.0, 60.0, 60.0])
+      expect(xs.uniq).to eq([60.0, 20.0, 160.0])
+      expect(strings_of(pdf).join(" ")).to eq(text)
+    end
+
+    it "places columns beside a float as a block of the width that is left" do
+      text = words.split.first(20).join(" ")
+      pdf = build do
+        box(float: :right, width: 100, height: 120, margin: 10, background: "#000000")
+        columns(count: 2, gap: 10) { text text }
+        text "After"
+      end.to_pdf
+
+      expect(origins(pdf).map(&:first).uniq).to eq([20.0, 100.0])
+      expect(strings_of(pdf).last).to eq("After")
+    end
+  end
+
   describe "tagged PDF" do
     let(:tagged) do
       Class.new(SpecDocument) do

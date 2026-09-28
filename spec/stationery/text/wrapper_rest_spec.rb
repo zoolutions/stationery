@@ -38,6 +38,11 @@ RSpec.describe Stationery::Text::Wrapper do
     expect(again("one\ntwo\n\nthree four", 1000, 1, 1000)).to eq(["two", "", "three four"])
   end
 
+  it "starts with the empty line or the break that comes first in what is left" do
+    expect(again("one\n\ntwo", 1000, 1, 1000)).to eq(["", "two"])
+    expect(again("one\n​two​three", 1000, 1, width_of("three") + 1)).to eq(%w[two three])
+  end
+
   it "keeps the styles of what is left" do
     rest = wrapper.rest(parse("alpha <b>beta gamma</b> delta"), width_of("alpha") + 1, 1)
 
