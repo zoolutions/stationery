@@ -3,21 +3,23 @@
 module Stationery
   module Rich
     class Renderer
-      # What a block's CSS style becomes around the block: margins as spacers,
-      # a background and padding as a box, a column count as columns,
+      # What a block's CSS style becomes around the block: margins as spacers
+      # above and below and as an indent from the sides, a background and
+      # padding as a box, a column count as columns,
       # page-break rules as page breaks and kept-together groups, borders and
       # widths as table options.
       module Boxes
         PADDING = { padding_top: 0, padding_right: 1, padding_bottom: 2, padding_left: 3 }.freeze
+        MARGIN = { margin_top: 0, margin_right: 1, margin_bottom: 2, margin_left: 3 }.freeze
 
         private
 
         # Draws the block inside its margins and its box. A block styled with
         # nothing but an alignment draws as it is.
-        def styled(style, &)
+        def styled(style, block = nil, &)
           return yield if style.empty?
 
-          spaced(style) { boxed(style) { columned(style, &) } }
+          spaced(style, block) { boxed(style) { columned(style, &) } }
         end
 
         # The block's content poured through balanced columns.
@@ -31,26 +33,48 @@ module Stationery
 
         # Page breaks and margins around the block, and the rule that keeps it
         # on one page.
-        def spaced(style)
-          return yield unless spacing?(style)
+        def spaced(style, block = nil, &)
+          return yield if style.empty?
 
-          top, bottom = margins(style)
+          top, right, bottom, left = margins(style)
+          content = indented_by(left, right, block, &)
+          return content.call unless spacing?(style, top, bottom)
+
           @component.page_break if style[:break_before]
           @component.group(keep_together: style[:keep_together] == true) do
             @component.spacer(top) if top.positive?
-            yield
+            content.call
             @component.spacer(bottom) if bottom.positive?
           end
           @component.page_break if style[:break_after]
         end
 
-        def spacing?(style)
-          style[:break_before] || style[:break_after] || style[:keep_together] || margins(style).any?(&:positive?)
+        def spacing?(style, top, bottom)
+          style[:break_before] || style[:break_after] || style[:keep_together] || top.positive? || bottom.positive?
         end
 
+        # [top, right, bottom, left]: each side of `margin`, or the side's own
+        # when it has one. A negative margin is drawn as none.
         def margins(style)
           all = style[:margin]
-          [style[:margin_top] || all&.[](0) || 0, style[:margin_bottom] || all&.[](2) || 0]
+          MARGIN.map { |key, index| [style[key] || all&.[](index) || 0, 0].max }
+        end
+
+        # What draws the block in from the sides. It breaks across pages and
+        # stays with what follows as the block would without the margins.
+        def indented_by(left, right, block, &content)
+          return content unless left.positive? || right.positive?
+
+          keep_with_next = keep_with_next(block)
+          -> { @component.box(padding: [0, right, 0, left], break_inside: :auto, keep_with_next:, &content) }
+        end
+
+        # What `styles:` says of a paragraph or a heading and the block after it.
+        def keep_with_next(block)
+          case block
+          when Paragraph then @styles[:p][:keep_with_next]
+          when Heading then @styles[:"h#{block.level}"][:keep_with_next]
+          end
         end
 
         def boxed(style, &)
@@ -84,11 +108,8 @@ module Stationery
         def placed(style)
           return aligned(style) unless style[:float]
 
-          margin = style[:margin]&.dup
-          margin ||= [0, 0, 0, 0] if style[:margin_top] || style[:margin_bottom]
-          margin[0] = style[:margin_top] if style[:margin_top]
-          margin[2] = style[:margin_bottom] if style[:margin_bottom]
-          { float: style[:float], margin: margin || @styles[:img][:float_margin] }
+          own = style[:margin] || MARGIN.keys.any? { |key| style[key] }
+          { float: style[:float], margin: own ? margins(style) : @styles[:img][:float_margin] }
         end
 
         def border_options(border)

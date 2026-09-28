@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- `html` reads `margin-left` and `margin-right`, which were reported as `Warnings::UnsupportedCss`: lengths in `px` or `pt`, as `margin-top` takes them. On a floated `img` they are that side of the space kept around it, so `style="float: right; margin-left: 12pt"` keeps 12 pt between the image and the text. On a block (`p`, `div`-like containers, headings, lists, tables, `blockquote`, `pre`) they indent it from that side, its background and padding inside the margin; the block breaks across pages where it did, and a heading or a paragraph keeps its `keep_with_next`. `margin` and its sides are read in the order of the cascade, specificity first and position then: a side wins over a `margin` declared before it, and a `margin` takes back the sides declared before it. `auto`, `em` and `%` are reported as they were, and so is a negative `margin-left` or `margin-right`. HTML without margins renders byte for byte as before. `CSS::Stylesheet#matching`.
+- **Behaviour changes:** in `html`, the left and right of the `margin` shorthand indent a block, as CSS means them: `margin: 0 20px` drew no indent. Top and bottom draw what they drew. A `margin` declared after `margin-top` or `margin-bottom`, or by a more specific rule, takes them back, where the side always won. A negative margin on a floated `img` is drawn as none: it moved the image out of the flow, off the page when it was large, which nothing in a style may do.
+
 ## 0.11.0 (2026-09-28)
 
 Text wrap around images, balanced columns, lossless WebP, a shaper hook for complex scripts, and far less memory for long documents.

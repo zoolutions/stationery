@@ -15,10 +15,10 @@ module Stationery
     end
 
     # Every block carries a `style` Hash from the source's CSS (see HTML::Css):
-    # align:, background:, padding:, margin:/margin_top:/margin_bottom:,
-    # border:, width:, break_before:, break_after:, keep_together:, columns:,
-    # column_gap:, and float: on an image. Empty for Markdown and for HTML
-    # without styles.
+    # align:, background:, padding:, margin: and margin_top:/margin_right:/
+    # margin_bottom:/margin_left: (a side over the margin), border:, width:,
+    # break_before:, break_after:, keep_together:, columns:, column_gap:, and
+    # float: on an image. Empty for Markdown and for HTML without styles.
     Paragraph = Data.define(:inlines, :style) do
       def initialize(inlines:, style: {}) = super
     end

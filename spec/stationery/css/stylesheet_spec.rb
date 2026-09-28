@@ -24,6 +24,14 @@ RSpec.describe Stationery::CSS::Stylesheet do
       .to eq("fill" => "green", "stroke" => "black", "opacity" => "0.5", "stroke-width" => "2")
   end
 
+  it "hands out the declarations of each matching rule, the one that wins last" do
+    sheet = described_class.parse("#x { fill: green } .a { fill: red } rect { fill: blue; stroke: blue } .b { x: 1 }")
+
+    expect(sheet.matching(element('<rect id="x" class="a"/>')))
+      .to eq([{ "fill" => "blue", "stroke" => "blue" }, { "fill" => "red" }, { "fill" => "green" }])
+    expect(sheet.matching(element("<path/>"))).to eq([])
+  end
+
   it "ignores rules with selectors it cannot match, listing them" do
     sheet = described_class.parse("g rect, .a > .b { fill: red } .c { fill: blue }")
 

@@ -52,9 +52,17 @@ module Stationery
       def empty? = @rules.empty?
 
       def declarations(element)
+        rules_for(element).reduce({}) { |merged, rule| merged.merge(rule.declarations) }
+      end
+
+      # The declarations of every rule that matches, the one that wins last.
+      def matching(element) = rules_for(element).map(&:declarations)
+
+      private
+
+      def rules_for(element)
         @rules.select { |rule| rule.selector.match?(element) }
               .sort_by { |rule| [rule.selector.specificity, rule.index] }
-              .reduce({}) { |merged, rule| merged.merge(rule.declarations) }
       end
     end
   end
