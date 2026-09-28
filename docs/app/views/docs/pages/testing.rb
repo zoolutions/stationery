@@ -69,7 +69,12 @@ class Views::Docs::Pages::Testing < DocsUI::Page
         pdf.signatures       # => [{ field: "approval", name: "Acme Legal", signer: "CN=…", signed_at: …, valid: true,
                              #       timestamp: { time: …, tsa: "CN=…", valid: true }, … }]
         pdf.warnings         # the document's warnings after rendering it
+        pdf.layout           # => { metadata:, outline:, structure:, warnings:, pages: [{ number:, width:, height:,
+                             #       text: [{ x:, y:, font:, size:, text: }], images:, links:, fields: }], … }
         ```
+
+        `layout` is what `stationery inspect` prints, in points from the top-left corner; see the README
+        section above and [CLI](/docs/cli).
 
         The subject is a document (rendered once), PDF bytes, a file path or an IO.
       MD

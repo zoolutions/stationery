@@ -1104,6 +1104,8 @@ The gem has no Rails dependency; the Railtie loads only inside a Rails app.
 stationery render app/pdfs/invoice_pdf.rb                # writes app/pdfs/invoice_pdf.pdf
 stationery render invoice.rb --out - > invoice.pdf       # PDF to stdout
 stationery render pdfs.rb --class InvoicePdf --strict    # pick one; fail on layout warnings
+stationery render invoice.rb --png                       # also invoice-1.png, … beside the PDF
+stationery render report.rb --png-only --pages 1,3-4 --dpi 144
 ```
 
 `render` loads the file and renders the `Stationery::Document` it defines. A
@@ -1111,6 +1113,46 @@ document whose `initialize` needs arguments renders from `def self.preview`,
 which returns an instance built with sample data. Layout warnings print to
 stderr; `--strict` exits 1 instead of writing. `stationery help` lists the
 commands.
+
+`--png` writes a picture of each page beside the PDF with `to_png` (see
+[Pictures of a render](#pictures-of-a-render-to_png)), pure Ruby with nothing to
+install, named after the PDF with the number of the page, and prints one line
+per file (`wrote invoice-1.png (page 1, 794 x 1123 px)`), so an agent that
+rendered a document can open what it made. `--dpi` is 96 by default (an A4 page
+is 794 × 1123 px), `--pages` takes `2` or `1,3-4`, and `--png-only` writes the
+pictures without the PDF.
+
+```sh
+stationery inspect invoice.pdf                           # what is on each page, as text
+stationery inspect invoice.rb                            # render it first, with its warnings
+stationery inspect invoice.pdf --json                    # Inspector#layout as JSON
+```
+
+`inspect` prints what is on each page for an agent that cannot read a picture,
+and for a diff between two renders: the file's metadata, conformance claims,
+print hints, attachments and signatures, the outline, then each page with its
+size, its text lines (x, baseline y, font, size), images, links and form fields
+with their rectangles in points from the top-left corner, the structure tree of
+a tagged PDF and the warnings of the render. A section with nothing in it is
+left out, and the dates are, so two renders of one document print the same.
+It is `Inspector#layout` (see [Testing](#testing)) and needs the `pdf-reader`
+gem.
+
+```text
+examples/invoice.rb
+  pages     1
+  title     Invoice
+
+Page 1  595.3 x 841.9 pt
+  Text (x, baseline y, font, size, text)
+      44.0   65.5  OpenSans-Bold      22  Invoice INV-2026-042
+      44.0  115.6  OpenSans-Bold       9  Invoice date
+     134.0  115.6  OpenSans-Regular    9  26 September 2026
+  Images (x, y, width x height, pixels)
+     437.9   40.0  113.3 x 34  240 x 72 px
+  Links (x, y, width x height, target)
+     329.2  596.5  65.6 x 11.6  mailto:hello@acme.test
+```
 
 ```sh
 stationery fonts list                                    # packs, licenses, what is in vendor/fonts
@@ -1500,6 +1542,29 @@ of every widget that is not hidden, in the state the widget is in, and never a b
 (the marks of a `checkbox` and a `radio` are paths and read as nothing). Without `fields: true` the
 text is what it always was, and the failure of `have_pdf_text` over a text that a field shows says
 so.
+
+`Inspector#layout` is what is on each page and what the file says of itself, as plain data in a
+stable order: what `stationery inspect` prints (see [CLI](#cli)), for a spec that asks where
+something landed. Places are in points from the top-left corner of the page, as the gem's API
+speaks, rounded to a tenth; a text line's `y` is its baseline.
+
+```ruby
+layout = Stationery::Testing::Inspector.new(InvoicePdf.new(invoice)).layout
+layout[:pages].first[:text].first
+# => { x: 44.0, y: 65.5, font: "OpenSans-Bold", size: 22.0, text: "Invoice INV-2026-042" }
+layout[:pages].first.keys  # => [:number, :label, :width, :height, :text, :images, :links, :fields]
+layout.keys                # => [:metadata, :conformance, :tagged, :print, :outline, :attachments,
+                           #     :signatures, :structure, :warnings, :pages]
+```
+
+A text line is a run of one font and size on one baseline, so a word set in bold is a line of its
+own; lines read top to bottom, then left to right. An image is `{ x:, y:, width:, height:, pixels:
+[w, h] }` in the order drawn (the rectangle it fills, before any clip); a link has its `uri:`, or the
+`page:` and `top:` it goes to; a field has its full `name:`, `type:` (`:text`, `:choice`,
+`:checkbox`, `:radio`, `:button`, `:signature`), `value:` and, for a button, the `state:` that turns
+it on. `outline` is the bookmarks as `{ title:, page:, top:, children: }`. `metadata` leaves out the
+dates, which change with every render, so two renders of one document have the same layout.
+`warnings` are the render's messages when the subject is a document.
 
 ## Why not Prawn, Chrome or Typst?
 
