@@ -1,0 +1,70 @@
+lib/stationery/layout/field.rb
+  s_f5a1e2cf907cda::t_3b3c0579af17d5 12-13,19
+lib/stationery/elements/forms.rb
+  s_f5a1e2cf907cda::t_683c7b799044a6 51
+spec/stationery/tagging/untagged_render_spec.rb
+  s_f5a1e2cf907cda::t_a1f61023f6c076 50-52
+  s_f5a1e2cf907cda::t_e9822c1e5a92e4 44-47
+  s_f5a1e2cf907cda::t_31a7891b669884 39-40
+lib/stationery/page_templates.rb
+  s_f5a1e2cf907cda::t_019cb9751526da 53-57
+lib/stationery/layout/node.rb
+  s_f5a1e2cf907cda::t_44173392d8f3a8 7-13
+lib/stationery/builder.rb
+  s_f5a1e2cf907cda::t_276febf041f0bc 38-40,43
+  s_f5a1e2cf907cda::t_169839d292adca 108-113
+lib/stationery/document.rb
+  s_f5a1e2cf907cda::t_7895a0fd0c5bdd 269-271
+  s_f5a1e2cf907cda::t_c18c0b720d78ff 237
+  s_f5a1e2cf907cda::t_df6d689b8c93e8 256-258,265-267
+lib/stationery/elements/lists.rb
+  s_f5a1e2cf907cda::t_3bbffb222941f8 45
+  s_f5a1e2cf907cda::t_7f5eae8b384bfc 46-47
+  s_f5a1e2cf907cda::t_4bae4f91cf197c 54
+  s_f5a1e2cf907cda::t_f86fbe3c218adb 67
+lib/stationery/layout/table_of_contents/entry.rb
+  s_f5a1e2cf907cda::t_d673bb3c49e63a 20-22
+lib/stationery/layout/table.rb
+  s_f5a1e2cf907cda::t_b0cb6fcaac751b 176,178-179
+  s_f5a1e2cf907cda::t_d9cefa54592b76 28
+lib/stationery/layout/image.rb
+  s_f5a1e2cf907cda::t_c6f8df8542ce66 23,27
+lib/stationery/layout/table_of_contents.rb
+  s_f5a1e2cf907cda::t_21d913c86285a0 29
+lib/stationery/text/paragraph.rb
+  s_f5a1e2cf907cda::t_ba8abcc01ae37f 96-97,100-102,106
+  s_f5a1e2cf907cda::t_39fbd71a9a2852 79
+  s_f5a1e2cf907cda::t_233b8288ebcd0d 99
+lib/stationery/layout/svg.rb
+  s_f5a1e2cf907cda::t_8a9eb674bbb822 12
+lib/stationery/elements.rb
+  s_f5a1e2cf907cda::t_f0ef81c0b56922 20
+  s_f5a1e2cf907cda::t_8bca2ac6ff6808 35
+  s_f5a1e2cf907cda::t_c8f0e3415b41c0 143
+  s_f5a1e2cf907cda::t_c30ce8f7aa4a09 90
+  s_f5a1e2cf907cda::t_b6f4748ae12440 56
+lib/stationery/layout/box.rb
+  s_f5a1e2cf907cda::t_bd14146255544d 30,34,39
+lib/stationery/layout/text.rb
+  s_f5a1e2cf907cda::t_5116944ad6bb1f 17
+spec/support/layout_helper.rb
+  s_f5a1e2cf907cda::t_3c57a324f14556 7
+lib/stationery/pdf/canvases.rb
+  s_f5a1e2cf907cda::t_6aac6f86157477 17-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "5f5190a4d7f5e4aa9867e948d7aec6c6c8f6f05a",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
