@@ -115,8 +115,12 @@ module Bench
 
     def baselines = File.exist?(BASELINE) ? JSON.parse(File.read(BASELINE)) : {}
 
+    # Measured before the record is built, as `check` measures before it
+    # compares: measured inside the record's literal, the first document
+    # counted one allocation other than `check` then found.
     def update
-      recorded = baselines.merge(ruby => { "recorded_with" => RUBY_DESCRIPTION, "documents" => measure })
+      documents = measure
+      recorded = baselines.merge(ruby => { "recorded_with" => RUBY_DESCRIPTION, "documents" => documents })
       File.write(BASELINE, "#{JSON.pretty_generate(recorded.sort.to_h)}\n")
       puts "Recorded the baseline for Ruby #{ruby} in #{BASELINE}"
     end
