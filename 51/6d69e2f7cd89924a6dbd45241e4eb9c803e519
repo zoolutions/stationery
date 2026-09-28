@@ -1,0 +1,41 @@
+lib/stationery/testing/page_reader.rb
+  s_f5a1e2cf907cda::t_40a07cb86307cf 1-24,26-35,37-44,47-101,106-109,112,114-116,121,123-125,131-146
+  s_f5a1e2cf907cda::t_939d864d8d90ca 102-105
+  s_f5a1e2cf907cda::t_214698a5daec43 126-130
+  s_f5a1e2cf907cda::t_260bd4b2d7bebc 45-46
+  s_f5a1e2cf907cda::t_cb96a152c4887b 36
+  s_f5a1e2cf907cda::t_8ed11c04a8cee9 117-120
+  s_f5a1e2cf907cda::t_28f9641d58def0 25,110-111,113,122
+lib/stationery/testing/layout.rb
+  s_f5a1e2cf907cda::t_fb85cff20e390a 1-36,38-60,62-87,91,93-98,101-110,112-131,133-148,151-166
+  s_f5a1e2cf907cda::t_d277258fd4c1be 88-90,92
+  s_f5a1e2cf907cda::t_61becae880db64 37
+  s_f5a1e2cf907cda::t_9d4d6d1848c204 61
+  s_f5a1e2cf907cda::t_28f9641d58def0 99-100,111,149-150
+  s_f5a1e2cf907cda::t_4d41644b49e070 132
+spec/stationery/testing/inspector_layout_spec.rb
+  s_f5a1e2cf907cda::t_36b0219492696c 42
+  s_f5a1e2cf907cda::t_f759af89eb19fe 81-96
+  s_f5a1e2cf907cda::t_a51d53ea2e89c6 100-101,109,113-114,116
+  s_f5a1e2cf907cda::t_c32614e1ae9692 1-41,43-50,52-80,97-99,102-108,110-112,115,117-118
+  s_f5a1e2cf907cda::t_28f9641d58def0 51
+lib/stationery/testing/inspector.rb
+  s_f5a1e2cf907cda::t_4dbf0a6bf5077c 8
+  s_f5a1e2cf907cda::t_abd26e93bd807d 196-202
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "516d69e2f7cd89924a6dbd45241e4eb9c803e519",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
