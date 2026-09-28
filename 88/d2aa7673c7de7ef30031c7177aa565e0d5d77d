@@ -1,0 +1,24 @@
+lib/stationery/cli/render.rb
+  s_600b6bfbec0b19::t_f02e399fd4a652 60-61,66,83,85-92
+  s_600b6bfbec0b19::t_94bfb0a67cb3d4 72,80-82,84
+spec/fixtures/cli/extends.rb
+  s_600b6bfbec0b19::t_94bfb0a67cb3d4 1-7
+spec/stationery/cli/render_spec.rb
+  s_600b6bfbec0b19::t_94bfb0a67cb3d4 50-57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "88d2aa7673c7de7ef30031c7177aa565e0d5d77d",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}

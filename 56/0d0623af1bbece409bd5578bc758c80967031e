@@ -1,0 +1,63 @@
+docs/app/views/docs/pages/getting_started.rb
+  s_600b6bfbec0b19::t_15ebdf9eb12847 123
+lib/stationery/pdf/assembler.rb
+  s_600b6bfbec0b19::t_f41a5345e57298 11-13,15-17,117,126
+Rakefile
+  s_600b6bfbec0b19::t_4ce1383868ae7d 40-44,52-53,55,64-86,88,90-95
+  s_600b6bfbec0b19::t_86e65f9ca17352 87,89
+.github/workflows/main.yml
+  s_600b6bfbec0b19::t_4ce1383868ae7d 64-65
+spec/stationery/testing/matchers_spec.rb
+  s_600b6bfbec0b19::t_329bee03a30481 173-187
+docs/app/views/docs/pages/conformance.rb
+  s_600b6bfbec0b19::t_e041a67faa7862 7,81-131,134-135,147-157,167-168,170,172,175-176
+docs/app/views/docs/pages/testing.rb
+  s_600b6bfbec0b19::t_e041a67faa7862 27-28,57-58
+lib/stationery/testing/matchers.rb
+  s_600b6bfbec0b19::t_f41a5345e57298 134-156,229
+spec/integration/e_invoice_spec.rb
+  s_600b6bfbec0b19::t_3f345b9f0fd721 1-47
+lib/stationery.rb
+  s_600b6bfbec0b19::t_f41a5345e57298 68
+lib/stationery/document.rb
+  s_600b6bfbec0b19::t_f41a5345e57298 96-109,143-147,150,199-200,204-205
+lib/stationery/pdf/factur_x.rb
+  s_600b6bfbec0b19::t_71ac5bacb1812d 1-67,72-109,111-117
+  s_600b6bfbec0b19::t_86e65f9ca17352 68-71
+  s_600b6bfbec0b19::t_f41a5345e57298 110
+examples/e_invoice.rb
+  s_600b6bfbec0b19::t_f12256dce21880 1-161
+spec/stationery/testing/inspector_spec.rb
+  s_600b6bfbec0b19::t_329bee03a30481 110-121
+lib/stationery/minitest.rb
+  s_600b6bfbec0b19::t_f41a5345e57298 33-36
+README.md
+  s_600b6bfbec0b19::t_e041a67faa7862 73,315-316,423-461,714,739,752-753
+docs/app/views/docs/pages/examples.rb
+  s_600b6bfbec0b19::t_e041a67faa7862 20-23,45
+spec/stationery/pdf/factur_x_spec.rb
+  s_600b6bfbec0b19::t_1e1b1b5f784e91 1-25,27-149,151-161
+  s_600b6bfbec0b19::t_86e65f9ca17352 26,150
+spec/stationery/testing/assertions_spec.rb
+  s_600b6bfbec0b19::t_329bee03a30481 80-89
+docs/app/views/docs/pages/pages.rb
+  s_600b6bfbec0b19::t_15ebdf9eb12847 138-140
+lib/stationery/testing/inspector.rb
+  s_600b6bfbec0b19::t_f41a5345e57298 71-83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "560d0623af1bbece409bd5578bc758c80967031e",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
