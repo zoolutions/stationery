@@ -18,6 +18,10 @@ module Stationery
       XMP_PROPERTY = %r{^\s*<((?!rdf:)[\w.-]+:[\w.-]+)>(.*?)</\1>$}
       XMP_ITEM = %r{<rdf:li[^>]*>(.*?)</rdf:li>}
       XMP_ENTITIES = { "&amp;" => "&", "&lt;" => "<", "&gt;" => ">", "&quot;" => '"' }.freeze
+      # Operands each colour operator takes.
+      COLOR_OPERATORS = { "g" => 1, "G" => 1, "rg" => 3, "RG" => 3, "k" => 4, "K" => 4 }.freeze
+      NUMBER = /\A[-+]?(?:\d+\.?\d*|\.\d+)\z/
+      LITERAL_STRING = /\((?:\\.|[^\\()])*\)/m
 
       def initialize(subject)
         @subject = subject
@@ -94,6 +98,16 @@ module Stationery
       end
 
       def image_count = pdf.scan(%r{/Subtype\s*/Image\b}).size
+
+      # The colours the pages paint with, each once, sorted: what the fill
+      # and stroke operators (g, rg, k and their stroking forms) set in the
+      # page content and the form XObjects it draws, as "#RRGGBB" (CMYK
+      # converted without a profile), with "shading" for a gradient and
+      # "image" for a bitmap that is not one bit of grey (one that is paints
+      # black and white only). Form fields and opacity are not read.
+      def colors
+        @colors ||= reader.pages.flat_map { |page| paints(page, page.raw_content, page.xobjects) }.uniq.sort
+      end
 
       def warnings
         return [] unless @subject.is_a?(Document)
@@ -187,6 +201,43 @@ module Stationery
 
       def objects = reader.objects
       def catalog = objects.deref!(objects.trailer[:Root])
+
+      # What one content stream paints with, and the XObjects it draws.
+      def paints(page, content, xobjects)
+        numbers = []
+        previous = nil
+        content.gsub(LITERAL_STRING, " ").split.each_with_object([]) do |token, found|
+          if token.match?(NUMBER)
+            numbers << token
+          else
+            count = COLOR_OPERATORS[token]
+            found << color_of(numbers.last(count)) if count && numbers.size >= count
+            found << "shading" if token == "sh"
+            found.concat(drawn(page, xobjects[previous.delete_prefix("/").to_sym])) if token == "Do" && previous
+            numbers.clear
+          end
+          previous = token
+        end
+      end
+
+      def color_of(values)
+        values = values.map(&:to_f)
+        values *= 3 if values.size == 1
+        Monochrome.hex(Color.new(values.size == 4 ? :cmyk : :rgb, values))
+      end
+
+      def drawn(page, xobject)
+        return [] unless xobject
+
+        xobject = objects.deref(xobject)
+        if xobject.hash[:Subtype] == :Form
+          form = ::PDF::Reader::FormXObject.new(page, xobject)
+          return paints(page, form.raw_content, form.xobjects)
+        end
+        one_bit = xobject.hash[:ImageMask] || (xobject.hash[:BitsPerComponent] == 1 &&
+                                               objects.deref(xobject.hash[:ColorSpace]) == :DeviceGray)
+        one_bit ? [] : ["image"]
+      end
 
       def annotations
         reader.pages.flat_map do |page|

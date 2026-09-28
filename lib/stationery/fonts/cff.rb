@@ -51,6 +51,22 @@ module Stationery
         cid_keyed? ? @charset.fetch(gid, 0) : gid
       end
 
+      # The contours of a glyph (an Outline), from its charstring.
+      def outline(gid)
+        return Outline.new unless gid.between?(0, @num_glyphs - 1)
+
+        offset, length = @charstrings.items[gid]
+        Charstring.new(@data, @global_subrs, local_subrs(gid)).outline(offset, length)
+      end
+
+      # The local Subrs INDEX a glyph's charstring calls, or nil: the Private
+      # DICT's, or in a CID-keyed font that of the Font DICT FDSelect gives
+      # the glyph. Read once per Font DICT.
+      def local_subrs(gid)
+        fd = cid_keyed? ? fd_index(gid) : 0
+        (@local_subrs ||= {}).fetch(fd) { @local_subrs[fd] = private_subrs(font_dict(fd)) }
+      end
+
       def item(index, number) = @data.byteslice(*index.items.fetch(number))
 
       def string(sid) = item(@string_index, sid - STANDARD_STRINGS)
@@ -134,6 +150,36 @@ module Stationery
         end
         base = offset + 2 + ((count + 1) * size)
         Index.new(offset, offsets.each_cons(2).map { |a, b| [base + a, b - a] }, base + offsets.last)
+      end
+
+      private
+
+      def font_dict(number)
+        return @top unless cid_keyed?
+
+        @fd_array ||= index_at(@top.fetch(FD_ARRAY).first)
+        self.class.parse_dict(item(@fd_array, number))
+      end
+
+      # The Subrs offset is relative to the Private DICT.
+      def private_subrs(dict)
+        size, offset = dict.fetch(PRIVATE)
+        subrs = self.class.parse_dict(@data.byteslice(offset, size))[SUBRS]
+        index_at(offset + subrs.first) if subrs
+      end
+
+      # FDSelect format 0 has a Font DICT per glyph; format 3 sorted ranges
+      # of [first glyph, Font DICT] ending at a sentinel glyph id, searched
+      # for the first range whose successor starts past the glyph.
+      def fd_index(gid)
+        offset = @top.fetch(FD_SELECT).first
+        return @data.getbyte(offset + 1 + gid) if @data.getbyte(offset).zero?
+
+        ranges = offset + 3
+        range = (0...@data.unpack1("n", offset: offset + 1)).bsearch do |i|
+          @data.unpack1("n", offset: ranges + (3 * (i + 1))) > gid
+        end
+        range ? @data.getbyte(ranges + (3 * range) + 2) : 0
       end
     end
   end

@@ -446,7 +446,8 @@ render Callout.new(color: "#F3F4F6") { text "Amount due" }
 - After `to_pdf`, `document.warnings` is an Enumerable of everything the render noticed but did not
   raise on, each with a `#message`: overflows, SVG elements that were skipped (`UnsupportedSvg`), and
   the other `Stationery::Warnings::*` kinds (missing glyphs, unknown font families, skipped images,
-  unresolved links, duplicate anchors, and in a tagged render what is missing for accessibility).
+  unresolved links, duplicate anchors, in a tagged render what is missing for accessibility, and in a
+  [monochrome](#monochrome) render the colours and lines a one-bit printer cannot print as they are).
   Equal warnings are listed once; warnings from page templates
   are included. `to_pdf(strict: true)`, or `strict` at class level, raises `Stationery::WarningsError`
   (with `#warnings`) instead of writing a PDF that produced any; `to_pdf(strict: false)` opts one
@@ -511,6 +512,66 @@ source code did when it was read on 2026-09-28, "reported" what a user wrote in 
 | Firefox (pdf.js) | read, not used by the viewer (source; [bug 1243580](https://bugzilla.mozilla.org/show_bug.cgi?id=1243580)) | read, not used (source) | read, not used (source) | read, not used (source) | read, not used (source) | starts printing (source) |
 | Preview (macOS) | not tested | not tested | not tested | not tested | not tested | not tested |
 | Evince, Okular (poppler) | not tested | not tested | not tested | not tested | not tested | not tested |
+
+### Monochrome
+
+A thermal label printer (203 or 300 dpi), a receipt printer or an e-paper display prints black or
+nothing. Whatever else the PDF holds, the driver or the printer turns into dots of its own choosing:
+grey text comes out speckled, a light rule or background vanishes or turns into a dot pattern, and a
+line thinner than one dot prints or not depending on where it lands. `monochrome` makes those
+choices where they can be seen, before anything is printed:
+
+```ruby
+class ShelfLabel < Stationery::Document
+  page size: [mm(100), mm(60)], margin: mm(4)
+  monochrome dpi: 203                               # report what a 203 dpi printer cannot print as it is
+end
+
+ShelfLabel.new.to_pdf(monochrome: { snap: true })  # change it instead, for this render
+ShelfLabel.new.to_pdf(monochrome: false)           # as it was, byte for byte
+```
+
+| Option | Default | What it does |
+| --- | --- | --- |
+| `dpi:` | `203` | the printer's dots per inch: one dot is 72/dpi pt (0.355 pt at 203 dpi, 0.24 pt at 300) |
+| `snap:` | `false` | change colours and thin lines instead of reporting them |
+| `threshold:` | `0.5` | under `snap:`, a fill whose tone is darker is painted black, a lighter one is not painted |
+| `dither:` | `:floyd_steinberg` | how a bitmap becomes dots: `:floyd_steinberg`, `:ordered` (an 8 × 8 Bayer pattern) or `:threshold` (cut at half) |
+
+- **Colours.** Every colour that is not black or white, and anything painted at an `opacity:` below 1,
+  is a `Warnings::NotMonochrome` naming the colour and what painted it: `text`, `a rule` (a `rule`,
+  an underline, a strikethrough: a filled rectangle 3 pt thick or less), `a background` (any other
+  fill), `a border or line` (any stroke), `a gradient` or `an image`, once per colour, kind and page:
+  `text in #888888 on page 1 is not black or white`. `strict` raises on them. It sees whatever is
+  painted, by an element, an SVG or a `canvas { }` block alike.
+- **`snap: true`.** Text, rules, borders and lines are painted black, except white ones, which stay
+  white (white text on a black box). A fill is painted black when its tone is darker than
+  `threshold:` and left out when it is lighter; the tone is the colour's luma (ITU-R BT.601), an
+  opacity laid over white paper (black at 0.3 is a tone of 0.7). A gradient is black or left out
+  by the average tone of its stops. Opacity is taken away. Nothing is reported.
+- **Line widths.** A stroke or a rule thinner than a dot (`width × the scale of a transform`) is a
+  `Warnings::ThinLine` and is left as it is; with `snap: true` it is widened to a dot.
+- **The dot grid.** Outside any transform, a filled rectangle (a rule, a background, an underline)
+  and a stroke made of horizontal and vertical lines (a border, a table's cell borders, a line) are
+  put on the printer's grid, counted from the top left corner of the page: their edges on whole dots
+  and their widths whole numbers of dots, so a hairline is as wide on every label. A curve, a rounded
+  corner, a slanted line and anything under a transform keeps its geometry.
+- **Images.** A PNG or a lossless WebP is greyed (a transparent pixel is white paper), resampled to the
+  dots it covers at `dpi:` and dithered, and embedded as a one-bit DeviceGray image
+  (`/BitsPerComponent 1`): what prints is the pattern chosen here, not the driver's. A JPEG is not
+  decoded by stationery, so it is embedded as it is and reported (`an image in JPEG 640x480`).
+- `monochrome` at class level is inherited and adds to what the class inherits; `monochrome false`
+  takes it away. `to_pdf(monochrome:)` takes `true`, `false` or options laid over the class's.
+- Monochrome renders keep PDF/A and PDF/UA: the one-bit image is DeviceGray, which the sRGB output
+  intent covers (checked with veraPDF, PDF/A-3b and PDF/UA-1).
+- `Inspector#colors` lists what a PDF paints with, so a spec can hold it: `expect(pdf).to
+  have_pdf_colors("#000000")`.
+
+What it does not do: it does not decode or dither a JPEG (convert it to PNG), does not look at form
+fields (their widget draws them, not the page), does not put dashes, line caps or curves on the grid,
+and does not make small text bolder. It changes nothing without `monochrome`. The rules live in
+`Stationery::Monochrome::Rules` and `Monochrome::Grid`, apart from the PDF canvas, for a raster
+output to apply the same ones.
 
 ### Encryption
 
@@ -1286,6 +1347,7 @@ RSpec.describe InvoicePdf do
   it { is_expected.to have_pdf_language("en") } # the catalog /Lang from `metadata lang:`
   it { is_expected.to have_page_labels(%w[i ii 1 2]) } # from `page_labels`
   it { is_expected.to have_print_preference(scaling: :none, copies: 2) } # from `print`
+  it { is_expected.to have_pdf_colors("#000000") } # every colour it paints with, from `monochrome`
   it { is_expected.to have_attachment("factur-x.xml", mime: "text/xml", relationship: :alternative) }
   it { is_expected.to have_conformance(:pdf_a3b) } # the level claimed in XMP, from `conformance`
   it { is_expected.to have_factur_x(profile: :en16931) } # the e-invoice XML, named in XMP and embedded
@@ -1314,6 +1376,7 @@ class InvoicePdfTest < Minitest::Test
     assert_pdf_language pdf, "en"
     assert_page_labels pdf, %w[i ii 1 2]
     assert_print_preference pdf, scaling: :none, copies: 2
+    assert_pdf_colors pdf, ["#000000"]
     assert_pdf_attachment pdf, "factur-x.xml", mime: "text/xml"
     assert_pdf_conformance pdf, :pdf_a3b
     assert_factur_x pdf, profile: :en16931
@@ -1330,7 +1393,8 @@ titles. The RSpec matchers compose like the built-ins: `.and` / `.or`, and insid
 `all`, `include` or `match`. For anything else, `Stationery::Testing::Inspector.new(subject)`
 exposes `text`, `page_texts`, `page_count`, `links`, `internal_links`,
 `image_count`, `bookmarks`, `metadata`, `xmp` (the packet), `xmp_values` (`{ "dc:title" => …, "dc:creator" => […] }`),
-`lang`, `page_labels`, `print_preferences` (`{ scaling: :none, pages: [1..3] }`), `attachments`, `conformance` (`[:pdf_a3b, :pdf_ua1]`), `factur_x`
+`lang`, `page_labels`, `print_preferences` (`{ scaling: :none, pages: [1..3] }`), `colors`
+(`["#000000", "#FF0000"]`), `attachments`, `conformance` (`[:pdf_a3b, :pdf_ua1]`), `factur_x`
 (`{ profile:, filename:, version:, xml: }`), `signatures` (`[{ field:, name:, reason:, location:,
 signed_at:, subfilter:, byte_range:, signer:, valid:, timestamp: }]`, the timestamp `nil` or
 `{ time:, tsa:, valid: }`), `warnings`, `tagged?`,
@@ -1339,6 +1403,12 @@ signed_at:, subfilter:, byte_range:, signer:, valid:, timestamp: }]`, the timest
 read from its marked content: `[type, "text"]`, `[type, [children]]` (its own text
 between the children, as for a `P` holding a `Link`) or `[type]` when empty; a
 `Figure` reads as its alt text.
+
+`colors` is every colour the page content and the form XObjects it draws set with `g`, `rg` and `k`
+(and their stroking forms), once each and sorted, as `"#RRGGBB"` (CMYK converted without a profile),
+with `"shading"` for a gradient and `"image"` for a bitmap that is not one bit of grey; a one-bit grey
+image, as `monochrome` embeds, paints black and white only and adds nothing. Opacity and form
+fields are not read. `have_pdf_colors("#000000")` and `assert_pdf_colors` hold the whole list.
 
 `text` and `page_texts` are the text of the page content as pdf-reader lays it out, line by line. A
 `Span` with `ActualText` (a stretch a shaper reordered, characters no font has) reads as that text,
