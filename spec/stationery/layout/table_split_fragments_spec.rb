@@ -90,7 +90,7 @@ RSpec.describe Stationery::Layout::Table, "#split" do
 
     expect(rest.column_count).to eq(2)
     expect(rest.cell(1, 1)).to be(node.cell(node.row_count - rest.row_count + 1, 1))
-    expect(described_class::Grid).to have_received(:new).once
+    expect(described_class::Grid).not_to have_received(:new)
   end
 
   it "cuts a table whose cells span rows only where no span crosses" do
@@ -156,8 +156,9 @@ RSpec.describe Stationery::Layout::Table, "#split" do
     expect([head.tag, tail.tag]).to all(be(node.tag))
     expect(tail.cell(0, 0)).to be(node.cell(0, 0))
     expect(tail.cell(1, 0)).to be(node.cell(head.row_count, 0))
+    render_layout(Stationery::Layout::Flow.new([head, tail]))
     expect(node.cell(0, 0).tag.type).to eq(:TH)
-    expect(tail.cell(1, 0).tag).to be(node.cell(head.row_count, 0).tag)
+    expect(tail.cell(1, 0).tag.type).to eq(:TD)
   end
 
   it "tags each cell once, however many pages the table takes" do

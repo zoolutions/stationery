@@ -19,6 +19,32 @@ module Stationery
           widths
         end
 
+        # Grid#column_metric for rows no rowspan reaches across, read off the
+        # rows without placing every cell on a grid: the largest single-column
+        # value, then the excess of a spanning cell spread over its columns.
+        def per_column(rows, count)
+          values = Array.new(count, 0)
+          spanning = []
+          rows.each do |row|
+            column = 0
+            row.each do |cell|
+              if cell.colspan == 1
+                value = yield(cell)
+                values[column] = value if value > values[column]
+              else
+                spanning << [cell, column]
+              end
+              column += cell.colspan
+            end
+          end
+          spanning.each do |cell, column|
+            columns = column...(column + cell.colspan)
+            excess = yield(cell) - values[columns].sum
+            columns.each { |c| values[c] += excess.fdiv(cell.colspan) } if excess.positive?
+          end
+          values
+        end
+
         def fixed(spec, target)
           case spec
           when nil then nil

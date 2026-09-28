@@ -37,13 +37,26 @@ module Stationery
         defaults = DEFAULT_CELL.merge(cell)
         @cells = rows.map { |row| row.map { |content| build_cell(content, defaults) } }
         check_header
-        tag_cells
         yield self if block_given?
       end
 
       def row_count = @cells.size
-      def column_count = @column_count ||= grid.column_count
-      def cell(row, column) = grid.at(row, column)
+
+      def column_count
+        @column_count ||= if row_spans?
+                            grid.column_count
+                          else
+                            @cells.inject(0) { |most, row| [most, row.sum(&:colspan)].max }
+                          end
+      end
+
+      def cell(row, column)
+        return grid.at(row, column) if row_spans?
+        return if row.negative? || column.negative?
+
+        @cells[row]&.each { |cell| return cell if (column -= cell.colspan).negative? }
+        nil
+      end
 
       def rows(spec) = Selection.new(self, Selection.indexes(spec, row_count), (0...column_count).to_a)
       alias row rows
@@ -106,6 +119,7 @@ module Stationery
         heights = row_heights(width)
         lefts = offsets(widths)
         tops = offsets(heights)
+        row_count.times { |row| tag_row(row) }
         canvas.structure(@tag) do
           grid.placements.each do |p|
             rect = Rect.new(x + lefts[p.column], y + tops[p.row], widths[p.columns].sum, heights[p.rows].sum)
@@ -173,14 +187,19 @@ module Stationery
         canvas.structure(cell.row_tag) { canvas.structure(cell.tag, &paint) }
       end
 
+      # A row's TR and its cells' TH or TD, built when a page first paints or
+      # cuts the row, so a long table holds the elements of the rows painted
+      # so far. The first rows of a fragment that is not `continued` are the
+      # table's header rows; a continued one repeats them as an artifact.
       # A render without a structure tree tags nothing.
-      def tag_cells
+      def tag_row(row)
         return unless @context.tagged
 
-        @cells.each_with_index do |row, index|
-          row_tag = Tagging::Element.new(:TR)
-          row.each { |cell| cell.tagged(cell_tag(cell, index < @header), row_tag) }
-        end
+        cells = @cells[row]
+        return if cells.all?(&:tag)
+
+        row_tag = Tagging::Element.new(:TR)
+        cells.each { |cell| cell.tagged(cell_tag(cell, row < @header), row_tag) }
       end
 
       def cell_tag(cell, header)
@@ -206,6 +225,7 @@ module Stationery
 
         widths = column_widths(width)
         placements = placements_in(row)
+        tag_row(row)
         splitter = RowSplitter.new(placements, widths:, context: @context, fresh: fresh && row == @header)
         heads, tails = splitter.call(space)
         return unless heads
@@ -235,7 +255,7 @@ module Stationery
       end
 
       def check_header
-        return if @header.zero? || grid.boundaries.include?([@header, row_count].min)
+        return if @header.zero? || !row_spans? || grid.boundaries.include?([@header, row_count].min)
 
         raise ArgumentError, "a rowspan crosses the end of the #{@header} header row(s)"
       end
@@ -255,7 +275,11 @@ module Stationery
 
       def column_metric(metric)
         @column_metrics ||= {}
-        @column_metrics[metric] ||= grid.column_metric { |p| p.cell.public_send(metric, @context) }
+        @column_metrics[metric] ||= if row_spans?
+                                      grid.column_metric { |p| p.cell.public_send(metric, @context) }
+                                    else
+                                      Widths.per_column(@cells, column_count) { it.public_send(metric, @context) }
+                                    end
       end
 
       def row_heights(width)
