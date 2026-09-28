@@ -33,7 +33,8 @@ class Views::Docs::Pages::LayoutRules < DocsUI::Page
         - a `spacer` that lands on the break is dropped;
         - `page_break` forces what follows onto a new page;
         - a [float](/docs/elements#floats) never splits: when it does not fit, or what wraps beside it could
-          not start there, it moves to the next page with that content.
+          not start there, it moves to the next page with that content. A paragraph, a list item and a box
+          beside it split as they do anywhere, and what they carry over is wrapped again at the full width.
 
         Text splits between lines. Tables split between rows (never through a rowspan) and repeat their
         header rows. Lists keep each marker with the first line of its item.

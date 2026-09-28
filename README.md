@@ -136,7 +136,14 @@ text more                                       # around the pull quote
 - Text (paragraphs, headings, the text inside a `group` or an `html` block) wraps: every line takes
   the width left at its own top and is aligned and justified in it. A paragraph whose widest word
   does not fit beside the floats starts below them.
-- Anything else (a `box`, `row`, `columns`, `table`, list item, `rule`, `image`, `svg`, form field) is a block:
+- A list item and a `box` that paints nothing of its own wrap what they hold: they keep the full
+  width, and their lines are narrow beside the float and wide below it. That is a box without
+  `background:`, `border:`, `shadow:` or `link:` and without `width:`, `height:`, `rotate:`,
+  `overflow:` or `valign:`. Its padding lies under the float, as a block's does in CSS, so beside
+  the float its lines are the float's `margin:` away from it. A list item keeps its indent from the
+  float, with the marker beside its first line.
+- Anything else (a `box` with a background, a border or a size of its own, a `row`, `columns`, `table`,
+  `rule`, `image`, `svg`, form field) is a block:
   it goes beside the float in the width that is left, and keeps that width all the way down, when
   its own width (or the least its content takes) fits there; else it starts below the float. A
   `spacer` takes its height beside the float; a `page_break` ends the page and the float with it.
@@ -147,7 +154,8 @@ text more                                       # around the pull quote
 - Across pages a float never splits. When it does not fit what is left of the page, or the content
   after it could not start beside it there, it moves to the next page with that content. A
   paragraph beside a float splits between lines as always (`orphans:`, `widows:`); the lines carried
-  over are wrapped again at the full width, because the float stayed behind.
+  over are wrapped again at the full width, because the float stayed behind. So are those of a list
+  item and of a box.
 - In a tagged PDF the float is where it was written: an image is a `Figure`, a box has its `role:`.
 
 A line beside a float is taken to be as tall as a line of the paragraph's own style when its width
@@ -1266,7 +1274,9 @@ splits only when every column can; a rotated box and a `stack` move to the next 
 (end the block, write the full-width content, start another) and no column break of its own; a
 spacer that lands at the top of a column keeps its height. Text
 wraps around floated images and boxes, along their rectangles, never along a shape; beside a float
-a table, box, row or list is a block of the width that is left, all the way down (see
+a table, a row, `columns` and a box with a background, a border or a size of its own are blocks of
+the width that is left, all the way down: a box is painted after the float written before it, so
+one that kept the full width would paint its background over the float (see
 [Floats](#floats)). Link and form-widget rectangles stay in page space inside `rotate`
 and `transform`, and `shadow:` is stacked rectangles, not a blur.
 

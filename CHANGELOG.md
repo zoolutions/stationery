@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Beside a float, a list item and a `box` that paints nothing of its own wrap what they hold: they keep the full width of their flow, and their lines are narrow beside the float and take the full width below it, in the middle of a paragraph if need be. They were blocks of the width the float left, all the way down, so a long item or box beside a short image stayed narrow below it. That is a box without `background:`, `border:`, `shadow:` or `link:` and without `width:`, `height:`, `rotate:`, `overflow:` or `valign:`; its padding lies under the float, as a block's does in CSS. A list item keeps its indent from the float, with the marker beside its first line. They split across pages as they did (`break_inside:`, `keep_with_next:`, `orphans:` and `widows:` inside them), the lines carried over are wrapped again at the full width, and a tagged PDF reads them in the order they were written. In `html`, the items of a list beside a floated `img` wrap. A box with a background, a border, a shadow or a link stays a block of the width that is left: it is painted after the float written before it, and at the full width it would paint over the float. So do a `table`, a `row` and `columns`, whose columns depend on their width. Documents without floats are byte for byte what they were, and allocate what they did. `Layout::Box::Wrapping`, `Text::Exclusions#inset`.
+- **Behaviour changes:** a list or a box without a background or a border beside a float is laid out at the full width with its lines around the float, where it was laid out at the width left beside it. A document with floats and such content may break its pages elsewhere.
+
 ## 0.11.0 (2026-09-28)
 
 Text wrap around images, balanced columns, lossless WebP, a shaper hook for complex scripts, and far less memory for long documents.
