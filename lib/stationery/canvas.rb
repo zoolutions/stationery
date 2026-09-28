@@ -26,6 +26,7 @@ module Stationery
       @tagging = tagging
       @warnings = warnings
       @marked = 0
+      @artifact = @surfaced = nil
     end
 
     def save

@@ -575,8 +575,11 @@ and across page breaks: a paragraph continued on the next page stays one `P`.
   `BlockQuote`, and give images their `alt`. In `html`, `<img alt="">` is decoration as `alt: false`
   is (an `<img>` without the attribute is a description missing). Markdown has no way to say so:
   `![](photo.png)` is a description missing, and decoration goes through `html` or `image`.
-- Headers, footers and page templates are pagination artifacts; backgrounds, borders and rules drawn
-  outside any element are layout artifacts.
+- Headers, footers and page templates are pagination artifacts, but for their links: a `link:` one
+  paints (`text(link:)`, markup, `html`, `markdown`, `box(link:)`) is a `Link` of the `Document`
+  holding its text and its annotation, read after the content of its page, in the order header,
+  footer, page templates. The rest of the region stays an artifact. Backgrounds, borders and rules
+  drawn outside any element are layout artifacts.
 - `metadata lang:` writes the catalog's `/Lang`; the title is shown instead of the file name.
 - Every document carries an XMP packet (`/Metadata`, uncompressed) mirroring the Info dictionary:
   `dc:title`, `dc:creator`, `dc:description`, `dc:subject`, `dc:language`, the `xmp:` dates and
@@ -590,11 +593,12 @@ and across page breaks: a paragraph continued on the next page stays one `P`.
   the structure tree, inside sections, lists, table cells, columns and floats; those of headers,
   footers and page templates are artifacts and do not count.
 - A link annotation that belongs to no `Link` element is a `Warnings::UntaggedLink` (`target`,
-  `place`, `page`). Headers, footers and page templates are artifacts, so a `link:` they paint is one
-  (`place` is `:header`, `:footer` or `:page_template`), and so are a link in the header row a table
-  repeats on its next pages (`:artifact`) and `canvas.link` without a `tag:` (`:canvas`). Links in the
-  body are tagged; on a canvas, pass the `Link` element that holds what the link draws:
-  `canvas.link(x, y, w, h, url, tag: element)` after `canvas.tag(element) { … }`.
+  `place`, `page`): a link in the header row a table repeats on its next pages, which is an artifact
+  (`place` is `:artifact`), and `canvas.link` without a `tag:` (`:canvas` in the body, `:header`,
+  `:footer` or `:page_template` on the canvas of one). Every `link:` is tagged, in the body and in
+  headers, footers and page templates; on a canvas of the body, pass the `Link` element that holds
+  what the link draws: `canvas.link(x, y, w, h, url, tag: element)` after
+  `canvas.tag(element) { … }`.
 - A missing `lang` is a `Warnings::MissingLanguage`. All four are warnings, so `strict` catches them,
   and `conformance :pdf_ua1` raises on the first three.
 - Untagged documents (the default) are written exactly as before.
@@ -645,8 +649,8 @@ mislabelled: `ArgumentError` for options that contradict the level, `Stationery:
   `alt:` or with a blank one raises (7.3); mark decoration with `alt: false`, or `<img alt="">` in
   `html`. A heading level that is skipped raises (7.4.2): the first heading is `heading: 1`, and a
   heading is at most one level below the heading before it. A link annotation outside the structure
-  tree raises (7.18.5): a `link:` painted by a `header`, a `footer` or a `page_template`, a link in
-  the header row a table repeats, or `canvas.link` without a `tag:`. Links in the body are tagged.
+  tree raises (7.18.5): a link in the header row a table repeats, or `canvas.link` without a `tag:`.
+  Every other link is tagged, those of headers, footers and page templates too.
   PDF/A alone asks for none of the three. Encryption is allowed.
 - Combined, the XMP packet also describes the `pdfuaid` schema to PDF/A (`pdfaExtension:schemas`).
 - Interactive form fields are allowed: their appearances draw with embedded fonts and paths, every
@@ -660,7 +664,8 @@ mislabelled: `ArgumentError` for options that contradict the level, `Stationery:
 
 `bundle exec rake verify:conformance` renders `examples/invoice.rb` as PDF/A-3b, and
 `examples/report.rb`, `examples/form.rb`, `examples/article.rb` (floats) and `examples/newsletter.rb`
-(columns) as PDF/A-3b plus PDF/UA-1, and validates them with
+(columns) as PDF/A-3b plus PDF/UA-1, the report once more with a link in its footer, and validates
+them with
 [veraPDF](https://verapdf.org) through Docker (`verapdf/cli`); CI runs it on every push. Validate
 your own documents the same way:
 

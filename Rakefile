@@ -43,6 +43,14 @@ namespace :verify do
     Object.const_get(constant).preview
   end
 
+  # An example with a link in its footer: the one thing of a footer that is
+  # in the structure tree.
+  linked = lambda do |name|
+    Class.new(example.call(name).class) do
+      footer(gap: 14) { text "northwind.example", link: "https://northwind.example", size: 7, align: :center }
+    end.preview
+  end
+
   # A key and a self-signed certificate for it, good for an hour: what the
   # signed renders below are signed with.
   identity = lambda do
@@ -69,12 +77,15 @@ namespace :verify do
     renders = { "invoice" => { pdf_a3b: "3b" }, "report" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
                 "e_invoice" => { pdf_a3b: "3b" }, "form" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
                 "article" => { pdf_ua1: "ua1", pdf_a3b: "3b" }, "newsletter" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
-                "signed_invoice" => { pdf_a3b: "3b" }, "signed_form" => { pdf_ua1: "ua1", pdf_a3b: "3b" } }
+                "signed_invoice" => { pdf_a3b: "3b" }, "signed_form" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
+                "linked_report" => { pdf_ua1: "ua1", pdf_a3b: "3b" } }
     failures = renders.flat_map do |name, levels|
       options = { conformance: levels.keys }
       options[:sign] = identity.call if name.start_with?("signed_")
       options[:sign][:field] = "signature" if name == "signed_form"
-      example.call(name.delete_prefix("signed_")).to_pdf(File.join(out, "#{name}.pdf"), **options)
+      source = name.delete_prefix("signed_")
+      document = source.start_with?("linked_") ? linked.call(source.delete_prefix("linked_")) : example.call(source)
+      document.to_pdf(File.join(out, "#{name}.pdf"), **options)
       failed = levels.values.reject do |flavour|
         sh("docker", "run", "--rm", "--platform", "linux/amd64", "-v", "#{out}:/data:ro", image,
            "--format", "text", "-v", "--flavour", flavour, "/data/#{name}.pdf") { |ok, _| ok }
