@@ -30,13 +30,13 @@ class Views::Docs::Pages::Comparison < DocsUI::Page
       md <<~'MD'
         | | Stationery | Prawn | sghtmltopdf |
         | --- | --- | --- | --- |
-        | Layout model | Rows, columns, boxes, `stack`/`layer`, `wrap`; the engine measures and places | You compute positions; `bounding_box`, `move_down`, `cursor` | CSS block, inline, flexbox, grid, floats, absolute positioning |
+        | Layout model | Rows, columns, boxes, `stack`/`layer`, `wrap`, floats; the engine measures and places | You compute positions; `bounding_box`, `move_down`, `cursor` | CSS block, inline, flexbox, grid, floats, absolute positioning |
         | Page breaks | `page_break`, `break_inside: :avoid`/`:auto`, `keep_with_next`, `keep_together`, `min_height` | `start_new_page`; `group` raises `NotImplementedError` | `break-before`/`after`/`inside`, `page-break-*` |
         | Orphans and widows | `orphans:` and `widows:` on text, default 1 | No | Yes, default 2 |
         | Headers, footers, page n of N | Page templates with any content, `header`/`footer`, regions | `repeat(:all)` blocks with `number_pages` | `@page` margin boxes and header/footer HTML with placeholders |
         | Tables across pages | Split rows, repeated header, `colspan`/`rowspan`, `split_rows:` | prawn-table: header repeat, spans, splitting | Yes, `thead` repeats |
         | Balanced columns | `columns(count:, gap:, balance:, rule:)`, across pages | No | No |
-        | Text wrap around images | No | No | Floats yes |
+        | Text wrap around images and boxes | `float: :left`/`:right` on `image` and `box`, and on `img` in `html` | No | Floats |
         | Page labels | Yes | No | No |
       MD
     end
@@ -94,7 +94,7 @@ class Views::Docs::Pages::Comparison < DocsUI::Page
         | | Stationery | Prawn | sghtmltopdf |
         | --- | --- | --- | --- |
         | HTML or Markdown input | `html` and `markdown` elements: structure and inline marks | No (third-party gems) | Its whole input |
-        | CSS | Partial: a property subset on the `html` element (colours, font size, weight and style, decoration, alignment, backgrounds, padding, margins, table borders and widths, page breaks) with element, class and id selectors. No `display`, flexbox, grid, floats, positioning, `font-family` or selectors with combinators | No | A cascade with custom properties, `calc()`, `:has()`; flexbox, grid, floats, positioning |
+        | CSS | Partial: a property subset on the `html` element (colours, font size, weight and style, decoration, alignment, backgrounds, padding, margins, table borders and widths, page breaks) with element, class and id selectors. `float` on `img` only. No `display`, flexbox, grid, positioning, `font-family` or selectors with combinators | No | A cascade with custom properties, `calc()`, `:has()`; flexbox, grid, floats, positioning |
         | Untrusted content | Link scheme allow-list, no remote fetches, image `base_path:` sandbox, bounded nesting | Not applicable | Node, depth and image size caps, file sandbox |
         | Testing helpers | Inspector, RSpec matchers, Minitest assertions | pdf-inspector (separate gem) | None |
         | Instrumentation | ActiveSupport::Notifications events | No | No |

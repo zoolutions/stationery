@@ -85,7 +85,7 @@ class Views::Docs::Pages::Elements < DocsUI::Page
   def containers
     DocsUI::Section("box", description: "Padding, background, border, radius — and page-aware splitting.") do
       md <<~'MD'
-        `box(padding:, background:, border:, radius:, width:, height:, overflow:, valign:, opacity:, at:,
+        `box(padding:, background:, border:, radius:, width:, height:, overflow:, valign:, opacity:, at:, float:, margin:,
         link:, outset:, break_inside:, decoration:, rotate:, shadow:, align:, gap:, keep_with_next:, anchor:,
         bookmark:) { … }`
 
@@ -108,6 +108,8 @@ class Views::Docs::Pages::Elements < DocsUI::Page
           [ "overflow", ":visible, :hidden, :truncate, :shrink_to_fit", ":visible", [ :md, "What text does when a fixed height is too small. `:hidden` also clips the content to the rounded outline (`radius:`) and still splits across pages." ] ],
           [ "valign", ":top, :middle, :bottom", ":top", "Content placement inside a fixed height." ],
           [ "at", "[x, y]", "nil", "Pins the box to a page position, outside the flow." ],
+          [ "float", ":left, :right", "nil", [ :md, "Takes the box to that side of the flow it is in; what follows wraps beside it. Needs a `width:`. See [Floats](#floats)." ] ],
+          [ "margin", "Numeric or Box", "0", [ :md, "With `float:`, the space kept between the box and the text around it: a number on the sides that face the text, or sides named as for `padding:`." ] ],
           [ "link", "String", "nil", [ :md, "Makes the whole box clickable (a URL or `\"#anchor\"`)." ] ],
           [ "outset", "Box", "0", "Bleeds the background past the box, e.g. into the page margins." ],
           [ "break_inside", "nil, :auto, :avoid", "nil", [ :md, "See [Layout rules](/docs/layout-rules#break-inside)." ] ],
@@ -287,16 +289,51 @@ class Views::Docs::Pages::Elements < DocsUI::Page
   def media
     DocsUI::Section("image", description: "JPEG, PNG and lossless WebP.") do
       md <<~'MD'
-        `image(path_or_io, width: nil, height: nil, fit: nil, align: nil, opacity: nil)`
+        `image(path_or_io, width: nil, height: nil, fit: nil, align: nil, opacity: nil, float: nil, margin: nil)`
 
         Aspect ratio is preserved when only one of `width`/`height` is given; `fit: [w, h]` scales the image
         to fit inside that box; with neither, one pixel is one point. An image is never wider than the space
-        it is given. Details on [Images and SVG](/docs/images-and-svg).
+        it is given. `float: :left` or `:right` takes it to that side, and the text that follows wraps
+        beside it ([Floats](#floats)). Details on [Images and SVG](/docs/images-and-svg).
 
         ```ruby
         image "logo.png", height: 34, align: :right
         image StringIO.new(blob.download), fit: [120, 80]
+        image "bay.jpg", float: :left, width: 0.4, margin: 12, alt: "The bay at dawn"
         ```
+      MD
+    end
+
+    DocsUI::Section("Floats", description: "Text that wraps around an image or a box.") do
+      md <<~'MD'
+        `float: :left` or `:right` on an `image` or a `box` takes it to that edge of the flow it is written
+        in: the page body, a box, a column or a table cell. What follows it in that flow starts at its top
+        and wraps beside it, and takes the full width again below it, in the middle of a paragraph if
+        need be. `examples/article.rb` is a page built this way.
+
+        ```ruby
+        image "bay.jpg", float: :left, width: 0.4, margin: 12, alt: "The bay at dawn"
+        text story, align: :justify                     # beside the photo, then below it
+
+        box(float: :right, width: 170, margin: { left: 16, bottom: 6 }, padding: 10, role: :blockquote) do
+          text "The view is everywhere.", size: 13, style: :italic
+        end
+        text more                                       # around the pull quote
+        ```
+
+        | | Rule |
+        | --- | --- |
+        | `margin:` | A number is kept on the sides that face the text (the inner side and the bottom). A Hash (`{ left: 16, bottom: 6 }`, `x:`, `y:`) or an Array names the sides as `padding:` does. |
+        | `width:` | A floated box needs one: points, a fraction of the flow's width or `:auto`. An image has its own size. |
+        | Text | Paragraphs, headings and the text inside a `group` or an `html` block wrap: every line takes the width left at its own top and is aligned and justified in it. A paragraph whose widest word does not fit beside the floats starts below them. |
+        | Other elements | A `box`, `row`, `table`, list item, `rule`, `image`, `svg` or form field is a block: beside the float in the width that is left, all the way down, when its own width (or the least its content takes) fits there; else below the float. A `spacer` takes its height beside the float; a `page_break` ends the page and the float with it. |
+        | Several floats | The next goes beside those already there when it fits, else below them, and never above one written before it. Left and right floats share a line with the text between them. |
+        | Height | The flow that holds a float is at least as tall as the float: what follows the box, column or cell starts below it. |
+        | Page breaks | A float never splits. When it does not fit what is left of the page, or the content after it could not start beside it there, it moves to the next page with that content. The lines a paragraph carries over a break are wrapped again at the full width. |
+        | Tagged PDF | The float is read where it was written: an image is a `Figure`, a box has its `role:`. |
+
+        Anything but `:left` and `:right` raises `ArgumentError`, as do `margin:` without `float:` and
+        `float:` together with `at:`. Text wraps along the float's rectangle, never along a shape.
       MD
     end
 

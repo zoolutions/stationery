@@ -70,7 +70,7 @@ InvoicePdf.new(invoice).to_pdf          # => "%PDF-1.7…" (binary String)
 InvoicePdf.new(invoice).to_pdf("a.pdf") # also writes a path or an IO
 ```
 
-`examples/` has a complete, runnable invoice, annual report, letter, packing slip, fillable form, postcard collage, event flyer, two-column newsletter and Factur-X e-invoice
+`examples/` has a complete, runnable invoice, annual report, letter, packing slip, fillable form, postcard collage, magazine article, event flyer, two-column newsletter and Factur-X e-invoice
 ([previews and live PDFs](https://stationery.zoolutions.llc/docs/examples)); `bundle exec rake examples`
 renders them all, or render one with `stationery render examples/report.rb`.
 
@@ -81,11 +81,11 @@ renders them all, or render one with `stationery render examples/report.rb`.
 | `text(string, **style)` | A paragraph. Plain strings are literal. |
 | `text(string, markup: true)` | Reads `<b> <i> <u> <strikethrough> <sub> <sup> <br> <color rgb=""> <font size="" name=""> <link href="">`; decodes numeric (`&#39;`, `&#x27;`) and HTML 4 named entities once, so escape user data (`ERB::Util.html_escape`) before wrapping it in your own tags: `&lt;b&gt;` stays literal text. |
 | `text { b "Total"; plain " due" }` | Styled runs in Ruby. Take a block argument (`{ \|t\| t.b @x }`) to keep your own `self`. |
-| `box(padding:, background:, border:, radius:, width:, height:, min_height:, overflow:, at:, link:, outset:, break_inside:, decoration:, rotate:, shadow:) { }` | A container. Moves to the next page whole when it fits there and continues across pages when it does not; `break_inside: :auto` splits it at any page break, `:avoid` never splits it. At a cut, `decoration: :slice` (default) drops the padding and border, `:clone` keeps the padding. `overflow: :truncate` or `:shrink_to_fit` for fixed heights; a fixed `height:` never splits. `min_height:` is a floor that still splits: the first fragment keeps as much of it as the page holds, the next carries the rest (not combinable with `height:`). `at: [x, y]` pins it to a page position. `link:` makes the whole box clickable. `outset:` bleeds the background past the box (e.g. into the page margins). `rotate: -3` turns the painted box around its centre (layout box unchanged, never splits; a `link:` keeps its unrotated rectangle). `shadow: true` or `{ offset: [0, 4], blur: 8, color:, opacity: 0.15 }` paints a soft drop shadow under it, taking no space. `overflow: :hidden` clips the content to the rounded outline. |
+| `box(padding:, background:, border:, radius:, width:, height:, min_height:, overflow:, at:, link:, outset:, break_inside:, decoration:, rotate:, shadow:, float:, margin:) { }` | A container. Moves to the next page whole when it fits there and continues across pages when it does not; `break_inside: :auto` splits it at any page break, `:avoid` never splits it. At a cut, `decoration: :slice` (default) drops the padding and border, `:clone` keeps the padding. `overflow: :truncate` or `:shrink_to_fit` for fixed heights; a fixed `height:` never splits. `min_height:` is a floor that still splits: the first fragment keeps as much of it as the page holds, the next carries the rest (not combinable with `height:`). `at: [x, y]` pins it to a page position. `link:` makes the whole box clickable. `outset:` bleeds the background past the box (e.g. into the page margins). `rotate: -3` turns the painted box around its centre (layout box unchanged, never splits; a `link:` keeps its unrotated rectangle). `shadow: true` or `{ offset: [0, 4], blur: 8, color:, opacity: 0.15 }` paints a soft drop shadow under it, taking no space. `overflow: :hidden` clips the content to the rounded outline. `float: :left` or `:right` with a `width:` takes it to that side, `margin:` away from the text that wraps beside it: see [Floats](#floats). |
 | `row(gap:, align:, break_inside:) { column(width:) { } }` | Columns side by side. `width:` is points, a fraction (`0.5`), `:auto` or `nil` (equal share). Splits across pages like a box, every column at once; a row with a fixed-height column never splits; columns with `min_height:` do. |
 | `columns(count:, gap:, balance:, rule:) { }` | One flow poured through `count` columns, newspaper style: column 1 top to bottom, then column 2. Breaks where a page would (between lines with `orphans:`/`widows:`, never inside `break_inside: :avoid`, `keep_with_next` honoured). `balance: true` (default) ends the columns at nearly the same height where the content ends; `false` fills each before the next. Continues across pages; `page_break` inside ends the page; `rule: true \| { color:, width: }` draws a line between columns. |
 | `table(rows, widths:, width:, header:, split_rows:, cell:) { \|t\| }` | Tables. Cells are strings, layout nodes, procs built with the DSL (`-> { image logo }`) or components. Style with `t.row(0)`, `t.rows(-1)`, `t.column(1)`, `t.columns(1..)`, chained, plus `t.zebra`. Header rows repeat after a page break. A cell may be `{ content:, colspan:, rowspan: }` plus any cell option; rows list only the cells they start, as in HTML, and pages never break through a rowspan. Spans are set in the rows, not through selections. A row taller than the page continues on the next page, cut through its cells, with the header repeated; `split_rows: true` cuts any row that reaches the page bottom instead of moving it whole. |
-| `image(path_or_io, width:, height:, fit:, align:, radius:, rotate:, max_ppi:, downscale:)` | JPEG, PNG or lossless WebP, aspect preserved. `fit: [w, h]` scales to fit inside; `fit: :cover` fills `width:` × `height:` and crops around the centre. `radius:` rounds the corners; `rotate:` turns it (degrees, clockwise) without changing the space it takes. Drawn at more than twice `max_ppi:` (300) it is reported as oversized; `downscale: true` resamples a PNG or WebP to that resolution instead. |
+| `image(path_or_io, width:, height:, fit:, align:, radius:, rotate:, max_ppi:, downscale:, float:, margin:)` | JPEG, PNG or lossless WebP, aspect preserved. `fit: [w, h]` scales to fit inside; `fit: :cover` fills `width:` × `height:` and crops around the centre. `radius:` rounds the corners; `rotate:` turns it (degrees, clockwise) without changing the space it takes. Drawn at more than twice `max_ppi:` (300) it is reported as oversized; `downscale: true` resamples a PNG or WebP to that resolution instead. |
 | `svg(source_or_path, width:, height:, color:, align:)` | Vector icons and drawings; `currentColor` takes `color:` (or the `color` an element sets). Linear and radial gradients (`fill="url(#id)"`, `href` chains, both gradient units); `text`/`tspan` in the document's fonts; `<style>` stylesheets (element, class, id and `*` selectors); `use`, `symbol` sprites and nested `svg` viewports (`viewBox`, `preserveAspectRatio`); `clipPath` (both `clipPathUnits`). |
 | `wrap(gap:, row_gap:, align:) { }` | Children side by side at their own widths, wrapping onto new rows (chips, tags). |
 | `stack(gap:, align:) { }` | A base with layers painted over it: ordinary children set the height, `layer` children float over them and take no space. Moves to the next page whole. |
@@ -112,6 +112,47 @@ Text style options: `font`, `size`, `weight` (`:regular`, `:bold`), `style` (`:i
 `align: :justify` stretches the spaces of wrapped lines to the full width; the last line, lines
 ending in a newline and lines without spaces stay left-aligned (tabs are never stretched).
 Colours are `"#RRGGBB"`, `"RRGGBB"`, `"#RGB"`, `[r, g, b]` (0-255) or `[c, m, y, k]` (0-100).
+
+### Floats
+
+`float: :left` or `:right` on an `image` or a `box` takes it to that edge of the flow it is written
+in (the page body, a box, a column, a table cell); what follows it in that flow starts at its top
+and wraps beside it, back to the full width below it, in the middle of a paragraph if need be.
+
+```ruby
+image "bay.jpg", float: :left, width: 0.4, margin: 12, alt: "The bay at dawn"
+text story, align: :justify                     # beside the photo, then below it
+
+box(float: :right, width: 170, margin: { left: 16, bottom: 6 }, padding: 10, role: :blockquote) do
+  text "The view is everywhere.", size: 13, style: :italic
+end
+text more                                       # around the pull quote
+```
+
+- `margin:` is the space between the float and the text: a number is kept on the sides that face
+  the text (the inner side and the bottom); a Hash (`{ left: 16, bottom: 6 }`, `x:`, `y:`) or an
+  Array names the sides as `padding:` does. A floated box needs a `width:`: points, a fraction of
+  the flow's width or `:auto`. Anything but `:left` and `:right` raises `ArgumentError`.
+- Text (paragraphs, headings, the text inside a `group` or an `html` block) wraps: every line takes
+  the width left at its own top and is aligned and justified in it. A paragraph whose widest word
+  does not fit beside the floats starts below them.
+- Anything else (a `box`, `row`, `table`, list item, `rule`, `image`, `svg`, form field) is a block:
+  it goes beside the float in the width that is left, and keeps that width all the way down, when
+  its own width (or the least its content takes) fits there; else it starts below the float. A
+  `spacer` takes its height beside the float; a `page_break` ends the page and the float with it.
+- Several floats: the next one goes beside those already there when it fits, else below them, and
+  never above one written before it. Left and right floats share a line with the text between them.
+- The flow that holds a float is at least as tall as the float, so what follows a box, a column or a
+  cell starts below the floats inside it.
+- Across pages a float never splits. When it does not fit what is left of the page, or the content
+  after it could not start beside it there, it moves to the next page with that content. A
+  paragraph beside a float splits between lines as always (`orphans:`, `widows:`); the lines carried
+  over are wrapped again at the full width, because the float stayed behind.
+- In a tagged PDF the float is where it was written: an image is a `Figure`, a box has its `role:`.
+
+A line beside a float is taken to be as tall as a line of the paragraph's own style when its width
+is looked up, so one much taller word may reach a little past a float's bottom edge before the text
+widens.
 
 ### HTML and Markdown
 
@@ -174,13 +215,14 @@ ignored and reported. At-rules are skipped, except that rules inside `@media pri
 | `margin`, `margin-top`, `margin-bottom` | lengths in `px` or `pt`; top and bottom only, added to `gap:` | blocks |
 | `border` | `1px solid #ccc` in any order, `none` | `table` (every cell), `td`, `th` |
 | `width` | `px`, `pt`, `%`, `auto` | `img`, `table`, and `td`/`th` (column widths, when every cell of the first row has one) |
+| `float` | `left`, `right`, `none` | `img` only: the text that follows wraps beside it. Its `margin` (all four sides) is kept around it, else `styles: { img: { float_margin: 8 } }` towards the text |
 | `page-break-before`, `page-break-after`, `break-before`, `break-after` | `always`, `page`, `auto` | blocks |
 | `page-break-inside`, `break-inside` | `avoid`, `auto` | blocks |
 | `column-count`, `columns` | a number of columns, `auto` (a column width is not read) | `div` and other containers, `p`, headings, lists, tables, `blockquote`, `pre` |
 | `column-gap` | a length in `px` or `pt`, `normal` | the same |
 
-`<font color size>` and `<center>` are read the same way. Everything else (`display`, `float`,
-`position`, `font-family`, `line-height`, `em` lengths outside `font-size`, `url()` values,
+`<font color size>`, `<center>` and `<img align="left|right">` (a float) are read the same way.
+Everything else (`display`, `float` on anything but an image, `position`, `font-family`, `line-height`, `em` lengths outside `font-size`, `url()` values,
 inline backgrounds) is ignored and named in the `UnsupportedCss` warning, so `strict` catches
 content that expects more than this. No value is ever fetched: `url()` and `@import` are dropped.
 
@@ -1152,7 +1194,8 @@ Images are JPEG, PNG (non-interlaced) and lossless WebP (not lossy or animated W
 than 33 megapixels) and never fetched from a URL; a JPEG is embedded at its
 source resolution (only PNG and WebP can be downscaled), so an oversized one is reported, not resized. `html` reads a fixed subset of CSS (colours, sizes, weights, alignment, margins, padding, table
 borders and widths, page breaks; see [What CSS is read](#what-css-is-read)), not a layout
-engine's worth: no `display`, floats, positioning, `font-family` or selectors with combinators.
+engine's worth: no `display`, positioning, `font-family` or selectors with combinators, and floats
+for images only.
 `markdown` reads no CSS, and raw HTML inside Markdown stays literal text.
 
 Layout: a box with a fixed `height:` never splits (use `min_height:` for a floor that can); a row
@@ -1160,7 +1203,10 @@ splits only when every column can; a rotated box and a `stack` move to the next 
 `columns` balances to the shortest height that holds the content and fills the columns in order
 (ten lines in three columns are 4, 4 and 2), has columns of one width, nothing spanning them
 (end the block, write the full-width content, start another) and no column break of its own; a
-spacer that lands at the top of a column keeps its height. Text does not wrap around images. Link and form-widget rectangles stay in page space inside `rotate`
+spacer that lands at the top of a column keeps its height. Text
+wraps around floated images and boxes, along their rectangles, never along a shape; beside a float
+a table, box, row or list is a block of the width that is left, all the way down (see
+[Floats](#floats)). Link and form-widget rectangles stay in page space inside `rotate`
 and `transform`, and `shadow:` is stacked rectangles, not a blur.
 
 PDF: PDF/A-2b, PDF/A-3b and PDF/UA-1 only (no PDF/A-1, no level A or U, no PDF/UA-2, no PDF/X) and
