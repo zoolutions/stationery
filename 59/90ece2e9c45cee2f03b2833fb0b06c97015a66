@@ -1,36 +1,24 @@
-docs/app/views/docs/pages/performance.rb
-  s_600b6bfbec0b19::t_79971837c645b4 26,28-32
-  s_600b6bfbec0b19::t_92183d1cc21dc2 27,33-35
-benchmark/baseline.json
-  s_600b6bfbec0b19::t_15d426d1d51c64 34-38
-spec/stationery/pdf/writer_spec.rb
-  s_600b6bfbec0b19::t_fe3c29d82c3a7d 57,73-74,76-77,82,84,86-87,92,94-96
-  s_600b6bfbec0b19::t_79971837c645b4 58-72,75,78-81,83,85,88-91,93
-README.md
-  s_600b6bfbec0b19::t_92183d1cc21dc2 587-588
-  s_600b6bfbec0b19::t_79971837c645b4 589-599
-benchmark/metrics.rb
-  s_600b6bfbec0b19::t_fe3c29d82c3a7d 41-42,45,61,63-65,69
-  s_600b6bfbec0b19::t_79971837c645b4 44,70-72
-  s_600b6bfbec0b19::t_27205ac111b46e 62
-docs/app/views/docs/pages/documents_and_components.rb
-  s_600b6bfbec0b19::t_79971837c645b4 66-68
-lib/stationery/document.rb
-  s_600b6bfbec0b19::t_ea171382a9dcc2 157-161,173,176,178
-  s_600b6bfbec0b19::t_c20d9ad2ef00f3 165,221,226,231,233,237-238
-  s_600b6bfbec0b19::t_651b171ad783ab 170-172,174
-lib/stationery/pdf/writer.rb
-  s_600b6bfbec0b19::t_ea171382a9dcc2 8-12,48-51,55-56,68,81-82,84-88
-  s_600b6bfbec0b19::t_c7441058ef0c00 15,19,21,38-39,52,54,57-61,69,72-76,95-96,98,101-104,106,108-112,117-118
-  s_600b6bfbec0b19::t_4ac407fe1da4a3 23-27,53,70,113-116,119-125
-  s_600b6bfbec0b19::t_5898e1792fdc61 63
-  s_600b6bfbec0b19::t_447f6fe33a7fba 83
 spec/stationery/document_to_pdf_streaming_spec.rb
-  s_600b6bfbec0b19::t_651b171ad783ab 1-8,11-19,21,23,26-27,32,41,70-71,73-80,102-103
-  s_600b6bfbec0b19::t_79971837c645b4 9-10,20,22,24-25,28-31,33-40,42-69,72,81-101
+  ai_agent 1-103
 lib/stationery/pdf/assembler.rb
-  s_600b6bfbec0b19::t_c20d9ad2ef00f3 14,20-23,40,42,49-52
-  s_600b6bfbec0b19::t_ea171382a9dcc2 15-17
+  ai_agent 14-17,20-23,40,42,49-52
+spec/stationery/pdf/writer_spec.rb
+  ai_agent 57-96
+docs/app/views/docs/pages/documents_and_components.rb
+  ai_agent 66-69
+README.md
+  ai_agent 587-600
+lib/stationery/pdf/writer.rb
+  ai_agent 8-12,15,19,21,23-27,38-39,48-61,63,68-70,72-76,81-89,95-96,98,101-104,106,108-125
+benchmark/metrics.rb
+  s_600b6bfbec0b19::t_63c1575f186160 73-74
+  ai_agent 41-42,44-45,61-65,69-72
+docs/app/views/docs/pages/performance.rb
+  ai_agent 26-35
+lib/stationery/document.rb
+  ai_agent 157-161,165,170-174,176,178,221,226,231,233,237
+benchmark/baseline.json
+  ai_agent 34-38
 ---
 {
   "schema_version": "authorship/3.0.0",
