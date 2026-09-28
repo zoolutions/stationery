@@ -82,6 +82,14 @@ RSpec.describe Stationery::Images::PNG do
     expect(pixels(object(stream.dictionary[:SMask]))).to eq([0, 50, 100, 255])
   end
 
+  it "reads each sub-byte depth at its own width, whichever was read first" do
+    one = PngFactory.build(width: 8, height: 1, color_type: 0, bit_depth: 1, rows: [[0b1010_0000]], packed: true)
+    two = PngFactory.build(width: 4, height: 1, color_type: 0, bit_depth: 2, rows: [[0b00_01_10_11]], packed: true)
+
+    expect(described_class.new(one).pixels.color).to eq([[255, 0, 255, 0, 0, 0, 0, 0]])
+    expect(described_class.new(two).pixels.color).to eq([[0, 85, 170, 255]])
+  end
+
   it "turns grey or RGB tRNS into a colour-key mask" do
     png = PngFactory.build(width: 1, height: 1, color_type: 2, rows: [[1, 2, 3]], trns: [1, 2, 3].pack("n*"))
     _image, stream = embed(png)

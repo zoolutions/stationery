@@ -11,6 +11,8 @@ module Stationery
       CHANNELS = { 0 => 1, 2 => 3, 3 => 1, 4 => 2, 6 => 4 }.freeze
       # Colour samples per pixel once palette and alpha are unpacked.
       COLOR_CHANNELS = { 0 => 1, 2 => 3, 3 => 3, 4 => 1, 6 => 3 }.freeze
+      # The digits of one sample of a sub-byte depth, in a row's bits.
+      SAMPLE_BITS = { 1 => /./, 2 => /../, 4 => /..../ }.freeze
 
       attr_reader :width, :height
 
@@ -76,7 +78,7 @@ module Stationery
         else
           scale = 255 / ((1 << @bit_depth) - 1)
           bits = row.pack("C*").unpack1("B*")
-          values = bits.scan(/.{#{@bit_depth}}/o).first(@width).map { |b| b.to_i(2) }
+          values = bits.scan(SAMPLE_BITS.fetch(@bit_depth)).first(@width).map { |b| b.to_i(2) }
           @color_type == 3 ? values : values.map { |v| v * scale }
         end
       end
@@ -162,7 +164,7 @@ module Stationery
       def palette_indexes(row)
         return row if @bit_depth == 8
 
-        row.pack("C*").unpack1("B*").scan(/.{#{@bit_depth}}/o).first(@width).map { |bits| bits.to_i(2) }
+        row.pack("C*").unpack1("B*").scan(SAMPLE_BITS.fetch(@bit_depth)).first(@width).map { |bits| bits.to_i(2) }
       end
 
       # Grey+alpha or RGBA pixels split into colour and alpha, 8 bits per sample.

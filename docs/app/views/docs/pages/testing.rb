@@ -39,6 +39,10 @@ class Views::Docs::Pages::Testing < DocsUI::Page
       MD
     end
 
+    DocsUI::Section("Pictures of a render", description: "to_png: a PNG of each page, to look at or to compare. From the README.") do
+      md SourceMarkdown.readme_section("Pictures of a render: to_png")
+    end
+
     DocsUI::Section("Inspector", description: "For anything the matchers do not cover.") do
       md <<~'MD'
         ```ruby

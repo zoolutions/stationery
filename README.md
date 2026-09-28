@@ -593,8 +593,52 @@ ShelfLabel.new.to_pdf(monochrome: false)           # as it was, byte for byte
 What it does not do: it does not decode or dither a JPEG (convert it to PNG), does not look at form
 fields (their widget draws them, not the page), does not put dashes, line caps or curves on the grid,
 and does not make small text bolder. It changes nothing without `monochrome`. The rules live in
-`Stationery::Monochrome::Rules` and `Monochrome::Grid`, apart from the PDF canvas, for a raster
-output to apply the same ones.
+`Stationery::Monochrome::Rules` and `Monochrome::Grid`, apart from the PDF canvas, and `to_png`
+applies the same ones (see below).
+
+### Pictures of a render: to_png
+
+`to_png` paints the pages `to_pdf` lays out on pixels instead, in Ruby, with nothing to install: a
+preview, a picture to look at in a spec or a pull request, or what a one-bit printer will print.
+
+```ruby
+pngs = Invoice.new(invoice).to_png            # => ["\x89PNG…", …], one String per page, 96 dpi
+Invoice.new(invoice).to_png("invoice.png")    # one page: invoice.png; several: invoice-1.png, invoice-2.png, …
+Invoice.new(invoice).to_png(dpi: 144, pages: 1)             # pages: a number, a Range or an Array of them
+ShelfLabel.new.to_png(monochrome: { dpi: 203, snap: true }) # one bit to a dot, 1-bit PNG
+```
+
+- **What is drawn**: text from the outlines of its glyphs (TrueType, CFF, WOFF; synthetic bold and
+  oblique, letter spacing, rise, shaped runs), fills and strokes with their caps, joins (miter limit
+  10) and dashes, even-odd and nonzero fills, clips, transforms and rotations, opacity, SVG linear and
+  radial gradients, PNG and WebP images, headers, footers, page templates (a background layer under
+  the page) and page numbers. A colour picture is 24-bit RGB on white, anti-aliased; a text's origin,
+  a stroke's horizontal and vertical edges and an upright image's edges are put on the pixel grid as
+  poppler puts them, so it is close to `pdftoppm -r <dpi>` of the same PDF: the examples differ in
+  0.0 to 0.5% of their pixels at 72 dpi, in the hinting of a few glyphs and the edges of images.
+- **What is not**: a JPEG is not decoded yet, so it is drawn as a grey box with a cross and reported
+  (`Warnings::SkippedImage`); form fields draw nothing (their widget is the PDF viewer's); links,
+  bookmarks and tagging are not visible anyway.
+- **Monochrome.** `monochrome:` takes what `to_pdf` takes, and the class's `monochrome` applies
+  unless `monochrome: false` is given. The picture is drawn at the monochrome `dpi:` (a `dpi:` given
+  to `to_png` replaces it), a pixel in or out by its centre with no anti-aliasing, and written as a
+  1-bit PNG. The rules are those of the PDF (colours reported or snapped, thin lines, the dot grid,
+  images dithered at the dots they cover); a page with grey left on it (a colour reported and kept
+  without `snap:`) is dithered as images are. Black and white match `pdftoppm -mono` in all but 0.1 to
+  2% of the dots; dithered areas differ dot by dot, since poppler halftones where stationery dithers.
+- **Options.** `dpi:` (96, or the monochrome dpi), `pages:`, `monochrome:`, `debug:` (the layout
+  rectangles), `strict:` and `shaper:` as `to_pdf` has them. What only a PDF has (`sign:`, `encrypt:`,
+  `conformance:`, `attachments:`, `print:`, `tagged:`, `page_labels:`, `xmp:`, `factur_x:`,
+  `incremental:`, `missing_glyphs:`) raises `ArgumentError` when it is passed, and is left alone when
+  the class declares it, so a signed or encrypted document still has pictures.
+- **Speed.** A 100 × 150 mm label at 203 dpi (800 × 1200 dots) takes about 30 ms, a one-page invoice
+  at 96 dpi about 0.1 s, a page of dithered photographs at 203 dpi about 0.7 s (Ruby 3.4 with YJIT,
+  Apple M-series). Each page is kept as the list of what it was asked to draw until every page is
+  painted, then drawn and encoded one at a time, so a long document does not hold a bitmap per page.
+
+`Stationery::Raster` has the pieces: `Raster::Canvases` and `Raster::Canvas` record, `Raster::Painter`
+replays onto a `Raster::Surface` through `Raster::Scanner` (coverage), `Raster::Stroker` and
+`Raster::Flattener`, and `Raster::PNG` writes the file.
 
 ### Encryption
 

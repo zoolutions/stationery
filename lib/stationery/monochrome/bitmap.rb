@@ -21,6 +21,16 @@ module Stationery
 
       def inspect = "#<#{self.class} #{@width}x#{@height}>"
 
+      # The dots as Images::Pixels, 0 (black) or 255 each, for a canvas that
+      # draws them itself (Raster::Canvas).
+      def pixels
+        stride = (@width + 7) / 8
+        rows = Array.new(@height) do |y|
+          @bits.byteslice(y * stride, stride).unpack1("B*")[0, @width].each_char.map { |bit| bit == "1" ? 255 : 0 }
+        end
+        Images::Pixels.new(width: @width, height: @height, channels: 1, color: rows, alpha: nil)
+      end
+
       def build(writer)
         dictionary = Images.xobject(@width, @height, :DeviceGray, 1).merge(Filter: :FlateDecode)
         writer.add(PDF::Stream.new(Zlib::Deflate.deflate(@bits), dictionary))
