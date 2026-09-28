@@ -6,26 +6,29 @@ module Stationery
   module Forms
     # One form field widget: its kind, full (dotted) name, value and options.
     # Widgets sharing a name form one field (a radio group); dotted names are
-    # grouped under parent fields.
+    # grouped under parent fields. `typeface:` is what its appearance is set
+    # in: the document's fonts from the element DSL, the standard Helvetica
+    # otherwise. `tooltip:` is its accessible name (/TU), the name by default.
     class Field
       TYPES = { text: :Tx, checkbox: :Btn, radio: :Btn, select: :Ch, signature: :Sig }.freeze
       # Field flag bit positions (PDF 32000-1, 12.7.3.1 and 12.7.4).
       BITS = { read_only: 1, required: 2, multiline: 13, no_toggle_to_off: 15, radio: 16, combo: 18, edit: 19,
                comb: 25 }.freeze
       DEFAULTS = { font_size: 10, read_only: false, required: false, border: "#9CA3AF", background: "#FFFFFF",
-                   radius: 2 }.freeze
+                   radius: 2, tooltip: nil }.freeze
       OPTIONS = {
         text: %i[multiline max_length comb], checkbox: [], radio: %i[checked], select: %i[options editable],
         signature: %i[label]
       }.freeze
-      FONT = "Helv"
+      VARIABLE_TEXT = %i[text select].freeze
 
-      attr_reader :kind, :name, :value, :options
+      attr_reader :kind, :name, :value, :options, :typeface
 
-      def initialize(kind, name, value: nil, **options)
+      def initialize(kind, name, value: nil, typeface: Standard.new, **options)
         @kind = kind
         @name = validate_name(name.to_s)
         @value = value
+        @typeface = typeface
         unknown = options.keys - DEFAULTS.keys - OPTIONS.fetch(kind)
         raise ArgumentError, "unknown #{kind} field option: #{unknown.join(", ")}" if unknown.any?
 
@@ -36,7 +39,10 @@ module Stationery
       def segments = @name.split(".")
       def type = TYPES.fetch(@kind)
       def font_size = @options[:font_size]
-      def default_appearance = "/#{FONT} #{PDF::Serializer.number(font_size)} Tf 0 g"
+      # Whether a viewer redraws its text when the value changes.
+      def variable_text? = VARIABLE_TEXT.include?(@kind)
+      # The accessible name: `tooltip:`, a signature's label, else the name.
+      def tooltip = (@options[:tooltip] || @options[:label]).to_s.strip.then { |text| text.empty? ? @name : text }
       def max_length = @options[:comb].is_a?(Integer) ? @options[:comb] : @options[:max_length]
       def radio? = @kind == :radio
       def checked? = radio? ? @options[:checked] == true : @value == true
@@ -52,8 +58,10 @@ module Stationery
 
       # The field-level entries; the widget's come from #widget_entries.
       # `value` overrides this widget's own: a radio group's checked choice.
-      def field_entries(value = field_value)
-        entries = { FT: type, DA: default_appearance }
+      # `default_appearance` is the /DA of a field with variable text.
+      def field_entries(value = field_value, default_appearance: nil)
+        entries = { FT: type, TU: PDF::TextString.new(tooltip) }
+        entries[:DA] = default_appearance if default_appearance
         entries[:Ff] = flags if flags.positive?
         entries[:V] = value unless value.nil?
         entries[:MaxLen] = max_length if max_length
@@ -70,9 +78,10 @@ module Stationery
         end
       end
 
-      # `state` overrides the button's own appearance state.
-      def widget_entries(width, height, fonts, state: nil)
-        normal = Appearance.new(self, width, height, fonts).normal
+      # `appearance` is the widget's Appearance and `fonts` the references by
+      # resource name; `state` overrides the button's own appearance state.
+      def widget_entries(appearance, fonts, state: nil)
+        normal = appearance.streams(fonts)
         entries = { Type: :Annot, Subtype: :Widget, F: 4, AP: { N: normal } }
         entries[:MK] = appearance_characteristics unless @kind == :signature
         entries[:AS] = state || (checked? ? on_state : :Off) if normal.is_a?(Hash)

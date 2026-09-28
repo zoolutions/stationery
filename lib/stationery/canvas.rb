@@ -144,9 +144,11 @@ module Stationery
     end
 
     # An interactive form field's widget (a Forms::Field) over the rectangle.
+    # Its appearance is drawn here, so the glyphs it needs are in the fonts
+    # before they are embedded.
     def widget(field, x, y, w, h, tag: nil)
       rect = [x, @page.height - y - h, x + w, @page.height - y].map { |v| num_value(v) }
-      annotation = { rect:, widget: field }
+      annotation = { rect:, widget: field, appearance: Forms::Appearance.new(field, w, h, @resources) }
       @page.annotations << annotation
       adopt(annotation, tag, rect) if tag
     end

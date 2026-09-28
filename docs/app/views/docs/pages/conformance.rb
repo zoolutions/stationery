@@ -45,6 +45,11 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         (`pdfaExtension:schemas`), which PDF/A requires of every schema it does not know.
 
         A link's description is its URL, or `Page 3` for a link inside the document.
+
+        Form fields conform as they are: their appearances draw with the document's embedded fonts and
+        with paths, and every field carries an accessible name (`/TU`, from `tooltip:`, its label or its
+        name). Under a level the form leaves out `NeedAppearances` and the ZapfDingbats entry it
+        otherwise lists for viewers that redraw a button's mark.
       MD
     end
 
@@ -56,7 +61,7 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         | `attach_file` / `attachments:` | PDF/A-2b | `ArgumentError`: part 2 only embeds PDF/A files, use `:pdf_a3b` |
         | No `metadata title:` or `lang:` | PDF/UA-1 | `Stationery::ConformanceError` listing what is missing |
         | An image or drawing without `alt:` | PDF/UA-1 | `ConformanceError`; mark decoration with `alt: false` |
-        | Interactive form fields | every level | `ConformanceError` naming each field: their appearances draw with the standard Helvetica and ZapfDingbats, which are not embedded |
+        | A form field made without a font book (`Forms::Field.new` placed with `canvas.widget`) | every level | `ConformanceError` naming the field: it draws with the standard Helvetica, which is not embedded. Fields from `text_field`, `select`, `checkbox`, `radio` and `signature_field` draw with the document's embedded fonts and are allowed |
 
         ```ruby
         begin
@@ -132,8 +137,8 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
     DocsUI::Section("Validating with veraPDF", description: "The reference validator, through Docker.") do
       md <<~'MD'
         `bundle exec rake verify:conformance` renders `examples/invoice.rb` and `examples/e_invoice.rb`
-        as PDF/A-3b and
-        `examples/report.rb` as PDF/A-3b plus PDF/UA-1, and validates them with
+        as PDF/A-3b, and `examples/report.rb` and `examples/form.rb` as PDF/A-3b plus PDF/UA-1,
+        and validates them with
         [veraPDF](https://verapdf.org) in a container (`verapdf/cli`); the gem's CI runs it on every push.
         Validate your own documents the same way:
 

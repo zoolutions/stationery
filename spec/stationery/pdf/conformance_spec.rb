@@ -169,19 +169,50 @@ RSpec.describe Stationery::PDF::Conformance do
       .and include("<pdfaProperty:valueType>Integer</pdfaProperty:valueType>")
   end
 
-  it "refuses interactive form fields, which draw with fonts that are not embedded" do
-    form = Class.new(document) do
-      def view_template
-        text_field "name", value: "Astrid"
-        checkbox "terms"
+  describe "interactive form fields" do
+    let(:form) do
+      Class.new(document) do
+        def view_template
+          text_field "name", value: "Astrid"
+          select "country", options: %w[Sweden Norway], value: "Sweden"
+          checkbox "terms", label: "I accept the terms"
+          radio "plan", "pro", checked: true, label: "Pro"
+          signature_field "signature"
+        end
       end
     end
 
-    expect { form.new.to_pdf(conformance: :pdf_a3b) }.to raise_error(Stationery::ConformanceError) do |error|
-      expect(error.issues).to eq(['form field "name" draws with a font that is not embedded',
-                                  'form field "terms" draws with a font that is not embedded'])
+    it "are allowed: their appearances draw with embedded fonts and nothing asks to regenerate them" do
+      %i[pdf_a3b pdf_ua1].each do |level|
+        pdf = form.new.to_pdf(conformance: level)
+
+        expect(pdf).to have_conformance(level)
+        expect(acro_form(pdf)).not_to have_key(:NeedAppearances)
+        expect(form_fonts(pdf).values.map { it[:Subtype] }).to all(eq(:Type0))
+        expect(form_fields(pdf).values.map { decode_text(it[:TU]) })
+          .to eq(["name", "country", "I accept the terms", "plan", "Signature"])
+        expect(pdf).not_to include("Helvetica", "ZapfDingbats")
+      end
     end
-    expect { form.new.to_pdf(conformance: :pdf_ua1) }.to raise_error(Stationery::ConformanceError, /form field "name"/)
+
+    it "keep asking viewers to regenerate appearances without a conformance level" do
+      expect(acro_form(form.new.to_pdf)[:NeedAppearances]).to be(true)
+    end
+
+    it "are refused when made without a font book, since Helvetica is not embedded" do
+      raw = Class.new(document) do
+        def view_template
+          field = Stationery::Forms::Field.new(:text, "raw", value: "x")
+          canvas(height: 30) { |canvas, rect| canvas.widget(field, rect.x, rect.y, 100, 20) }
+          text_field "name", value: "Astrid"
+        end
+      end
+
+      expect { raw.new.to_pdf(conformance: :pdf_a3b) }.to raise_error(Stationery::ConformanceError) do |error|
+        expect(error.issues).to eq(['form field "raw" draws with a font that is not embedded'])
+      end
+      expect { raw.new.to_pdf(conformance: :pdf_ua1) }.to raise_error(Stationery::ConformanceError, /form field "raw"/)
+    end
   end
 
   describe "on the document" do

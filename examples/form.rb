@@ -18,7 +18,8 @@ class ExampleForm < Stationery::Document
 
   page size: :a4, margin: [48, 56, 40, 56]
   default_text size: 9.5, color: INK
-  metadata title: "Membership application", author: "Nordic Makers Guild", creator: "stationery example"
+  metadata title: "Membership application", author: "Nordic Makers Guild", creator: "stationery example",
+           lang: "en"
 
   footer do
     rule height: 0.5, color: HAIRLINE

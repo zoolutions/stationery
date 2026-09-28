@@ -50,7 +50,7 @@ namespace :verify do
     mkdir_p out
     image = ENV.fetch("VERAPDF_IMAGE", "verapdf/cli:latest")
     renders = { "invoice" => { pdf_a3b: "3b" }, "report" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
-                "e_invoice" => { pdf_a3b: "3b" } }
+                "e_invoice" => { pdf_a3b: "3b" }, "form" => { pdf_ua1: "ua1", pdf_a3b: "3b" } }
     failures = renders.flat_map do |name, levels|
       example.call(name).to_pdf(File.join(out, "#{name}.pdf"), conformance: levels.keys)
       failed = levels.values.reject do |flavour|
