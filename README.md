@@ -760,6 +760,10 @@ names their authors and licences), drawing a hyphen at the break. A soft hyphen
 TeX, exempts that word from the patterns; it is never measured or drawn and
 never reaches the PDF. `Stationery::Hyphenation.hyphenate("Silbentrennung", "de")`
 answers `["Sil", "ben", "tren", "nung"]` for your own use.
+Lines also break at a zero-width space (U+200B, `<wbr>` in HTML), which is never
+drawn, and between ideographic characters (CJK ideographs, kana, Hangul), keeping
+a closing mark such as 。」 on the line before it and an opening bracket with what
+follows, so Japanese, Chinese and Korean text wraps without spaces.
 
 Images are JPEG (grey, RGB, CMYK) and PNG (every colour type, alpha as a soft
 mask). Parsed fonts and images are cached per process.
@@ -928,7 +932,8 @@ Fonts: no variable fonts (including CFF2) and no WOFF2 (it needs Brotli; convert
 `.woff`); shaping stops at pair kerning and single or ligature substitutions (`liga` by default,
 `smcp`, `onum`, `tnum`, `ss01`… on request), so contextual alternates (`calt`, `clig`, `frac`) do
 nothing and scripts that need contextual shaping (Arabic, Indic, Thai) draw glyph by glyph, and colour or emoji glyphs no font
-in the chain has are drawn as `.notdef` and reported. Text runs left to right; hyphenation
+in the chain has are drawn as `.notdef` and reported. Text runs left to right (CJK text wraps between
+ideographs, but there is no vertical layout); hyphenation
 patterns are bundled for English, German and Swedish only (a soft hyphen works in any language),
 and justification only widens spaces.
 

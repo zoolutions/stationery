@@ -12,7 +12,7 @@ module Stationery
     # stay with their base; whitespace a font lacks draws as a blank of the
     # right width (see Font::WHITESPACE).
     class Fallback
-      CARRIED = /[\p{Space}­‌‍︀-️\p{M}]/
+      CARRIED = /[\p{Space}­​‌‍︀-️\p{M}]/
 
       def self.carried?(char) = CARRIED.match?(char)
 

@@ -394,6 +394,15 @@ RSpec.describe Stationery::Elements do
       expect(text_of(narrow)).to eq("Zeitungs-\nleser")
     end
 
+    it "breaks at <wbr> in html and keeps the zero-width space out of the PDF" do
+      wide = render { html "<p>super<wbr>califragilistic</p>" }
+      narrow = render { box(width: 40) { html "<p>super<wbr>cali</p>" } }
+
+      expect(text_of(wide)).to eq("supercalifragilistic")
+      expect(wide.b).not_to include("\u200B".b)
+      expect(text_of(narrow)).to eq("super\ncali")
+    end
+
     it "refuses a language that is not bundled" do
       expect { render { text "x", hyphenate: "fr" } }.to raise_error(ArgumentError, /unknown hyphenation language/)
     end

@@ -50,6 +50,7 @@ module Stationery
           when "pre" then out.block(code(node))
           when "hr" then out.block(Rich::Rule.new)
           when "br" then out.inline(Rich::Inline.break)
+          when "wbr" then out.inline(Rich::Inline.new(text: Text::Breaks::ZERO_WIDTH_SPACE, marks:))
           when "img" then out.inline(image(node.attributes))
           when "table" then out.block(table(node, marks))
           else children(node, marks.merge(marks_for(node)), out)
