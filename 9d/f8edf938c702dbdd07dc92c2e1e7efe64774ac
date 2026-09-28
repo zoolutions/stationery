@@ -1,0 +1,95 @@
+spec/stationery/layout/flow_spec.rb
+  s_632dbd6e2d0597::t_f0dc54b7567f6f 129-140,142-146
+  s_632dbd6e2d0597::t_53d85ab701bb06 141
+spec/stationery/builder_spec.rb
+  s_632dbd6e2d0597::t_e231d3cadb3afb 1-14
+lib/stationery.rb
+  s_632dbd6e2d0597::t_fe97bcf2ab0046 81
+lib/stationery/layout/mark.rb
+  s_632dbd6e2d0597::t_8a6ad2626713f3 29
+spec/stationery/document_to_pdf_incremental_spec.rb
+  s_632dbd6e2d0597::t_6468d4fba0d65b 1-52,54-130,138-319
+  s_632dbd6e2d0597::t_88b273ec6ce2cb 53,131-137
+spec/stationery/fonts/font_book_spec.rb
+  s_632dbd6e2d0597::t_d31d579f1231ab 87-90,92,94-96
+  s_632dbd6e2d0597::t_070ded807fed32 91,93
+lib/stationery/pdf/page_sealer.rb
+  s_632dbd6e2d0597::t_fe97bcf2ab0046 1-13,16-35
+  s_632dbd6e2d0597::t_6468d4fba0d65b 14-15
+spec/support/render_digests.rb
+  s_632dbd6e2d0597::t_9648d29e4bf260 1-12,17-24,26-48,50,56-60,62-70,77-78,83-87,89
+  s_632dbd6e2d0597::t_60ea3b172f62bc 13,71-76,79-82
+  s_632dbd6e2d0597::t_070ded807fed32 14-16,25,61
+  s_632dbd6e2d0597::t_6468d4fba0d65b 49,51-55,88
+lib/stationery/document.rb
+  ai_agent 27,90-96,177-185,202,237-238,248,254-256,266-277,281,285
+  s_632dbd6e2d0597::t_30b82c481c32d9 189
+  s_632dbd6e2d0597::t_31c22600700dca 279-280
+Rakefile
+  s_632dbd6e2d0597::t_2aedbb88858f73 196-200
+lib/stationery/layout/table.rb
+  s_632dbd6e2d0597::t_8a6ad2626713f3 15-17,19-21,93-97,99-103,118,123,194,209,258,260-266,268-275,277-279,282-283,285,287
+  s_632dbd6e2d0597::t_a1bcd759085370 98,119,122,259,276
+  s_632dbd6e2d0597::t_aa56d5d2ee1943 280-281,284,286
+lib/stationery/layout/node.rb
+  s_632dbd6e2d0597::t_8a6ad2626713f3 21-23,42-44
+spec/stationery/page_spec.rb
+  s_632dbd6e2d0597::t_b587125b186be7 32-82
+lib/stationery/pdf/assembler.rb
+  s_632dbd6e2d0597::t_fe97bcf2ab0046 17-19,22,25,45,87,97-108
+lib/stationery/fonts/font_book.rb
+  s_632dbd6e2d0597::t_72085ea7aa2e9c 22
+spec/stationery/layout/mark_spec.rb
+  s_632dbd6e2d0597::t_f0dc54b7567f6f 18
+lib/stationery/layout/text.rb
+  s_632dbd6e2d0597::t_8a6ad2626713f3 57-58,60,109,111
+spec/stationery/fonts/font_spec.rb
+  s_632dbd6e2d0597::t_d31d579f1231ab 195-221
+lib/stationery/layout/paginator.rb
+  s_632dbd6e2d0597::t_71f3563d7ae79f 19-21,23,30-31
+  s_632dbd6e2d0597::t_6468d4fba0d65b 24
+spec/fixtures/renders/main.json
+  s_632dbd6e2d0597::t_e2adcff5d24dbb 1-5,14-15,24-25,34-35,44-45,54-55,64-65,74-75,84-85,94-95,104-105,114-115,124-126
+  s_632dbd6e2d0597::t_60ea3b172f62bc 6-7,9-11,13,16-17,19-21,23,26-27,29-31,33,36-37,39-41,43,46-47,49-51,53,56-57,59-61,63,66-67,69-71,73,76-77,79-81,83,86-87,89-91,93,96-97,99-101,103,106-107,109-111,113,116-117,119-121,123
+  s_632dbd6e2d0597::t_070ded807fed32 8,12,18,22,28,32,38,42,48,52,58,62,68,72,78,82,88,92,98,102,108,112,118,122
+spec/stationery/pdf/page_sealer_spec.rb
+  s_632dbd6e2d0597::t_b587125b186be7 1-45,48-59
+  s_632dbd6e2d0597::t_10e94d794fbcd8 46-47
+lib/stationery/fonts/font.rb
+  s_632dbd6e2d0597::t_72085ea7aa2e9c 27-29,48,197,204-207
+  s_632dbd6e2d0597::t_73965bbe1ca7c6 30
+lib/stationery/builder.rb
+  s_632dbd6e2d0597::t_71f3563d7ae79f 59-67
+lib/stationery/page.rb
+  s_632dbd6e2d0597::t_fe97bcf2ab0046 8-12,27-28,54-71
+benchmark/memory.rb
+  s_632dbd6e2d0597::t_28b4b7b379e841 1-27,29-33,35-46,48-89,91-106,108-158,163-164,166-187
+  s_632dbd6e2d0597::t_df0ec76a0806c0 28,47
+  s_632dbd6e2d0597::t_6468d4fba0d65b 34,107
+  s_632dbd6e2d0597::t_8d5c3d3cbc815d 90,159-162,165
+spec/stationery/document_to_pdf_bytes_spec.rb
+  s_632dbd6e2d0597::t_6468d4fba0d65b 1-44,48-49,51-61
+  s_632dbd6e2d0597::t_88b273ec6ce2cb 45-47,50
+lib/stationery/page_templates.rb
+  s_632dbd6e2d0597::t_fe97bcf2ab0046 60
+spec/stationery/layout/table_split_fragments_spec.rb
+  s_632dbd6e2d0597::t_aa0590ce99ba40 42,55-78
+spec/stationery/layout/paginator_spec.rb
+  s_632dbd6e2d0597::t_d31d579f1231ab 16-29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "9df8edf938c702dbdd07dc92c2e1e7efe64774ac",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
