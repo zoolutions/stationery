@@ -3,6 +3,7 @@
 ## Unreleased
 
 - The metrics gate holds what 0.11 added: `bundle exec rake metrics` renders seven more documents (`article` for floats, `newsletter` for `columns`, `webp` for a lossless WebP decoded in the render that is measured, `html` with a stylesheet, `pdf_ua` under `conformance :pdf_ua1`, `text_incremental` with a footer and `incremental`, `text_shaped` through a shaper written in Ruby), fourteen in all, so a change that makes any of them allocate more than 3%, write more than 1% more bytes or paginate differently fails CI. The seven documents it held are recorded as they were; the gate takes 4.2 s where it took 3.0.
+- `AGENTS.md` at the root of the repository: what a contributor, human or not, has to know and cannot read off the code. A spec first and the suite by its exit status, what the metrics gate holds and when its baseline is recorded, which validator checks which claim, how the changelog is written, that releases are cut with `bin/release`, and what is out of scope by design. The gem is unchanged.
 
 ## 0.11.1 (2026-09-28)
 
