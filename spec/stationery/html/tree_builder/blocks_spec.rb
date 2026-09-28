@@ -79,6 +79,22 @@ RSpec.describe Stationery::HTML::TreeBuilder::Blocks do
     )
   end
 
+  it "keeps margin-left and margin-right on a block, a container of its own and a floated image" do
+    html = <<~HTML
+      <p style="margin-left: 20pt">in</p><div style="margin-right: 10pt"><p>boxed</p></div>
+      <img src="a.png" style="float: right; margin: 4pt; margin-left: 12pt">
+      <img src="b.png" style="margin-left: 12pt; margin-right: 2pt">
+    HTML
+
+    expect(parse(html)).to eq(
+      [styled_para({ margin_left: 20.0 }, "in"),
+       rich::Container.new(blocks: [para("boxed")], style: { margin_right: 10.0 }),
+       rich::Image.new(src: "a.png", alt: nil, width: nil, height: nil,
+                       style: { float: :right, margin: [4.0, 4.0, 4.0, 4.0], margin_left: 12.0 }),
+       rich::Image.new(src: "b.png", alt: nil, width: nil, height: nil, style: {})]
+    )
+  end
+
   it "styles block quotes, lists, code blocks and images" do
     html = <<~HTML
       <blockquote style="background-color: #fee; margin: 4pt 0">q</blockquote>
