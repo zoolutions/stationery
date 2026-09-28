@@ -7,6 +7,8 @@ module Stationery
     # `--dpi`. A document whose constructor needs arguments renders from
     # `def self.preview` returning an instance.
     class Render
+      include Pictures
+
       SUMMARY = "Render the Stationery::Document defined in a Ruby file to PDF"
 
       def initialize(out:, err:)
@@ -38,11 +40,13 @@ module Stationery
             @options[:class] = name
           end
           opts.on("--zpl", "Write ZPL for a label printer (default: FILE.zpl) instead") { @options[:zpl] = true }
-          opts.on("--dpi DPI", Integer, "The label printer's dots per inch for --zpl: 152, 203, 300 or 600") do |dpi|
+          opts.on("--dpi DPI", Integer, "Dots per inch: the label printer's for --zpl (152, 203, 300 or 600),",
+                  "the PNGs' for --png (default: #{Raster::Render::DPI})") do |dpi|
             @options[:dpi] = dpi
           end
           opts.on("--strict", "Fail without writing when layout reports warnings") { @options[:strict] = true }
           opts.on("--debug", "Render with debug: true when the document supports it") { @options[:debug] = true }
+          picture_options(opts)
           opts.on("-h", "--help", "Show this help") do
             @out.puts opts
             @options[:help] = true
@@ -55,11 +59,16 @@ module Stationery
         raise Error, "no such file: #{file}" unless File.file?(path)
 
         document = instantiate(pick(load_documents(path), path))
+        extension = @options[:zpl] ? "zpl" : "pdf"
+        target = @options[:out] || File.join(File.dirname(path), "#{File.basename(path, ".*")}.#{extension}")
+        refuse_stdout(target) if @options[:png]
+        return pictures(document, target) ? OK : FAILURE if @options[:png_only]
+
         output = @options[:zpl] ? to_zpl(document) : to_pdf(document)
         return FAILURE unless warnings_ok?(document)
 
-        extension = @options[:zpl] ? "zpl" : "pdf"
-        write(output, @options[:out] || File.join(File.dirname(path), "#{File.basename(path, ".*")}.#{extension}"))
+        write(output, target)
+        pictures(document, target) if @options[:png]
         OK
       end
 

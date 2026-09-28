@@ -5,6 +5,7 @@ require "stringio"
 require "stationery"
 require_relative "structure_reader"
 require_relative "field_page"
+require_relative "layout"
 
 module Stationery
   module Testing
@@ -191,6 +192,13 @@ module Stationery
       def tagged?
         catalog.dig(:MarkInfo, :Marked) == true && !catalog[:StructTreeRoot].nil?
       end
+
+      # What is on each page and what the file says of itself, as plain data
+      # in a stable order: `{ metadata:, conformance:, tagged:, print:,
+      # outline:, attachments:, signatures:, structure:, warnings:, pages: }`,
+      # each page `{ number:, label:, width:, height:, text:, images:, links:,
+      # fields: }`, places in points from the top-left corner. See Layout.
+      def layout = @layout ||= Layout.new(self).to_h
 
       # Text shown outside any marked content (neither tagged nor an artifact).
       def untagged_text

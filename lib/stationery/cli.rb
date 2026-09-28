@@ -70,6 +70,9 @@ module Stationery
   end
 end
 
+require_relative "cli/pictures"
 require_relative "cli/render"
 require_relative "cli/fonts"
 require_relative "cli/examples"
+require_relative "cli/layout_text"
+require_relative "cli/inspect"
