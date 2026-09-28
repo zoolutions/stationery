@@ -6,16 +6,6 @@
 require_relative "support"
 
 module Bench
-  class StationeryTable < Stationery::Document
-    page size: :a4, margin: 36
-    font_family "Open Sans", regular: FONT, bold: FONT_BOLD
-    default_text font: "Open Sans", size: 9
-
-    def view_template
-      table(TABLE, header: true, width: :full) { |t| t.row(0).weight = :bold }
-    end
-  end
-
   def self.prawn_table
     pdf = Prawn::Document.new(page_size: "A4", margin: 36)
     prawn_fonts(pdf)
