@@ -48,6 +48,12 @@ module Stationery
         writer.add(PDF::Stream.new(Zlib::Deflate.deflate(@color), dictionary))
       end
 
+      # The samples as a Pixels, built on every call.
+      def pixels
+        Pixels.new(width: @width, height: @height, channels: 3, color: rows(@color, @width * 3),
+                   alpha: @alpha && rows(@alpha, @width))
+      end
+
       private
 
       # ARGB pixels as the bytes to embed: three per pixel of colour, and
@@ -56,11 +62,6 @@ module Stationery
         @color = String.new(capacity: argb.size * 3, encoding: Encoding::BINARY)
         argb.each { |pixel| @color << ((pixel >> 16) & 0xFF) << ((pixel >> 8) & 0xFF) << (pixel & 0xFF) }
         @alpha = argb.map { |pixel| pixel >> 24 }.pack("C*") if alpha && argb.any? { |pixel| pixel < 0xFF000000 }
-      end
-
-      def pixels
-        Pixels.new(width: @width, height: @height, channels: 3, color: rows(@color, @width * 3),
-                   alpha: @alpha && rows(@alpha, @width))
       end
 
       def rows(bytes, stride)

@@ -25,9 +25,11 @@ module Stationery
         @names = names
       end
 
+      def tag = @child.tag
       def measure(width, **) = @child.measure(width, **)
       def height_within(width, limit) = @child.height_within(width, limit)
       def wraps? = @child.wraps?
+      def decorated? = @child.decorated?
       def natural_width = @child.natural_width
       def min_width = @child.min_width
       def fixed_width(available) = @child.fixed_width(available)

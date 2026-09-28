@@ -11,7 +11,9 @@ module Stationery
     # A character no font has is glyph 0, .notdef, which stands for no
     # character in particular: each stretch of them is shown inside a Span
     # whose ActualText is the characters, so the text still extracts, copies
-    # and reads aloud as written.
+    # and reads aloud as written. So is the glyph a font draws in its place
+    # when the render replaces missing glyphs (see Font#stand_in): it is the
+    # glyph of another character, which the map to Unicode gives.
     GlyphRun = Data.define(:font, :gids, :adjust, :chars) do
       def width(size, letter_spacing: 0)
         units = gids.sum { |gid| font.ttf.advance(gid) }
@@ -23,13 +25,13 @@ module Stationery
         with(adjust: adjust.each_with_index.map { |a, i| chars[i] == " " ? a + extra : a })
       end
 
-      def missing? = gids.include?(0)
+      def missing? = gids.include?(0) || (!font.stand_in.nil? && gids.each_index.any? { |index| stand_in?(index) })
 
       def to_operator
         return show unless missing?
 
         last = gids.size - 1
-        gids.each_index.chunk_while { |a, b| gids[a].zero? == gids[b].zero? }.map do |indices|
+        gids.each_index.chunk_while { |a, b| missing_at?(a) == missing_at?(b) }.map do |indices|
           piece = with(gids: gids.values_at(*indices), adjust: adjust.values_at(*indices),
                        chars: chars.values_at(*indices))
           piece.marked(trailing: indices.last < last)
@@ -50,18 +52,43 @@ module Stationery
 
       private
 
-      def show(trailing: false)
-        return "<#{hex(gids)}> Tj" unless adjusted?(trailing)
+      def missing_at?(index) = gids[index].zero? || (!font.stand_in.nil? && stand_in?(index))
+      def stand_in?(index) = font.stands_in?(gids[index], chars[index])
 
-        parts = gids.each_index.slice_after { |i| !adjust[i].zero? }.flat_map do |indices|
-          last = indices.last
-          chunk = ["<#{hex(indices.map { |i| gids[i] })}>"]
-          (last == gids.size - 1 && !trailing) || adjust[last].zero? ? chunk : chunk << PDF::Serializer.number(-adjust[last])
+      # A Tj string, or a TJ array of a string per stretch of glyphs up to
+      # and including an adjusted one, each followed by its adjustment (the
+      # last one only when `trailing`). Written in one pass over the run's
+      # hex, without an Array of its parts.
+      def show(trailing: false)
+        codes = hex(gids)
+        return "<#{codes}> Tj" unless adjusted?(trailing)
+
+        last = gids.size - 1
+        operator = +"["
+        start = 0
+        gids.each_index do |index|
+          next if adjust[index].zero? && index != last
+
+          operator << " " unless start.zero?
+          operator << "<" << codes[start * 4, (index - start + 1) * 4] << ">"
+          written = !adjust[index].zero? && (trailing || index != last)
+          operator << " " << PDF::Serializer.number(-adjust[index]) if written
+          start = index + 1
         end
-        "[#{parts.join(" ")}] TJ"
+        operator << "] TJ"
       end
 
-      def adjusted?(trailing) = (trailing ? adjust : adjust[0...-1]).any? { |a| !a.zero? }
+      # Whether any adjustment is written: the last one only when `trailing`.
+      def adjusted?(trailing)
+        index = 0
+        stop = trailing ? adjust.size : adjust.size - 1
+        while index < stop
+          return true unless adjust[index].zero?
+
+          index += 1
+        end
+        false
+      end
 
       def hex(ids) = ids.map { |gid| font.code(gid) }.pack("n*").unpack1("H*").upcase
     end

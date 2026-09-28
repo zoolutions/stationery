@@ -34,7 +34,15 @@ module Stationery
         writer.add(PDF::Stream.new(Zlib::Deflate.deflate(@color), dictionary))
       end
 
+      # The resampled samples as a Pixels, built on every call.
+      def pixels
+        Pixels.new(width: @width, height: @height, channels: @channels, color: rows(@color, @width * @channels),
+                   alpha: @alpha && rows(@alpha, @width))
+      end
+
       private
+
+      def rows(bytes, stride) = Array.new(@height) { |y| bytes.byteslice(y * stride, stride).bytes }
 
       # Box filter: output pixel (ox, oy) averages the source block whose edges
       # are the scaled output edges. Row sums are accumulated per output column

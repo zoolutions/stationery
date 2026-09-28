@@ -9,11 +9,18 @@ module Stationery
 
     Overflow = Layout::Overflow
 
-    MissingGlyph = Data.define(:char, :family, :count) do
+    # `stand_in` is the character drawn in its place by a render that
+    # replaces missing glyphs (`missing_glyphs: :replace`), nil for .notdef.
+    MissingGlyph = Data.define(:char, :family, :count, :stand_in) do
+      def initialize(char:, family:, count:, stand_in: nil)
+        super
+      end
+
       def message
         times = count == 1 ? "once" : "#{count} times"
-        format('missing glyph "%<char>s" (U+%<code>04X) in %<family>s, drawn %<times>s as .notdef',
-               char:, code: char.ord, family:, times:)
+        drawn = stand_in ? format('"%<stand_in>s" (U+%<code>04X)', stand_in:, code: stand_in.ord) : ".notdef"
+        format('missing glyph "%<char>s" (U+%<code>04X) in %<family>s, drawn %<times>s as %<drawn>s',
+               char:, code: char.ord, family:, times:, drawn:)
       end
     end
 
@@ -83,6 +90,27 @@ module Stationery
     PLACES = { header: "in the header of", footer: "in the footer of", page_template: "in a page template of",
                artifact: "in an artifact of", canvas: "drawn by canvas.link without a tag: on" }.freeze
 
+    # A monochrome render painting what a one-bit printer cannot print as
+    # it is: `color` is "#RRGGBB", with " at opacity 0.5" when it is
+    # translucent, or names an image it cannot dither ("JPEG 640x480").
+    # `kind` is what painted it: :text, :rule (a rule, an underline or a
+    # strikethrough), :background (any other fill), :border (any stroke),
+    # :gradient or :image.
+    NotMonochrome = Data.define(:color, :kind, :page) do
+      def message = "#{KINDS.fetch(kind)} in #{color} on page #{page} is not black or white"
+    end
+    KINDS = { text: "text", rule: "a rule", background: "a background", border: "a border or line",
+              gradient: "a gradient", image: "an image" }.freeze
+
+    # A line of a monochrome render thinner than one of the printer's dots
+    # (72/dpi points), which prints or not depending on where it lands.
+    ThinLine = Data.define(:width, :kind, :page, :dpi) do
+      def message
+        format("%<kind>s %<width>s pt wide on page %<page>d is thinner than a dot at %<dpi>s dpi (%<dot>.3f pt): " \
+               "widen it, or snap: true", kind: KINDS.fetch(kind), width: width.round(3), page:, dpi:, dot: 72.0 / dpi)
+      end
+    end
+
     MissingLanguage = Data.define do
       def message = "tagged PDF has no language: set metadata lang:"
     end
@@ -101,15 +129,16 @@ module Stationery
       self
     end
 
-    def missing_glyph(char, family)
-      @glyphs[[char, family]] += 1
+    # `stand_in` is the character drawn in its place, nil for .notdef.
+    def missing_glyph(char, family, stand_in = nil)
+      @glyphs[stand_in ? [char, family, stand_in] : [char, family]] += 1
     end
 
     def each(&)
       return enum_for(:each) unless block_given?
 
       @items.each(&)
-      @glyphs.each { |(char, family), count| yield MissingGlyph.new(char:, family:, count:) }
+      @glyphs.each { |(char, family, stand_in), count| yield MissingGlyph.new(char:, family:, count:, stand_in:) }
       self
     end
 

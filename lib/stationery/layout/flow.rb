@@ -47,6 +47,7 @@ module Stationery
 
       def splittable? = true
       def wraps? = true
+      def decorated? = @children.any?(&:decorated?)
       def natural_width = floats? ? natural_width_beside : @children.map(&:natural_width).max || 0
       def min_width = @children.map(&:min_width).max || 0
 

@@ -52,6 +52,20 @@ RSpec.describe Stationery::Fonts::CFF do
     expect(dict[1207]).to eq([])
   end
 
+  it "finds the Font DICT of a glyph through FDSelect formats 0 and 3" do
+    fd_of = lambda do |fd_select, gid|
+      cff = described_class.allocate
+      cff.instance_variable_set(:@data, fd_select)
+      cff.instance_variable_set(:@top, { described_class::FD_SELECT => [0] })
+      cff.send(:fd_index, gid)
+    end
+    format0 = [0, 2, 2, 1].pack("C*")
+    format3 = [3, 3, 0, 0, 5, 2, 9, 1, 12].pack("CnnCnCnCn") # [0, 5) → 0, [5, 9) → 2, [9, 12) → 1
+
+    expect((0..2).map { |gid| fd_of.call(format0, gid) }).to eq([2, 2, 1])
+    expect([0, 4, 5, 8, 9, 11].map { |gid| fd_of.call(format3, gid) }).to eq([0, 0, 2, 2, 1, 1])
+  end
+
   it "reads charsets in range formats 1 and 2" do
     format1 = [1, 5, 2].pack("CnC")
     format2 = [2, 100, 3].pack("Cnn")
