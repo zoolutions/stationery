@@ -66,11 +66,16 @@ module Stationery
       def part = archival.first && LEVELS.dig(archival.first, :part)
 
       # What can be refused before anything is drawn: options and metadata.
-      def validate!(encrypt:, metadata:, attachments:)
+      def validate!(encrypt:, metadata:, attachments:, print: nil)
         raise ArgumentError, "PDF/A forbids encryption: drop encrypt: or the conformance level" if pdf_a? && encrypt
         if part == 2 && attachments.any?
           raise ArgumentError, "PDF/A-2b only embeds PDF/A files: use conformance :pdf_a3b to attach " \
                                "#{attachments.map(&:name).join(", ")}"
+        end
+
+        if pdf_a? && print && print[:dialog]
+          raise ConformanceError.new(@levels, ["print dialog: :on_open writes a /Print action, and PDF/A names " \
+                                               "the four page actions only (ISO 19005-2/3, 6.5.1)"])
         end
 
         missing = pdf_ua? ? %i[title lang].select { |key| metadata[key].to_s.strip.empty? } : []

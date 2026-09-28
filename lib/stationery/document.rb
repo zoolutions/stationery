@@ -25,7 +25,7 @@ module Stationery
                     else
                       { page: { size: :letter, margin: 36 }, families: {}, fallbacks: [], text: {}, metadata: {},
                         templates: [], regions: [], strict: false, tagged: false, incremental: false, images: {},
-                        attachments: [], shaping: {}, missing_glyphs: :raise }
+                        attachments: [], shaping: {}, print: {}, missing_glyphs: :raise }
                     end
       end
 
@@ -69,6 +69,15 @@ module Stationery
       def page_labels(spec)
         PDF::PageLabels.entries(spec)
         config[:page_labels] = spec
+      end
+
+      # How the document asks to be printed: `print scaling: :none, copies: 2,
+      # pick_tray_by_size: true, duplex: :simplex, pages: 1..3, dialog:
+      # :on_open`. Hints a viewer may follow, added to the inherited ones; a
+      # nil takes one away. This is not Kernel#print, which a document's
+      # methods still call. See PDF::PrintHints.
+      def print(**hints)
+        config[:print] = config[:print].merge(PDF::PrintHints.options(hints)).compact
       end
 
       # Embeds a file in every render: `attach_file "invoice.xml", xml,
@@ -190,23 +199,27 @@ module Stationery
     # A render that must be checked before anything is written takes the
     # usual path instead: one with `conformance:` or `sign:`, and a `strict`
     # one that goes to a block.
+    #
+    # `print:` are print hints laid over those of the class (see .print): a
+    # nil takes one away, and `print: nil` or `false` all of them.
     def to_pdf(target = nil, strict: self.class.config[:strict], debug: false, encrypt: self.class.config[:encrypt],
                tagged: self.class.config[:tagged], page_labels: self.class.config[:page_labels], attachments: [],
                xmp: metadata[:xmp] != false, conformance: self.class.config[:conformance],
                factur_x: self.class.config[:factur_x], sign: self.class.config[:sign],
                shaper: self.class.config[:shaping][:shaper], incremental: self.class.config[:incremental],
-               missing_glyphs: self.class.config[:missing_glyphs], &block)
+               print: PDF::PrintHints::NONE, missing_glyphs: self.class.config[:missing_glyphs], &block)
       invoice = PDF::FacturX.for(factur_x, self)
       attachments = PDF::Attachments.merge(self.class.config[:attachments], attachments, invoice&.attachment)
       conformance = PDF::Conformance.for(invoice ? invoice.conformance(conformance) : conformance, missing_glyphs:)
-      conformance&.validate!(encrypt:, metadata:, attachments:)
+      print = PDF::PrintHints.merge(self.class.config[:print], print)
+      conformance&.validate!(encrypt:, metadata:, attachments:, print:)
       signature = PDF::Signature.for(sign, self)
       raise ArgumentError, "a signed document cannot be streamed to a block: sign needs the whole file" if
         signature && block
       raise ArgumentError, "pass a target or a block, not both" if target && block
 
       options = { strict:, debug:, encrypt:, tagged: tagged || conformance&.pdf_ua?, page_labels:, attachments:,
-                  xmp: xmp || !conformance.nil?, conformance:, invoice:, signature:, sink: block, shaper:,
+                  xmp: xmp || !conformance.nil?, conformance:, invoice:, signature:, sink: block, shaper:, print:,
                   incremental: incremental && !conformance && !signature && !(strict && block) }
       Stationery.instrument("render.stationery", document: self.class.name) do |event|
         block ? render_pdf(event, **options) : write(render_pdf(event, **options), target)
@@ -264,12 +277,12 @@ module Stationery
     end
 
     def assemble(pages, resources, outline, encrypt:, tagging:, page_labels:, attachments:, xmp:, conformance:,
-                 invoice:, signature:, sink:, writer:)
+                 invoice:, signature:, sink:, writer:, print:)
       assembler = PDF::Assembler.new(pages:, resources:, info:, outline:, tagging:, xmp:, writer:,
                                      encryption: writer ? nil : encryption(encrypt),
                                      lang: metadata[:lang], page_labels: PDF::PageLabels.entries(page_labels),
                                      attachments:, conformance:, xmp_extensions: invoice&.xmp_extensions || {},
-                                     xmp_schemas: [invoice&.xmp_schema].compact, signature:, sink:)
+                                     xmp_schemas: [invoice&.xmp_schema].compact, signature:, sink:, print:)
       Stationery.instrument("write.stationery", document: self.class.name) do |event|
         assembler.render.tap { |pdf| event[:bytes] = byte_count(pdf) }
       end
