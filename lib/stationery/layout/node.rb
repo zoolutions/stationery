@@ -24,6 +24,10 @@ module Stationery
     #                               fresh: true when nothing is above it on a new page
     # - natural_width / min_width → its preferred and narrowest widths
     # - fixed_width(available)    → its own width, or nil when it fills the width
+    #
+    # A node that `wraps?` lays its lines out around floats: its measure,
+    # paint and split take `exclusions:` (Text::Exclusions, from its own
+    # top). Any other node is placed beside a float as a block, or below it.
     class Node
       attr_accessor :keep_with_next, :break_inside
       # The Tagging::Element this node paints into, shared by its fragments.
@@ -39,6 +43,9 @@ module Stationery
       def natural_width = 0
       def min_width = 0
       def fixed_width(_available) = nil
+      def wraps? = false
+      # Whether it is taken out of the flow to one side (Floated).
+      def float? = false
       # The width this node is laid out at inside a parent of `available`.
       def width_in(available) = fixed_width(available) || available
       def page_break? = false

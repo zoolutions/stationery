@@ -25,7 +25,8 @@ module Stationery
         @names = names
       end
 
-      def measure(width) = @child.measure(width)
+      def measure(width, **) = @child.measure(width, **)
+      def wraps? = @child.wraps?
       def natural_width = @child.natural_width
       def min_width = @child.min_width
       def fixed_width(available) = @child.fixed_width(available)

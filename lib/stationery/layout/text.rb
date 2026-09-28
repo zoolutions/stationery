@@ -6,7 +6,9 @@ module Stationery
     # fewest lines a split leaves at the foot of a page and `widows:` the
     # fewest it carries to the next (1 and 1: any line). A paragraph that
     # cannot meet them moves to the next page whole, unless it is already
-    # first on a fresh page, where it splits as best it can.
+    # first on a fresh page, where it splits as best it can. Beside floats
+    # (`exclusions:`) its lines take the width each has; what a page break
+    # carries over no longer has the floats beside it.
     class Text < Node
       attr_reader :runs
 
@@ -31,18 +33,20 @@ module Stationery
       end
 
       def splittable? = true
+      def wraps? = true
 
-      def measure(width) = paragraph(width).height
+      def measure(width, exclusions: nil) = paragraph(width, exclusions).height
 
-      def paint(canvas, x, y, width, _height = nil, **)
-        paragraph(width).draw(canvas, x, y, tag: @tag)
+      def paint(canvas, x, y, width, _height = nil, exclusions: nil)
+        paragraph(width, exclusions).draw(canvas, x, y, tag: @tag)
       end
 
-      def split(width, height, fresh: false, **)
-        head, tail = paragraph(width).split(height)
+      def split(width, height, fresh: false, exclusions: nil, **)
+        paragraph = paragraph(width, exclusions)
+        head, tail = paragraph.split(height)
         return [head && from(head), tail && from(tail)] if (@orphans == 1 && @widows == 1) || !(head && tail)
 
-        keep_lines(paragraph(width), head.lines.size, fresh:)
+        keep_lines(paragraph, head.lines.size, fresh:)
       end
 
       def fit(width, height, overflow:)
@@ -75,6 +79,7 @@ module Stationery
       def keep_lines(paragraph, fitting, fresh:)
         total = paragraph.lines.size
         kept = [fitting, total - @widows].min
+        kept -= 1 while kept.positive? && widowed?(paragraph, kept)
         kept = fitting if fresh && kept < 1
         return [nil, self] if !fresh && (kept < @orphans || total < @orphans + @widows)
 
@@ -82,14 +87,21 @@ module Stationery
         [head && from(head), tail && from(tail)]
       end
 
+      # Beside a float the lines carried over are wrapped again at the full
+      # width and may come out fewer than the widows.
+      def widowed?(paragraph, kept)
+        paragraph.exclusions && paragraph.split_at(kept).last.lines.size < @widows
+      end
+
       def piece_width(font, style, text)
         font.width_of(text, style.render_size, letter_spacing: style.letter_spacing, kerning: style.kerning,
                                                ligatures: style.ligatures, features: style.features)
       end
 
-      def paragraph(width)
-        @paragraph || (@paragraphs[width] ||= ::Stationery::Text::Paragraph.new(
-          @runs, book: @context.book, width:, align: @align, leading: @leading, fallback_style: @context.style
+      def paragraph(width, exclusions = nil)
+        @paragraph || (@paragraphs[exclusions ? [width, exclusions] : width] ||= ::Stationery::Text::Paragraph.new(
+          @runs, book: @context.book, width:, align: @align, leading: @leading, fallback_style: @context.style,
+                 exclusions:
         ))
       end
 
