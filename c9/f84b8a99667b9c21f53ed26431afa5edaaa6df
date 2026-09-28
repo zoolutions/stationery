@@ -1,0 +1,137 @@
+lib/stationery/canvas/glyphs.rb
+  ai_agent 1-40
+lib/stationery/canvas/surfacing.rb
+  ai_agent 1-67
+lib/stationery/pdf/canvases.rb
+  ai_agent 1-37
+lib/stationery/canvas/path.rb
+  ai_agent 5-7,9,13-20,25-34,37-38,41-45,48-50
+lib/stationery/forms/typeface.rb
+  ai_agent 89
+lib/stationery/svg/painter.rb
+  ai_agent 68
+spec/stationery/pdf/conformance_spec.rb
+  ai_agent 225,243-259
+lib/stationery/tagging/tree.rb
+  ai_agent 15,28-42,61-72
+spec/stationery/document_paint_on_spec.rb
+  ai_agent 1-130
+spec/stationery/tagging_region_links_spec.rb
+  ai_agent 1-154
+spec/stationery/pdf/conformance_stand_in_spec.rb
+  ai_agent 1-279
+lib/stationery/path.rb
+  ai_agent 1-138
+spec/stationery/pdf/print_hints_spec.rb
+  ai_agent 1-129
+spec/stationery/floats_run_spec.rb
+  ai_agent 1-109
+spec/stationery/canvas/interface_spec.rb
+  ai_agent 1-146
+lib/stationery/minitest.rb
+  ai_agent 28-31
+lib/stationery/canvas.rb
+  ai_agent 4-8,10-11,17,29,78-85,89-92
+lib/stationery/fonts/font_book.rb
+  ai_agent 14-18,63,65
+lib/stationery/canvas/marking.rb
+  ai_agent 7-9,11-12,40,60-63,81,83,88-89
+docs/app/views/docs/pages/pages.rb
+  ai_agent 7,174-175
+lib/stationery/testing/matchers.rb
+  ai_agent 134-152,282
+lib/stationery/fonts/font.rb
+  ai_agent 32-36,42-44,46,113,143-154,238-246
+lib/stationery/testing/inspector.rb
+  ai_agent 138-146
+spec/support/recording_canvas.rb
+  ai_agent 1-91
+docs/app/views/docs/pages/limitations.rb
+  ai_agent 29,33
+Rakefile
+  ai_agent 46-53,80-81,86-88
+.rubocop.yml
+  ai_agent 34
+docs/app/views/docs/pages/forms.rb
+  ai_agent 308-309
+docs/app/views/docs/pages/layout_rules.rb
+  ai_agent 38-39
+lib/stationery/page_templates.rb
+  ai_agent 10-13,16,57-59
+docs/app/views/docs/pages/conformance.rb
+  ai_agent 66,68,85-90,107-146,242-243
+spec/stationery/layout/flow_fuzz_spec.rb
+  ai_agent 1-57
+lib/stationery/canvas/text.rb
+  ai_agent 5-6,29-30
+lib/stationery/pdf/conformance.rb
+  ai_agent 30-33,35,39-41,43-44,47-53,55,63-64,69,76-80,156-159,161-165
+lib/stationery/svg/gradient.rb
+  ai_agent 15-26
+AGENTS.md
+  ai_agent 17-20
+README.md
+  ai_agent 159-166,351-352,449-508,587-591,605-610,661-662,671-672,675-705,708-709,1058-1060,1182-1183,1282,1310,1327,1500-1502,1509-1510
+lib/stationery/layout/table/row_splitter.rb
+  ai_agent 11-13,17,34-35
+spec/stationery/path_spec.rb
+  ai_agent 1-48
+lib/stationery/document.rb
+  ai_agent 28,74-82,119-123,125,202-204,209-210,213-215,222,229-245,266-270,277-280,294,299,321,324-326
+lib/stationery/pdf/assembler.rb
+  ai_agent 19-20,23,27,65,78-84
+lib/stationery/warnings.rb
+  ai_agent 12-18,21-23,111-113,120
+lib/stationery/layout/paginator.rb
+  ai_agent 10-15,72
+docs/app/views/docs/pages/warnings.rb
+  ai_agent 32-33,69-70
+lib/stationery/fonts/shaped_run.rb
+  ai_agent 21-24,27,53,97-98,101-102,104,108-109,168-175
+spec/stationery/testing/inspector_spec.rb
+  ai_agent 229-246
+lib/stationery/structure.rb
+  ai_agent 14-17,20,23,64
+lib/stationery/layout/flow/splitter.rb
+  ai_agent 11-12,63-65,67,75-96,142,144,149-161,184-185,187,208-209,213,218
+spec/stationery/testing/assertions_spec.rb
+  ai_agent 133-143
+docs/app/views/docs/pages/elements.rb
+  ai_agent 338
+lib/stationery/tagging/element.rb
+  ai_agent 54-55,59
+lib/stationery/text/paragraph.rb
+  ai_agent 183,196
+spec/stationery/layout/flow_floats_run_split_spec.rb
+  ai_agent 1-161
+spec/stationery/testing/matchers_spec.rb
+  ai_agent 225-247
+lib/stationery/canvas/interface.rb
+  ai_agent 1-146
+spec/support/random_flow.rb
+  ai_agent 1-91
+lib/stationery/pdf/print_hints.rb
+  ai_agent 1-137
+lib/stationery/layout/table.rb
+  ai_agent 206-207
+spec/stationery/tagging_audit_spec.rb
+  ai_agent 158-159,161-163,166,174,177,181,184-189,195-196
+spec/stationery/canvas/path_spec.rb
+  ai_agent 1-23
+docs/app/views/docs/pages/testing.rb
+  ai_agent 26,59
+lib/stationery.rb
+  ai_agent 64,68-70,73,76
+lib/stationery/fonts/glyph_run.rb
+  ai_agent 14-16,28,34,55-56
+docs/app/views/docs/pages/fonts.rb
+  ai_agent 174-175,266-268
+spec/stationery/document_print_spec.rb
+  ai_agent 1-172
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "c9f84b8a99667b9c21f53ed26431afa5edaaa6df",
+  "prompts": {}
+}
