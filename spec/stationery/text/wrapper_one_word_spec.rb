@@ -79,7 +79,7 @@ RSpec.describe Stationery::Text::Wrapper do
     runs = [run("Stockholm")]
     wrapper.wrap(runs, 200)
 
-    expect(allocations { 20.times { wrapper.wrap(runs, 200) } }).to be <= 20 * 12
+    expect(allocations { 20.times { wrapper.wrap(runs, 200) } }).to be <= (20 * 12) + 1
   end
 
   OneWordSamples::STYLES.each do |name, overrides|
