@@ -75,15 +75,17 @@ class HarfBuzzShaper
     glyphs
   end
 
-  # The runs of one direction in visual order: from the right when the text
-  # starts right to left.
+  # The runs of one direction in visual order: from the right when the first
+  # letter of the text is right to left. Digits do not decide it, so a line
+  # of an Arabic paragraph that starts with a number stays right to left.
   def runs(text)
-    directions = resolve(text.each_char.map { |char| direction_of(char) })
+    base = RIGHT_TO_LEFT.match?(text[/\p{L}/].to_s) ? :rtl : :ltr
+    directions = resolve(text.each_char.map { |char| direction_of(char) }, base)
     start = 0
     runs = directions.chunk_while { |left, right| left == right }.map do |run|
       Run.new(run.first, start, run.size).tap { start += run.size }
     end
-    directions.first == :rtl ? runs.reverse : runs
+    base == :rtl ? runs.reverse : runs
   end
 
   def direction_of(char)
@@ -93,9 +95,8 @@ class HarfBuzzShaper
   end
 
   # Spaces and punctuation take the direction both their neighbours have,
-  # else the direction the text starts in.
-  def resolve(directions)
-    base = directions.compact.first || :ltr
+  # else the base direction.
+  def resolve(directions, base)
     directions.each_with_index.map do |direction, index|
       next direction if direction
 
