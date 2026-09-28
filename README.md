@@ -136,7 +136,7 @@ text more                                       # around the pull quote
 - Text (paragraphs, headings, the text inside a `group` or an `html` block) wraps: every line takes
   the width left at its own top and is aligned and justified in it. A paragraph whose widest word
   does not fit beside the floats starts below them.
-- Anything else (a `box`, `row`, `table`, list item, `rule`, `image`, `svg`, form field) is a block:
+- Anything else (a `box`, `row`, `columns`, `table`, list item, `rule`, `image`, `svg`, form field) is a block:
   it goes beside the float in the width that is left, and keeps that width all the way down, when
   its own width (or the least its content takes) fits there; else it starts below the float. A
   `spacer` takes its height beside the float; a `page_break` ends the page and the float with it.
@@ -175,7 +175,7 @@ end
   monospace family for inline and block code, otherwise the text font is used), `pre` and
   `blockquote` (box options), `hr` (rule options), `table` (`cell:` options, `header:` text style),
   `ul` and `ol` (list options: `gap:`, `indent:`, `marker_gap:`, `marker_color:`, plus `style:` for
-  `ul` and `format:`/`suffix:` for `ol`), `li` (text style) and `img` (`max_width:`).
+  `ul` and `format:`/`suffix:` for `ol`), `li` (text style) and `img` (`max_width:`, and `float_margin:` for a floated image without a CSS margin).
 - Links are written only for `http`, `https`, `mailto` and `tel` hrefs (and `#anchor`); anything
   else (`javascript:`, `data:`, a relative path) keeps its text without a link and is reported as a
   `DroppedLink` warning. `links: %w[http https]` changes the list, `links: :all` keeps every href

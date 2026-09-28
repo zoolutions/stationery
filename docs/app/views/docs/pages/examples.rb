@@ -51,7 +51,7 @@ class Views::Docs::Pages::Examples < DocsUI::Page
   title "Examples"
   eyebrow "Getting started"
 
-  def lead = "Nine complete documents from the gem's examples/ directory, rendered live by this site."
+  def lead = "Ten complete documents from the gem's examples/ directory, rendered live by this site."
 
   def content
     DocsUI::Section("Running them yourself") do
