@@ -108,6 +108,16 @@ RSpec.describe "Stationery::Rich::Renderer" do
 
     def drawn(pdf) = ops(pdf)[/^([-\d.]+) 0 0 ([\d.]+) ([-\d.]+) [\d.]+ cm$/].split.values_at(0, 3, 4).map(&:to_f)
 
+    it "lets an indented block beside the image wrap around it: its margin lies under the float" do
+      source = photo
+      text = words
+      image = %(<img src="p" style="float: left; width: 80pt; margin-right: 10pt">)
+      pdf = render { html %(#{image}<p style="margin-left: 15pt">#{text}</p>), images: ->(_) { source } }
+
+      expect(drawn(pdf)).to eq([80.0, 60.0, 20.0])
+      expect(origins(pdf).map(&:first)).to eq(([110.0] * 5) + ([35.0] * 3))
+    end
+
     it "keeps margin-left between an image floated right and the text" do
       source = photo
       text = words
