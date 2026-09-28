@@ -112,6 +112,76 @@
         "objects": "5c1b7b78ddffa7ffdb5fe6756a23086dec7e0dd146a0bbffbfb3613db1c234c2"
       }
     },
+    "accessible_report": {
+      "string": {
+        "bytes": "84c2ab1beda3fd6ba7c024f7dba40d86cb9768873c93ecca2158e6bd4afc0921",
+        "objects": "4257a4becbe8266f7614e91a2d25f5664c4e5f0755ce48288469120e4abd2f35"
+      },
+      "block": {
+        "bytes": "7b357842efdebc1b5a85b2dcc9722788d3d404927c9c487708c8d59dc77b8feb",
+        "objects": "942535006f981214cfd14ad2f06714c27f3cf49664f63befb0a8dfd0cb752c3f"
+      }
+    },
+    "certificate": {
+      "string": {
+        "bytes": "00f518c2d90f30cce169e6ef3d0b89822460dc27244889d3c67e781d423b3f4c",
+        "objects": "6fc1a01c2a815b5e948b700c7a3414d51588a3c2f545d380d3f6ea7d29efb198"
+      },
+      "block": {
+        "bytes": "2b0b7c131c7c89c5b2cb8b0d2e32c2f67a432ab44b3e8f0c39d597b3f2a2f922",
+        "objects": "4081b623458877c2c395f688b92ddce27e108abde19b785c38076c06811783b7"
+      }
+    },
+    "contract": {
+      "string": {
+        "bytes": "a0059d1e515e7b950e25658a1ff858e018640894f8e371bfbc9a0f887d2a833e",
+        "objects": "bf07eabb66a43f9d7bf14bae48cef0a21fb6120c6a2a4f6201ad7486f48305b3"
+      },
+      "block": {
+        "bytes": "0d45fd5d80f0798115c68ec7e1d6f44dfb0896549eb930f755eba0715af8e2c1",
+        "objects": "18a674e065bb37e5c7299cdd6d80d84d71f28a1012c7d9e135b128d6201065cb"
+      }
+    },
+    "menu": {
+      "string": {
+        "bytes": "2b7b5dab76f40468b1ccb79ca634e020a6aeb769525aaf25e95fa859d4fcdcee",
+        "objects": "2518be1a96121748264b64bb43816fa175756d8ed2b330532115c7682daeb539"
+      },
+      "block": {
+        "bytes": "7bf24fdeb13b83299081fa96c98b8d9043bff9b421e7c693e4d63bdfb70ccc19",
+        "objects": "a25c75bceaf43bd6a46ea248fb347e2e2c92bc6def4d4f8a2b8fd9354721c523"
+      }
+    },
+    "multilingual_notice": {
+      "string": {
+        "bytes": "4fc7ade04e645cd7a61da7c002a9659489f92260e797df7679180e2e1a421ae6",
+        "objects": "804da5ef99beb78d5f8b648ce6bfdd232eec793ab2bf4f8df92c4ee120d3dd28"
+      },
+      "block": {
+        "bytes": "bad6b20a1cf1c9cf81c2443581c5fff9cc3ac4bd0d5d4cf267f2e8ffdacae4aa",
+        "objects": "614abc678c7df9155e93d43bc5324fcd5eda9800a25374e3516b4d66ecc070f0"
+      }
+    },
+    "price_list": {
+      "string": {
+        "bytes": "2229ae607f5e0efeffa42e67bbcbd00c3c3e3e4db9842ce658b4b01cf9e77957",
+        "objects": "98555d77419bc25a383b7b20d5231498073cccc77200d90ea6e4abe8e57fe5be"
+      },
+      "block": {
+        "bytes": "264890cfc32da2823ff1cec355467da043db1e5d748692f07436eda97ea74619",
+        "objects": "a2b51b124006bb02da97d3f24e2970a650c31eea83353675345caa809ac3e607"
+      }
+    },
+    "resume": {
+      "string": {
+        "bytes": "b466521a766aa798358e3e6bbcef0e36132d8e8052e1650cf3dac320ec639815",
+        "objects": "b5feb8913e91e530be1a91df1d842563dd2e7e13488973c2ae837ace852eb838"
+      },
+      "block": {
+        "bytes": "1772647e2416ed54553f25ec6a8eccf6c1ba15b6abcf98301148a0b5864b59c0",
+        "objects": "a952d15678a9565b3e94a9f927be916ed537472a8d9c402b142fc6155a9cb9a1"
+      }
+    },
     "table": {
       "string": {
         "bytes": "b6cf5820bf90dbc1358c367d82d2f7ece3d4fd27a2d210049e7151073d94dcfa",

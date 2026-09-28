@@ -19,7 +19,8 @@ module RenderDigests
   ROOT = File.expand_path("../..", __dir__)
   FROZEN = Time.utc(2026, 1, 1, 12)
   EXAMPLES = %w[article e_invoice flyer form invoice letter newsletter packing_slip postcard report
-                shipping_label].freeze
+                shipping_label accessible_report certificate contract menu multilingual_notice price_list
+                resume].freeze
   BENCHMARKS = { "table" => :StationeryTable, "text" => :StationeryText, "text_hyphenated" => :StationeryHyphenated,
                  "photos" => :StationeryPhotos }.freeze
   OBJECT = /^\d+ 0 obj\n.*?\nendobj\n/m
