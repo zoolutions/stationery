@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.10.0 (2026-09-28)
+
+CSS for `html`, better line and page breaking, timestamped signatures, and streaming to a block.
+
+- `html` reads CSS: `<style>` rules (element, `.class`, `#id`, compound selectors, comma lists, `*`; also inside `@media print`/`all`) and inline `style`, cascaded after `styles:` by specificity. Properties: `color`, `font-size` (`px`, `pt`, `em`, `rem`, `%`, keywords), `font-weight`, `font-style`, `text-decoration`, `text-align`, `background-color` and `padding` on blocks and cells, `margin-top`/`margin-bottom`, `border` on `table`/`td`/`th`, `width` on `img`, `table` and cells, `page-break-before`/`-after`/`-inside` and the `break-*` forms. `<font color size>` and `<center>` are read too. Anything else, and selectors with combinators or pseudo-classes, is ignored and reported once as `Warnings::UnsupportedCss`; `url()` and `@import` are never read. HTML without styles renders as before.
+- Orphans and widows: `orphans:` and `widows:` on `text`, `text_style`, `default_text` and rich `styles:` (`p`, `li`), default 1 and 1. A paragraph that would leave too few lines behind moves whole; one that would carry too few takes more with it; at the top of a fresh page it splits rather than overflow.
+- Line breaking: a zero-width space (U+200B) and `<wbr>` are break opportunities that draw nothing and never reach the file. Lines may break between CJK characters (ideographs, kana, Hangul, fullwidth forms) with kinsoku rules: no break before closing punctuation, small kana and iteration marks, none after an opening bracket. Hyphenation and the character-break fallback leave CJK runs alone.
+- Signature timestamps: `sign(…, timestamp: "https://tsa.example/tsr")` (or a Hash with `url:`, `username:`, `password:`, `hash:`, `client:`) requests an RFC 3161 token over the signature and embeds it as `id-aa-signatureTimeStampToken`, giving a PAdES-B-T signature. A TSA that cannot be reached, refuses, or answers for another imprint or nonce raises `Stationery::SignatureError`; nothing is written untimestamped. `Inspector#signatures` entries gain `timestamp: { time:, tsa:, valid: }`.
+- Streaming: `to_pdf { |chunk| … }` hands the file over in pieces as objects are written (first bytes sooner, no output buffer) and returns the byte count. Layout still runs in full first, so peak memory is unchanged. Every other form of `to_pdf` returns the String and is byte for byte what it was. A block with `sign:` or with a target raises `ArgumentError`.
+- **Behaviour changes:** a `page_break` inside a `group` now breaks the page (it was ignored unless the group overflowed). `image(width: 0.5)`: a Float up to 1 is a share of the available width, as for boxes and columns, so `width: 1.0` is full width, not one point. A table cell may be a Hash of cell options around its content. In SVG and HTML stylesheets an at-rule no longer swallows the rule after it.
+- `Stationery::CSS` holds the selector and stylesheet parsers SVG and HTML share (`SVG::Selector` and `SVG::Stylesheet` remain as constants). `Text::RunsBuilder#scale` and `#with`.
+- Benchmarks: `rake bench` compares three engines when the `:benchmark` group has sghtmltopdf (Prawn and stationery otherwise) and reports the best render, allocations, bytes and pages; the docs gain a Comparison page with a feature matrix against Prawn and sghtmltopdf.
+
 ## 0.9.0 (2026-09-28)
 
 Forms in the document's fonts, digital signatures, a much faster text and table pipeline, and hardening for untrusted input.
