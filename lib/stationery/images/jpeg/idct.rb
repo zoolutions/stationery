@@ -14,6 +14,10 @@ module Stationery
       module IDCT
         CONST_BITS = 13
         PASS1_BITS = 2
+        # The shifts as factors: a negative Integer shifted left makes a
+        # Bignum on the way in CRuby, a multiplication does not.
+        SCALE = 1 << CONST_BITS
+        PASS1 = 1 << PASS1_BITS
         # A sample of the transform (centred on zero) as 0..255, indexed by
         # its low ten bits as libjpeg's range limit is: -512..511, values
         # beyond (only corrupt data makes them) wrapping round.
@@ -51,7 +55,7 @@ module Stationery
             c6 = c[48 + i]
             c7 = c[56 + i]
             if c1.zero? && c2.zero? && c3.zero? && c4.zero? && c5.zero? && c6.zero? && c7.zero?
-              dc = c[i] << PASS1_BITS
+              dc = c[i] * PASS1
               work[i] = work[8 + i] = work[16 + i] = work[24 + i] = dc
               work[32 + i] = work[40 + i] = work[48 + i] = work[56 + i] = dc
               i += 1
@@ -61,8 +65,8 @@ module Stationery
             z1 = (c2 + c6) * 4433
             t2 = z1 - (c6 * 15_137)
             t3 = z1 + (c2 * 6270)
-            t0 = (c[i] + c4) << CONST_BITS
-            t1 = (c[i] - c4) << CONST_BITS
+            t0 = (c[i] + c4) * SCALE
+            t1 = (c[i] - c4) * SCALE
             t10 = t0 + t3 + 1024
             t13 = t0 - t3 + 1024
             t11 = t1 + t2 + 1024
@@ -112,8 +116,8 @@ module Stationery
             z1 = (w2 + w6) * 4433
             t2 = z1 - (w6 * 15_137)
             t3 = z1 + (w2 * 6270)
-            t0 = (work[r] + w4) << CONST_BITS
-            t1 = (work[r] - w4) << CONST_BITS
+            t0 = (work[r] + w4) * SCALE
+            t1 = (work[r] - w4) * SCALE
             t10 = t0 + t3 + 131_072
             t13 = t0 - t3 + 131_072
             t11 = t1 + t2 + 131_072

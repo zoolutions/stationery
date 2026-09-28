@@ -14,7 +14,7 @@ module Stationery
         # blocks across and down (padded to whole MCUs), the samples a block
         # makes at the scale (`block` square), its samples (`plane`, `stride`
         # bytes to a row) and, while a progressive image is read, its
-        # coefficients (64 per block).
+        # coefficients (64 per block, in zig-zag order).
         Component = Struct.new(:id, :h, :v, :tq, :blocks_wide, :blocks_high, :width, :height, :quant, :block,
                                :plane, :stride, :coefficients, :dc, :ac, :pred)
         # Natural (row by row) index of the coefficient at each zig-zag
@@ -225,13 +225,26 @@ module Stationery
           workspace = Array.new(64, 0)
           @components.each do |c|
             # A component no scan reached (a file cut short) stays blank.
-            quant = c.quant || @quant[c.tq] or next
-            (c.blocks_high * c.blocks_wide).times do |index|
-              base = index * 64
-              64.times { |i| block[i] = c.coefficients[base + i] * quant[i] }
-              transform(c, block, workspace, index % c.blocks_wide, index / c.blocks_wide)
-            end
+            quant = c.quant || @quant[c.tq]
+            finish_component(c, quant, block, workspace) if quant
             c.coefficients = nil
+          end
+        end
+
+        # Every block of `c` dequantised and transformed; at an eighth of the
+        # size only the DC coefficient is read.
+        def finish_component(c, quant, block, workspace)
+          zigzag_quant = ZIGZAG.first(64).map { |z| quant[z] }
+          coefficients = c.coefficients
+          count = c.block == 1 ? 1 : 64
+          (c.blocks_high * c.blocks_wide).times do |index|
+            base = index * 64
+            k = 0
+            while k < count
+              block[ZIGZAG[k]] = coefficients[base + k] * zigzag_quant[k]
+              k += 1
+            end
+            transform(c, block, workspace, index % c.blocks_wide, index / c.blocks_wide, count - 1)
           end
         end
       end

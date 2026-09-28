@@ -22,11 +22,11 @@ module Stationery
             c6 = c[48 + i]
             c7 = c[56 + i]
             if c1.zero? && c2.zero? && c3.zero? && c5.zero? && c6.zero? && c7.zero?
-              work[i] = work[8 + i] = work[16 + i] = work[24 + i] = c[i] << PASS1_BITS
+              work[i] = work[8 + i] = work[16 + i] = work[24 + i] = c[i] * PASS1
               next
             end
 
-            t0 = c[i] << (CONST_BITS + 1)
+            t0 = c[i] * (SCALE * 2)
             t2 = (c2 * 15_137) - (c6 * 6270)
             t10 = t0 + t2 + 2048
             t12 = t0 - t2 + 2048
@@ -52,7 +52,7 @@ module Stationery
               next
             end
 
-            t0 = work[r] << (CONST_BITS + 1)
+            t0 = work[r] * (SCALE * 2)
             t2 = (w2 * 15_137) - (w6 * 6270)
             t10 = t0 + t2 + 262_144
             t12 = t0 - t2 + 262_144
@@ -74,11 +74,11 @@ module Stationery
             c5 = c[40 + i]
             c7 = c[56 + i]
             if c1.zero? && c3.zero? && c5.zero? && c7.zero?
-              work[i] = work[8 + i] = c[i] << PASS1_BITS
+              work[i] = work[8 + i] = c[i] * PASS1
               next
             end
 
-            t10 = (c[i] << (CONST_BITS + 2)) + 4096
+            t10 = (c[i] * (SCALE * 4)) + 4096
             t0 = (c7 * -5906) + (c5 * 6967) + (c3 * -10_426) + (c1 * 29_692)
             work[i] = (t10 + t0) >> 13
             work[8 + i] = (t10 - t0) >> 13
@@ -94,7 +94,7 @@ module Stationery
               next
             end
 
-            t10 = (work[r] << (CONST_BITS + 2)) + 524_288
+            t10 = (work[r] * (SCALE * 4)) + 524_288
             t0 = (w7 * -5906) + (w5 * 6967) + (w3 * -10_426) + (w1 * 29_692)
             plane.setbyte(at, CLAMP[((t10 + t0) >> 20) & 1023])
             plane.setbyte(at + 1, CLAMP[((t10 - t0) >> 20) & 1023])
