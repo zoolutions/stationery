@@ -7,6 +7,8 @@ Rails.application.routes.draw do
   root "landings#show"
   get "/docs/search" => "docs_kit/search#index", as: :docs_search
   get "docs/:doc(.:format)" => "docs#show", as: :doc
+  # The gem's examples/ rendered live: /examples/invoice.pdf
+  get "examples/:name(.:format)" => "examples#show", as: :example, constraints: { name: /[a-z_]+/ }
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
