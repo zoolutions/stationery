@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
 # A 4 × 6 in shipping label for a thermal label printer, in black and white
-# only, written as a PDF and as ZPL. Run it to write examples/shipping_label.pdf
-# and examples/shipping_label.zpl:
+# only, with a Code 128 and a QR code, written as a PDF and as ZPL whose
+# barcodes the printer draws itself (`native: true`). Run it to write
+# examples/shipping_label.pdf and examples/shipping_label.zpl:
 #
 #   ruby -Ilib examples/shipping_label.rb
 #   ruby -Ilib exe/stationery render examples/shipping_label.rb --zpl --dpi 203
@@ -38,25 +39,30 @@ class ExampleShippingLabel < Stationery::Document
     spacer 8
     rule height: 2
     spacer 10
-    address("SHIP TO", @to, size: 16)
+    address("SHIP TO", @to, size: 14)
     spacer 12
     rule height: 2
     spacer 10
-    row(gap: 8) do
-      column(width: 0.5) { detail("ROUTE", @route) }
-      column { detail("WEIGHT", @weight) }
+    row(gap: 8, align: :center) do
+      column(width: 0.36) { detail("ROUTE", @route) }
+      column(width: 0.36) { detail("WEIGHT", @weight) }
+      column { barcode "https://track.example/#{code}", type: :qr, module_size: 1.4, align: :right, native: true }
     end
-    spacer 12
+    spacer 10
     box(border: { width: 3 }, padding: 10) do
       text "PARCEL", size: 8, weight: :bold
+      spacer 6
+      barcode code, module_size: 1.5, height: 44, align: :center, native: true
       spacer 4
-      text @parcel, size: 22, weight: :bold, letter_spacing: 1, align: :center
+      text @parcel, size: 14, weight: :bold, letter_spacing: 1, align: :center
     end
     spacer 10
     text "Keep dry · This side up", size: 9, align: :center
   end
 
   private
+
+  def code = @parcel.delete(" ")
 
   def address(label, lines, size:)
     text label, size: 8, weight: :bold, letter_spacing: 0.6
