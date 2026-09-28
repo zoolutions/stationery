@@ -1,0 +1,9 @@
+spec/rails/instrumentation_spec.rb
+  ai_agent 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "375f9539c17d26beced1bb6d1f44e8f3f472b6a2",
+  "prompts": {}
+}
