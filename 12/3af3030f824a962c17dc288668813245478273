@@ -1,0 +1,21 @@
+lib/stationery/text/wrapper.rb
+  s_f5a1e2cf907cda::t_94ce007953a802 201-205,207-209,211-212,217-230
+spec/stationery/text/wrapper_ligatures_spec.rb
+  s_f5a1e2cf907cda::t_94ce007953a802 1-89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "123af3030f824a962c17dc288668813245478273",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
