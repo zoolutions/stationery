@@ -189,8 +189,8 @@ class Views::Docs::Pages::Fonts < DocsUI::Page
         - Vertical advances are not read: text runs horizontally.
         - A reader that takes `ActualText` for the text (the gem's `Inspector`) gets it as written. poppler
           (`pdftotext` 26.09) and MuPDF (1.28) run their own reordering over it and return a right-to-left
-          stretch reversed. pdf-reader, and so `Inspector#text`, drops a `Span` whose first glyph has no
-          advance (a mark drawn first); `Inspector#structure` does not.
+          stretch reversed. pdf-reader's own `Page#text` drops a `Span` whose first glyph has no advance (a
+          mark drawn first); the `Inspector` does not.
 
         [`examples/shaping/harfbuzz_shaper.rb`](https://github.com/zoolutions/stationery/blob/main/examples/shaping/harfbuzz_shaper.rb)
         is an adapter for HarfBuzz through the [`harfbuzz-ruby`](https://github.com/ydah/harfbuzz) gem

@@ -36,32 +36,44 @@ module Stationery
         end
       end
 
+      # `fields: true` reads what the form fields show as well as the page
+      # content. Without it, a failure over a text a field shows says so.
       class HaveText < Base
-        def description = "have text #{show(@expected)}"
+        HINT = "\n(a form field shows it: read what the fields show with fields: true)"
+
+        def initialize(expected, fields: false)
+          super(expected)
+          @fields = fields
+        end
+
+        def description = "have text #{show(@expected)}#{where}#{", form fields included" if @fields}"
+        def failure_message = "#{super}#{HINT if shown_by_field?}"
 
         private
 
-        def match?(pdf) = contains?(pdf.text, @expected)
-        def actual = "got text:\n#{excerpt(@inspector.text)}"
+        def where = ""
+        def text(fields: @fields) = @inspector.text(fields:)
+        def match?(_pdf) = found?(text)
+        def found?(text) = !text.nil? && contains?(text, @expected)
+        def shown_by_field? = !@fields && !found?(text) && found?(text(fields: true))
+        def actual = "got text:\n#{excerpt(text)}"
       end
 
-      class HaveTextOnPage < Base
-        def initialize(page, expected)
-          super(expected)
+      class HaveTextOnPage < HaveText
+        def initialize(page, expected, fields: false)
+          super(expected, fields:)
           @page = page
         end
 
-        def description = "have text #{show(@expected)} on page #{@page}"
-
         private
 
-        def page_text = @inspector.page_texts.fetch(@page - 1, nil)
-        def match?(_pdf) = !page_text.nil? && contains?(page_text, @expected)
+        def where = " on page #{@page}"
+        def text(fields: @fields) = @inspector.page_texts(fields:).fetch(@page - 1, nil)
 
         def actual
-          return "but it has #{@inspector.page_count} page(s)" if page_text.nil?
+          return "but it has #{@inspector.page_count} page(s)" if text.nil?
 
-          "got text on page #{@page}:\n#{excerpt(page_text)}"
+          "got text on page #{@page}:\n#{excerpt(text)}"
         end
       end
 
@@ -240,8 +252,8 @@ module Stationery
         end
       end
 
-      def have_pdf_text(expected) = HaveText.new(expected)
-      def have_pdf_text_on_page(page, expected) = HaveTextOnPage.new(page, expected)
+      def have_pdf_text(expected, fields: false) = HaveText.new(expected, fields:)
+      def have_pdf_text_on_page(page, expected, fields: false) = HaveTextOnPage.new(page, expected, fields:)
       def have_page_count(expected) = HavePageCount.new(expected)
       def have_pdf_link(expected) = HaveLink.new(expected)
       def have_image_count(expected) = HaveImageCount.new(expected)

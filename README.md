@@ -349,6 +349,10 @@ signature_field "signature", label: "Signature of the applicant"
   signer, unless `sign field:` signs it (see [Digital signatures](#digital-signatures)).
 - `document.fields` returns `{ name => value }` for the last render (a check box's value is `true` or
   `false`, an unchecked radio group's and a signature field's `nil`). Encrypted documents keep their fields fillable.
+- In tests, `document.fields` is what the form was filled with, and `have_pdf_text("Astrid", fields:
+  true)` or `assert_pdf_text pdf, "Astrid", fields: true` finds what a field shows on the page. A
+  value is drawn by its widget and is no part of the page content, so the text leaves it out
+  without `fields: true` (see [Testing](#testing)).
 
 ## Components
 
@@ -1040,8 +1044,8 @@ The limits of a hook:
 - Vertical advances are not read: text runs horizontally.
 - A reader that takes `ActualText` for the text (the gem's `Inspector`) gets it as written. poppler
   (`pdftotext` 26.09) and MuPDF (1.28) run their own reordering over it and return a right-to-left
-  stretch reversed. pdf-reader, and so `Inspector#text`, drops a `Span` whose first glyph has no
-  advance (a mark drawn first); `Inspector#structure` does not.
+  stretch reversed. pdf-reader's own `Page#text` drops a `Span` whose first glyph has no advance (a
+  mark drawn first); the `Inspector` does not.
 
 [`examples/shaping/harfbuzz_shaper.rb`](https://github.com/zoolutions/stationery/blob/main/examples/shaping/harfbuzz_shaper.rb)
 is an adapter for HarfBuzz through the [`harfbuzz-ruby`](https://github.com/ydah/harfbuzz) gem
@@ -1075,6 +1079,7 @@ RSpec.describe InvoicePdf do
 
   it { is_expected.to have_pdf_text("Invoice INV-7") }
   it { is_expected.to have_pdf_text_on_page(2, /Total €[\d ,]+/) }
+  it { is_expected.to have_pdf_text("Astrid Lindqvist", fields: true) } # with what the form fields show
   it { is_expected.to have_page_count(2) }
   it { is_expected.to have_pdf_link("mailto:hello@acme.test") }
   it { is_expected.to have_image_count(1) }
@@ -1102,6 +1107,7 @@ class InvoicePdfTest < Minitest::Test
 
     assert_pdf_text pdf, "Invoice INV-7"
     refute_pdf_text pdf, "DRAFT"
+    assert_pdf_text pdf, "Astrid Lindqvist", fields: true
     assert_page_count pdf, 2
     assert_pdf_link pdf, /acme\.test/
     assert_no_pdf_warnings pdf
@@ -1132,6 +1138,20 @@ signed_at:, subfilter:, byte_range:, signer:, valid:, timestamp: }]`, the timest
 read from its marked content: `[type, "text"]`, `[type, [children]]` (its own text
 between the children, as for a `P` holding a `Link`) or `[type]` when empty; a
 `Figure` reads as its alt text.
+
+`text` and `page_texts` are the text of the page content as pdf-reader lays it out, line by line. A
+`Span` with `ActualText` (a stretch a shaper reordered, characters no font has) reads as that text,
+once, whatever glyphs it shows.
+
+A form field's value is not page content: its widget draws it, so `have_pdf_text("Astrid")` does not
+find the value of a `text_field`. `fields: true` reads what the form fields show as well, each where
+it is on its page: `have_pdf_text("Astrid", fields: true)`, `have_pdf_text_on_page(1, "Astrid",
+fields: true)`, `assert_pdf_text pdf, "Astrid", fields: true`, `refute_pdf_text`, and
+`Inspector#text(fields: true)` and `#page_texts(fields: true)`. What is read is the normal appearance
+of every widget that is not hidden, in the state the widget is in, and never a button's `Off` state
+(the marks of a `checkbox` and a `radio` are paths and read as nothing). Without `fields: true` the
+text is what it always was, and the failure of `have_pdf_text` over a text that a field shows says
+so.
 
 ## Why not Prawn, Chrome or Typst?
 
