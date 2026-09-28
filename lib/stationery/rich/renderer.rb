@@ -47,8 +47,9 @@ module Stationery
 
       def block(block)
         case block
-        when Paragraph then styled(block.style) { paragraph(block.inlines, **@styles[:p], **aligned(block.style)) }
-        when Heading then styled(block.style) { heading(block) }
+        when Paragraph
+          styled(block.style, block) { paragraph(block.inlines, **@styles[:p], **aligned(block.style)) }
+        when Heading then styled(block.style, block) { heading(block) }
         when List then styled(block.style) { indented(block) { list(block) } }
         when Blockquote then spaced(block.style) { indented(block) { blockquote(block) } }
         when CodeBlock then spaced(block.style) { code(block) }

@@ -49,6 +49,10 @@ RSpec.describe Stationery::HTML::Css do
       ["margin: 1pt 2pt 3pt", { margin: [1.0, 2.0, 3.0, 2.0] }],
       ["margin: 1pt 2pt 3pt 4pt", { margin: [1.0, 2.0, 3.0, 4.0] }],
       ["margin-top: 12pt; margin-bottom: 4px", { margin_top: 12.0, margin_bottom: 3.0 }],
+      ["margin-left: 12pt; margin-right: 8px", { margin_left: 12.0, margin_right: 6.0 }],
+      ["margin-left: 0", { margin_left: 0.0 }],
+      ["margin: 4pt; margin-left: 12pt", { margin: [4.0, 4.0, 4.0, 4.0], margin_left: 12.0 }],
+      ["margin-left: 12pt; margin-top: 2pt; margin: 4pt", { margin: [4.0, 4.0, 4.0, 4.0] }],
       ["padding: 4px 8px", { padding: [3.0, 6.0, 3.0, 6.0] }],
       ["padding-left: 10pt", { padding_left: 10.0 }],
       ["border: 1px solid #ccc", { border: { width: 0.75, color: "#CCC" } }],
@@ -111,6 +115,19 @@ RSpec.describe Stationery::HTML::Css do
       )
     end
 
+    it "reports the margins it does not draw: auto, a negative side, a unit it does not read" do
+      sheet = css
+      block = sheet.resolve(element("p", "style" => "margin-left: auto; margin-right: -4pt")).last
+      unit = sheet.resolve(element("p", "style" => "margin-left: 1em; margin-right: 10%")).last
+      kept = sheet.resolve(element("p", "style" => "margin-left: 12pt; margin: 0 auto")).last
+
+      expect([block, unit]).to eq([{}, {}])
+      expect(kept).to eq(margin_left: 12.0)
+      expect(sheet.report.properties).to eq(
+        ["margin-left: auto", "margin-right: -4pt", "margin-left: 1em", "margin-right: 10%", "margin: 0 auto"]
+      )
+    end
+
     it "reports selectors with combinators and skips at-rules" do
       sheet = css("@import url(evil.css); div > p { color: red } ul li, a:hover { color: blue } p { color: green }")
 
@@ -146,6 +163,33 @@ RSpec.describe Stationery::HTML::Css do
 
       expect(marks).to eq(color: "#FF0000")
       expect(block).to eq(align: :center, margin_top: 3.0)
+    end
+
+    describe "of a margin and its sides" do
+      let(:sheet) do
+        css("img { margin: 0 } .right { margin-left: 12pt; margin-top: 2pt } #flush { margin: 6pt }",
+            "img { margin-right: 9pt }")
+      end
+
+      it "lets a side of a more specific rule win over the margin of a lesser one" do
+        block = sheet.resolve(element("img", "class" => "right")).last
+
+        expect(block).to eq(margin: [0.0, 0.0, 0.0, 0.0], margin_right: 9.0, margin_left: 12.0, margin_top: 2.0)
+      end
+
+      it "lets the margin of a more specific rule take back the sides of the lesser ones" do
+        block = sheet.resolve(element("img", "class" => "right", "id" => "flush")).last
+
+        expect(block).to eq(margin: [6.0, 6.0, 6.0, 6.0])
+      end
+
+      it "lets an inline margin take back every side a rule set, and an inline side win over a rule's margin" do
+        margin = sheet.resolve(element("img", "class" => "right", "style" => "margin: 4pt")).last
+        side = sheet.resolve(element("img", "id" => "flush", "style" => "margin-left: 1pt")).last
+
+        expect(margin).to eq(margin: [4.0, 4.0, 4.0, 4.0])
+        expect(side).to eq(margin: [6.0, 6.0, 6.0, 6.0], margin_left: 1.0)
+      end
     end
 
     it "reads the font element's attributes and center, overridable by a style" do
