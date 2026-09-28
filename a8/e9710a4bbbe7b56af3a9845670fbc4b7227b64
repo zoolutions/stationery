@@ -1,0 +1,32 @@
+lib/stationery/fonts/glyph_run.rb
+  s_600b6bfbec0b19::t_63046417caa56b 10-14,26-27,29-54,59,64
+docs/app/views/docs/pages/warnings.rb
+  s_600b6bfbec0b19::t_dddcb3d11e42b0 33
+docs/app/views/docs/pages/fonts.rb
+  s_600b6bfbec0b19::t_dddcb3d11e42b0 135-137
+README.md
+  s_600b6bfbec0b19::t_dddcb3d11e42b0 797-799
+spec/stationery/missing_glyph_text_spec.rb
+  s_600b6bfbec0b19::t_5ad01b9fda35f2 1-82
+lib/stationery/fonts/font.rb
+  s_600b6bfbec0b19::t_63046417caa56b 27,111-113,115
+lib/stationery/testing/marked_text.rb
+  s_600b6bfbec0b19::t_405ce574a51e06 52
+  s_600b6bfbec0b19::t_63046417caa56b 19-20,36,38-43,47-51,59,70-86
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "a8e9710a4bbbe7b56af3a9845670fbc4b7227b64",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
