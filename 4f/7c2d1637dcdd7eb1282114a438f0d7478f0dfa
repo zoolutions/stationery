@@ -1,0 +1,41 @@
+lib/stationery/html/tree_builder/blocks.rb
+  s_632dbd6e2d0597::t_7fcef284141606 30,36
+lib/stationery/html/css.rb
+  s_632dbd6e2d0597::t_7fcef284141606 40-46,86-88,90-96,164,166,260-269
+spec/stationery/html/css_spec.rb
+  s_632dbd6e2d0597::t_7fcef284141606 52-55,118-130,168-192
+spec/stationery/rich/renderer_margins_spec.rb
+  s_632dbd6e2d0597::t_7fcef284141606 1-158
+spec/stationery/css/stylesheet_spec.rb
+  s_632dbd6e2d0597::t_7fcef284141606 27-34
+lib/stationery/rich/nodes.rb
+  s_632dbd6e2d0597::t_7fcef284141606 18-21
+lib/stationery/css/stylesheet.rb
+  s_632dbd6e2d0597::t_7fcef284141606 55-63
+spec/stationery/html/tree_builder/blocks_spec.rb
+  s_632dbd6e2d0597::t_7fcef284141606 82-97
+lib/stationery/rich/renderer.rb
+  s_632dbd6e2d0597::t_7fcef284141606 50-52
+docs/app/views/docs/pages/limitations.rb
+  s_632dbd6e2d0597::t_7fcef284141606 26
+README.md
+  s_632dbd6e2d0597::t_7fcef284141606 215,218,224-225,227,1272-1273
+lib/stationery/rich/renderer/boxes.rb
+  s_632dbd6e2d0597::t_7fcef284141606 6-8,13,19,22,36-41,46,52-53,56-57,60-77,111-112
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "4f7c2d1637dcdd7eb1282114a438f0d7478f0dfa",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
