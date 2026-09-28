@@ -117,10 +117,9 @@ RSpec.describe "Tagged PDF audit" do # rubocop:disable RSpec/DescribeClass
 
     it "takes an html image with an empty alt for decoration, floated or not" do
       logo = self.logo
-      doc = build do
-        html %(<p>Logo</p><img src="rgb.jpg" alt="" width="10"><img src="rgb.jpg" alt=" " width="10">) +
-             %(<p><img src="rgb.jpg" alt="" width="10" style="float: right">Beside</p>), images: ->(_) { logo }
-      end
+      markup = %(<p>Logo</p><img src="rgb.jpg" alt="" width="10"><img src="rgb.jpg" alt=" " width="10">) +
+               %(<p><img src="rgb.jpg" alt="" width="10" style="float: right; margin-left: 6px">Beside</p>)
+      doc = build { html markup, images: ->(_) { logo } }
       pdf = doc.to_pdf
 
       expect(doc.warnings).to be_empty
