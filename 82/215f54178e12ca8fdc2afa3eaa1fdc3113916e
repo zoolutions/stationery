@@ -1,0 +1,89 @@
+lib/stationery/page.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 22-24,26-30,39,88,90
+benchmark/baseline.json
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 39-73
+lib/stationery/document.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 32-35,37
+spec/stationery/tagging_region_links_spec.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 1-154
+lib/stationery/component.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 14
+docs/app/views/docs/pages/pages.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 21-23,27-34,36,38-83
+docs/app/views/docs/pages/documents_and_components.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 34
+docs/app/views/docs/pages/conformance.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 66,82-93,202-203
+docs/app/views/docs/pages/fonts.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 190-192,198-240
+docs/app/views/docs/pages/warnings.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 68-70
+spec/bench/metrics_spec.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 1-110
+spec/stationery/pdf/conformance_spec.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 223-261
+docs/app/views/docs/pages/performance.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 30
+examples/shaping/extraction_matrix/pdfium.py
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 1-8
+lib/stationery/canvas/surfacing.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 1-67
+spec/stationery/units_spec.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 1-75
+benchmark/features.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 1-138
+lib/stationery/tagging/tree.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 15,28-42,56,61-87
+examples/shaping/extraction_matrix/pdfkit.swift
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 1-6
+spec/stationery/document_page_spec.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 1-55
+examples/shaping/extraction_matrix.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 1-208
+lib/stationery/warnings.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 76-85
+spec/stationery/page/format_spec.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 1-76
+lib/stationery/canvas/marking.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 7-9,11-12,40,60-63,81,83-84,88-89,116-130
+spec/stationery/tagging_audit_spec.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 154-253
+lib/stationery.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 57,59,67
+examples/shaping/extraction_matrix/pdfjs.mjs
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 1-18
+benchmark/metrics.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 15,42-49,52,62-67,74-76,81-83
+lib/stationery/pdf/conformance.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 124-126,130-131
+lib/stationery/page/format.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 1-84
+Rakefile
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 46-53,80-81,86-88
+spec/stationery/page_spec.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 31-65
+lib/stationery/units.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 1-45
+README.md
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 392-407,442-443,526-530,543-551,599-602,615-616,1103-1105,1111-1153,1344,1349-1360
+lib/stationery/canvas.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 29,138-139,146
+lib/stationery/tagging/element.rb
+  s_f5a1e2cf907cda::t_9f1c037abf7da8 54-55,59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "82215f54178e12ca8fdc2afa3eaa1fdc3113916e",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
