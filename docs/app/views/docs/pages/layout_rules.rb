@@ -35,6 +35,8 @@ class Views::Docs::Pages::LayoutRules < DocsUI::Page
         - a [float](/docs/elements#floats) never splits: when it does not fit, or what wraps beside it could
           not start there, it moves to the next page with that content. A paragraph, a list item and a box
           beside it split as they do anywhere, and what they carry over is wrapped again at the full width.
+          Floats taller than a page together are cut before the first that does not fit, and only a float
+          taller than a page by itself is reported as an `Overflow`.
 
         Text splits between lines. Tables split between rows (never through a rowspan) and repeat their
         header rows. Lists keep each marker with the first line of its item.
