@@ -64,6 +64,15 @@ module Stationery
       def message = "#{kind} on page #{page} has no alt: text"
     end
 
+    # `allowed` is the deepest level the heading could have had: one below
+    # the heading before it, and 1 for the first heading.
+    SkippedHeading = Data.define(:level, :allowed, :page) do
+      def message
+        rule = "heading #{allowed} is the deepest that may follow heading #{allowed - 1}"
+        "heading #{level} on page #{page} skips a level: #{allowed == 1 ? "the first heading is heading 1" : rule}"
+      end
+    end
+
     MissingLanguage = Data.define do
       def message = "tagged PDF has no language: set metadata lang:"
     end

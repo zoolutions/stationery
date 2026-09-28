@@ -75,4 +75,82 @@ RSpec.describe Stationery::Tagging::Tree do
                                    Stationery::Warnings::MissingAlt.new(kind: :chart, page: 1)])
     end
   end
+
+  describe "#audit of heading levels" do
+    let(:warnings) { Stationery::Warnings.new }
+
+    def heading(level, parent: tree.root, page: pages[0])
+      Stationery::Tagging::Element.new(:"H#{level}").tap do |element|
+        element.attach(parent)
+        tree.mark(page, element) if page
+      end
+    end
+
+    def skipped(level, allowed, page) = Stationery::Warnings::SkippedHeading.new(level:, allowed:, page:)
+
+    def audit
+      tree.audit(pages, warnings, lang: "en")
+      warnings.to_a
+    end
+
+    it "is quiet when levels go down one at a time and come back up by any amount" do
+      [1, 2, 3, 4, 5, 6, 1, 2, 2, 3, 1, 1].each { |level| heading(level) }
+
+      expect(audit).to be_empty
+    end
+
+    it "wants the first heading to be H1" do
+      heading(2, page: pages[1])
+      heading(3)
+
+      expect(audit).to eq([skipped(2, 1, 2)])
+      expect(warnings.map(&:message)).to eq(["heading 2 on page 2 skips a level: the first heading is heading 1"])
+    end
+
+    it "warns per heading that skips a level and measures the next against it" do
+      [1, 3, 4, 6].each_with_index { |level, index| heading(level, page: pages[index % 2]) }
+
+      expect(audit).to eq([skipped(3, 2, 2), skipped(6, 5, 2)])
+      expect(warnings.map(&:message))
+        .to eq(["heading 3 on page 2 skips a level: heading 2 is the deepest that may follow heading 1",
+                "heading 6 on page 2 skips a level: heading 5 is the deepest that may follow heading 4"])
+    end
+
+    it "reads the headings in the order of the tree, not of the pages" do
+      heading(1)
+      section = Stationery::Tagging::Element.new(:Sect).tap { it.attach(tree.root) }
+      heading(3, page: pages[0])
+      heading(2, parent: section, page: pages[1])
+
+      expect(tree.root.elements.map(&:type)).to eq(%i[H1 Sect H3])
+      expect(audit).to be_empty
+    end
+
+    it "finds the headings nested in other elements" do
+      heading(1)
+      cell = %i[Table TR TD].inject(tree.root) do |parent, type|
+        Stationery::Tagging::Element.new(type).tap { it.attach(parent) }
+      end
+      heading(3, parent: cell, page: pages[1])
+
+      expect(audit).to eq([skipped(3, 2, 2)])
+    end
+
+    it "passes over a heading that holds no content, which is not written" do
+      heading(1)
+      heading(2, page: nil)
+      heading(3)
+
+      expect(audit).to eq([skipped(3, 2, 1)])
+    end
+
+    it "takes the page of a heading from the content of its links" do
+      title = heading(2, page: nil)
+      Stationery::Tagging::Element.new(:Link).attach(title)
+      link = Stationery::Tagging::Element.new(:Link).tap { it.attach(title) }
+      tree.mark(pages[1], link)
+
+      expect(audit).to eq([skipped(2, 1, 2)])
+    end
+  end
 end

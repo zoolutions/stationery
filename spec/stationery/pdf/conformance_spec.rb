@@ -82,6 +82,21 @@ RSpec.describe Stationery::PDF::Conformance do
       expect(pdf).not_to include("/Tabs")
     end
 
+    it "does not ask for structure: a tagged render only warns about alt text and heading levels" do
+      path = image_path("rgb.jpg")
+      doc = Class.new(document) do
+        define_method(:view_template) do
+          text "Details", heading: 2
+          image path, width: 20, alt: ""
+        end
+      end.new
+
+      expect(doc.to_pdf(conformance: :pdf_a3b, tagged: true)).to have_conformance(:pdf_a3b)
+      expect(doc.warnings.map(&:message)).to eq(["image on page 1 has no alt: text",
+                                                 "heading 2 on page 1 skips a level: the first heading is heading 1"])
+      expect(doc.tap { it.to_pdf(conformance: :pdf_a3b) }.warnings.to_a).to eq([])
+    end
+
     it "claims part 2 for :pdf_a2b" do
       expect(inspect_pdf(document.new.to_pdf(conformance: :pdf_a2b)).xmp_values).to include("pdfaid:part" => "2")
     end
@@ -167,6 +182,27 @@ RSpec.describe Stationery::PDF::Conformance do
       expect { figures.new.to_pdf(conformance: :pdf_ua1) }.to raise_error(Stationery::ConformanceError) do |error|
         expect(error.issues).to eq(["image on page 1 has no alt: text", "svg on page 1 has no alt: text"])
       end
+    end
+
+    it "raises on heading levels that are skipped, one issue each" do
+      skipping = Class.new(document) do
+        define_method(:view_template) do
+          text "Details", heading: 2
+          text "More", heading: 4
+          text "Report", heading: 1
+        end
+      end
+      kept = Class.new(document) do
+        define_method(:view_template) { [1, 2, 3, 1].each { |level| text "Level #{level}", heading: level } }
+      end
+
+      expect { skipping.new.to_pdf(conformance: %i[pdf_a3b pdf_ua1]) }
+        .to raise_error(Stationery::ConformanceError) do |error|
+          expect(error.issues)
+            .to eq(["heading 2 on page 1 skips a level: the first heading is heading 1",
+                    "heading 4 on page 1 skips a level: heading 3 is the deepest that may follow heading 2"])
+        end
+      expect(kept.new.to_pdf(conformance: :pdf_ua1)).to have_conformance(:pdf_ua1)
     end
 
     it "may be encrypted" do
