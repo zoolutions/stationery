@@ -1,0 +1,54 @@
+spec/stationery/gemspec_spec.rb
+  s_f5a1e2cf907cda::t_47c96ef9656101 9-13,19-35,39,42-46
+lib/stationery/cli/examples.rb
+  s_f5a1e2cf907cda::t_1847b41268a1c4 1-71
+spec/stationery/cli/examples_spec.rb
+  s_f5a1e2cf907cda::t_3fa5c751af138e 23
+  s_f5a1e2cf907cda::t_0fb123c0d6b024 1-22,24-62
+stationery.gemspec
+  s_f5a1e2cf907cda::t_8cb1f758dd9648 39-40,44-46,48-49,51-52
+  s_f5a1e2cf907cda::t_93bf654171a480 47
+docs/app/models/source_markdown.rb
+  s_f5a1e2cf907cda::t_e04b3fa7862999 35-37
+lib/stationery/cli.rb
+  s_f5a1e2cf907cda::t_140b025de0289a 75
+docs/spec/requests/examples_spec.rb
+  s_f5a1e2cf907cda::t_9fe9089732e723 45-77
+docs/spec/models/source_markdown_spec.rb
+  s_f5a1e2cf907cda::t_b3a6c948de708e 30-36
+docs/app/views/docs/pages/examples.rb
+  s_f5a1e2cf907cda::t_7f4a9ee0872662 98
+  s_f5a1e2cf907cda::t_e06f719c05988d 99-107
+  s_f5a1e2cf907cda::t_9133b63d9543c8 6-8
+  s_f5a1e2cf907cda::t_f2654c9ae35c67 70-80
+examples/invoice.rb
+  s_f5a1e2cf907cda::t_43e48cf9448f6a 3-5
+spec/fixtures/fonts/README.md
+  s_f5a1e2cf907cda::t_7df8f6cd725a12 17-19
+docs/app/views/docs/pages/cli.rb
+  s_f5a1e2cf907cda::t_a3b9e7d3151843 66-82
+  s_f5a1e2cf907cda::t_cc1313c2d0351b 7
+CHANGELOG.md
+  s_f5a1e2cf907cda::t_fd56a750d1c864 5
+spec/fixtures/fonts/OpenSans-LICENSE.txt
+  ai_agent 1-202
+README.md
+  s_f5a1e2cf907cda::t_398b3e2f59804d 963-972
+  s_f5a1e2cf907cda::t_73a53bc6d53a35 77-86
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "939c94d78181635f0741567b69b7aecfaf29a44f",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
