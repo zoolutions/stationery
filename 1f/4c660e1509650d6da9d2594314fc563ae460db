@@ -1,0 +1,37 @@
+lib/stationery/svg/painter.rb
+  s_f5a1e2cf907cda::t_1d7d85dc95f9f7 68
+lib/stationery/canvas.rb
+  s_f5a1e2cf907cda::t_fb0a8cf7a4da6c 4-8,10-11,17,77-84,88-91
+lib/stationery.rb
+  s_f5a1e2cf907cda::t_1d7d85dc95f9f7 64,68-69,72
+lib/stationery/svg/gradient.rb
+  s_f5a1e2cf907cda::t_1d7d85dc95f9f7 15-26
+lib/stationery/path.rb
+  s_f5a1e2cf907cda::t_f82ee071727ebf 1-14,17-104,106-109,111-138
+  s_f5a1e2cf907cda::t_e94b7f0966076d 15-16,105,110
+lib/stationery/canvas/interface.rb
+  s_f5a1e2cf907cda::t_f89aa52607d876 44
+  s_f5a1e2cf907cda::t_bf071595bcedce 1-43,45-146
+lib/stationery/canvas/glyphs.rb
+  s_f5a1e2cf907cda::t_cb97748a60cec4 1-40
+lib/stationery/canvas/text.rb
+  s_f5a1e2cf907cda::t_f89aa52607d876 5-6,29-30
+lib/stationery/canvas/path.rb
+  s_f5a1e2cf907cda::t_245dccfa90e6ca 5-7,9,13-20,25-34,37-38,41-45,48-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "1f4c660e1509650d6da9d2594314fc563ae460db",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
