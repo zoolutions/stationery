@@ -54,6 +54,13 @@ RSpec.describe Stationery::Text::Markup do
     expect(decoded).to eq(["Fish & Chips <3 > \"q\" 's € A"])
   end
 
+  it "keeps an escaped tag as literal text instead of styling it" do
+    result = runs("a &lt;b&gt;not bold&lt;/b&gt; &amp; <b>bold</b>")
+
+    expect(result.map(&:text)).to eq(["a <b>not bold</b> & ", "bold"])
+    expect(result.map { |r| r.style.weight }).to eq(%i[regular bold])
+  end
+
   it "decodes HTML 4 named entities" do
     expect(texts("Fish &amp; Chips &mdash; &euro;5").join).to eq("Fish & Chips — €5")
   end
