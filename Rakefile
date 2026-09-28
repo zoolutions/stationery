@@ -38,11 +38,28 @@ end
 
 namespace :verify do
   example = lambda do |name|
-    load File.expand_path("examples/#{name}.rb", __dir__)
-    Object.const_get("Example#{name.split("_").map(&:capitalize).join}").preview
+    constant = "Example#{name.split("_").map(&:capitalize).join}"
+    load File.expand_path("examples/#{name}.rb", __dir__) unless Object.const_defined?(constant)
+    Object.const_get(constant).preview
   end
 
-  desc "Validate PDF/A-3b and PDF/UA-1 renders of the examples with veraPDF (needs Docker)"
+  # A key and a self-signed certificate for it, good for an hour: what the
+  # signed renders below are signed with.
+  identity = lambda do
+    require "openssl"
+    key = OpenSSL::PKey::RSA.new(2048)
+    certificate = OpenSSL::X509::Certificate.new
+    certificate.version = 2
+    certificate.serial = 1
+    certificate.subject = certificate.issuer = OpenSSL::X509::Name.parse("/C=SE/O=Stationery/CN=Stationery verify")
+    certificate.public_key = key
+    certificate.not_before = Time.now - 60
+    certificate.not_after = Time.now + 3600
+    certificate.sign(key, "SHA256")
+    { certificate:, key:, reason: "rake verify" }
+  end
+
+  desc "Validate PDF/A-3b and PDF/UA-1 renders of the examples, plain and signed, with veraPDF (needs Docker)"
   task :conformance do
     $LOAD_PATH.unshift(File.expand_path("lib", __dir__))
     require "stationery"
@@ -50,9 +67,13 @@ namespace :verify do
     mkdir_p out
     image = ENV.fetch("VERAPDF_IMAGE", "verapdf/cli:latest")
     renders = { "invoice" => { pdf_a3b: "3b" }, "report" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
-                "e_invoice" => { pdf_a3b: "3b" }, "form" => { pdf_ua1: "ua1", pdf_a3b: "3b" } }
+                "e_invoice" => { pdf_a3b: "3b" }, "form" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
+                "signed_invoice" => { pdf_a3b: "3b" }, "signed_form" => { pdf_ua1: "ua1", pdf_a3b: "3b" } }
     failures = renders.flat_map do |name, levels|
-      example.call(name).to_pdf(File.join(out, "#{name}.pdf"), conformance: levels.keys)
+      options = { conformance: levels.keys }
+      options[:sign] = identity.call if name.start_with?("signed_")
+      options[:sign][:field] = "signature" if name == "signed_form"
+      example.call(name.delete_prefix("signed_")).to_pdf(File.join(out, "#{name}.pdf"), **options)
       failed = levels.values.reject do |flavour|
         sh("docker", "run", "--rm", "--platform", "linux/amd64", "-v", "#{out}:/data:ro", image,
            "--format", "text", "-v", "--flavour", flavour, "/data/#{name}.pdf") { |ok, _| ok }
@@ -60,6 +81,31 @@ namespace :verify do
       failed.map { |flavour| "#{name}.pdf is not #{flavour}" }
     end
     abort failures.join("\n") if failures.any?
+  end
+
+  desc "Verify a signed render of the invoice example with openssl, and with pdfsig when it is installed"
+  task :signature do
+    $LOAD_PATH.unshift(File.expand_path("lib", __dir__))
+    require "stationery"
+    require "stationery/testing/inspector"
+    out = File.expand_path("tmp/signature", __dir__)
+    mkdir_p out
+    pdf = example.call("invoice").to_pdf(File.join(out, "invoice.pdf"), sign: identity.call)
+    signature = Stationery::Testing::Inspector.new(pdf).signatures.first
+    range = signature.fetch(:byte_range)
+    cms = Stationery::PDF::Signature.der([pdf.byteslice(range[1] + 1, range[2] - range[1] - 2)].pack("H*"))
+    File.binwrite(File.join(out, "invoice.der"), cms)
+    File.binwrite(File.join(out, "invoice.bin"), pdf.byteslice(range[0], range[1]) + pdf.byteslice(range[2], range[3]))
+    abort "invoice.pdf does not verify: #{signature}" unless signature[:valid]
+
+    sh "openssl", "cms", "-verify", "-inform", "DER", "-in", File.join(out, "invoice.der"),
+       "-content", File.join(out, "invoice.bin"), "-binary", "-noverify", "-out", File::NULL
+    next puts("pdfsig is not installed (poppler): skipped") unless system("which pdfsig > #{File::NULL} 2>&1")
+
+    report = `pdfsig -nocert #{File.join(out, "invoice.pdf")} 2>&1`
+    puts report
+    abort "pdfsig does not call the signature valid" unless report.include?("Signature is Valid") &&
+                                                            report.include?("Total document signed")
   end
 
   desc "Validate the Factur-X example (PDF/A-3 and its EN 16931 XML) with Mustang (needs Docker)"

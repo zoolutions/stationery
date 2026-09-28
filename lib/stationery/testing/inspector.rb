@@ -133,6 +133,19 @@ module Stationery
         entries.each_slice(2).map { |_name, ref| attachment(objects.deref_hash(ref)) }
       end
 
+      # Every signed signature field: `{ field:, name:, reason:, location:,
+      # signed_at:, subfilter:, byte_range:, signer:, valid: }`. `signer` is
+      # the signing certificate's subject ("CN=…,O=…"). `valid` is whether
+      # the signature covers the whole file and verifies against the
+      # certificate it carries; the certificate's own trust is not judged.
+      def signatures
+        form = catalog[:AcroForm]
+        return [] unless form
+
+        require "openssl"
+        signature_fields(objects.deref_hash(form)[:Fields], nil)
+      end
+
       # The structure tree of a tagged PDF as nested arrays; see StructureReader.
       def structure = @structure ||= StructureReader.new(reader).tree
 
@@ -165,6 +178,48 @@ module Stationery
         relationship = PDF::Attachments::RELATIONSHIPS.key(spec[:AFRelationship]) || spec[:AFRelationship]
         { name: decode(spec[:UF] || spec[:F]), mime: stream.hash[:Subtype].to_s, bytes: stream.unfiltered_data,
           description: spec[:Desc] && decode(spec[:Desc]), relationship: }
+      end
+
+      def signature_fields(refs, prefix)
+        Array(objects.deref_array(refs)).flat_map do |ref|
+          field = objects.deref_hash(ref)
+          name = [prefix, field[:T] && decode(field[:T])].compact.join(".")
+          kids = Array(objects.deref_array(field[:Kids])).select { |kid| objects.deref_hash(kid).key?(:T) }
+          next signature_fields(kids, name) if kids.any?
+
+          field[:FT] == :Sig && field[:V] ? [signature(name, objects.deref_hash(field[:V]))] : []
+        end
+      end
+
+      def signature(field, value)
+        range = objects.deref_array(value[:ByteRange])
+        text = value.slice(:Name, :Reason, :Location).transform_values { |string| decode(string) }
+        { field:, name: text[:Name], reason: text[:Reason], location: text[:Location],
+          signed_at: signing_time(value[:M]), subfilter: value[:SubFilter], byte_range: range, **verdict(range) }
+      end
+
+      def signing_time(date)
+        digits = date.to_s[/\AD:(\d{14})/, 1]
+        digits && Time.utc(*digits.unpack("a4a2a2a2a2a2").map(&:to_i))
+      end
+
+      # The signature is read from the file by its byte range, not from the
+      # parsed dictionary: it is the one string encryption leaves alone.
+      def verdict(range)
+        contents = pdf.byteslice(range[1], range[2] - range[1]).to_s
+        cms = OpenSSL::PKCS7.new(PDF::Signature.der([contents[1..-2]].pack("H*")))
+        signed = pdf.byteslice(range[0], range[1]) + pdf.byteslice(range[2], range[3])
+        flags = OpenSSL::PKCS7::NOVERIFY | OpenSSL::PKCS7::BINARY
+        whole = range[0].zero? && range[2] + range[3] == pdf.bytesize && contents.start_with?("<")
+        { signer: signer(cms), valid: whole && cms.verify([], OpenSSL::X509::Store.new, signed, flags) }
+      rescue OpenSSL::OpenSSLError, ArgumentError, TypeError
+        { signer: nil, valid: false }
+      end
+
+      def signer(cms)
+        info = cms.signers.first
+        certificate = cms.certificates.find { |one| one.serial == info.serial && one.issuer == info.issuer }
+        certificate&.subject&.to_utf8
       end
 
       def xmp_value(body)

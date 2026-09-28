@@ -87,6 +87,17 @@ RSpec.describe Stationery::Testing::Assertions do
     expect(host.calls.last.last).to eq("expected PDF to be a Factur-X invoice of profile :basic, got no invoice")
   end
 
+  it "asserts a signature" do
+    identity = signer
+    signed = SpecDocument.build { text "x" }.to_pdf(sign: { certificate: identity.certificate, key: identity.key })
+    host.assert_pdf_signature(signed)
+    host.assert_pdf_signature(signed, name: "Test Signer rsa")
+    host.assert_pdf_signature(pdf, "not signed")
+
+    expect(host.calls.map(&:first)).to eq([true, true, false])
+    expect(host.calls.last.last).to eq("not signed")
+  end
+
   it "asserts page labels" do
     labelled = Class.new(SpecDocument) do
       page_labels 1 => { style: :roman }

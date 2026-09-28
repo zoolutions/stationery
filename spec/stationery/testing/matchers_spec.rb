@@ -185,6 +185,24 @@ RSpec.describe Stationery::Testing::Matchers do
         .to eq("expected PDF to be a Factur-X invoice, got no invoice")
     end
 
+    it "matches a signature, by signer and by validity" do
+      identity = signer
+      pdf = document.to_pdf(sign: { certificate: identity.certificate, key: identity.key, name: "Legal" })
+      tampered = pdf.dup.tap { |bytes| bytes.setbyte(12, bytes.getbyte(12) ^ 1) }
+
+      expect(pdf).to have_signature.and have_signature(name: "Legal")
+      expect(pdf).not_to have_signature(name: "Finance")
+      expect(tampered).to have_signature(valid: false)
+      matcher = have_signature(name: "Finance")
+      expect(matcher.matches?(pdf)).to be(false)
+      expect(matcher.description).to eq('have a valid signature by "Finance"')
+      expect(matcher.failure_message).to eq('expected PDF to have a valid signature by "Finance", got "Legal" (valid)')
+      expect(have_signature.tap { |m| m.matches?(tampered) }.failure_message)
+        .to eq('expected PDF to have a valid signature, got "Legal" (invalid)')
+      expect(have_signature(valid: false).tap { |m| m.matches?(document) }.failure_message)
+        .to eq("expected PDF to have an invalid signature, got none")
+    end
+
     it "matches page labels" do
       labelled = Class.new(SpecDocument) do
         page_labels 1 => { style: :roman_lower }, 3 => { style: :decimal }

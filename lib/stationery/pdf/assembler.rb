@@ -10,12 +10,14 @@ module Stationery
       # PDF::Attachment files to embed; `xmp:` (true) writes the XMP packet,
       # with `xmp_extensions:` as further schemas and `xmp_schemas:` describing
       # them to PDF/A (see XMP); `conformance:` (a PDF::Conformance) adds what
-      # PDF/A and PDF/UA ask of the file.
+      # PDF/A and PDF/UA ask of the file; `signature:` (a PDF::Signature)
+      # signs it.
       def initialize(pages:, resources:, info: {}, outline: [], encryption: nil, tagging: nil, lang: nil,
                      page_labels: nil, attachments: [], xmp: true, xmp_extensions: {}, xmp_schemas: [],
-                     conformance: nil)
+                     conformance: nil, signature: nil)
         @xmp_schemas = xmp_schemas
         @conformance = conformance
+        @signature = signature
         @tagging = tagging
         @lang = lang
         @page_labels = page_labels
@@ -33,7 +35,8 @@ module Stationery
         writer = Writer.new(encryption: @encryption)
         tree = writer.reserve
         refs = @resources.build(writer)
-        @form = Forms::AcroForm.new(writer, fonts: refs.fetch(:Font), need_appearances: @conformance.nil?)
+        @form = Forms::AcroForm.new(writer, fonts: refs.fetch(:Font), signature: @signature,
+                                            need_appearances: @conformance.nil? && @signature.nil?)
         kids = @kids = @pages.map { writer.reserve }
         @structure = @tagging && Tagging::Writer.new(@tagging, pages: @pages, refs: kids)
         @pages.each_with_index { |page, index| write_page(writer, page, kids[index], tree, refs) }
@@ -44,7 +47,8 @@ module Stationery
         entries = catalog(tree, outlines, @form.write)
                   .merge(accessibility(writer), metadata(writer, info, now), Attachments.write(writer, @attachments))
         entries.merge!(@conformance.catalog_entries(writer)) if @conformance
-        writer.render(root: writer.add(entries), info: writer.add(info))
+        pdf = writer.render(root: writer.add(entries), info: writer.add(info))
+        @signature ? @signature.apply(pdf) : pdf
       end
 
       private
@@ -69,12 +73,18 @@ module Stationery
           Type: :Page, Parent: tree, MediaBox: [0, 0, *page.size],
           Contents: writer.add(Stream.new(page.content)), Resources: page_resources(page, refs)
         }
-        if page.annotations.any?
-          dictionary[:Annots] = page.annotations.map { |annot| annotation_ref(writer, annot, ref) }
-        end
+        annotations = page.annotations.map { |annot| annotation_ref(writer, annot, ref) }
+        annotations << @form.sign(ref, taken: field_names) if @signature&.invisible? && ref == @kids.first
+        dictionary[:Annots] = annotations if annotations.any?
         dictionary.merge!(@structure.page_entries(page)) if @structure
-        dictionary.merge!(@conformance.page_entries(page)) if @conformance
+        dictionary.merge!(@conformance.page_entries(page, annotated: annotations.any?)) if @conformance
         writer.set(ref, dictionary)
+      end
+
+      # Every field name of the document and the group each one starts with.
+      def field_names
+        names = @pages.flat_map(&:annotations).filter_map { |annotation| annotation[:widget]&.name }
+        names.flat_map { |name| [name, name.split(".").first] }.uniq
       end
 
       def page_resources(page, refs)

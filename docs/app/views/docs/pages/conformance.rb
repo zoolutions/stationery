@@ -4,7 +4,7 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
   title "PDF/A and PDF/UA"
   eyebrow "Guide"
 
-  def lead = "Archival (PDF/A), accessible (PDF/UA-1) and e-invoice (Factur-X) output, claimed only when the file keeps it."
+  def lead = "Archival (PDF/A), accessible (PDF/UA-1), e-invoice (Factur-X) and digitally signed output, claimed only when the file keeps it."
 
   def content
     DocsUI::Section("Claiming a level", description: "At class level or per render.") do
@@ -124,8 +124,8 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         invoicing code or a library made for it. The [e-invoice example](/docs/examples#factur-x-e-invoice)
         builds a minimal EN 16931 document from its line items in plain Ruby, marked as sample code.
 
-        Everything PDF/A-3b asks still applies: `encrypt:` raises and so do form fields. Without `factur_x`
-        a render is byte for byte what it was.
+        Everything PDF/A-3b asks still applies: `encrypt:` raises. Form fields and a signature are fine.
+        Without `factur_x` a render is byte for byte what it was.
       MD
 
       DocsUI::Callout(:tip, title: "Validate the XML too") do
@@ -134,11 +134,43 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
       end
     end
 
+    DocsUI::Section("Digital signatures", description: "Who issued the file, and that it has not changed.") do
+      md SourceMarkdown.readme_section("Digital signatures")
+
+      md <<~'MD'
+        | What | Written |
+        | --- | --- |
+        | Signature dictionary | `/Type /Sig`, `/Filter /Adobe.PPKLite`, `/SubFilter /ETSI.CAdES.detached`, `/M`, `/Name`, and `/Reason`, `/Location`, `/ContactInfo` when given |
+        | `/ByteRange` | The whole file but the `/Contents` string: `[0 a b c]` with `b + c` the file's size |
+        | `/Contents` | The CMS SignedData in hex, padded with zeros to `contents_size:` bytes, never encrypted |
+        | Signed attributes | content type, message digest (SHA-256), ESS signing-certificate-v2; no signing time |
+        | Form | `/SigFlags 3`, no `NeedAppearances`; the field's `/V` is the signature dictionary |
+        | Invisible signature | A field `Signature1` whose widget is `/Rect [0 0 0 0]`, `/F 132` (print, locked), on the first page |
+
+        Check a signed file with poppler's `pdfsig`, or the signature itself with OpenSSL:
+
+        ```sh
+        pdfsig -nocert contract.pdf
+        #  - Signature Type: ETSI.CAdES.detached
+        #  - Total document signed
+        #  - Signature Validation: Signature is Valid.
+        openssl cms -verify -inform DER -in signature.der -content signed-bytes.bin -binary -noverify -out /dev/null
+        # CMS Verification successful
+        ```
+      MD
+
+      DocsUI::Callout(:note, title: "Valid is not trusted") do
+        "A valid signature says the file is what the certificate's holder signed. Whether a viewer shows a " \
+          "green mark depends on the certificate: one issued by an authority on the viewer's trust list " \
+          "(the EU trusted lists, Adobe's AATL) is trusted, a self-signed one is valid but unknown."
+      end
+    end
+
     DocsUI::Section("Validating with veraPDF", description: "The reference validator, through Docker.") do
       md <<~'MD'
         `bundle exec rake verify:conformance` renders `examples/invoice.rb` and `examples/e_invoice.rb`
-        as PDF/A-3b, and `examples/report.rb` and `examples/form.rb` as PDF/A-3b plus PDF/UA-1,
-        and validates them with
+        as PDF/A-3b, and `examples/report.rb` and `examples/form.rb` as PDF/A-3b plus PDF/UA-1, the
+        invoice and the form once more with a signature, and validates them with
         [veraPDF](https://verapdf.org) in a container (`verapdf/cli`); the gem's CI runs it on every push.
         Validate your own documents the same way:
 
@@ -170,15 +202,20 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         it { is_expected.to have_conformance(:pdf_a3b, :pdf_ua1) }
 
         it { is_expected.to have_factur_x(profile: :en16931) }
+        it { is_expected.to have_signature(name: "Acme Legal") }
 
         assert_pdf_conformance pdf, :pdf_a3b
         assert_factur_x pdf, profile: :en16931
+        assert_pdf_signature pdf, name: "Acme Legal"
         Stationery::Testing::Inspector.new(pdf).conformance # => [:pdf_a3b, :pdf_ua1]
         Stationery::Testing::Inspector.new(pdf).factur_x    # => { profile: :en16931, filename: "factur-x.xml", … }
+        Stationery::Testing::Inspector.new(pdf).signatures  # => [{ field: "approval", signer: "CN=…", valid: true, … }]
         ```
 
         These read the claim from the XMP packet, and for an e-invoice the embedded file it names. They
-        do not validate the file: that is veraPDF's and Mustang's job.
+        do not validate the file: that is veraPDF's and Mustang's job. A signature is different:
+        `have_signature` recomputes the digest over the signed bytes and verifies the CMS against the
+        certificate it carries (not the certificate's trust).
       MD
     end
   end
