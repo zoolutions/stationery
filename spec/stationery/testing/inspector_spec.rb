@@ -107,6 +107,18 @@ RSpec.describe Stationery::Testing::Inspector do
     end
   end
 
+  describe "#factur_x" do
+    it "reads the invoice the XMP packet names, with its embedded XML" do
+      doc = SpecDocument.build { text "x" }
+      xml = "<?xml version=\"1.0\"?><rsm:CrossIndustryInvoice>Müller</rsm:CrossIndustryInvoice>"
+      invoice = described_class.new(doc.to_pdf(factur_x: { xml:, profile: :extended, version: "1.0" })).factur_x
+
+      expect(invoice).to eq(profile: :extended, filename: "factur-x.xml", version: "1.0", xml:)
+      expect(invoice[:xml].encoding).to eq(Encoding::UTF_8)
+      expect(described_class.new(doc).factur_x).to be_nil
+    end
+  end
+
   describe "#xmp and #xmp_values" do
     it "reads the packet and its properties, or nil and {} without one" do
       doc = Class.new(SpecDocument) do

@@ -4,7 +4,7 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
   title "PDF/A and PDF/UA"
   eyebrow "Guide"
 
-  def lead = "Archival (PDF/A-2b, PDF/A-3b) and accessible (PDF/UA-1) output, claimed only when the file keeps it."
+  def lead = "Archival (PDF/A), accessible (PDF/UA-1) and e-invoice (Factur-X) output, claimed only when the file keeps it."
 
   def content
     DocsUI::Section("Claiming a level", description: "At class level or per render.") do
@@ -78,9 +78,61 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
       end
     end
 
+    DocsUI::Section("Factur-X / ZUGFeRD e-invoices", description: "One PDF for people and for accounting software.") do
+      md <<~'MD'
+        A Factur-X invoice (ZUGFeRD in Germany) is a PDF/A-3b file with the invoice embedded as Cross
+        Industry Invoice XML. `factur_x` does the PDF side in one line:
+
+        ```ruby
+        class InvoicePdf < Stationery::Document
+          metadata title: "Invoice", lang: "en"
+          factur_x(profile: :en16931) { @invoice.to_cii_xml } # evaluated in the document, per render
+          # factur_x :invoice_xml                             # or a method name
+          # factur_x File.read("factur-x.xml")                # or the XML itself
+
+          def initialize(invoice) = (super(); @invoice = invoice)
+        end
+
+        InvoicePdf.new(invoice).to_pdf(factur_x: { xml:, profile: :extended }) # per render; nil for none
+        ```
+
+        | What | Written |
+        | --- | --- |
+        | Conformance | `:pdf_a3b`, added to declared levels such as `:pdf_ua1`; declaring `:pdf_a2b` raises |
+        | Embedded file | `factur-x.xml`, `text/xml`, description "Factur-X Invoice", `/Params` with size, checksum and modification date, listed in `/EmbeddedFiles` and `/AF` |
+        | XMP | `fx:DocumentType INVOICE`, `fx:DocumentFileName`, `fx:Version`, `fx:ConformanceLevel`, and the `fx` schema described through `pdfaExtension:schemas` |
+
+        | `profile:` | `fx:ConformanceLevel` | File | `/AFRelationship` |
+        | --- | --- | --- | --- |
+        | `:minimum` | `MINIMUM` | `factur-x.xml` | `Data` |
+        | `:basic_wl` | `BASIC WL` | `factur-x.xml` | `Data` |
+        | `:basic` | `BASIC` | `factur-x.xml` | `Alternative` |
+        | `:en16931` (default) | `EN 16931` | `factur-x.xml` | `Alternative` |
+        | `:extended` | `EXTENDED` | `factur-x.xml` | `Alternative` |
+        | `:xrechnung` | `XRECHNUNG` | `xrechnung.xml` | `Alternative` |
+
+        `filename:`, `version:` (default `"1.0"`) and `relationship:` override the defaults; ZUGFeRD 1.0
+        named its file `ZUGFeRD-invoice.xml`.
+
+        Stationery carries the XML, it does not write or validate it. Anything that does not start with
+        `<?xml` or `<rsm:CrossIndustryInvoice` raises `ArgumentError`; what is inside comes from your
+        invoicing code or a library made for it. The [e-invoice example](/docs/examples#factur-x-e-invoice)
+        builds a minimal EN 16931 document from its line items in plain Ruby, marked as sample code.
+
+        Everything PDF/A-3b asks still applies: `encrypt:` raises and so do form fields. Without `factur_x`
+        a render is byte for byte what it was.
+      MD
+
+      DocsUI::Callout(:tip, title: "Validate the XML too") do
+        "veraPDF checks the PDF/A-3 container. The invoice itself is checked by a Factur-X validator: " \
+          "rake verify:factur_x runs Mustang on the example, against the EN 16931 schema and business rules."
+      end
+    end
+
     DocsUI::Section("Validating with veraPDF", description: "The reference validator, through Docker.") do
       md <<~'MD'
-        `bundle exec rake verify:conformance` renders `examples/invoice.rb` as PDF/A-3b and
+        `bundle exec rake verify:conformance` renders `examples/invoice.rb` and `examples/e_invoice.rb`
+        as PDF/A-3b and
         `examples/report.rb` as PDF/A-3b plus PDF/UA-1, and validates them with
         [veraPDF](https://verapdf.org) in a container (`verapdf/cli`); the gem's CI runs it on every push.
         Validate your own documents the same way:
@@ -92,6 +144,17 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         ```
 
         Flavours are `2b`, `3b` and `ua1`; `-v` lists the failed rules by clause.
+
+        `bundle exec rake verify:factur_x` validates the e-invoice example with
+        [Mustang](https://www.mustangproject.org), which checks the PDF/A-3 file and the embedded XML
+        together. It downloads the pinned Mustang CLI once into `tmp/factur_x/` and runs it in a Java
+        container:
+
+        ```sh
+        docker run --rm -v "$PWD:/data" -w /data eclipse-temurin:21-jre \
+          java -jar Mustang-CLI-2.26.0.jar --action validate --source invoice.pdf --no-notices
+        # <summary status="valid"/>
+        ```
       MD
     end
 
@@ -101,11 +164,16 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         it { is_expected.to have_conformance(:pdf_a3b) }
         it { is_expected.to have_conformance(:pdf_a3b, :pdf_ua1) }
 
+        it { is_expected.to have_factur_x(profile: :en16931) }
+
         assert_pdf_conformance pdf, :pdf_a3b
+        assert_factur_x pdf, profile: :en16931
         Stationery::Testing::Inspector.new(pdf).conformance # => [:pdf_a3b, :pdf_ua1]
+        Stationery::Testing::Inspector.new(pdf).factur_x    # => { profile: :en16931, filename: "factur-x.xml", … }
         ```
 
-        These read the claim from the XMP packet. They do not validate the file: that is veraPDF's job.
+        These read the claim from the XMP packet, and for an e-invoice the embedded file it names. They
+        do not validate the file: that is veraPDF's and Mustang's job.
       MD
     end
   end

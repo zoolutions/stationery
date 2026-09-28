@@ -131,6 +131,29 @@ module Stationery
         def actual = @inspector.conformance.empty? ? "got no claim" : "got #{labels(@inspector.conformance)}"
       end
 
+      class HaveFacturX < Base
+        def initialize(profile: nil) = super(profile&.to_sym)
+
+        def description
+          @expected ? "be a Factur-X invoice of profile #{@expected.inspect}" : "be a Factur-X invoice"
+        end
+
+        private
+
+        def match?(pdf)
+          invoice = pdf.factur_x
+          !invoice.nil? && !invoice[:xml].nil? && (@expected.nil? || invoice[:profile] == @expected)
+        end
+
+        def actual
+          invoice = @inspector.factur_x
+          return "got no invoice" unless invoice
+          return "got #{invoice[:filename]} named in XMP but not embedded" unless invoice[:xml]
+
+          "got profile #{invoice[:profile].inspect}"
+        end
+      end
+
       class HaveAttachment < Base
         def initialize(name, mime: nil, relationship: nil)
           super(name)
@@ -203,6 +226,7 @@ module Stationery
       def have_page_labels(labels) = HavePageLabels.new(labels)
       def have_attachment(name, **) = HaveAttachment.new(name, **)
       def have_conformance(*levels) = HaveConformance.new(*levels)
+      def have_factur_x(profile: nil) = HaveFacturX.new(profile:)
       def have_no_warnings = HaveNoWarnings.new
       def have_structure(expected) = HaveStructure.new(expected)
       def have_tagged_content = HaveTaggedContent.new

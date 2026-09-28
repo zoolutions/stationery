@@ -93,6 +93,20 @@ module Stationery
         config[:conformance] = levels.flatten
       end
 
+      # Makes every render a Factur-X / ZUGFeRD e-invoice: PDF/A-3b with the
+      # invoice XML embedded and identified in XMP. `xml` is the Cross
+      # Industry Invoice as a String, or a method name or block answering it
+      # for the document being rendered: `factur_x(profile: :en16931) {
+      # invoice.to_cii }`. See PDF::FacturX for profiles and options.
+      def factur_x(xml = nil, **options, &block)
+        source = xml || block
+        raise ArgumentError, "factur_x needs the invoice XML, a method name or a block" unless source
+
+        PDF::FacturX.profile(options.fetch(:profile, :en16931))
+        PDF::FacturX.new(source, **options) if source.is_a?(String)
+        config[:factur_x] = { xml: source, **options }
+      end
+
       # Encrypts every render with the standard security handler; see
       # PDF::Encryption::StandardSecurity for the options.
       def encrypt(**)
@@ -126,12 +140,14 @@ module Stationery
 
     def to_pdf(target = nil, strict: self.class.config[:strict], debug: false, encrypt: self.class.config[:encrypt],
                tagged: self.class.config[:tagged], page_labels: self.class.config[:page_labels], attachments: [],
-               xmp: metadata[:xmp] != false, conformance: self.class.config[:conformance])
-      attachments = PDF::Attachments.merge(self.class.config[:attachments], attachments)
-      conformance = PDF::Conformance.for(conformance)
+               xmp: metadata[:xmp] != false, conformance: self.class.config[:conformance],
+               factur_x: self.class.config[:factur_x])
+      invoice = PDF::FacturX.for(factur_x, self)
+      attachments = PDF::Attachments.merge(self.class.config[:attachments], attachments, invoice&.attachment)
+      conformance = PDF::Conformance.for(invoice ? invoice.conformance(conformance) : conformance)
       conformance&.validate!(encrypt:, metadata:, attachments:)
       options = { strict:, debug:, encrypt:, tagged: tagged || conformance&.pdf_ua?, page_labels:, attachments:,
-                  xmp: xmp || !conformance.nil?, conformance: }
+                  xmp: xmp || !conformance.nil?, conformance:, invoice: }
       Stationery.instrument("render.stationery", document: self.class.name) do |event|
         write(render_pdf(event, **options), target)
       end
@@ -180,11 +196,13 @@ module Stationery
       pdf
     end
 
-    def assemble(pages, resources, outline, encrypt:, tagging:, page_labels:, attachments:, xmp:, conformance:)
+    def assemble(pages, resources, outline, encrypt:, tagging:, page_labels:, attachments:, xmp:, conformance:,
+                 invoice:)
       encryption = encrypt && PDF::Encryption::StandardSecurity.new(**encrypt)
       assembler = PDF::Assembler.new(pages:, resources:, info:, outline:, encryption:, tagging:, xmp:,
                                      lang: metadata[:lang], page_labels: PDF::PageLabels.entries(page_labels),
-                                     attachments:, conformance:)
+                                     attachments:, conformance:, xmp_extensions: invoice&.xmp_extensions || {},
+                                     xmp_schemas: [invoice&.xmp_schema].compact)
       Stationery.instrument("write.stationery", document: self.class.name) do |event|
         assembler.render.tap { |pdf| event[:bytes] = pdf.bytesize }
       end

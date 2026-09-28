@@ -68,6 +68,19 @@ module Stationery
         [part && :"pdf_a#{part}#{level.to_s.downcase}", accessible && :"pdf_ua#{accessible}"].compact
       end
 
+      # The Factur-X / ZUGFeRD invoice the XMP packet names: `{ profile:
+      # :en16931, filename:, version:, xml: }` (xml nil when the file it
+      # names is not embedded), or nil for any other PDF.
+      def factur_x
+        values = xmp_values
+        filename = values["fx:DocumentFileName"]
+        return unless filename
+
+        file = attachments.find { |attachment| attachment[:name] == filename }
+        { profile: PDF::FacturX::PROFILES.key(values["fx:ConformanceLevel"]), filename:,
+          version: values["fx:Version"], xml: file && file[:bytes].dup.force_encoding(Encoding::UTF_8) }
+      end
+
       def image_count = pdf.scan(%r{/Subtype\s*/Image\b}).size
 
       def warnings

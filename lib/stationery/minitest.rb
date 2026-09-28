@@ -30,6 +30,10 @@ module Stationery
         assert_pdf(Matchers::HaveConformance.new(*levels), subject, msg)
       end
 
+      def assert_factur_x(subject, msg = nil, profile: nil)
+        assert_pdf(Matchers::HaveFacturX.new(profile:), subject, msg)
+      end
+
       def assert_no_pdf_warnings(subject, msg = nil) = assert_pdf(Matchers::HaveNoWarnings.new, subject, msg)
       def assert_pdf_structure(subject, tree, msg = nil) = assert_pdf(Matchers::HaveStructure.new(tree), subject, msg)
       def assert_tagged_content(subject, msg = nil) = assert_pdf(Matchers::HaveTaggedContent.new, subject, msg)

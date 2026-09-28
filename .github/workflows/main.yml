@@ -61,6 +61,8 @@ jobs:
           bundler-cache: true
       - name: veraPDF validates the conforming examples
         run: bundle exec rake verify:conformance
+      - name: Mustang validates the Factur-X example
+        run: bundle exec rake verify:factur_x
 
   rails:
     runs-on: ubuntu-latest

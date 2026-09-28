@@ -135,6 +135,9 @@ class Views::Docs::Pages::Pages < DocsUI::Page
 
         `Inspector#attachments` reads them back as `{ name:, mime:, bytes:, description:, relationship: }`;
         `have_attachment` and `assert_pdf_attachment` assert one by name, type and relationship.
+
+        For an e-invoice, [`factur_x`](/docs/conformance#factur-x-zugferd-e-invoices) does all of it in one
+        line: it embeds the XML, claims PDF/A-3b and writes the Factur-X identification in XMP.
       MD
     end
 

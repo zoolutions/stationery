@@ -70,7 +70,7 @@ InvoicePdf.new(invoice).to_pdf          # => "%PDF-1.7…" (binary String)
 InvoicePdf.new(invoice).to_pdf("a.pdf") # also writes a path or an IO
 ```
 
-`examples/` has a complete, runnable invoice, annual report, letter, packing slip, fillable form, postcard collage and event flyer
+`examples/` has a complete, runnable invoice, annual report, letter, packing slip, fillable form, postcard collage, event flyer and Factur-X e-invoice
 ([previews and live PDFs](https://stationery.zoolutions.llc/docs/examples)); `bundle exec rake examples`
 renders them all, or render one with `stationery render examples/report.rb`.
 
@@ -312,6 +312,8 @@ InvoicePdf.new(invoice).to_pdf(attachments: [{ name: "terms.pdf", data: terms, m
   and ZUGFeRD require), `:source`, `:data`, `:supplement` or `:unspecified` (default).
 - Per-render `attachments:` are added to the class-level ones; the same name twice raises
   `ArgumentError`. An encrypted document encrypts the embedded streams too.
+- For an e-invoice, [`factur_x`](#factur-x--zugferd-e-invoices) embeds the XML, claims PDF/A-3b
+  and writes the identification in one line.
 
 ### Accessibility (tagged PDF)
 
@@ -417,6 +419,45 @@ docker run --rm -v "$PWD:/data:ro" verapdf/cli --format text -v --flavour 3b /da
 ```
 
 In tests, `have_conformance(:pdf_a3b)` checks the claim (not the validity: that is veraPDF's job).
+
+### Factur-X / ZUGFeRD e-invoices
+
+A Factur-X (in Germany: ZUGFeRD) invoice is one PDF that people read and accounting software
+books: a PDF/A-3b file with the invoice as Cross Industry Invoice XML embedded in it.
+
+```ruby
+class InvoicePdf < Stationery::Document
+  metadata title: "Invoice", lang: "en"
+  factur_x(profile: :en16931) { @invoice.to_cii_xml } # evaluated in the document, per render
+  # factur_x :invoice_xml                             # or a method name
+  # factur_x File.read("factur-x.xml")                # or the XML itself
+
+  def initialize(invoice) = (super(); @invoice = invoice)
+end
+
+InvoicePdf.new(invoice).to_pdf(factur_x: { xml:, profile: :extended }) # per render; nil for none
+```
+
+- `factur_x` claims `conformance :pdf_a3b` (added to declared levels such as `:pdf_ua1`;
+  `:pdf_a2b` raises), embeds the XML as `factur-x.xml` (`text/xml`, described as "Factur-X
+  Invoice", stamped with its modification date) and writes the `fx:` identification in XMP
+  (`DocumentType INVOICE`, `DocumentFileName`, `Version`, `ConformanceLevel`) with the extension
+  schema description PDF/A asks for.
+- `profile:` is `:minimum`, `:basic_wl`, `:basic`, `:en16931` (default), `:extended` or
+  `:xrechnung` (embedded as `xrechnung.xml`). The XML is the page's `:alternative`, except for
+  `:minimum` and `:basic_wl`, whose XML is `:data` beside it. `filename:`, `version:` ("1.0")
+  and `relationship:` override the defaults (ZUGFeRD 1.0 used `ZUGFeRD-invoice.xml`).
+- Stationery carries the XML, it does not write or validate it: anything that does not start
+  with `<?xml` or `<rsm:CrossIndustryInvoice` raises `ArgumentError`, and what is inside is your
+  invoicing code's. `examples/e_invoice.rb` builds a minimal EN 16931 document from the example
+  invoice's lines.
+- Everything PDF/A-3b asks applies: no `encrypt:`, no form fields.
+- Without `factur_x` nothing changes.
+
+`bundle exec rake verify:factur_x` validates `examples/e_invoice.rb` with the
+[Mustang](https://www.mustangproject.org) validator through Docker: the PDF/A-3 container and the
+XML against the EN 16931 schema and business rules. CI runs it with `verify:conformance`. In
+tests, `have_factur_x(profile: :en16931)` checks that the invoice is named in XMP and embedded.
 
 ### Debugging
 
@@ -670,6 +711,7 @@ RSpec.describe InvoicePdf do
   it { is_expected.to have_page_labels(%w[i ii 1 2]) } # from `page_labels`
   it { is_expected.to have_attachment("factur-x.xml", mime: "text/xml", relationship: :alternative) }
   it { is_expected.to have_conformance(:pdf_a3b) } # the level claimed in XMP, from `conformance`
+  it { is_expected.to have_factur_x(profile: :en16931) } # the e-invoice XML, named in XMP and embedded
   it { is_expected.to have_tagged_content } # a tagged PDF with every text tagged or an artifact
   it { is_expected.to have_structure([[:Document, [[:H1, "Invoice"], [:P, "INV-7"]]]]) }
 end
@@ -694,6 +736,7 @@ class InvoicePdfTest < Minitest::Test
     assert_page_labels pdf, %w[i ii 1 2]
     assert_pdf_attachment pdf, "factur-x.xml", mime: "text/xml"
     assert_pdf_conformance pdf, :pdf_a3b
+    assert_factur_x pdf, profile: :en16931
     assert_tagged_content pdf
     assert_pdf_structure pdf, [[:Document, [[:H1, "Invoice"], [:P, "INV-7"]]]]
   end
@@ -706,7 +749,8 @@ titles. The RSpec matchers compose like the built-ins: `.and` / `.or`, and insid
 `all`, `include` or `match`. For anything else, `Stationery::Testing::Inspector.new(subject)`
 exposes `text`, `page_texts`, `page_count`, `links`, `internal_links`,
 `image_count`, `bookmarks`, `metadata`, `xmp` (the packet), `xmp_values` (`{ "dc:title" => …, "dc:creator" => […] }`),
-`lang`, `page_labels`, `attachments`, `conformance` (`[:pdf_a3b, :pdf_ua1]`), `warnings`, `tagged?`,
+`lang`, `page_labels`, `attachments`, `conformance` (`[:pdf_a3b, :pdf_ua1]`), `factur_x`
+(`{ profile:, filename:, version:, xml: }`), `warnings`, `tagged?`,
 `untagged_text` and
 `structure` — a tagged PDF's structure tree as nested arrays, each element's text
 read from its marked content: `[type, "text"]`, `[type, [children]]` (its own text

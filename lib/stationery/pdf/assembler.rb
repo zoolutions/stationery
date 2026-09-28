@@ -8,10 +8,13 @@ module Stationery
       # `lang:` is the document's natural language; `page_labels:` is the
       # /PageLabels number tree from PageLabels.entries; `attachments:` are
       # PDF::Attachment files to embed; `xmp:` (true) writes the XMP packet,
-      # with `xmp_extensions:` as further schemas (see XMP); `conformance:` (a
-      # PDF::Conformance) adds what PDF/A and PDF/UA ask of the file.
+      # with `xmp_extensions:` as further schemas and `xmp_schemas:` describing
+      # them to PDF/A (see XMP); `conformance:` (a PDF::Conformance) adds what
+      # PDF/A and PDF/UA ask of the file.
       def initialize(pages:, resources:, info: {}, outline: [], encryption: nil, tagging: nil, lang: nil,
-                     page_labels: nil, attachments: [], xmp: true, xmp_extensions: {}, conformance: nil)
+                     page_labels: nil, attachments: [], xmp: true, xmp_extensions: {}, xmp_schemas: [],
+                     conformance: nil)
+        @xmp_schemas = xmp_schemas
         @conformance = conformance
         @tagging = tagging
         @lang = lang
@@ -111,6 +114,7 @@ module Stationery
       end
 
       def extensions = (@conformance&.xmp_extensions || {}).merge(@xmp_extensions)
+      def schemas = (@conformance&.xmp_schemas || []) + @xmp_schemas
 
       # The XMP packet as an uncompressed /Metadata stream, mirroring the Info
       # dictionary at the same instant. An encrypted document encrypts it like
@@ -119,7 +123,7 @@ module Stationery
         return {} unless @xmp
 
         values = info.except(:CreationDate).transform_values(&:value)
-        packet = XMP.packet(info: values, lang: @lang, time: now, extensions:, schemas: @conformance&.xmp_schemas || [])
+        packet = XMP.packet(info: values, lang: @lang, time: now, extensions:, schemas:)
         { Metadata: writer.add(Stream.new(packet, { Type: :Metadata, Subtype: :XML }, compress: false)) }
       end
     end
