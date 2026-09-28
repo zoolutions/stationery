@@ -61,5 +61,18 @@ RSpec.describe Stationery::Tagging::Tree do
 
       expect(warnings).to be_empty
     end
+
+    it "warns about a figure whose alt text is blank" do
+      { image: "", svg: " \n\t", chart: "\u00A0", photo: "Chart" }.each_with_index do |(kind, alt), index|
+        figure = Stationery::Tagging::Element.new(:Figure, alt:, kind:)
+        figure.attach(tree.root)
+        tree.mark(pages[index % 2], figure)
+      end
+      tree.audit(pages, warnings, lang: "en")
+
+      expect(warnings.to_a).to eq([Stationery::Warnings::MissingAlt.new(kind: :image, page: 1),
+                                   Stationery::Warnings::MissingAlt.new(kind: :svg, page: 2),
+                                   Stationery::Warnings::MissingAlt.new(kind: :chart, page: 1)])
+    end
   end
 end

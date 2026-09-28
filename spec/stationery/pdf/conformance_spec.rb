@@ -154,6 +154,21 @@ RSpec.describe Stationery::PDF::Conformance do
       expect(decorative.new.to_pdf(conformance: :pdf_ua1)).to start_with("%PDF")
     end
 
+    it "raises on a figure whose alt text is blank" do
+      path = image_path("rgb.jpg")
+      drawing = %(<svg viewBox="0 0 10 10"><rect width="10" height="10"/></svg>)
+      figures = Class.new(document) do
+        define_method(:view_template) do
+          image path, width: 20, alt: ""
+          svg drawing, width: 10, alt: "  "
+        end
+      end
+
+      expect { figures.new.to_pdf(conformance: :pdf_ua1) }.to raise_error(Stationery::ConformanceError) do |error|
+        expect(error.issues).to eq(["image on page 1 has no alt: text", "svg on page 1 has no alt: text"])
+      end
+    end
+
     it "may be encrypted" do
       expect(document.new.to_pdf(conformance: :pdf_ua1, encrypt: { owner_password: "o" })).to include("/Encrypt")
     end
