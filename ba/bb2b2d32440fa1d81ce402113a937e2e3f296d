@@ -1,0 +1,46 @@
+lib/stationery/layout/text.rb
+  s_600b6bfbec0b19::t_72697711eaa974 56-57,60-64,85-88
+lib/stationery/fonts/fallback.rb
+  s_600b6bfbec0b19::t_2ec99dfd167fda 15
+docs/app/views/docs/pages/fonts.rb
+  s_600b6bfbec0b19::t_d5a81073f9025c 65-73
+docs/app/views/docs/pages/limitations.rb
+  s_600b6bfbec0b19::t_d5a81073f9025c 21
+lib/stationery.rb
+  s_600b6bfbec0b19::t_88b6b31c3f7cfa 85
+lib/stationery/html/tree_builder/blocks.rb
+  s_600b6bfbec0b19::t_2ec99dfd167fda 53
+lib/stationery/text/breaks.rb
+  s_600b6bfbec0b19::t_f100e359a2ac8a 1-61,65-68,70-71,74-90,92-93,99,102,104,116,121-123
+  s_600b6bfbec0b19::t_1f1f65cb2c0682 62-64,69,72-73
+  s_600b6bfbec0b19::t_04188f7439c67a 91,94,117-120
+  s_600b6bfbec0b19::t_c7ccd56bf17f78 95-98,100-101,103,105-115
+lib/stationery/text/wrapper.rb
+  s_600b6bfbec0b19::t_2ec99dfd167fda 6-7,16,39-42,52,74-75,165-166
+  s_600b6bfbec0b19::t_988d83bf474cf4 45,51,53,56,62,66,69,71,76-88,92-93
+  s_600b6bfbec0b19::t_c7ccd56bf17f78 47-50,55,63-65,67-68,70,72-73,89
+  s_600b6bfbec0b19::t_a3360736f2c163 90-91,94-97
+spec/stationery/elements_spec.rb
+  s_600b6bfbec0b19::t_667435b8c3851c 397-405
+spec/stationery/text/wrapper_spec.rb
+  s_600b6bfbec0b19::t_667435b8c3851c 156-157,159-190
+  s_600b6bfbec0b19::t_cb4d47a1409865 158
+README.md
+  s_600b6bfbec0b19::t_d5a81073f9025c 763-766,935-936
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "babb2b2d32440fa1d81ce402113a937e2e3f296d",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
