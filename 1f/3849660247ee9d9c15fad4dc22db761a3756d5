@@ -1,0 +1,41 @@
+Gemfile
+  s_600b6bfbec0b19::t_2e9eddd9797f46 28-30
+benchmark/invoice.rb
+  s_600b6bfbec0b19::t_b2da041df72626 4,74-75
+benchmark/photos.rb
+  s_600b6bfbec0b19::t_797d065194a12f 1-31
+benchmark/table_50_pages.rb
+  s_600b6bfbec0b19::t_b2da041df72626 18-19
+benchmark/support.rb
+  s_600b6bfbec0b19::t_545e8eaf00cee9 4-6,11,20-21,31-32,35-39,44-48,50,52-55,58-59,62-63,83-88
+  s_600b6bfbec0b19::t_7279145e5648bc 33-34,60,64-66,70-82
+  s_600b6bfbec0b19::t_6b83deaada6636 49
+  s_600b6bfbec0b19::t_75e11d76f6fa43 51
+Gemfile.lock
+  ai_agent 86-89,99,102,117,159-162
+benchmark/html.rb
+  s_600b6bfbec0b19::t_806a6a725c45c2 1-11,19,22,25-33,35-36,63-97,99-144
+  s_600b6bfbec0b19::t_75e11d76f6fa43 12-13
+  s_600b6bfbec0b19::t_6b83deaada6636 14-18,20-21,23-24,37,39-62,98
+  s_600b6bfbec0b19::t_7279145e5648bc 34,38
+benchmark/documents.rb
+  s_600b6bfbec0b19::t_12ff06aa805cc8 19-22,56-74
+Rakefile
+  s_600b6bfbec0b19::t_b2da041df72626 176,180
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "1f3849660247ee9d9c15fad4dc22db761a3756d5",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
