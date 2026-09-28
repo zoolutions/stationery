@@ -406,11 +406,20 @@ class Views::Docs::Pages::Elements < DocsUI::Page
       md <<~'MD'
         - `text_field(name, value: "", width: :full, height: 22, multiline: false, max_length: nil, comb: nil,
           read_only: false, required: false, font_size: 10, border: "#9CA3AF", background: "#FFFFFF", radius: 2,
-          at: nil)` — a text input; `comb:` is a cell count (or `true` with `max_length:`).
+          tooltip: nil, at: nil)` — a text input; `comb:` is a cell count (or `true` with `max_length:`).
         - `checkbox(name, checked: false, size: 12, label: nil, at: nil)` — a check box with an optional label.
         - `radio(name, value, checked: false, size: 12, label: nil, at: nil)` — one choice of the radio group `name`.
         - `select(name, options:, value: nil, width: :full, height: 22, editable: false, at: nil)` — a combo box.
         - `signature_field(name, width: :full, height: 40, label: "Signature", at: nil)` — an empty signature field.
+
+        Every field also takes `read_only:`, `required:`, `font_size:`, `border:`, `background:`, `radius:` and
+        `tooltip:`. The font is the one of the text style around the field:
+
+        ```ruby
+        text_style(font: "Noto Sans", weight: :bold) do
+          text_field "name", value: "Βασιλείου", tooltip: "Family name"
+        end
+        ```
       MD
       md SourceMarkdown.readme_section("Forms")
     end

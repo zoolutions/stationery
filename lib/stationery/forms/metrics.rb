@@ -3,8 +3,9 @@
 module Stationery
   module Forms
     # Helvetica's advance widths (the standard-14 AFM, in 1/1000 em) for the
-    # printable ASCII range, enough to lay out a field's appearance; other
-    # WinAnsi characters count as a digit's width.
+    # printable ASCII range, enough to lay out the appearance of a field made
+    # without a font book (see Standard); other WinAnsi characters count as a
+    # digit's width.
     module Metrics
       ASCII = [
         278, 278, 355, 556, 556, 889, 667, 191, 333, 333, 389, 584, 278, 333, 278, 278, # space - /
@@ -28,21 +29,6 @@ module Stationery
       # The width of WinAnsi `bytes` at `size`.
       def width(bytes, size)
         bytes.each_byte.sum { |byte| (byte in 32..126) ? ASCII[byte - 32] : DEFAULT } * size / 1000.0
-      end
-
-      # `text` broken into WinAnsi lines no wider than `width`, keeping its own
-      # line breaks; a word wider than a line stands alone.
-      def wrap(text, width, size)
-        encode(text).split("\n", -1).flat_map do |paragraph|
-          paragraph.split.each_with_object([+""]) do |word, lines|
-            candidate = lines.last.empty? ? word : "#{lines.last} #{word}"
-            if lines.last.empty? || width(candidate, size) <= width
-              lines[-1] = candidate
-            else
-              lines << word
-            end
-          end
-        end
       end
     end
   end

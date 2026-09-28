@@ -97,7 +97,7 @@ renders them all, or render one with `stationery render examples/report.rb`.
 | `keep_with_next: true \| points` | On `text`, `box` or `group`: never end a page with this node; with a number, keep at least that many points of what follows with it. |
 | `text_style(**style) { }` | Default text style for a block. |
 | `canvas(height:) { \|canvas, rect\| }` | Draw directly: rectangles, rounded rectangles, circles, lines, Bézier paths, clipping, images, links; `rotate(degrees, around:) { }` and `transform([a, b, c, d, e, f]) { }` blocks. |
-| `text_field(name, value:, width:, height:, multiline:, max_length:, comb:, read_only:, required:, font_size:, border:, background:, radius:, at:)` | An interactive text input (AcroForm). `width:` is `:full` or points; dotted names (`"address.city"`) group fields. See [Forms](#forms). |
+| `text_field(name, value:, width:, height:, multiline:, max_length:, comb:, read_only:, required:, font_size:, border:, background:, radius:, tooltip:, at:)` | An interactive text input (AcroForm). `width:` is `:full` or points; dotted names (`"address.city"`) group fields. See [Forms](#forms). |
 | `checkbox(name, checked:, size:, label:, at:)` | An interactive check box, with an optional label drawn to its right. |
 | `radio(name, value, checked:, size:, label:, at:)` | One choice of a radio group: radios sharing `name` form one field whose value is the checked `value`. |
 | `select(name, options:, value:, width:, height:, editable:, at:)` | A drop-down (combo box); `editable: true` also accepts typed values. |
@@ -204,9 +204,18 @@ checkbox "terms", checked: false, label: "I accept the terms"
 signature_field "signature", label: "Signature of the applicant"
 ```
 
-- Every widget carries its own appearance (drawn in Helvetica, ZapfDingbats for the check mark), so
-  the form looks the same in every viewer; `NeedAppearances` is set too, so viewers redraw edited
-  values. Values are Unicode (`/V`); the drawn appearance covers the Windows-1252 range.
+- Every widget carries its own appearance, so the form looks the same in every viewer. Text is set
+  in the text style around the field, in the document's own fonts: embedded, with the fallbacks
+  applied per character, so a value in any script the fonts cover is drawn (`/V` holds it as
+  Unicode). Check marks and radio dots are paths. `NeedAppearances` is set too, so viewers redraw
+  edited values; ZapfDingbats is listed for the ones that redraw a button's mark, never embedded
+  and never used by the appearances themselves.
+- A field that can be edited keeps printable ASCII and Latin-1 in its font beyond the value it shows
+  (and a select the glyphs of every option), about 10 KB per font, so the text a viewer redraws
+  after an edit has its glyphs; what is typed outside that range falls back to the viewer's own
+  font. A `read_only:` field keeps its value's glyphs only.
+- `tooltip:` is a field's accessible name (`/TU`): by default a check box's or signature's `label:`,
+  otherwise the field name. A radio group takes the `tooltip:` of its first choice.
 - Dotted names build the field hierarchy viewers show as groups; widgets sharing a name are one field
   with several widgets. A name used as both a field and a group raises `ArgumentError`.
 - `read_only:`, `required:`, `multiline:`, `max_length:` and `comb:` set the matching field flags.
@@ -405,12 +414,14 @@ mislabelled: `ArgumentError` for options that contradict the level, `Stationery:
   every link annotation a description (`/Contents`: the URL, or the target page). A figure without
   `alt:` raises; mark decoration with `alt: false`. Encryption is allowed.
 - Combined, the XMP packet also describes the `pdfuaid` schema to PDF/A (`pdfaExtension:schemas`).
-- Interactive form fields raise under every level: their appearances draw with the standard
-  Helvetica and ZapfDingbats, which are not embedded.
+- Interactive form fields are allowed: their appearances draw with embedded fonts and paths, every
+  field has a `/TU`, and `NeedAppearances` and ZapfDingbats are left out. Only a field made without
+  a font book (`Forms::Field.new` placed with `canvas.widget`) raises, since it draws with the
+  standard Helvetica.
 - Without `conformance` nothing changes: the output is byte for byte what it was.
 
-`bundle exec rake verify:conformance` renders `examples/invoice.rb` as PDF/A-3b and
-`examples/report.rb` as PDF/A-3b plus PDF/UA-1 and validates them with
+`bundle exec rake verify:conformance` renders `examples/invoice.rb` as PDF/A-3b, and
+`examples/report.rb` and `examples/form.rb` as PDF/A-3b plus PDF/UA-1, and validates them with
 [veraPDF](https://verapdf.org) through Docker (`verapdf/cli`); CI runs it on every push. Validate
 your own documents the same way:
 
@@ -843,8 +854,8 @@ and `transform`, and `shadow:` is stacked rectangles, not a blur.
 
 PDF: PDF/A-2b, PDF/A-3b and PDF/UA-1 only (no PDF/A-1, no level A or U, no PDF/UA-2, no PDF/X); no
 digital signing (`signature_field` is an empty field) and no JavaScript.
-Form-field appearances use Helvetica (Windows-1252), not the document's fonts, which also keeps
-forms out of PDF/A and PDF/UA documents.
+Form fields are set in the document's fonts, but text typed into one is drawn by the viewer:
+characters outside the glyphs the field kept (ASCII and Latin-1) use the viewer's own font.
 
 ## License
 

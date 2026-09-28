@@ -31,9 +31,9 @@ module Stationery
 
       def render
         writer = Writer.new(encryption: @encryption)
-        @form = Forms::AcroForm.new(writer)
         tree = writer.reserve
         refs = @resources.build(writer)
+        @form = Forms::AcroForm.new(writer, fonts: refs.fetch(:Font), need_appearances: @conformance.nil?)
         kids = @kids = @pages.map { writer.reserve }
         @structure = @tagging && Tagging::Writer.new(@tagging, pages: @pages, refs: kids)
         @pages.each_with_index { |page, index| write_page(writer, page, kids[index], tree, refs) }
@@ -85,7 +85,7 @@ module Stationery
 
       def annotation_ref(writer, annotation, page)
         if annotation[:widget]
-          return @form.add(annotation[:widget], annotation[:rect], page) do |widget_ref|
+          return @form.add(annotation, page) do |widget_ref|
             @structure ? @structure.annotation(annotation, widget_ref) : {}
           end
         end

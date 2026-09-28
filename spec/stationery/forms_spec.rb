@@ -7,6 +7,12 @@ RSpec.describe Stationery::Forms do
   def render(&) = SpecDocument.build(&).to_pdf
   def flag?(field, bit) = field[:Ff].to_i.anybits?(1 << (bit - 1))
 
+  # A field made without a font book, placed straight on the canvas.
+  def bare(kind, name, **)
+    field = Stationery::Forms::Field.new(kind, name, **)
+    render { canvas(height: 30) { |canvas, rect| canvas.widget(field, rect.x, rect.y, 100, 20) } }
+  end
+
   describe "the AcroForm" do
     let(:pdf) do
       render do
@@ -15,16 +21,29 @@ RSpec.describe Stationery::Forms do
       end
     end
 
-    it "lists every field and shares Helvetica and ZapfDingbats as default resources" do
+    it "lists every field and the embedded font their appearances draw with as default resources" do
       form = acro_form(pdf)
       objects = form_objects(pdf)
-      fonts = objects.deref(form[:DR])[:Font].transform_values { |ref| objects.deref(ref) }
+      font = form_fonts(pdf).fetch(:F1)
+      descendant = objects.deref(objects.deref(font[:DescendantFonts]).first)
 
       expect(objects.deref(form[:Fields]).size).to eq(2)
       expect(form[:NeedAppearances]).to be(true)
-      expect(form[:DA]).to eq("/Helv 0 Tf 0 g")
-      expect(fonts[:Helv]).to include(Subtype: :Type1, BaseFont: :Helvetica, Encoding: :WinAnsiEncoding)
-      expect(fonts[:ZaDb]).to include(Subtype: :Type1, BaseFont: :ZapfDingbats)
+      expect(form[:DA]).to eq("/F1 0 Tf 0 g")
+      expect(font).to include(Subtype: :Type0, Encoding: :"Identity-H")
+      expect(font[:BaseFont].to_s).to end_with("+OpenSans-Regular")
+      expect(objects.deref(descendant[:FontDescriptor])).to have_key(:FontFile2)
+      expect(pdf).not_to include("Helvetica")
+    end
+
+    it "lists ZapfDingbats beside them, for the viewers it asks to redraw a button's mark" do
+      buttons = render { checkbox "agree", checked: true }
+
+      expect(form_fonts(pdf).keys).to eq(%i[F1 ZaDb])
+      expect(form_fonts(pdf).fetch(:ZaDb)).to eq(Type: :Font, Subtype: :Type1, BaseFont: :ZapfDingbats)
+      expect(form_fonts(buttons).keys).to eq([:ZaDb])
+      expect(acro_form(buttons)).not_to have_key(:DA)
+      expect(form_fonts(render { text_field "name" }).keys).to eq([:F1])
     end
 
     it "adds the widgets to the page's annotations, pointing back at the page" do
@@ -51,7 +70,7 @@ RSpec.describe Stationery::Forms do
       field = form_fields(pdf).fetch("name")
       baseline = positions_of(pdf).first.last
 
-      expect(field).to include(FT: :Tx, V: "Ada", DA: "/Helv 10 Tf 0 g", MK: { BG: [0, 1, 0], BC: [1, 0, 0] })
+      expect(field).to include(FT: :Tx, V: "Ada", DA: "/F1 10 Tf 0 g", MK: { BG: [0, 1, 0], BC: [1, 0, 0] })
       expect(field[:Rect][0]).to eq(20)
       expect(field[:Rect][2]).to eq(120)
       expect(field[:Rect][3] - field[:Rect][1]).to eq(22)
@@ -64,16 +83,51 @@ RSpec.describe Stationery::Forms do
       stream = appearance_of(pdf, field)
 
       expect(field[:Rect]).to eq([20, 158, 280, 180])
-      expect(stream).to include("/Tx BMC", "EMC", "/Helv 10 Tf", "(Ada \\(the first\\)) Tj")
+      expect(stream).to include("/Tx BMC", "EMC", "/F1 10 Tf")
+      expect(stream).not_to include("(Ada")
+      expect(appearance_text(pdf, field)).to eq(["Ada (the first)"])
+      expect(appearance_fonts(pdf, field).keys).to eq([:F1])
     end
 
-    it "writes a non-ASCII value as UTF-16 and WinAnsi bytes in the appearance" do
-      pdf = render { text_field "city", value: "Malmö" }
+    it "draws with the font of the text style around it" do
+      pdf = render do
+        text "Name"
+        text_style(weight: :bold) { text_field "name", value: "Ada" }
+      end
+      field = form_fields(pdf).fetch("name")
+
+      expect(field[:DA]).to eq("/F2 10 Tf 0 g")
+      expect(appearance_fonts(pdf, field).fetch(:F2)[:BaseFont].to_s).to end_with("+OpenSans-Bold")
+      expect(form_fonts(pdf).keys).to eq([:F2])
+    end
+
+    it "writes a value in any script the font covers as glyphs that extract as the value" do
+      pdf = render { text_field "city", value: "Malmö, Αθήνα, Москва" }
       field = form_fields(pdf).fetch("city")
 
       expect(field[:V].b).to start_with("\xFE\xFF".b)
-      expect(decode_text(field[:V])).to eq("Malmö")
-      expect(appearance_of(pdf, field)).to include("(Malm\xF6) Tj".b)
+      expect(decode_text(field[:V])).to eq("Malmö, Αθήνα, Москва")
+      expect(appearance_of(pdf, field)).to match(/<[0-9A-F]+> Tj/)
+      expect(appearance_text(pdf, field)).to eq(["Malmö, Αθήνα, Москва"])
+    end
+
+    it "draws a character the font lacks with the fallback that has it" do
+      pdf = render { text_field "route", value: "a → b" }
+      field = form_fields(pdf).fetch("route")
+      fonts = appearance_fonts(pdf, field)
+
+      expect(fonts.values.map { |font| font[:BaseFont].to_s.split("+").last })
+        .to contain_exactly("OpenSans-Regular", "Inter-Regular")
+      expect(appearance_text(pdf, field).join).to eq("a → b")
+      expect(form_fonts(pdf).keys).to match_array(fonts.keys)
+    end
+
+    it "reports a character no font has, as any other text does" do
+      document = SpecDocument.build { text_field "odd", value: "a\u{10FFFD}" }
+      document.to_pdf
+
+      expect(document.warnings.map(&:message))
+        .to eq(["missing glyph \"\u{10FFFD}\" (U+10FFFD) in Open Sans, drawn once as .notdef"])
     end
 
     it "sets the multiline, read-only and required flags and a maximum length" do
@@ -84,25 +138,37 @@ RSpec.describe Stationery::Forms do
       notes, id = form_fields(pdf).values_at("notes", "id")
 
       expect(flag?(notes, 13)).to be(true)
-      expect(appearance_of(pdf, notes)).to include("(one) Tj", "(two) Tj")
+      expect(appearance_text(pdf, notes)).to eq(%w[one two])
       expect([flag?(id, 1), flag?(id, 2), flag?(id, 13)]).to eq([true, true, false])
       expect(id[:MaxLen]).to eq(8)
     end
 
     it "wraps a long multiline value to the field's width" do
       pdf = render { text_field "notes", value: "word " * 30, multiline: true, height: 60, width: 100 }
+      lines = appearance_text(pdf, form_fields(pdf).fetch("notes"))
 
-      expect(appearance_of(pdf, form_fields(pdf).fetch("notes")).scan("Tj").size).to be > 3
+      expect(lines.size).to be > 3
+      expect(lines.join(" ")).to eq(("word " * 30).strip)
     end
 
     it "spreads a comb field's characters over its cells" do
       pdf = render { text_field "pin", value: "1234", comb: 4, width: 80 }
       field = form_fields(pdf).fetch("pin")
+      starts = appearance_of(pdf, field).scan(/^([\d.]+) [\d.]+ Td$/).flatten.map(&:to_f)
 
       expect(flag?(field, 25)).to be(true)
       expect(field[:MaxLen]).to eq(4)
-      expect(appearance_of(pdf, field).scan(/([\d.]+) [\d.]+ Td\n\((\d)\) Tj/).map { |x, _| x.to_f }.each_cons(2)
-        .map { |a, b| (b - a).round(3) }.uniq).to eq([20.0])
+      expect(appearance_text(pdf, field)).to eq(%w[1 2 3 4])
+      expect(starts.each_cons(2).map { |a, b| (b - a).round(3) }.uniq).to eq([20.0])
+    end
+
+    it "keeps printable ASCII and Latin-1 in the font of a field that can be edited" do
+      editable = render { text_field "name", value: "Hi" }
+      locked = render { text_field "name", value: "Hi", read_only: true }
+
+      expect(characters_of(editable, form_fonts(editable).fetch(:F1))).to include("H", "i", "z", "~", "é", "ÿ")
+      expect(characters_of(locked, form_fonts(locked).fetch(:F1)).delete(" ").chars).to match_array(%w[H i])
+      expect(editable.bytesize).to be > locked.bytesize
     end
 
     it "needs a maximum length for a comb field" do
@@ -116,6 +182,31 @@ RSpec.describe Stationery::Forms do
     end
   end
 
+  describe "accessible names" do
+    it "names a field after its tooltip, its label or its name" do
+      pdf = render do
+        text_field "applicant.name", tooltip: "Full name"
+        text_field "email"
+        checkbox "terms", label: "I accept the terms"
+        checkbox "news"
+        signature_field "signature", label: "Signature of the applicant"
+      end
+      names = form_fields(pdf).transform_values { |field| decode_text(field[:TU]) }
+
+      expect(names).to eq("applicant.name" => "Full name", "email" => "email", "terms" => "I accept the terms",
+                          "news" => "news", "signature" => "Signature of the applicant")
+    end
+
+    it "names a radio group after its name, or the tooltip of its first choice" do
+      plain = render { radio("plan", "basic", label: "Basic") && radio("plan", "pro", label: "Pro") }
+      named = render { radio("plan", "basic", tooltip: "Membership plan") && radio("plan", "pro") }
+
+      expect(decode_text(form_fields(plain).fetch("plan")[:TU])).to eq("plan")
+      expect(decode_text(form_fields(named).fetch("plan")[:TU])).to eq("Membership plan")
+      expect(form_fields(plain).fetch("plan")[:Kids]).to all(satisfy { |kid| !kid.key?(:TU) })
+    end
+  end
+
   describe "checkboxes" do
     it "writes on and off appearances and selects the one its state names" do
       pdf = render do
@@ -126,9 +217,19 @@ RSpec.describe Stationery::Forms do
 
       expect(checked).to include(FT: :Btn, V: :Yes, AS: :Yes)
       expect(unchecked).to include(V: :Off, AS: :Off)
+      expect(checked).not_to have_key(:DA)
       expect(unchecked[:Rect][2] - unchecked[:Rect][0]).to eq(16)
-      expect(appearance_of(pdf, checked, :Yes)).to include("/ZaDb", "(4) Tj")
-      expect(appearance_of(pdf, checked, :Off)).not_to include("(4) Tj")
+    end
+
+    it "strokes the check mark as a path, without any font" do
+      pdf = render { checkbox "yes", checked: true }
+      field = form_fields(pdf).fetch("yes")
+      mark = appearance_of(pdf, field, :Yes).delete_prefix(appearance_of(pdf, field, :Off))
+
+      expect(mark).to eq("q\n0 0 0 RG\n1.152 w\n1 J\n1 j\n3.312 5.808 m\n5.232 3.888 l\n8.688 8.112 l\nS\nQ\n")
+      expect(appearance_of(pdf, field, :Off)).not_to include(" l\nS")
+      expect(appearance_fonts(pdf, field, :Yes)).to eq({})
+      expect(appearance_of(pdf, field, :Yes)).not_to include("Tf", "Tj")
     end
 
     it "draws its label as text beside the box" do
@@ -162,6 +263,7 @@ RSpec.describe Stationery::Forms do
       kid = form_fields(pdf).fetch("plan")[:Kids].first
 
       expect(appearance_of(pdf, kid, :basic).scan(/ c$/).size).to be > appearance_of(pdf, kid, :Off).scan(/ c$/).size
+      expect(appearance_fonts(pdf, kid, :basic)).to eq({})
       expect(text_of(pdf)).to include("Basic", "Pro", "Team")
     end
 
@@ -177,10 +279,19 @@ RSpec.describe Stationery::Forms do
       pdf = render { select "country", options: %w[Sweden Norway Österreich], value: "Norway", width: 120 }
       field = form_fields(pdf).fetch("country")
 
-      expect(field).to include(FT: :Ch, V: "Norway")
+      expect(field).to include(FT: :Ch, V: "Norway", DA: "/F1 10 Tf 0 g")
       expect(field[:Opt].map { |option| decode_text(option) }).to eq(%w[Sweden Norway Österreich])
       expect([flag?(field, 18), flag?(field, 19)]).to eq([true, false])
-      expect(appearance_of(pdf, field)).to include("/Tx BMC", "(Norway) Tj")
+      expect(appearance_of(pdf, field)).to include("/Tx BMC")
+      expect(appearance_text(pdf, field)).to eq(["Norway"])
+    end
+
+    it "keeps the glyphs of every option, so choosing another one can be drawn" do
+      pdf = render { select "city", options: %w[Lund Αθήνα], value: "Lund" }
+      locked = render { select "city", options: %w[Lund Αθήνα], value: "Lund", read_only: true }
+
+      expect(characters_of(pdf, form_fonts(pdf).fetch(:F1))).to include("Α", "θ", "ή", "ν", "α")
+      expect(characters_of(locked, form_fonts(locked).fetch(:F1)).delete(" ").chars).to match_array(%w[L u n d])
     end
 
     it "adds the edit flag when editable and leaves the value out when none is chosen" do
@@ -195,19 +306,54 @@ RSpec.describe Stationery::Forms do
   describe "signature fields" do
     it "draws only the rule without a label" do
       pdf = render { signature_field "signature", label: "" }
+      field = form_fields(pdf).fetch("signature")
 
-      expect(appearance_of(pdf, form_fields(pdf).fetch("signature"))).not_to include("Tj")
+      expect(appearance_of(pdf, field)).not_to include("Tj")
+      expect(decode_text(field[:TU])).to eq("signature")
     end
 
     it "writes an empty /Sig field whose appearance draws a rule and the label" do
       pdf = render { signature_field "signature", width: 180, label: "Sökandens underskrift" }
       field = form_fields(pdf).fetch("signature")
-      stream = appearance_of(pdf, field)
 
       expect(field).to include(FT: :Sig)
       expect(field).not_to have_key(:V)
+      expect(field).not_to have_key(:DA)
       expect(field[:Rect][3] - field[:Rect][1]).to eq(40)
-      expect(stream).to include("(S\xF6kandens underskrift) Tj".b, "l\nS")
+      expect(appearance_of(pdf, field)).to include("/F1 7 Tf", "l\nS")
+      expect(appearance_text(pdf, field)).to eq(["Sökandens underskrift"])
+    end
+  end
+
+  describe "a field without a font book" do
+    it "draws with the standard Helvetica in Windows-1252" do
+      pdf = bare(:text, "raw", value: "Malmö → Lund")
+      field = form_fields(pdf).fetch("raw")
+
+      expect(field).to include(DA: "/Helv 10 Tf 0 g", TU: "raw")
+      expect(appearance_of(pdf, field)).to include("/Helv 10 Tf", "(Malm\xF6 ? Lund) Tj".b)
+      expect(form_fonts(pdf)).to eq(Helv: { Type: :Font, Subtype: :Type1, BaseFont: :Helvetica,
+                                            Encoding: :WinAnsiEncoding })
+      expect(acro_form(pdf)[:DA]).to eq("/Helv 0 Tf 0 g")
+    end
+
+    it "lists Helvetica beside the embedded fonts of the other fields" do
+      field = Stationery::Forms::Field.new(:text, "raw", value: "x")
+      pdf = render do
+        text_field "name", value: "Ada"
+        canvas(height: 30) { |canvas, rect| canvas.widget(field, rect.x, rect.y, 100, 20) }
+      end
+
+      expect(form_fonts(pdf).keys).to contain_exactly(:F1, :Helv)
+    end
+
+    it "needs no font for a check box" do
+      pdf = bare(:checkbox, "raw", value: true)
+      field = form_fields(pdf).fetch("raw")
+
+      expect(form_fonts(pdf).keys).to eq([:ZaDb])
+      expect(appearance_fonts(pdf, field, :Yes)).to eq({})
+      expect(appearance_of(pdf, field, :Yes)).to include(" l\nS")
     end
   end
 
@@ -235,6 +381,7 @@ RSpec.describe Stationery::Forms do
     address = roots.find { |root| root[:T] == "address" }
 
     expect(roots.map { |root| root[:T] }).to contain_exactly("address", "email")
+    expect(address).not_to have_key(:TU)
     expect(objects.deref(address[:Kids]).map { |ref| objects.deref(ref)[:T] }).to eq(%w[city zip])
     expect(form_fields(pdf).keys).to contain_exactly("address.city", "address.zip", "email")
   end
@@ -282,7 +429,7 @@ RSpec.describe Stationery::Forms do
     encrypt = { user_password: "pw", owner_password: "owner" }
     pdf = SpecDocument.build { text_field "name", value: "Müller" }.to_pdf(encrypt:)
 
-    expect(pdf).not_to include("/Helv 10 Tf")
+    expect(pdf).not_to include("/F1 10 Tf")
     expect(decode_text(form_fields(pdf, password: "pw").fetch("name")[:V])).to eq("Müller")
   end
 

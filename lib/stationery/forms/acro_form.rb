@@ -3,14 +3,19 @@
 module Stationery
   module Forms
     # Collects the widgets pages place and writes the document's interactive
-    # form: one field per name, parent fields for dotted names, the shared
-    # Helvetica and ZapfDingbats resources and the catalog's /AcroForm.
+    # form: one field per name, parent fields for dotted names, the fonts the
+    # appearances draw with as default resources and the catalog's /AcroForm.
+    #
+    # The appearances themselves need no standard font: text is set in the
+    # document's embedded fonts and marks are paths. Only a form that asks
+    # viewers to regenerate appearances lists ZapfDingbats, which is what
+    # they redraw a check box or radio button's /MK caption with.
     class AcroForm
-      FONTS = { Helv: :Helvetica, ZaDb: :ZapfDingbats }.freeze
+      SYMBOLS = { ZaDb: { Type: :Font, Subtype: :Type1, BaseFont: :ZapfDingbats }.freeze }.freeze
 
-      # A widget placed on a page: its field, PDF-space rect, page and the
-      # reference the page's /Annots already points at.
-      Widget = Data.define(:field, :rect, :page, :ref, :extra)
+      # A widget placed on a page: its field, appearance, PDF-space rect, page
+      # and the reference the page's /Annots already points at.
+      Widget = Data.define(:field, :appearance, :rect, :page, :ref, :extra)
 
       # A name segment: widgets when it is a field, children when a group.
       Node = Struct.new(:name, :widgets, :children)
@@ -24,35 +29,60 @@ module Stationery
         end
       end
 
-      def initialize(writer)
+      # `fonts` are the document's embedded fonts by resource name.
+      # `need_appearances: false` leaves out the flag asking viewers to
+      # regenerate every appearance (PDF/A and PDF/UA forbid it).
+      def initialize(writer, fonts: {}, need_appearances: true)
         @writer = writer
+        @embedded = fonts
+        @need_appearances = need_appearances
         @widgets = []
       end
 
-      # Reserves the widget annotation for `field` at `rect` on `page`.
-      # `extra` entries for the widget dictionary may be computed from its
-      # reference (a tagged PDF's /StructParent).
-      def add(field, rect, page)
+      # Reserves the widget annotation (a page annotation holding the field
+      # as :widget, its :appearance and :rect) on `page`. `extra` entries for
+      # the widget dictionary may be computed from its reference (a tagged
+      # PDF's /StructParent).
+      def add(annotation, page)
         ref = @writer.reserve
-        @widgets << Widget.new(field, rect, page, ref, block_given? ? yield(ref) : {})
+        appearance = annotation[:appearance] || Appearance.new(annotation[:widget], *size_of(annotation[:rect]))
+        @widgets << Widget.new(annotation[:widget], appearance, annotation[:rect], page, ref,
+                               block_given? ? yield(ref) : {})
         ref
       end
 
       # Writes every field; returns the /AcroForm dictionary, or nil without
-      # fields.
+      # fields. /DR lists the fonts the appearances use, /DA selects the first.
       def write
         return if @widgets.empty?
 
-        @fonts = FONTS.transform_values { |base| @writer.add(font(base)) }
+        @fonts = fonts
         fields = tree.children.values.map { |node| write_node(node, nil) }
-        { Fields: fields, NeedAppearances: true, DA: "/#{Field::FONT} 0 Tf 0 g", DR: { Font: @fonts } }
+        form = { Fields: fields }
+        form[:NeedAppearances] = true if @need_appearances
+        form[:DA] = "/#{@fonts.keys.first} 0 Tf 0 g" if @fonts.any?
+        resources = @fonts.merge(symbols)
+        form[:DR] = { Font: resources } if resources.any?
+        form
       end
 
       private
 
-      def font(base)
-        font = { Type: :Font, Subtype: :Type1, BaseFont: base }
-        base == :Helvetica ? font.merge(Encoding: :WinAnsiEncoding) : font
+      def size_of(rect) = [rect[2] - rect[0], rect[3] - rect[1]]
+
+      def symbols
+        return {} unless @need_appearances && @widgets.any? { |widget| widget.field.type == :Btn }
+
+        SYMBOLS.transform_values { |font| @writer.add(font) }
+      end
+
+      # The fonts the appearances name: the embedded ones, and the standard
+      # Helvetica when a field without a font book draws with it.
+      def fonts
+        names = @widgets.flat_map { |widget| widget.appearance.font_names }.uniq
+        names.to_h do |name|
+          [name, @embedded.fetch(name) { @writer.add(Standard::FONT) }]
+        end
       end
 
       def tree
@@ -91,21 +121,22 @@ module Stationery
       # field's kids. A radio group's value is its checked choice.
       def write_field(widgets, own)
         field = widgets.first.field
+        default_appearance = widgets.first.appearance.default_appearance
         unless field.radio? || !widgets.one?
-          return @writer.set(widgets.first.ref, own.merge(field.field_entries, widget(widgets.first)))
+          entries = field.field_entries(default_appearance:)
+          return @writer.set(widgets.first.ref, own.merge(entries, widget(widgets.first)))
         end
 
         ref = @writer.reserve
         value = field.radio? ? widgets.map(&:field).find(&:checked?)&.on_state || :Off : nil
         widgets.each { |kid| @writer.set(kid.ref, widget(kid, value).merge(Parent: ref)) }
-        entries = value ? field.field_entries(value) : field.field_entries
+        entries = value ? field.field_entries(value, default_appearance:) : field.field_entries(default_appearance:)
         @writer.set(ref, own.merge(entries, Kids: widgets.map(&:ref)))
       end
 
       def widget(widget, group_value = nil)
-        x1, y1, x2, y2 = widget.rect
         state = group_value && (widget.field.on_state == group_value ? group_value : :Off)
-        entries = widget.field.widget_entries(x2 - x1, y2 - y1, @fonts, state:)
+        entries = widget.field.widget_entries(widget.appearance, @fonts, state:)
         normal = entries.dig(:AP, :N)
         normal = normal.is_a?(Hash) ? normal.transform_values { |stream| @writer.add(stream) } : @writer.add(normal)
         entries.merge(AP: { N: normal }, Rect: widget.rect, P: widget.page, **widget.extra)

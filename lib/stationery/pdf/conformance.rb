@@ -110,11 +110,12 @@ module Stationery
         link[:url] || "Page #{link[:dest].page + 1}"
       end
 
-      # Form fields draw with the standard Helvetica and ZapfDingbats, which
-      # are not embedded, and ask the viewer to regenerate appearances:
-      # neither PDF/A nor PDF/UA accepts that.
+      # A form field draws with the document's embedded fonts; one made
+      # without a font book draws with the standard Helvetica, which is not
+      # embedded: neither PDF/A nor PDF/UA accepts that.
       def fields(pages)
-        names = pages.flat_map(&:annotations).filter_map { |annotation| annotation[:widget]&.name }.uniq
+        widgets = pages.flat_map(&:annotations).select { |annotation| annotation[:widget] }
+        names = widgets.reject { |annotation| annotation[:appearance].embedded? }.map { |a| a[:widget].name }.uniq
         names.map { |name| %(form field "#{name}" draws with a font that is not embedded) }
       end
 

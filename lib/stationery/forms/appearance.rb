@@ -6,28 +6,49 @@ module Stationery
     # a form looks right without relying on the viewer to regenerate it.
     # Variable text sits between `/Tx BMC … EMC`, the part a viewer redraws
     # when the value changes.
+    #
+    # It is drawn when the widget is placed, so the glyphs it uses are in the
+    # fonts before they are subset, and written as streams once the fonts
+    # have their references (#streams).
     class Appearance
       PADDING = 2
       LEADING = 1.15
-      CHECK = { glyph: "4", width: 0.846, middle: 0.345 }.freeze
+      # The check mark's corners in the unit square (y down) and its stroke.
+      CHECK = { points: [[0.22, 0.52], [0.42, 0.72], [0.78, 0.28]], stroke: 0.12 }.freeze
       DOT = 0.45
       SIGNATURE = { rule: 14, label_size: 7, label_baseline: 4, label_gray: 0.42 }.freeze
 
-      def initialize(field, width, height, fonts)
+      # `resources` are the render's, where the field's fonts get their names.
+      def initialize(field, width, height, resources = nil)
         @field = field
         @width = width
         @height = height
-        @fonts = fonts
+        @type = field.typeface.with(resources)
+        @contents = contents
+        keep
+      end
+
+      # Whether everything it draws with is embedded in the file.
+      def embedded? = @type.names.empty? || @type.embedded?
+
+      # The resource names of the fonts it draws with or keeps for editing.
+      def font_names = @type.names
+
+      # What the field's /DA says: the font and size a viewer redraws the
+      # value with. nil for a field without variable text.
+      def default_appearance
+        return unless @field.variable_text?
+
+        "/#{@type.name} #{num(@field.font_size)} Tf 0 g"
       end
 
       # One stream, or a Hash of streams by appearance state for buttons.
-      def normal
-        case @field.kind
-        when :text, :select then stream(frame + variable_text(text_lines))
-        when :checkbox then { @field.on_state => stream(frame + check), Off: stream(frame) }
-        when :radio then { @field.on_state => stream(circle + dot), Off: stream(circle) }
-        when :signature then stream(signature)
-        end
+      # `fonts` are the references by resource name.
+      def streams(fonts)
+        resources = font_names.empty? ? {} : { Font: fonts.slice(*font_names) }
+        return stream(@contents, resources) unless @contents.is_a?(Hash)
+
+        @contents.transform_values { |content| stream(content, resources) }
       end
 
       private
@@ -36,9 +57,29 @@ module Stationery
       def size = @field.font_size
       def num(value) = PDF::Serializer.number(value.is_a?(Float) && value == value.round ? value.round : value)
 
-      def stream(content)
+      def contents
+        case @field.kind
+        when :text, :select then frame + variable_text(text_lines)
+        when :checkbox then { @field.on_state => frame + check, Off: frame }
+        when :radio then { @field.on_state => circle + dot, Off: circle }
+        when :signature then signature
+        end
+      end
+
+      # What a viewer may draw after an edit: the other options of a select,
+      # and the base repertoire of a field that can be typed into.
+      def keep
+        return unless @field.variable_text?
+
+        @type.name
+        return if options[:read_only]
+
+        @type.keep(Array(options[:options]).join, size, repertoire: true)
+      end
+
+      def stream(content, resources)
         PDF::Stream.new(content, { Type: :XObject, Subtype: :Form, BBox: [0, 0, @width, @height],
-                                   Resources: { Font: @fonts } })
+                                   Resources: resources })
       end
 
       def frame
@@ -50,34 +91,49 @@ module Stationery
         end
       end
 
-      # [x, baseline, WinAnsi bytes] runs in PDF space.
+      def middle_baseline = (@height / 2.0) - ((@type.ascent(size) - @type.descent(size)) / 2)
+
+      # [x, baseline, text] runs in PDF space.
       def text_lines
         return comb_cells if options[:comb]
         return multiline_runs if options[:multiline]
 
-        [[PADDING, (@height / 2.0) - (size * (Metrics::ASCENT + Metrics::DESCENT) / 2), Metrics.encode(@field.value)]]
+        [[PADDING, middle_baseline, @field.value.to_s]]
       end
 
       def multiline_runs
-        top = @height - PADDING - (size * Metrics::ASCENT)
-        Metrics.wrap(@field.value, @width - (2 * PADDING), size).each_with_index.map do |line, index|
+        top = @height - PADDING - @type.ascent(size)
+        wrap(@field.value.to_s, @width - (2 * PADDING)).each_with_index.map do |line, index|
           [PADDING, top - (index * size * LEADING), line]
+        end
+      end
+
+      # The value broken into lines no wider than `width`, keeping its own
+      # line breaks; a word wider than a line stands alone.
+      def wrap(text, width)
+        text.split("\n", -1).flat_map do |paragraph|
+          paragraph.split.each_with_object([+""]) do |word, lines|
+            candidate = lines.last.empty? ? word : "#{lines.last} #{word}"
+            if lines.last.empty? || @type.width(candidate, size) <= width
+              lines[-1] = candidate
+            else
+              lines << word
+            end
+          end
         end
       end
 
       def comb_cells
         cell = @width.fdiv(@field.max_length)
-        baseline = (@height / 2.0) - (size * (Metrics::ASCENT + Metrics::DESCENT) / 2)
-        Metrics.encode(@field.value)[0, @field.max_length].chars.each_with_index.map do |char, index|
-          [(index * cell) + ((cell - Metrics.width(char, size)) / 2), baseline, char]
+        @field.value.to_s[0, @field.max_length].chars.each_with_index.map do |char, index|
+          [(index * cell) + ((cell - @type.width(char, size)) / 2), middle_baseline, char]
         end
       end
 
       def variable_text(runs)
         ops = ["/Tx BMC", "q", "1 1 #{num(@width - 2)} #{num(@height - 2)} re W n", "0 g"]
-        runs.reject { |_, _, bytes| bytes.empty? }.each do |x, y, bytes|
-          ops.push("BT", "/#{Field::FONT} #{num(size)} Tf", "#{num(x)} #{num(y)} Td",
-                   "#{PDF::Serializer.literal(bytes)} Tj", "ET")
+        runs.reject { |_, _, text| text.empty? }.each do |x, y, text|
+          ops.push("BT", "#{num(x)} #{num(y)} Td", *@type.show(text, size), "ET")
         end
         ops.push("Q", "EMC").join("\n") << "\n"
       end
@@ -93,11 +149,11 @@ module Stationery
       def signature
         y = @height - SIGNATURE[:rule]
         content = draw { |canvas| canvas.line(PADDING, y, @width - PADDING, y, color: options[:border], width: 0.75) }
-        label = Metrics.encode(options[:label])
+        label = options[:label].to_s
         return content if label.empty?
 
-        ops = ["q", "#{SIGNATURE[:label_gray]} g", "BT", "/#{Field::FONT} #{SIGNATURE[:label_size]} Tf",
-               "#{PADDING} #{SIGNATURE[:label_baseline]} Td", "#{PDF::Serializer.literal(label)} Tj", "ET", "Q"]
+        ops = ["q", "#{SIGNATURE[:label_gray]} g", "BT", "#{PADDING} #{SIGNATURE[:label_baseline]} Td",
+               *@type.show(label, SIGNATURE[:label_size]), "ET", "Q"]
         "#{content}#{ops.join("\n")}\n"
       end
 
@@ -107,12 +163,18 @@ module Stationery
         page.content
       end
 
+      # A check mark stroked as a path, so no symbol font is needed.
       def check
-        glyph = [@width, @height].min * 0.8
-        x = (@width - (glyph * CHECK[:width])) / 2
-        y = (@height / 2.0) - (glyph * CHECK[:middle])
-        ["q", "0 g", "BT", "/ZaDb #{num(glyph)} Tf", "#{num(x)} #{num(y)} Td", "(#{CHECK[:glyph]}) Tj", "ET", "Q"]
-          .join("\n") << "\n"
+        side = [@width, @height].min * 0.8
+        left = (@width - side) / 2.0
+        top = (@height - side) / 2.0
+        first, *rest = CHECK[:points].map { |x, y| [left + (x * side), top + (y * side)] }
+        draw do |canvas|
+          canvas.path(stroke: "#000000", line_width: side * CHECK[:stroke], cap: :round, join: :round) do |path|
+            path.move_to(*first)
+            rest.each { |point| path.line_to(*point) }
+          end
+        end
       end
     end
   end

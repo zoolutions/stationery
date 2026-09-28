@@ -28,8 +28,8 @@ class Views::Docs::Pages::Limitations < DocsUI::Page
         | Transforms | Annotations inside `rotate`/`transform` | Link and form-widget rectangles stay in untransformed page space |
         | Shadows | Blur | `shadow:` is stacked rounded rectangles at fading opacity, which reads as a soft shadow in print |
         | PDF features | PDF/X, digital signing (`signature_field` is an empty `/Sig` field), JavaScript and actions | Not written |
-        | Conformance | PDF/A-1, PDF/A levels A and U, PDF/UA-2; form fields, CMYK colour and CMYK JPEGs in a conforming document | Only [PDF/A-2b, PDF/A-3b and PDF/UA-1](/docs/conformance) are claimed; form fields raise `ConformanceError`, CMYK is a `ConformanceIssue` warning |
-        | Forms | Field appearances in the document's fonts | Widgets draw with Helvetica and ZapfDingbats in Windows-1252, so text outside Latin-1 shows as `?` until the viewer regenerates the appearance |
+        | Conformance | PDF/A-1, PDF/A levels A and U, PDF/UA-2; CMYK colour and CMYK JPEGs in a conforming document | Only [PDF/A-2b, PDF/A-3b and PDF/UA-1](/docs/conformance) are claimed; CMYK is a `ConformanceIssue` warning |
+        | Forms | Glyphs for text typed into a field beyond printable ASCII and Latin-1 (and a select's options) | The value a field is rendered with is drawn in the document's fonts, whatever its script; what a reader types outside the kept glyphs is drawn by the viewer in a font of its own |
 
         Anything the engine skips at render time is reported in `document.warnings` rather than dropped
         silently — see [Warnings and strict mode](/docs/warnings).
