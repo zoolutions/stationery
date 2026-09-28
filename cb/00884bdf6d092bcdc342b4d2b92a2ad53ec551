@@ -1,0 +1,31 @@
+spec/stationery/rich/renderer_margins_spec.rb
+  s_632dbd6e2d0597::t_6dbe67e4e80833 1-4,6-13,15-88,107-114,116-117,119-158
+  s_632dbd6e2d0597::t_ae0f593145e11a 89-99,102-105
+  s_632dbd6e2d0597::t_cfd356b265e446 5,14,106
+  s_632dbd6e2d0597::t_ad82ed2ee6e9bc 100-101
+  s_632dbd6e2d0597::t_fa1a6895307a62 115,118
+lib/stationery/rich/renderer/boxes.rb
+  s_632dbd6e2d0597::t_d0067499ae1a3f 6-8,13,39,56-57,60,111-112
+  s_632dbd6e2d0597::t_6e5d0f9ecbf97a 19,22,36,40-41,46,64-77
+  s_632dbd6e2d0597::t_67760a93361a94 37
+  s_632dbd6e2d0597::t_ae4c9cbd276e3c 52-53
+  s_632dbd6e2d0597::t_7f64ecd9c9ac9b 63
+lib/stationery/rich/renderer.rb
+  s_632dbd6e2d0597::t_6e5d0f9ecbf97a 50-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "cb00884bdf6d092bcdc342b4d2b92a2ad53ec551",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
