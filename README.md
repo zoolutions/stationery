@@ -156,6 +156,14 @@ text more                                       # around the pull quote
   paragraph beside a float splits between lines as always (`orphans:`, `widows:`); the lines carried
   over are wrapped again at the full width, because the float stayed behind. So are those of a list
   item and of a box.
+- Floats written one after the other that are taller than a page together are cut before the
+  first that does not fit: it starts the next page, with the floats and the text written after it,
+  so the page it left holds the floats above it and nothing beside them. It is the same in a box, a
+  list item, a column and a table cell. Only a float taller than a page by itself runs over it, and
+  is reported as an `Overflow`. Floats that fit a page together stay together: when one of them
+  does not fit what is left of the page, they all go to the next.
+- What does not fit below the floats at the top of a page (a box that stays whole, a line where
+  none is left) goes to the next page and leaves the floats behind.
 - In a tagged PDF the float is where it was written: an image is a `Figure`, a box has its `role:`.
 
 A line beside a float is taken to be as tall as a line of the paragraph's own style when its width
@@ -1453,7 +1461,9 @@ height balanced for it and the columns after it, so one that ends above a block 
 split may stay shorter than the column after it. It has columns of one width, nothing spanning
 them (end the block, write the full-width content, start another) and no column break of its
 own; a spacer that lands at the top of a column keeps its height. Text
-wraps around floated images and boxes, along their rectangles, never along a shape; beside a float
+wraps around floated images and boxes, along their rectangles, never along a shape; the text
+after floats cut by a page break goes to the next page with the float that moved, never beside
+those that stayed; beside a float
 a table, a row, `columns` and a box with a background, a border or a size of its own are blocks of
 the width that is left, all the way down: a box is painted after the float written before it, so
 one that kept the full width would paint its background over the float (see

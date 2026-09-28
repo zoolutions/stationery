@@ -8,10 +8,13 @@ module Stationery
       # again below it. A cell with nothing on one side becomes an empty cell
       # there, so backgrounds and borders run the full height of both parts.
       class RowSplitter
-        def initialize(placements, widths:, context:)
+        # `fresh:` is true for the first row of a fresh page, where a cell
+        # keeps the first float of a run it holds (see Flow::Splitter).
+        def initialize(placements, widths:, context:, fresh: false)
           @placements = placements
           @widths = widths
           @context = context
+          @fresh = fresh
         end
 
         # [head cells, tail cells], or nil when no cell fits anything above the cut.
@@ -28,7 +31,8 @@ module Stationery
         def cut(placement, height)
           cell = placement.cell
           width = [@widths[placement.columns].sum - cell.horizontal, 0].max
-          cell.node(@context).split(width, height - cell.vertical)
+          node = cell.node(@context)
+          node.split(width, height - cell.vertical, fresh: @fresh && node.is_a?(Flow) && node.floats?)
         end
       end
     end

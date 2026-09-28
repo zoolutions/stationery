@@ -203,7 +203,8 @@ module Stationery
 
         widths = column_widths(width)
         placements = placements_in(row)
-        heads, tails = RowSplitter.new(placements, widths:, context: @context).call(space)
+        splitter = RowSplitter.new(placements, widths:, context: @context, fresh: fresh && row == @header)
+        heads, tails = splitter.call(space)
         return unless heads
 
         heights = measured(width)
