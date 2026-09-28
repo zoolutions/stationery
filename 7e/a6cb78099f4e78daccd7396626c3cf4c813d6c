@@ -1,0 +1,40 @@
+lib/stationery/zpl/render.rb
+  s_f5a1e2cf907cda::t_24f80fb12190ae 1-48
+spec/stationery/zpl_spec.rb
+  s_f5a1e2cf907cda::t_a029be2dfbcfec 9-14
+  s_f5a1e2cf907cda::t_bb50bab2aa90e0 1-6,16-18,20-58
+  s_f5a1e2cf907cda::t_c52058939afc6b 8
+  s_f5a1e2cf907cda::t_4774b331aa8c54 7,15,19
+spec/support/zpl_reader.rb
+  s_f5a1e2cf907cda::t_0cdf996472a8bb 40
+  s_f5a1e2cf907cda::t_101ab4e63c1736 1-39,41-57
+lib/stationery/document.rb
+  s_f5a1e2cf907cda::t_bf1646f34d97f4 256-269
+spec/stationery/document_to_zpl_spec.rb
+  s_f5a1e2cf907cda::t_a029be2dfbcfec 53
+  s_f5a1e2cf907cda::t_d54b56d2f76e6f 94-96
+  s_f5a1e2cf907cda::t_ce6be5864f9cfc 1-52,54-93,97-168
+lib/stationery.rb
+  s_f5a1e2cf907cda::t_e81f9b278afe54 99-100
+lib/stationery/zpl.rb
+  s_f5a1e2cf907cda::t_452a76b011d26b 69
+  s_f5a1e2cf907cda::t_b7572e2c53113e 1-24,31-61,63-68,70-87
+  s_f5a1e2cf907cda::t_0bfd74415aeb7f 25-30
+  s_f5a1e2cf907cda::t_2cf7c414d9186a 62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "7ea6cb78099f4e78daccd7396626c3cf4c813d6c",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
