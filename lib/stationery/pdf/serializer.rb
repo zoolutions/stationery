@@ -15,6 +15,10 @@ module Stationery
       NAME_ESCAPE = %r{[^\x21-\x7E]|[#%()/<>\[\]{}]}n
       LITERAL_ESCAPE = /[\\()\r]/n
       UTF16_BOM = "\xFE\xFF".b
+      # Below it a Float times 10,000 is off by less than TIE / 8, so which
+      # way it rounds is certain unless it is within TIE of a half.
+      FAST_BELOW = 100_000.0
+      TIE = 1e-6
 
       module_function
 
@@ -48,9 +52,46 @@ module Stationery
         "<#{bytes.unpack1("H*").upcase}>"
       end
 
+      # Four decimals with the zeros after them trimmed. A Float below
+      # FAST_BELOW, which a coordinate is, is rounded here and written from
+      # its digits, one String and no `format`; what is left goes through
+      # `format`, which is what decides how all of them are written.
       def number(value)
         return value.to_s if value.is_a?(Integer)
+        return formatted(value) unless value.is_a?(Float) && value.abs < FAST_BELOW
 
+        scaled = value.abs * 10_000.0
+        units = scaled.floor
+        rest = scaled - units
+        return formatted(value) if (rest - 0.5).abs < TIE
+
+        units += 1 if rest > 0.5
+        digits(units, value.negative?)
+      end
+
+      # `units` ten-thousandths as a decimal number.
+      def digits(units, negative)
+        return +"0" if units.zero?
+
+        whole = units / 10_000
+        str = negative ? signed(whole) : whole.to_s
+        str.force_encoding(Encoding::UTF_8)
+        rest = units % 10_000
+        return str if rest.zero?
+
+        str << "."
+        place = 1000
+        while rest.positive?
+          str << (48 + (rest / place)) # "0"
+          rest %= place
+          place /= 10
+        end
+        str
+      end
+
+      def signed(whole) = whole.zero? ? +"-0" : (-whole).to_s
+
+      def formatted(value)
         str = format("%.4f", value)
         last = str.bytesize
         last -= 1 while str.getbyte(last - 1) == 48 # "0"
