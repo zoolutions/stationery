@@ -1,0 +1,49 @@
+spec/stationery/layout/flow_floats_split_spec.rb
+  s_632dbd6e2d0597::t_001d5c2835f17c 1-12,17-41,43-108,110-157,159-165,167-168,170-174,176-188,225
+  s_632dbd6e2d0597::t_22ed78602cd745 13-16,42,109,158,166,169,175
+  s_632dbd6e2d0597::t_4f1a9fd0bda72e 189-202
+  s_632dbd6e2d0597::t_bdb59565b70896 203-219,221-224
+  s_632dbd6e2d0597::t_ae488ec805b55b 220
+lib/stationery/text/wrapper/remainder.rb
+  s_632dbd6e2d0597::t_003c2225159bf8 1-59
+lib/stationery/layout/text.rb
+  s_632dbd6e2d0597::t_02aaa57d1368f2 9-10,37,39,42,45-47,50,83,91-96,102,106-107
+  s_632dbd6e2d0597::t_7cb4d1674d5153 41
+  s_632dbd6e2d0597::t_c3cab0590d5e9a 11-12,58,103-105,108
+lib/stationery/text/paragraph.rb
+  s_632dbd6e2d0597::t_7ffeeedbd05748 6-8,17,31,83,116-119,126-129,134-135,160,39,42-43,124-125,132
+  s_632dbd6e2d0597::t_c3cab0590d5e9a 9-13,19-20,27-30,34-38,40-41,56,64,115,120-123,130-131,133,136,138
+spec/stationery/floats_spec.rb
+  s_632dbd6e2d0597::t_1caef6ec0c028a 135-139
+  s_632dbd6e2d0597::t_fe2122cf79d0e6 142
+spec/stationery/text/paragraph_exclusions_spec.rb
+  s_632dbd6e2d0597::t_8b352f8ce349f3 1-103,154
+  s_632dbd6e2d0597::t_bdb59565b70896 104-153
+spec/stationery/text/wrapper_rest_spec.rb
+  s_632dbd6e2d0597::t_8d7ab5da89fc3a 1-75,77-95
+  s_632dbd6e2d0597::t_9b256766997c2e 76
+lib/stationery/text/wrapper.rb
+  s_632dbd6e2d0597::t_5ab1ee8240e658 15-21,36,43,218,223-227,229-238,244-248,250-251,4,24
+  s_632dbd6e2d0597::t_67836effc2d7b7 222,228,239-243,249
+  s_632dbd6e2d0597::t_e66e6516071bce 3,23,44,131,134,148,205,207-208,215-216,219
+spec/stationery/layout/text_spec.rb
+  s_632dbd6e2d0597::t_5c9e43be59309c 69-76,78-101,104-111
+  s_632dbd6e2d0597::t_6c3dc87df59eb8 77,102-103
+  s_632dbd6e2d0597::t_bdb59565b70896 112-141
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "9954306853739115a45b103f648a204aa2d18818",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}

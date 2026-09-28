@@ -1,0 +1,23 @@
+docs/app/views/docs/pages/examples.rb
+  s_632dbd6e2d0597::t_ebdb2313fb80c4 38-41,54
+spec/integration/article_spec.rb
+  ai_agent 1-40
+examples/article.rb
+  ai_agent 1-93
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "6ec52dd73c0f5d33b400e2708cccecf1fef4821d",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}

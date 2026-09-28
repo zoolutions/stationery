@@ -1,0 +1,65 @@
+lib/stationery/layout/text.rb
+  s_632dbd6e2d0597::t_02aaa57d1368f2 9-10,36,38,41,44-46,49,82,90-95,101,103-104
+  s_632dbd6e2d0597::t_7cb4d1674d5153 40
+lib/stationery/layout/floated.rb
+  s_632dbd6e2d0597::t_02aaa57d1368f2 1-28,36-50
+  s_632dbd6e2d0597::t_6db9620dafcd75 29-35
+lib/stationery.rb
+  s_632dbd6e2d0597::t_b68dd1b6daf627 86
+  s_632dbd6e2d0597::t_7fb69cc43fa9d9 94
+lib/stationery/layout/flow/splitter.rb
+  s_632dbd6e2d0597::t_d4fbf17c45aab8 1-4,6,12,14-19,21-36,38,40,42-43,46-56,65-70,72-74,77-78,82-83,85-91,94-104,106-109,111,113-114,116,144-145,147-149,172-180
+  s_632dbd6e2d0597::t_7fb69cc43fa9d9 5,7-11,13,20,37,39,41,44-45,57-64,71,75-76,79-81,84,92-93,105,110,112,115,117-132,134,137-143,146,150-171
+  s_632dbd6e2d0597::t_7cb4d1674d5153 133,135-136
+spec/stationery/layout/floated_spec.rb
+  s_632dbd6e2d0597::t_ec609feef10bb9 1-43,47-49,56-73
+  s_632dbd6e2d0597::t_6db9620dafcd75 44
+  s_632dbd6e2d0597::t_6c3dc87df59eb8 45-46
+  s_632dbd6e2d0597::t_4f1a9fd0bda72e 50-55
+lib/stationery/layout/flow/floating.rb
+  s_632dbd6e2d0597::t_634a6f86b04dc1 1-37,39-51
+  s_632dbd6e2d0597::t_7fb69cc43fa9d9 38
+spec/stationery/layout/flow_floats_split_spec.rb
+  s_632dbd6e2d0597::t_001d5c2835f17c 1-12,17-41,43-108,110-157,159-165,167-168,170-174,176-188,203
+  s_632dbd6e2d0597::t_22ed78602cd745 13-16,42,109,158,166,169,175
+  s_632dbd6e2d0597::t_4f1a9fd0bda72e 189-202
+lib/stationery/layout/node.rb
+  s_632dbd6e2d0597::t_02aaa57d1368f2 27-30,46-48
+spec/stationery/layout/text_spec.rb
+  s_632dbd6e2d0597::t_5c9e43be59309c 69-76,78-101,104-111
+  s_632dbd6e2d0597::t_6c3dc87df59eb8 77,102-103
+lib/stationery/layout/flow/placement.rb
+  s_632dbd6e2d0597::t_3eb65aa3135dab 1-4,6-118,120,122-147
+  s_632dbd6e2d0597::t_634a6f86b04dc1 5
+  s_632dbd6e2d0597::t_6c3dc87df59eb8 119,121
+lib/stationery/layout/mark.rb
+  s_632dbd6e2d0597::t_02aaa57d1368f2 28-29
+spec/stationery/layout/mark_spec.rb
+  s_632dbd6e2d0597::t_5c9e43be59309c 66-79
+lib/stationery/layout/flow.rb
+  s_632dbd6e2d0597::t_d4fbf17c45aab8 3-5,12-13,15-16,31,49-50,53-55,63-64,68-69,93-94
+  s_632dbd6e2d0597::t_7cb4d1674d5153 62
+spec/stationery/layout/flow_floats_spec.rb
+  s_632dbd6e2d0597::t_aa141e11804700 1-22,29-66,68-69,80-92,94-103,105-107,111,114-144,263
+  s_632dbd6e2d0597::t_f71121383ba867 23-25,27-28,104,108-110,112-113
+  s_632dbd6e2d0597::t_6db9620dafcd75 26,67,93
+  s_632dbd6e2d0597::t_4f1a9fd0bda72e 70-79,170-176
+  s_632dbd6e2d0597::t_3201cfc43054ed 145-156,158-169,177-255,257-259,261-262
+  s_632dbd6e2d0597::t_5f5738508d8290 157,256,260
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "2d2a336ed28a3f2e1035ef13eb6c96a5929f16de",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}

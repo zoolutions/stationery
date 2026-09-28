@@ -1,0 +1,19 @@
+spec/stationery/floats_spec.rb
+  s_632dbd6e2d0597::t_7cbb1fb31ca471 1-201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "3c8414c95b1b8b97a9bc16a7e6971b001a0203b1",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": null
+    }
+  }
+}
