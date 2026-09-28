@@ -187,18 +187,57 @@ class Views::Docs::Pages::Fonts < DocsUI::Page
         - Hyphenation and the breaking of a word wider than the line cut the text as written; the pieces are
           shaped as separate words.
         - Vertical advances are not read: text runs horizontally.
-        - A reader that takes `ActualText` for the text (the gem's `Inspector`) gets it as written. poppler
-          (`pdftotext` 26.09) and MuPDF (1.28) run their own reordering over it and return a right-to-left
-          stretch reversed. pdf-reader's own `Page#text` drops a `Span` whose first glyph has no advance (a
-          mark drawn first); the `Inspector` does not.
+        - Extracted text depends on the reader: the gem's `Inspector` and PDFium get a right-to-left stretch
+          as written, poppler and MuPDF reversed (see the table below). pdf-reader's own `Page#text` drops a
+          `Span` whose first glyph has no advance (a mark drawn first); the `Inspector` does not.
 
         [`examples/shaping/harfbuzz_shaper.rb`](https://github.com/zoolutions/stationery/blob/main/examples/shaping/harfbuzz_shaper.rb)
         is an adapter for HarfBuzz through the [`harfbuzz-ruby`](https://github.com/ydah/harfbuzz) gem
         (`gem "harfbuzz-ruby"`, `require "harfbuzz"`; not the older `harfbuzz` gem, which answers to the same
         `require`), about a hundred lines to copy into an application; stationery does not depend on it. It
-        was run with harfbuzz-ruby 1.1.0 and HarfBuzz 14.5.0 against Noto Sans Arabic and draws joined,
-        right-to-left Arabic with its marks and with left-to-right digits inside it. It cuts a stretch into
-        runs of one direction by its letters alone, not by the Unicode bidirectional algorithm.
+        was run with harfbuzz-ruby 1.1.0 and HarfBuzz 14.5.0 against Noto Sans Arabic, Amiri and Noto Sans
+        Hebrew and draws joined, right-to-left Arabic with its marks and with left-to-right digits inside it.
+        It cuts a stretch into runs of one direction by its letters alone, not by the Unicode bidirectional
+        algorithm.
+
+        What comes out of a shaped PDF depends on who reads it, and no way of writing right-to-left text
+        is read as written by every extractor. Seven texts (Arabic, Hebrew, Arabic with digits in it,
+        Arabic with its marks, an Arabic word in a Latin sentence, a justified paragraph, a line that wraps)
+        were rendered three ways and read back: **A**, what the gem writes, a `Span` around the stretch
+        with its text in logical order as `ActualText` (ISO 32000-1, 14.9.4); **B**, a `Span` for every
+        cluster, in visual order; **C**, no `Span` for a glyph the ToUnicode map gives its text, in visual
+        order, and one per cluster for the others. The cells count the texts that came back as written:
+
+        | Arabic font | | `Inspector` | PDFium | PDFKit | pdf.js | poppler | MuPDF |
+        |---|---|---|---|---|---|---|---|
+        | Amiri (a glyph per letter) | **A** | 7 of 7 | 7 of 7 | 6 of 7 | 4 of 7 | 0 of 7 | 0 of 7 |
+        | | B | 0 of 7 | 0 of 7 | 0 of 7 | 0 of 7 | 4 of 7 | 5 of 7 |
+        | | C | 0 of 7 | 1 of 7 | 6 of 7 | 4 of 7 | 4 of 7 | 5 of 7 |
+        | Noto Sans Arabic (a letter is its shape and its dots) | **A** | 7 of 7 | 6 of 7 | 1 of 7 | 1 of 7 | 0 of 7 | 0 of 7 |
+        | | B | 0 of 7 | 0 of 7 | 0 of 7 | 0 of 7 | 1 of 7 | 1 of 7 |
+        | | C | 0 of 7 | 0 of 7 | 1 of 7 | 1 of 7 | 1 of 7 | 1 of 7 |
+
+        - PDFium (153.0.7999, what Chrome reads with, through pypdfium2 5.13) and the gem's `Inspector`
+          return `ActualText` as it is: A reads as written. Without it (C) PDFium returned the words of a
+          right-to-left line in reverse order.
+        - poppler (`pdftotext` 26.09) and MuPDF (`mutool` 1.28.5) reorder what they read, `ActualText`
+          included: A comes back reversed, B and C in Amiri as written, but for Arabic with digits or
+          marks and, in poppler, a justified paragraph.
+        - pdf.js (pdfjs-dist 6.3.289) and PDFKit (macOS 27, what Preview reads with) returned the same for
+          A and C, which differ in nothing but `ActualText`: they read the glyphs through the ToUnicode
+          map and reorder them. A cluster of several glyphs comes back with its text once per glyph, so a
+          letter with a mark is doubled, and so is every dotted letter of the Noto Arabic families (Sans,
+          Naskh and Kufi draw a letter as two glyphs). Only `ActualText` carries the text of such a font.
+        - The Hebrew text (Noto Sans Hebrew) is the same in both halves of the table.
+        - veraPDF 1.30.2 passes all 42 renders as PDF/UA-1, so the rules of the standard do not choose.
+        - Acrobat, Preview itself and screen readers were not tested.
+
+        The gem keeps A: it is what the specification describes, the one PDFium reads as written, and
+        the only one that holds with a font whose glyphs are not letters. None of the three is read as
+        written by poppler or MuPDF and by PDFium.
+        [`examples/shaping/extraction_matrix.rb`](https://github.com/zoolutions/stationery/blob/main/examples/shaping/extraction_matrix.rb)
+        renders the texts, holds B and C as experiments and writes the table again, with what to install
+        at its head.
       MD
     end
 

@@ -29,8 +29,12 @@ module Stationery
                     end
       end
 
+      # `size:` is a name of Page::SIZES, [width, height] in points or with
+      # units (["102mm", "74mm"], "4in x 6in"); `margin:` takes points or
+      # lengths ("3mm") the way `padding:` takes its sides. Both are checked
+      # here, so a size that cannot be read raises where it is written.
       def page(size: :letter, margin: 36, layout: :portrait)
-        config[:page] = { size:, margin:, layout: }
+        config[:page] = { size: Page::Format.size(size), margin: Page::Format.margin(margin), layout: }
       end
 
       def font_family(name, **paths)

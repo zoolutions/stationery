@@ -28,6 +28,41 @@ RSpec.describe Stationery::Page do
 
   it "rejects unknown sizes" do
     expect { described_class.new(size: :b9) }.to raise_error(ArgumentError, /page size/)
+    expect { described_class.new(size: %w[102mm 74]) }.to raise_error(ArgumentError, /page size/)
+  end
+
+  it "knows the small sheets, envelopes and label stock from their millimetres and inches" do
+    millimetres = { a6: [105, 148], a7: [74, 105], b5: [176, 250], dl: [110, 220], c5: [162, 229], c6: [114, 162],
+                    label_100x150: [100, 150], label_100x50: [100, 50] }
+
+    millimetres.each do |name, size|
+      expect(described_class.new(size: name).size).to eq(size.map { (it * 72 / 25.4).round(2) })
+    end
+    expect(described_class.new(size: :label_4x6).size).to eq([288, 432])
+    expect(described_class.new(size: :label_4x3).size).to eq([288, 216])
+    expect(described_class.new(size: :label_4x2).size).to eq([288, 144])
+    expect(described_class.new(size: :dl, layout: :landscape).size).to eq([623.62, 311.81])
+  end
+
+  it "keeps the sizes it had to the point" do
+    expect(described_class::SIZES).to include(
+      a3: [841.89, 1190.55], a4: [595.28, 841.89], a5: [419.53, 595.28],
+      letter: [612, 792], legal: [612, 1008], tabloid: [792, 1224]
+    )
+  end
+
+  it "takes sizes and margins with their units" do
+    page = described_class.new(size: %w[4in 6in], margin: ["0.5in", "18pt"], layout: "landscape")
+
+    expect(page.size).to eq([432, 288])
+    expect(page.margin).to eq([36, 18, 36, 18])
+    expect(described_class.new(size: "4in x 6in", margin: "1in").margin_box)
+      .to eq(Stationery::Rect.new(72, 72, 144, 288))
+  end
+
+  it "takes a size in points as it did, whatever the numbers" do
+    expect(described_class.new(size: [0, 0]).size).to eq([0, 0])
+    expect(described_class.new(size: [300.5, 400], margin: { x: 10 }).margin).to eq([0, 10, 0, 10])
   end
 
   describe "#seal" do
