@@ -1,0 +1,25 @@
+lib/stationery/page.rb
+  ai_agent 8-12,27-28,54-71
+spec/stationery/page_spec.rb
+  ai_agent 32-82
+spec/stationery/pdf/page_sealer_spec.rb
+  ai_agent 1-59
+lib/stationery/document.rb
+  ai_agent 27-28,90-96,177-185,190,201-202,229,237-238,248,254-256,266-277,281,285
+lib/stationery.rb
+  ai_agent 81
+lib/stationery/pdf/assembler.rb
+  ai_agent 17-19,22,25,45,87,97-108
+lib/stationery/page_templates.rb
+  ai_agent 60
+lib/stationery/pdf/page_sealer.rb
+  ai_agent 1-35
+spec/stationery/document_to_pdf_incremental_spec.rb
+  ai_agent 1-319
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "4273ad32c77860028e1ca78f66624fd33509c531",
+  "prompts": {}
+}
