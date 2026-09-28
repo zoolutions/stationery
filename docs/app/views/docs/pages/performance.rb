@@ -56,18 +56,21 @@ class Views::Docs::Pages::Performance < DocsUI::Page
         | | | alive | 222 MB | 44 MB | 11 MB |
         | | 5,189 | peak | 1,643 MB | 614 MB | 446 MB |
         | | | alive | 1,080 MB | 180 MB | 20 MB |
-        | One table of 33,000 rows | 1,000 | peak | 901 MB | 653 MB | 648 MB |
-        | | | alive | 494 MB | 28 MB | 25 MB |
-        | One table of 165,000 rows | 5,000 | peak | 3,792 MB | 2,952 MB | 2,955 MB |
-        | | | alive | 2,437 MB | 65 MB | 49 MB |
+        | One table of 33,000 rows | 1,000 | peak | 901 MB | 174 MB | 174 MB |
+        | | | alive | 494 MB | 26 MB | 23 MB |
+        | One table of 165,000 rows | 5,000 | peak | 3,792 MB | 584 MB | 586 MB |
+        | | | alive | 2,437 MB | 40 MB | 25 MB |
 
         "Peak" is the resident set size of one render in a fresh process, "alive" the megabytes that
         survive a garbage collection when pagination ends (`rake memory`, Apple M2 Max, Ruby 3.4.2
         +YJIT). The peak moves with the machine, up to a fifth between two runs here, so nothing gates
         on it. A document without headers, footers, templates or contents gains nothing from
         `incremental:`, and what is left in every case is the document as it was built: every node
-        exists before the first page is painted, and a table resolves its column widths from every
-        cell. When `incremental:` takes the usual path instead is under
+        exists before the first page is painted. A table resolves its column widths from every cell
+        and keeps the widths, not the cell's text: a cell's node is built when a page reaches its row
+        and let go with the page. In a tagged render a row's `TR`, `TH` and `TD` are built when a page
+        paints it, and the structure tree holds them until the file is written, so the table of
+        165,000 rows tagged peaks at 2.2 GB. When `incremental:` takes the usual path instead is under
         [Rendering](/docs/documents-and-components#rendering).
       MD
     end
