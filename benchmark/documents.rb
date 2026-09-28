@@ -16,6 +16,10 @@ module Bench
   end.freeze
   TABLE = [TABLE_HEADER, *TABLE_ROWS].freeze
 
+  ASSETS = File.expand_path("../examples/assets", __dir__)
+  COVER = File.join(ASSETS, "dunes.png")
+  PHOTOS = %w[sea hills stone].map { |name| File.join(ASSETS, "#{name}.png") }.freeze
+
   PARAGRAPH = "We believe a good month feels natural rather than scheduled. Breakfast is long, the sea is a " \
               "short walk away and the evenings belong to whoever brings a guitar. Guests shop at the market, " \
               "cook for themselves or for everyone, and eat out in the harbour when the mood takes them."
@@ -48,5 +52,25 @@ module Bench
   # The same text justified, with words hyphenated where a line breaks.
   class StationeryHyphenated < StationeryText
     default_text font: "Open Sans", size: 9.5, hyphenate: true, align: :justify
+  end
+
+  # A cover photo, then six sections of a heading, three paragraphs and a row
+  # of three photos: what a brochure or a flyer does with images.
+  class StationeryPhotos < Stationery::Document
+    page size: :a4, margin: 48
+    font_family "Open Sans", regular: FONT, bold: FONT_BOLD
+    default_text font: "Open Sans", size: 9.5
+
+    def view_template
+      image COVER, width: 499, height: 200, fit: :cover
+      6.times do
+        text "Healthy Living", size: 16, weight: :bold
+        3.times { text PARAGRAPH }
+        row(gap: 8) do
+          PHOTOS.each { |photo| column(width: 1 / 3.0) { image photo, width: 161, height: 90, fit: :cover } }
+        end
+        spacer 10
+      end
+    end
   end
 end

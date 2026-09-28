@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # A one-page invoice: examples/invoice.rb against the same layout hand-written
-# with Prawn and prawn-table.
+# with Prawn and prawn-table, and as HTML/CSS for sghtmltopdf.
 #
 #   bundle exec ruby -Ilib benchmark/invoice.rb
 require_relative "support"
@@ -71,4 +71,5 @@ def stationery_invoice
                      customer: "Müller & Söhne GmbH", due: "26 October 2026").to_pdf
 end
 
-Bench.compare("stationery" => -> { stationery_invoice }, "prawn" => -> { PrawnInvoice.render })
+Bench.compare({ "stationery" => -> { stationery_invoice }, "prawn" => -> { PrawnInvoice.render } },
+              html: Bench::HTML.invoice)
