@@ -28,6 +28,17 @@ module Stationery
                      transform: style.matrix) { |path| Shapes.trace(path, element) }
       end
 
+      # Paints the block inside `region` (a clip path's or a viewport's) and
+      # inside the regions around it.
+      def clip(region, &)
+        return clip(region.outer) { clip(region.with(outer: nil), &) } if region.outer
+
+        outlines = region.parts.map do |part|
+          @canvas.outline(transform: part.matrix) { |path| part.shape.trace(path) }
+        end
+        @canvas.clip_to(outlines, even_odd: region.even_odd, &)
+      end
+
       # A paint as one colour: a gradient's middle colour, nil for none.
       def color(paint, style)
         paint = resolve(paint)

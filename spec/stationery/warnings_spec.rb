@@ -43,8 +43,8 @@ RSpec.describe Stationery::Warnings do
   it "explains every kind" do
     expect(described_class::UnknownFamily.new(requested: "X", used: "Y").message)
       .to eq('font family "X" is not registered, using "Y"')
-    expect(described_class::UnsupportedSvg.new(elements: %w[use text], source: "logo.svg").message)
-      .to eq('SVG "logo.svg" uses unsupported elements: use, text')
+    expect(described_class::UnsupportedSvg.new(elements: %w[mask image], source: "logo.svg").message)
+      .to eq('SVG "logo.svg" uses unsupported elements: mask, image')
     expect(described_class::SkippedImage.new(source: "a.webp", reason: "WebP is not supported").message)
       .to eq('image "a.webp" skipped: WebP is not supported')
     expect(described_class::UnresolvedLink.new(name: "terms", page: 3).message)

@@ -64,10 +64,11 @@ RSpec.describe Stationery::SVG::Document do
   it "lists the elements it cannot draw, ignoring descriptive ones" do
     source = <<~SVG
       <svg viewBox="0 0 10 10"><title>t</title><desc>d</desc><metadata/><defs><path d="M0 0"/></defs>
-        <g><text>Hi</text><use href="#a"/><svg/></g><text>again</text><rect width="1" height="1"/></svg>
+        <g><text>Hi</text><image href="a.png"/><svg/></g><text>again</text><rect width="1" height="1"/>
+        <mask id="m"/><pattern id="p"/><filter id="f"/></svg>
     SVG
 
-    expect(described_class.parse(source).unsupported).to eq(%w[use])
+    expect(described_class.parse(source).unsupported).to eq(%w[filter image mask pattern])
     expect(described_class.parse(check).unsupported).to eq([])
   end
 

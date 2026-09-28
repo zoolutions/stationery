@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 120 40">
+  <!-- An icon sprite sheet: every icon is a symbol, drawn by use at its own size and colour. -->
+  <defs>
+    <symbol id="icon-check" viewBox="0 0 24 24">
+      <path d="M4 12 L10 18 L20 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-dot" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="6" fill="currentColor"/>
+    </symbol>
+    <symbol id="icon-badge" viewBox="0 0 24 24">
+      <rect x="2" y="2" width="20" height="20" rx="4" fill="currentColor"/>
+      <use xlink:href="#icon-check" width="24" height="24" color="#FFFFFF"/>
+    </symbol>
+  </defs>
+  <use href="#icon-check" x="0" y="8" width="24" height="24"/>
+  <use href="#icon-check" x="30" y="4" width="32" height="32" color="#16A34A"/>
+  <use href="#icon-dot" x="70" y="12" width="16" height="16" color="#DC2626"/>
+  <use href="#icon-badge" x="90" y="8" width="24" height="24" color="#2563EB"/>
+</svg>

@@ -85,7 +85,7 @@ renders them all, or render one with `stationery render examples/report.rb`.
 | `row(gap:, align:, break_inside:) { column(width:) { } }` | Columns side by side. `width:` is points, a fraction (`0.5`), `:auto` or `nil` (equal share). Splits across pages like a box, every column at once; a row with a fixed-height column never splits; columns with `min_height:` do. |
 | `table(rows, widths:, width:, header:, split_rows:, cell:) { \|t\| }` | Tables. Cells are strings, layout nodes, procs built with the DSL (`-> { image logo }`) or components. Style with `t.row(0)`, `t.rows(-1)`, `t.column(1)`, `t.columns(1..)`, chained, plus `t.zebra`. Header rows repeat after a page break. A cell may be `{ content:, colspan:, rowspan: }` plus any cell option; rows list only the cells they start, as in HTML, and pages never break through a rowspan. Spans are set in the rows, not through selections. A row taller than the page continues on the next page, cut through its cells, with the header repeated; `split_rows: true` cuts any row that reaches the page bottom instead of moving it whole. |
 | `image(path_or_io, width:, height:, fit:, align:, radius:, rotate:, max_ppi:, downscale:)` | JPEG or PNG, aspect preserved. `fit: [w, h]` scales to fit inside; `fit: :cover` fills `width:` × `height:` and crops around the centre. `radius:` rounds the corners; `rotate:` turns it (degrees, clockwise) without changing the space it takes. Drawn at more than twice `max_ppi:` (300) it is reported as oversized; `downscale: true` resamples a PNG to that resolution instead. |
-| `svg(source_or_path, width:, height:, color:, align:)` | Vector icons and drawings; `currentColor` takes `color:`. Linear and radial gradients (`fill="url(#id)"`, `href` chains, both gradient units); `text`/`tspan` in the document's fonts; `<style>` stylesheets (element, class, id and `*` selectors). |
+| `svg(source_or_path, width:, height:, color:, align:)` | Vector icons and drawings; `currentColor` takes `color:` (or the `color` an element sets). Linear and radial gradients (`fill="url(#id)"`, `href` chains, both gradient units); `text`/`tspan` in the document's fonts; `<style>` stylesheets (element, class, id and `*` selectors); `use`, `symbol` sprites and nested `svg` viewports (`viewBox`, `preserveAspectRatio`); `clipPath` (both `clipPathUnits`). |
 | `wrap(gap:, row_gap:, align:) { }` | Children side by side at their own widths, wrapping onto new rows (chips, tags). |
 | `stack(gap:, align:) { }` | A base with layers painted over it: ordinary children set the height, `layer` children float over them and take no space. Moves to the next page whole. |
 | `layer(top:, right:, bottom:, left:, width:, height:, **box) { }` | Inside `stack`: a box placed by insets from the stack's edges, in points or as a fraction (`0.4`, `1/3r`) of its width/height; negative insets overhang. Takes every box option (`rotate:`, `shadow:`, `radius:`, …). |
@@ -784,8 +784,10 @@ in the chain has are drawn as `.notdef` and reported. Text runs left to right; h
 patterns are bundled for English, German and Swedish only (a soft hyphen works in any language),
 and justification only widens spaces.
 
-SVG covers the shapes, gradients, text and stylesheets icon sets use, nothing else: `use`,
-`image`, `clipPath`, `mask`, `pattern`, `filter` and `textPath` are skipped and reported.
+SVG covers the shapes, gradients, text, stylesheets, `use`/`symbol` sprites and clip paths that icon
+sets and exports use, nothing else: `image`, `mask`, `pattern`, `filter` and `textPath` are skipped
+and reported, text inside a `clipPath` does not clip, and the shapes of a clip path join into one
+path, so overlapping shapes wound in opposite directions cancel where they overlap.
 Images are JPEG and PNG (non-interlaced) and never fetched from a URL; a JPEG is embedded at its
 source resolution (only PNGs can be downscaled), so an oversized one is reported, not resized. `html` and `markdown` render structure and inline marks, not CSS: only `text-align`
 and inline `font-weight`/`font-style` are read, and raw HTML inside Markdown stays literal text.

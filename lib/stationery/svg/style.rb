@@ -4,13 +4,17 @@ module Stationery
   module SVG
     # Presentation attributes an element inherits from its ancestors, and the
     # transform it draws with. An element's own values cascade: presentation
-    # attributes, then stylesheet rules, then its inline `style`.
+    # attributes, then stylesheet rules, then its inline `style`. `color` sets
+    # what `currentColor` means from the element down.
     class Style
-      INHERITED = %w[fill stroke stroke-width stroke-linecap stroke-linejoin fill-rule opacity fill-opacity
+      INHERITED = %w[fill stroke stroke-width stroke-linecap stroke-linejoin fill-rule clip-rule opacity fill-opacity
                      stroke-opacity font-family font-size font-weight font-style text-anchor visibility].freeze
+      # Properties of the element alone, not handed to its children.
+      LOCAL = %w[display clip-path overflow].freeze
       NAMED = { "black" => "#000000", "white" => "#FFFFFF", "red" => "#FF0000", "green" => "#008000",
                 "blue" => "#0000FF", "gray" => "#808080", "grey" => "#808080" }.freeze
       DEFAULTS = { "fill" => "black", "stroke" => "none", "stroke-width" => "1" }.freeze
+      IDENTITY = [1, 0, 0, 1, 0, 0].freeze
       URL = /\Aurl\(\s*['"]?#([^'")\s]+)['"]?\s*\)\s*(.*)\z/
 
       # A paint server reference, `url(#id)`, with its fallback colour (or nil).
@@ -32,34 +36,41 @@ module Stationery
 
       attr_reader :values, :matrix, :color
 
-      def initialize(values = DEFAULTS, matrix = [1, 0, 0, 1, 0, 0], color: "#000000", sheet: Stylesheet::EMPTY,
-                     display: nil)
+      def initialize(values = DEFAULTS, matrix = IDENTITY, color: "#000000", sheet: Stylesheet::EMPTY, local: {})
         @values = values
         @matrix = matrix
         @color = color
         @sheet = sheet
-        @display = display
+        @local = local
       end
 
       def child(element)
         attributes = element.attributes
         own = attributes.merge(@sheet.declarations(element), Style.declarations(attributes["style"]))
-        values = @values.merge(own.slice(*INHERITED))
-        matrix = if attributes["transform"]
-                   Transform.multiply(@matrix,
-                                      Transform.parse(attributes["transform"]))
-                 else
-                   @matrix
-                 end
-        Style.new(values, matrix, color: @color, sheet: @sheet, display: own["display"])
+        transform = attributes["transform"]
+        matrix = transform ? Transform.multiply(@matrix, Transform.parse(transform)) : @matrix
+        color = own["color"] ? Style.color(own["color"], @color) : @color
+        Style.new(@values.merge(own.slice(*INHERITED)), matrix, color:, sheet: @sheet, local: own.slice(*LOCAL))
       end
 
-      def displayed? = @display != "none"
+      # This style with `matrix` applied inside its transform: what a `use`
+      # does with its x and y, a viewport with its viewBox.
+      def transformed(matrix) = at(Transform.multiply(@matrix, matrix))
+
+      # This style drawing under another transform altogether.
+      def at(matrix, values = @values) = Style.new(values, matrix, color: @color, sheet: @sheet, local: @local)
+
+      def displayed? = @local["display"] != "none"
       def visible? = !%w[hidden collapse].include?(@values["visibility"])
+      # Whether a viewport clips what it draws: all but `visible` and `auto` do.
+      def clips? = !%w[visible auto].include?(@local["overflow"])
+      # The id of the element's `clip-path: url(#id)`, or nil.
+      def clip_path = @local["clip-path"].to_s.strip[URL, 1]
 
       def fill = paint("fill")
       def stroke = paint("stroke")
       def even_odd? = @values["fill-rule"] == "evenodd"
+      def clip_even_odd? = @values["clip-rule"] == "evenodd"
       def cap = @values["stroke-linecap"]&.to_sym
       def join = @values["stroke-linejoin"]&.to_sym
 

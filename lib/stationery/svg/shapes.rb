@@ -4,6 +4,8 @@ module Stationery
   module SVG
     # Traces one SVG shape element onto a canvas path.
     module Shapes
+      NAMES = %w[path rect circle ellipse line polyline polygon].freeze
+
       module_function
 
       def trace(path, element)
