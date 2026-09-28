@@ -34,7 +34,7 @@ module Stationery
 
           top, right, _bottom, left = insets
           Flow::Placement::Slot.new(top:, left:, width: inner_width(width),
-                                    exclusions: exclusions.inset(top:, right:, left:))
+                                    exclusions: exclusions.inset(top:, right:, left:), need: nil)
         end
 
         def content_height(width, exclusions)

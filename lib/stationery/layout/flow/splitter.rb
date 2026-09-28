@@ -174,10 +174,14 @@ module Stationery
           @slot ? @slot.measure(child) : child.height_within(child.width_in(@width), limit)
         end
 
+        # Beside floats the part that stays is placed by the width the whole
+        # was, so the page lays it out in the slot it was cut in.
         def cut(child, remaining)
-          return @slot.split(child, remaining, fresh: top?) if @slot
+          return child.split(child.width_in(@width), remaining, fresh: top?) unless @slot
 
-          child.split(child.width_in(@width), remaining, fresh: top?)
+          head, tail = @slot.split(child, remaining, fresh: top?)
+          head.placing_width = @slot.need if head && @slot.need
+          [head, tail]
         end
 
         # The break before `nodes`. Floats placed last go with them: what
