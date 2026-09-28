@@ -6,6 +6,8 @@ module Stationery
     # defines and writes its PDF. A document whose constructor needs
     # arguments renders from `def self.preview` returning an instance.
     class Render
+      include Pictures
+
       SUMMARY = "Render the Stationery::Document defined in a Ruby file to PDF"
 
       def initialize(out:, err:)
@@ -38,6 +40,7 @@ module Stationery
           end
           opts.on("--strict", "Fail without writing when layout reports warnings") { @options[:strict] = true }
           opts.on("--debug", "Render with debug: true when the document supports it") { @options[:debug] = true }
+          picture_options(opts)
           opts.on("-h", "--help", "Show this help") do
             @out.puts opts
             @options[:help] = true
@@ -50,10 +53,15 @@ module Stationery
         raise Error, "no such file: #{file}" unless File.file?(path)
 
         document = instantiate(pick(load_documents(path), path))
+        target = @options[:out] || File.join(File.dirname(path), "#{File.basename(path, ".*")}.pdf")
+        refuse_stdout(target) if @options[:png]
+        return pictures(document, target) ? OK : FAILURE if @options[:png_only]
+
         pdf = to_pdf(document)
         return FAILURE unless warnings_ok?(document)
 
-        write(pdf, @options[:out] || File.join(File.dirname(path), "#{File.basename(path, ".*")}.pdf"))
+        write(pdf, target)
+        pictures(document, target) if @options[:png]
         OK
       end
 
