@@ -72,9 +72,11 @@ module Stationery
         properties = { Type: type && capital(type), Subtype: subtype && capital(subtype) }.compact
         emit(properties.empty? ? "/Artifact BMC" : "/Artifact #{PDF::Serializer.dump(properties)} BDC")
         @marked += 1
+        @region = subtype
         begin
           yield
         ensure
+          @region = nil
           close_run
         end
       end
@@ -99,6 +101,23 @@ module Stationery
 
         annotation[:tag] = element
         element.kids << Stationery::Tagging::ObjectRef.new(@page, annotation)
+      end
+
+      # Remembers where an annotation that no element owns was painted, and
+      # its target as it was given, for the audit's warning.
+      def disown(annotation, target, tag)
+        annotation[:target] = target
+        annotation[:place] = place(tag)
+      end
+
+      # What is painting: a region (the subtype of its artifact), a page
+      # template, the caller's own `canvas.link` (it has no `tag:`), or an
+      # artifact of the body, where the Link elements of text join nothing.
+      def place(tag)
+        return @region if Regions::SLOTS.include?(@region)
+        return :page_template if @template
+
+        tag ? :artifact : :canvas
       end
 
       def open_run(element)

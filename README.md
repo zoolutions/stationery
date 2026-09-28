@@ -415,7 +415,8 @@ render Callout.new(color: "#F3F4F6") { text "Amount due" }
 - After `to_pdf`, `document.warnings` is an Enumerable of everything the render noticed but did not
   raise on, each with a `#message`: overflows, SVG elements that were skipped (`UnsupportedSvg`), and
   the other `Stationery::Warnings::*` kinds (missing glyphs, unknown font families, skipped images,
-  unresolved links, duplicate anchors). Equal warnings are listed once; warnings from page templates
+  unresolved links, duplicate anchors, and in a tagged render what is missing for accessibility).
+  Equal warnings are listed once; warnings from page templates
   are included. `to_pdf(strict: true)`, or `strict` at class level, raises `Stationery::WarningsError`
   (with `#warnings`) instead of writing a PDF that produced any; `to_pdf(strict: false)` opts one
   render out again.
@@ -512,8 +513,14 @@ and across page breaks: a paragraph continued on the next page stays one `P`.
   (`1`, then `3` skips `2`). Going back up is free (`3`, then `1`). Headings are read in the order of
   the structure tree, inside sections, lists, table cells, columns and floats; those of headers,
   footers and page templates are artifacts and do not count.
-- A missing `lang` is a `Warnings::MissingLanguage`. All three are warnings, so `strict` catches them,
-  and `conformance :pdf_ua1` raises on the first two.
+- A link annotation that belongs to no `Link` element is a `Warnings::UntaggedLink` (`target`,
+  `place`, `page`). Headers, footers and page templates are artifacts, so a `link:` they paint is one
+  (`place` is `:header`, `:footer` or `:page_template`), and so are a link in the header row a table
+  repeats on its next pages (`:artifact`) and `canvas.link` without a `tag:` (`:canvas`). Links in the
+  body are tagged; on a canvas, pass the `Link` element that holds what the link draws:
+  `canvas.link(x, y, w, h, url, tag: element)` after `canvas.tag(element) { … }`.
+- A missing `lang` is a `Warnings::MissingLanguage`. All four are warnings, so `strict` catches them,
+  and `conformance :pdf_ua1` raises on the first three.
 - Untagged documents (the default) are written exactly as before.
 
 Check the tree in tests with `have_structure` and `have_tagged_content` (see [Testing](#testing)):
@@ -561,8 +568,10 @@ mislabelled: `ArgumentError` for options that contradict the level, `Stationery:
   every link annotation a description (`/Contents`: the URL, or the target page). A figure without
   `alt:` or with a blank one raises (7.3); mark decoration with `alt: false`, or `<img alt="">` in
   `html`. A heading level that is skipped raises (7.4.2): the first heading is `heading: 1`, and a
-  heading is at most one level below the heading before it. PDF/A alone asks for neither.
-  Encryption is allowed.
+  heading is at most one level below the heading before it. A link annotation outside the structure
+  tree raises (7.18.5): a `link:` painted by a `header`, a `footer` or a `page_template`, a link in
+  the header row a table repeats, or `canvas.link` without a `tag:`. Links in the body are tagged.
+  PDF/A alone asks for none of the three. Encryption is allowed.
 - Combined, the XMP packet also describes the `pdfuaid` schema to PDF/A (`pdfaExtension:schemas`).
 - Interactive form fields are allowed: their appearances draw with embedded fonts and paths, every
   field has a `/TU`, and `NeedAppearances` and ZapfDingbats are left out. Only a field made without

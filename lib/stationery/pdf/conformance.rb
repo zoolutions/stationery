@@ -121,12 +121,14 @@ module Stationery
       end
 
       # What PDF/UA asks of the structure and PDF/A level B does not: a figure
-      # is described (ISO 14289-1, 7.3) and no heading level is skipped
-      # (7.4.2). Tagging::Tree#audit found them; here they break the claim.
+      # is described (ISO 14289-1, 7.3), no heading level is skipped (7.4.2)
+      # and a link is in the structure tree (7.18.5). Tagging::Tree#audit
+      # found them; here they break the claim.
       def structure(warnings)
         return [] unless pdf_ua?
 
-        (warnings.grep(Warnings::MissingAlt) + warnings.grep(Warnings::SkippedHeading)).map(&:message)
+        (warnings.grep(Warnings::MissingAlt) + warnings.grep(Warnings::SkippedHeading)).map(&:message) +
+          warnings.grep(Warnings::UntaggedLink).map { |link| "#{link.message} (7.18.5)" }
       end
 
       # A character no font has draws as .notdef, which text may not reference
