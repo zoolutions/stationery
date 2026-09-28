@@ -1,0 +1,67 @@
+lib/stationery/fonts/font.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 32-36,42-44,46,52,101-109,123,153-164,248-256
+lib/stationery/document.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 28,119-123,125,210,213,234-236,266-270,279-280
+docs/app/views/docs/pages/warnings.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 32-33
+benchmark/baseline.json
+  s_f5a1e2cf907cda::t_a5111f56603952 6,11,16,21,26,31,36,41,46,51,56,61,66,71
+lib/stationery/fonts/shaped_run.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 21-24,27,53,97-98,101-102,104,108-109,168-175
+docs/app/views/docs/pages/fonts.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 174-175,266-268
+spec/stationery/pdf/conformance_stand_in_spec.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 1-279
+spec/stationery/fonts/fallback_each_missing_spec.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 1-79
+lib/stationery/pdf/serializer.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 18-21,55-58,61,63-94
+spec/stationery/text/wrapper_spec.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 198-215
+lib/stationery/text/wrapper.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 3-4,25,40-43,81-82,84-85,126,138,140,270-271,274-281,284-287,289
+docs/app/views/docs/pages/forms.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 308-309
+docs/app/views/docs/pages/conformance.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 68,107-144
+lib/stationery/fonts/glyph_run.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 14-16,28,34,55-61,63-70,72-76,78,81-91
+lib/stationery/fonts/font_book.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 14-18,63,65
+README.md
+  s_f5a1e2cf907cda::t_a5111f56603952 352-353,672-673,676-706,1059-1061,1183-1184
+lib/stationery/warnings.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 12-18,21-23,111-113,120
+spec/stationery/fonts/glyph_run_spec.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 58-118
+spec/stationery/text/wrapper_one_word_spec.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 1-171
+lib/stationery/pdf/conformance.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 30-33,35,39-41,43-44,47-53,55,63-64,156-159,161-165
+lib/stationery/text/wrapper/one_word.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 1-33
+lib/stationery/fonts/fallback.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 19-39,52
+spec/stationery/pdf/serializer_number_spec.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 1-141
+lib/stationery/text/paragraph.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 180-181,194
+lib/stationery/forms/typeface.rb
+  s_f5a1e2cf907cda::t_a5111f56603952 86-87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "bad934eef8e9552e80f6be2ad07b070cb851ee43",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
