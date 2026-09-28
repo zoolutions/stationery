@@ -592,8 +592,8 @@ ShelfLabel.new.to_pdf(monochrome: false)           # as it was, byte for byte
 What it does not do: it does not decode or dither a JPEG (convert it to PNG), does not look at form
 fields (their widget draws them, not the page), does not put dashes, line caps or curves on the grid,
 and does not make small text bolder. It changes nothing without `monochrome`. The rules live in
-`Stationery::Monochrome::Rules` and `Monochrome::Grid`, apart from the PDF canvas, and `to_png`
-applies the same ones (see below).
+`Stationery::Monochrome::Rules` and `Monochrome::Grid`, apart from the PDF canvas, and `to_png` and
+`to_zpl` apply the same ones (see below).
 
 ### Pictures of a render: to_png
 
@@ -638,6 +638,61 @@ ShelfLabel.new.to_png(monochrome: { dpi: 203, snap: true }) # one bit to a dot, 
 `Stationery::Raster` has the pieces: `Raster::Canvases` and `Raster::Canvas` record, `Raster::Painter`
 replays onto a `Raster::Surface` through `Raster::Scanner` (coverage), `Raster::Stroker` and
 `Raster::Flattener`, and `Raster::PNG` writes the file.
+
+### Label printers: to_zpl
+
+A thermal label printer (Zebra, and the many makes that emulate ZPL II) is driven in its own
+language, not PDF. `to_zpl` writes the document as ZPL: each page is drawn one bit to a dot, as
+`to_png(monochrome: …)` draws it, and sent as one graphic field, so the label is the layout `to_pdf`
+produces, in any font the document uses. One document class serves the preview on screen and the
+printer.
+
+```ruby
+class ShippingLabel < Stationery::Document
+  page size: "4in x 6in", margin: mm(4)
+  monochrome dpi: 203
+end
+
+label = ShippingLabel.new(parcel)
+label.to_zpl                                # => "^XA^PW812^LL1218^LH0,0^FO0,0^GFA,…^XZ\n", one label per page
+label.to_zpl("label.zpl", dpi: 300, copies: 2)
+label.to_zpl(compression: :hex, pages: 1)   # plain hex, for printers that do not take Z64
+```
+
+How the ZPL reaches the printer is the application's business: a socket to port 9100, a print
+server, a browser print agent. For example, over the network:
+
+```ruby
+require "socket"
+TCPSocket.open("printer.local", 9100) { |socket| label.to_zpl(socket) }
+```
+
+- **What is written.** Per page `^XA`, `^PW` and `^LL` (the page's width and length in dots,
+  `Raster.pixels(points, dpi)`), `^LH0,0`, `^FO0,0`, one `^GFA` graphic field, `^FS`, `^PQ` (copies)
+  and `^XZ`, then a newline. The field's dots are 1 for black, each row padded to a byte with white.
+  `compression: :z64` (the default) deflates the rows with zlib and writes them in Base64, followed
+  by the CRC Zebra's software writes (CRC-16/XMODEM of the Base64 text, checked against a ZebraDesigner
+  print file); `:hex` writes them as plain hex, about 20 times larger.
+- **Always monochrome.** A label printer prints one bit, so `to_zpl` renders with the class's
+  `monochrome` settings when it declares them and with the defaults when it does not (`snap: false`,
+  `dither: :floyd_steinberg`): a colour is reported as `Warnings::NotMonochrome` and dithered, as
+  `to_png(monochrome: true)` shows it. `monochrome:` takes options laid over them (`{ snap: true }`);
+  `monochrome: false` raises.
+- **`dpi:`** is the printer's: 152, 203, 300 or 600 (6, 8, 12 or 24 dots a millimetre); anything else
+  raises `ArgumentError` naming them. It defaults to the class's `monochrome dpi:`, else 203, and
+  replaces it when given, so `to_zpl(dpi: 300)` and `to_png(monochrome: { dpi: 300 })` are the same
+  dots.
+- **`copies:`** is `^PQ`, by default the class's `print copies:`, else 1. **`pages:`** a page number,
+  a Range or an Array, in the order given; `target` a path or anything answering `write` (a socket).
+- `strict:`, `debug:` and `shaper:` are those of `to_pdf`; what only a PDF has raises, as for `to_png`.
+- **Speed.** A 4 × 6 in label takes about 25 ms at 203 dpi and 35 ms at 300 dpi (Ruby 3.4, Apple
+  M-series), and is 10 to 20 KB of ZPL.
+- The labels were read back and compared with `to_png` dot for dot, and rendered by
+  [Labelary](http://labelary.com/viewer.html), a ZPL viewer, identically. They were not printed on a
+  printer by the gem's specs.
+
+`stationery render label.rb --zpl --dpi 300` writes `label.zpl` (see [CLI](#cli)). What is not
+written as ZPL's own commands yet: barcodes and rules are part of the picture.
 
 ### Encryption
 
@@ -1103,13 +1158,15 @@ The gem has no Rails dependency; the Railtie loads only inside a Rails app.
 stationery render app/pdfs/invoice_pdf.rb                # writes app/pdfs/invoice_pdf.pdf
 stationery render invoice.rb --out - > invoice.pdf       # PDF to stdout
 stationery render pdfs.rb --class InvoicePdf --strict    # pick one; fail on layout warnings
+stationery render label.rb --zpl --dpi 300               # writes label.zpl for a label printer
 ```
 
 `render` loads the file and renders the `Stationery::Document` it defines. A
 document whose `initialize` needs arguments renders from `def self.preview`,
 which returns an instance built with sample data. Layout warnings print to
-stderr; `--strict` exits 1 instead of writing. `stationery help` lists the
-commands.
+stderr; `--strict` exits 1 instead of writing. `--zpl` writes ZPL instead of a
+PDF (see [Label printers](#label-printers-to_zpl)), at `--dpi` 152, 203 (the
+default), 300 or 600. `stationery help` lists the commands.
 
 ```sh
 stationery fonts list                                    # packs, licenses, what is in vendor/fonts

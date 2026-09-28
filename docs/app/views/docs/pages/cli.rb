@@ -14,17 +14,20 @@ class Views::Docs::Pages::Cli < DocsUI::Page
         stationery render invoice.rb --out - > invoice.pdf       # PDF to stdout
         stationery render pdfs.rb --class InvoicePdf --strict    # pick one; fail on layout warnings
         stationery render examples/report.rb --debug             # layout outlines
+        stationery render examples/shipping_label.rb --zpl       # writes shipping_label.zpl, 203 dpi
         ```
 
         | Option | Meaning |
         | --- | --- |
         | `-o, --out PATH` | Where to write the PDF (default: the file's name with `.pdf`); `-` writes to stdout. |
         | `-c, --class NAME` | The document class to render when the file defines several. |
+        | `--zpl` | Write ZPL for a label printer instead of a PDF (default: the file's name with `.zpl`); see [Label printers](/docs/pages). |
+        | `--dpi DPI` | The label printer's resolution for `--zpl`: 152, 203 (default), 300 or 600. |
         | `--strict` | Exit 1 without writing when layout reports warnings. |
         | `--debug` | Render with `debug: true` when the document supports it. |
         | `-h, --help` | Show help. |
 
-        `render` loads the file and renders the `Stationery::Document` it defines, then reports pages and
+        `render` loads the file and renders the `Stationery::Document` it defines, then reports pages (or labels) and
         bytes. Layout warnings print to stderr.
       MD
     end
