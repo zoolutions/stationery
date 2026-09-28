@@ -155,7 +155,8 @@ text more                                       # around the pull quote
   after it could not start beside it there, it moves to the next page with that content. A
   paragraph beside a float splits between lines as always (`orphans:`, `widows:`); the lines carried
   over are wrapped again at the full width, because the float stayed behind. So are those of a list
-  item and of a box.
+  item and of a box. The part that stays on the page keeps the place its whole was given, beside
+  the floats or below them.
 - Floats written one after the other that are taller than a page together are cut before the
   first that does not fit: it starts the next page, with the floats and the text written after it,
   so the page it left holds the floats above it and nothing beside them. It is the same in a box, a
