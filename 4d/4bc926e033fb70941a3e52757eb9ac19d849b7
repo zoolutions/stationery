@@ -1,0 +1,45 @@
+spec/integration/menu_spec.rb
+  s_f5a1e2cf907cda::t_13bd3b347c71ad 1-20,23-26,28-39
+  s_f5a1e2cf907cda::t_ae77049dc6a8f3 21-22
+  s_f5a1e2cf907cda::t_3d08b40c32a6ec 27
+spec/integration/price_list_spec.rb
+  s_f5a1e2cf907cda::t_5a25f0dee1005a 1-37
+examples/resume.rb
+  s_f5a1e2cf907cda::t_f4dcb739a79f44 100-102
+spec/integration/contract_spec.rb
+  s_f5a1e2cf907cda::t_f4dcb739a79f44 19-21
+examples/shaping/rtl_letter.rb
+  s_f5a1e2cf907cda::t_dffa2dec80d374 4-6
+spec/integration/accessible_report_spec.rb
+  s_f5a1e2cf907cda::t_35ad5809b73494 1-17,19-21,23-26,29-34,36-41
+  s_f5a1e2cf907cda::t_3d08b40c32a6ec 18,22,27-28,35
+spec/integration/resume_spec.rb
+  s_f5a1e2cf907cda::t_f4dcb739a79f44 23
+Rakefile
+  s_f5a1e2cf907cda::t_d724a8c0fe0321 81-82
+spec/integration/multilingual_notice_spec.rb
+  s_f5a1e2cf907cda::t_3c4ef29355ff8b 3
+  s_f5a1e2cf907cda::t_9dbd600d3acd4a 35-45,47-48
+  s_f5a1e2cf907cda::t_f4dcb739a79f44 28
+  s_f5a1e2cf907cda::t_1d0e0dd2260d8f 1-2,4-27,29-34,46,49-50
+examples/price_list.rb
+  s_f5a1e2cf907cda::t_f4dcb739a79f44 34
+examples/multilingual_notice.rb
+  s_f5a1e2cf907cda::t_f4dcb739a79f44 71-73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "4d4bc926e033fb70941a3e52757eb9ac19d849b7",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
