@@ -1,0 +1,31 @@
+examples/shaping/extraction_matrix.rb
+  s_f5a1e2cf907cda::t_5314e53472ac94 90-92
+  s_f5a1e2cf907cda::t_34298228f4a420 104
+  s_f5a1e2cf907cda::t_e1fd7763e73641 43
+  s_f5a1e2cf907cda::t_9299c7478a403e 171-188
+  s_f5a1e2cf907cda::t_beccce8172a990 49-50,134-136,155
+  s_f5a1e2cf907cda::t_ad4239193dc934 1-23,29-42,44-48,51-89,93-103,105-133,137-154,156-170,189-208
+  s_f5a1e2cf907cda::t_21b435811849e3 24-28
+examples/shaping/extraction_matrix/pdfjs.mjs
+  s_f5a1e2cf907cda::t_4ee3dd9eca0727 1-18
+examples/shaping/extraction_matrix/pdfkit.swift
+  s_f5a1e2cf907cda::t_207a51e6101c62 1-6
+examples/shaping/extraction_matrix/pdfium.py
+  s_f5a1e2cf907cda::t_a78fe981dc05b4 1-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "bdb49fc2f870a67c64d5b8de58fa82674d1a1e72",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
