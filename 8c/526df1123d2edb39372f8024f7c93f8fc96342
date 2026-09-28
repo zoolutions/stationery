@@ -1,0 +1,55 @@
+spec/stationery/testing/structure_reader_spec.rb
+  s_632dbd6e2d0597::t_a4c90a1f91baaa 42-47
+docs/app/views/docs/pages/testing.rb
+  s_632dbd6e2d0597::t_a4c90a1f91baaa 18-19,48
+spec/support/fake_shapers.rb
+  s_632dbd6e2d0597::t_a4c90a1f91baaa 61-73
+docs/app/views/docs/pages/forms.rb
+  s_632dbd6e2d0597::t_a4c90a1f91baaa 420-423,434-438
+spec/stationery/testing/assertions_spec.rb
+  s_632dbd6e2d0597::t_a4c90a1f91baaa 40-54
+spec/stationery/testing/field_page_spec.rb
+  s_632dbd6e2d0597::t_a4c90a1f91baaa 1-74
+spec/stationery/testing/marked_text_spec.rb
+  s_632dbd6e2d0597::t_a4c90a1f91baaa 1-68
+lib/stationery/testing/marked_text.rb
+  s_632dbd6e2d0597::t_a4c90a1f91baaa 5-14,23-40,42-44,49,51,56-63,74,80,84-104,108-124,130,137,148-186
+spec/stationery/testing/inspector_fields_spec.rb
+  s_632dbd6e2d0597::t_a4c90a1f91baaa 1-89
+lib/stationery/testing/matchers.rb
+  s_632dbd6e2d0597::t_a4c90a1f91baaa 39-40,42-50,54-59,62-64,70-71,74,76,255-256
+spec/support/raw_pdf.rb
+  s_632dbd6e2d0597::t_a4c90a1f91baaa 1-35
+lib/stationery/testing/field_page.rb
+  s_632dbd6e2d0597::t_a4c90a1f91baaa 1-89
+spec/support/form_helpers.rb
+  s_632dbd6e2d0597::t_a4c90a1f91baaa 3,5,10-15,18-20,63-65,68-69
+lib/stationery/minitest.rb
+  s_632dbd6e2d0597::t_a4c90a1f91baaa 14-17,48-49
+lib/stationery/testing/inspector.rb
+  s_632dbd6e2d0597::t_a4c90a1f91baaa 7,47-56
+spec/stationery/testing/inspector_spec.rb
+  s_632dbd6e2d0597::t_a4c90a1f91baaa 70-97
+docs/app/views/docs/pages/fonts.rb
+  s_632dbd6e2d0597::t_a4c90a1f91baaa 192-193
+README.md
+  s_632dbd6e2d0597::t_a4c90a1f91baaa 352-355,1047-1048,1082,1110,1142-1154
+spec/stationery/testing/matchers_spec.rb
+  s_632dbd6e2d0597::t_a4c90a1f91baaa 237-286
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "8c526df1123d2edb39372f8024f7c93f8fc96342",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
