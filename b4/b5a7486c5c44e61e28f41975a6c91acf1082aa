@@ -1,0 +1,59 @@
+.rubocop.yml
+  s_f5a1e2cf907cda::t_4ce07d290ab32d 34
+lib/stationery/page_templates.rb
+  s_f5a1e2cf907cda::t_4ce07d290ab32d 10-13,16,57-59
+lib/stationery/path.rb
+  s_f5a1e2cf907cda::t_4ce07d290ab32d 1-138
+AGENTS.md
+  s_f5a1e2cf907cda::t_4ce07d290ab32d 17-20
+spec/stationery/canvas/interface_spec.rb
+  s_f5a1e2cf907cda::t_4ce07d290ab32d 1-146
+lib/stationery/pdf/canvases.rb
+  s_f5a1e2cf907cda::t_4ce07d290ab32d 1-37
+lib/stationery.rb
+  s_f5a1e2cf907cda::t_4ce07d290ab32d 64,68-69,73
+lib/stationery/canvas/text.rb
+  s_f5a1e2cf907cda::t_4ce07d290ab32d 5-6,29-30
+lib/stationery/canvas.rb
+  s_f5a1e2cf907cda::t_4ce07d290ab32d 4-8,10-11,17,78-85,89-92
+lib/stationery/svg/gradient.rb
+  s_f5a1e2cf907cda::t_4ce07d290ab32d 15-26
+lib/stationery/canvas/path.rb
+  s_f5a1e2cf907cda::t_4ce07d290ab32d 5-7,9,13-20,25-34,37-38,41-45,48-50
+spec/stationery/document_paint_on_spec.rb
+  s_f5a1e2cf907cda::t_4ce07d290ab32d 1-130
+spec/stationery/path_spec.rb
+  s_f5a1e2cf907cda::t_4ce07d290ab32d 1-48
+lib/stationery/canvas/glyphs.rb
+  s_f5a1e2cf907cda::t_4ce07d290ab32d 1-40
+spec/stationery/canvas/path_spec.rb
+  s_f5a1e2cf907cda::t_4ce07d290ab32d 1-23
+spec/support/recording_canvas.rb
+  s_f5a1e2cf907cda::t_4ce07d290ab32d 1-91
+lib/stationery/structure.rb
+  s_f5a1e2cf907cda::t_4ce07d290ab32d 14-17,20,23,64
+lib/stationery/document.rb
+  ai_agent 229-245,266,268,277-280,321,324-326
+lib/stationery/layout/paginator.rb
+  s_f5a1e2cf907cda::t_4ce07d290ab32d 10-15,72
+lib/stationery/canvas/interface.rb
+  s_f5a1e2cf907cda::t_4ce07d290ab32d 1-146
+lib/stationery/svg/painter.rb
+  s_f5a1e2cf907cda::t_4ce07d290ab32d 68
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "b4b5a7486c5c44e61e28f41975a6c91acf1082aa",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
