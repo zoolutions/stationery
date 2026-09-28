@@ -1,0 +1,62 @@
+lib/stationery/text/paragraph.rb
+  s_600b6bfbec0b19::t_2bb59ef9ab5a4f 120
+spec/stationery/fonts/font_spec.rb
+  s_600b6bfbec0b19::t_0eaa7e4d42bd21 84-101,106-115
+  s_600b6bfbec0b19::t_1ef0b9ec8bfb47 102-105
+docs/app/views/docs/pages/fonts.rb
+  s_600b6bfbec0b19::t_2a4359be7f1305 51-52,60-80
+spec/support/gsub_builder.rb
+  s_600b6bfbec0b19::t_0eaa7e4d42bd21 17-22
+lib/stationery/text/style.rb
+  s_600b6bfbec0b19::t_4f7a0b7742bf39 6
+  s_600b6bfbec0b19::t_2bb59ef9ab5a4f 11-14,17-24
+lib/stationery/canvas/text.rb
+  s_600b6bfbec0b19::t_2bb59ef9ab5a4f 11-12,15,19
+spec/stationery/fonts/ligatures_spec.rb
+  s_600b6bfbec0b19::t_0eaa7e4d42bd21 19-21,23-24,26
+README.md
+  s_600b6bfbec0b19::t_2a4359be7f1305 109,529-545,693-695
+lib/stationery/fonts/gsub.rb
+  s_600b6bfbec0b19::t_250ec037978b11 5-11,13,16,18-19,24-32,35-49,53-56,62-72,76-84,89-93
+lib/stationery/fonts/ligatures.rb
+  s_600b6bfbec0b19::t_a0459afd0a2e89 5-7,9,11-12
+lib/stationery/layout/text.rb
+  s_600b6bfbec0b19::t_2bb59ef9ab5a4f 47
+spec/stationery/document_spec.rb
+  s_600b6bfbec0b19::t_0eaa7e4d42bd21 77-89
+lib/stationery/fonts/font.rb
+  s_600b6bfbec0b19::t_2143653e057fa4 26
+  s_600b6bfbec0b19::t_2bb59ef9ab5a4f 36-38,48-49,51-52,55,58-60,78-82,128-130,132-138,140-142,144,149,151,173-175,180-181
+  s_600b6bfbec0b19::t_75d2615ccbe4a4 131
+docs/app/views/docs/pages/limitations.rb
+  s_600b6bfbec0b19::t_2a4359be7f1305 19,21
+spec/stationery/fonts/gsub_spec.rb
+  s_600b6bfbec0b19::t_0eaa7e4d42bd21 34-36,38-39,42,50-53,56-99,101,103
+  s_600b6bfbec0b19::t_033af587d0c5dd 37
+  s_600b6bfbec0b19::t_4f7a0b7742bf39 54-55,100,102
+lib/stationery/text/wrapper.rb
+  s_600b6bfbec0b19::t_2bb59ef9ab5a4f 129
+lib/stationery/fonts/gsub/single_subst.rb
+  s_600b6bfbec0b19::t_827bf7bb576334 1-19,21-37
+  s_600b6bfbec0b19::t_4f7a0b7742bf39 20
+lib/stationery/builder.rb
+  s_600b6bfbec0b19::t_2bb59ef9ab5a4f 8
+lib/stationery.rb
+  s_600b6bfbec0b19::t_2bb59ef9ab5a4f 30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "21f60a3429598644451186348a3f8a28bb1cfaf9",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
