@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- A character no font has raises under a conformance level: text may not reference `.notdef` under PDF/UA-1 (ISO 14289-1, 7.21.8) nor under PDF/A-2b and PDF/A-3b (ISO 19005-2/3, 6.2.11.8; veraPDF rules 7.21.8-1 and 6.2.11.8-1), so `conformance` now raises `Stationery::ConformanceError` with an issue per character and family (`"☃" (U+2603) is in no font of Brand: add a font or font_fallbacks that covers it`) instead of writing a file that claims a level it does not keep. Body text, page templates and form field values are all covered. Whitespace a font lacks draws as a blank and is accepted, and without `conformance` a missing glyph stays a `MissingGlyph` warning.
+
 ## 0.10.1 (2026-09-28)
 
 - Extracted text keeps characters no font has: each run of `.notdef` glyphs is wrapped in a `/Span` with `/ActualText` holding the written characters, and ToUnicode maps glyph 0 to U+FFFD instead of the first missing character drawn, so `日本語` set in a font without those glyphs copies out as `日本語`, not `日日日`. The `MissingGlyph` warning and the bytes of text the fonts cover are unchanged.
