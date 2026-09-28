@@ -11,6 +11,8 @@ module Stationery
     # column metrics, so every page resolves the same column widths, and the
     # widths and row heights measured for the cut, so a page break measures
     # nothing again. Laid out at another width they resolve and measure anew.
+    # Where no cell spans rows a cut can fall before any row, so the rows
+    # still to come are not placed on a grid until a page paints them.
     class Table < Node
       DEFAULT_CELL = { padding: 5, borders: %i[top right bottom left], border_width: 0.5,
                        border_color: "#000000" }.freeze
@@ -35,7 +37,7 @@ module Stationery
       end
 
       def row_count = @cells.size
-      def column_count = grid.column_count
+      def column_count = @column_count ||= grid.column_count
       def cell(row, column) = grid.at(row, column)
 
       def rows(spec) = Selection.new(self, Selection.indexes(spec, row_count), (0...column_count).to_a)
@@ -58,6 +60,7 @@ module Stationery
         @column_widths = nil
         @column_metrics = nil
         @row_heights = nil
+        @column_count = nil
         @grid = nil
       end
 
@@ -102,7 +105,7 @@ module Stationery
         count += 1 while count < row_count && used + heights[count] <= height + EPSILON && (used += heights[count])
         return [self, nil] if count == row_count
 
-        count = grid.boundaries.grep(@header..count).max
+        count = grid.boundaries.grep(@header..count).max if row_spans?
         split_row(count, width, height - heights.first(count).sum, fresh: options[:fresh]) ||
           split_before(count, width)
       end
@@ -123,6 +126,20 @@ module Stationery
       private
 
       def grid = @grid ||= Grid.new(@cells)
+
+      # Whether any cell spans rows, of the table a fragment was cut from too.
+      def row_spans?
+        return @row_spans if defined?(@row_spans)
+
+        @row_spans = @cells.any? { |row| row.any? { |cell| cell.rowspan > 1 } }
+      end
+
+      # The placements of one row, which no cell from above reaches into.
+      def placements_in(row)
+        return grid.placements.select { |placement| placement.row == row } if row_spans?
+
+        Grid.new([@cells[row]]).placements
+      end
 
       # Where each column or row starts: the sizes before it, summed.
       def offsets(sizes) = Array.new(sizes.size) { |index| sizes[0...index].sum }
@@ -164,10 +181,10 @@ module Stationery
 
       def split_row(row, width, space, fresh:)
         return unless @split_rows || (fresh && row == @header)
-        return unless grid.boundaries.include?(row + 1)
+        return if row_spans? && !grid.boundaries.include?(row + 1)
 
         widths = column_widths(width)
-        placements = grid.placements.select { |p| p.row == row }
+        placements = placements_in(row)
         heads, tails = RowSplitter.new(placements, widths:, context: @context).call(space)
         return unless heads
 
@@ -228,6 +245,8 @@ module Stationery
       # tagged already and its column metrics are this table's.
       def fragment(rows, width, heights, continued: @continued)
         %i[natural_width min_width].each { |metric| column_metric(metric) }
+        column_count
+        row_spans?
         dup.carry(rows, continued, { width => column_widths(width) }, { width => heights })
       end
     end

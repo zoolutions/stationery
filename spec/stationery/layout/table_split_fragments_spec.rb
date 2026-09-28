@@ -51,6 +51,31 @@ RSpec.describe Stationery::Layout::Table, "#split" do
     expect(cell).not_to have_received(:measure)
   end
 
+  it "places the rows still to come on no grid while no cell spans rows" do
+    node = table(Array.new(40) { |i| ["row #{i}", i.to_s] }, header: true)
+    node.measure(200)
+    allow(described_class::Grid).to receive(:new).and_call_original
+
+    _head, tail = node.split(200, 100)
+    _next, rest = tail.split(200, 100)
+    rest.split(200, 100)
+    expect(described_class::Grid).not_to have_received(:new)
+
+    expect(rest.column_count).to eq(2)
+    expect(rest.cell(1, 1)).to be(node.cell(node.row_count - rest.row_count + 1, 1))
+    expect(described_class::Grid).to have_received(:new).once
+  end
+
+  it "cuts a table whose cells span rows only where no span crosses" do
+    rows = [%w[A B], *Array.new(8) { |i| [[{ content: "span #{i}", rowspan: 2 }, "x"], ["y"]] }.flatten(1)]
+    node = table(rows, header: true)
+    head, tail = node.split(200, 5 * (line_height + 10))
+
+    expect(head.row_count).to eq(5)
+    expect(tail.row_count).to eq(13)
+    expect(tail.send(:grid).boundaries).to eq([0, 1, 3, 5, 7, 9, 11, 13])
+  end
+
   it "resolves and measures again when a fragment is laid out at another width" do
     rows = [%w[Id Name]] + Array.new(12) { |i| [i.to_s, "a name that wraps when the column is narrow #{i}"] }
     node = table(rows, header: true, width: :full)
