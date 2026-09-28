@@ -93,6 +93,24 @@ RSpec.describe Stationery::Testing::Inspector do
     end
   end
 
+  describe "#xmp and #xmp_values" do
+    it "reads the packet and its properties, or nil and {} without one" do
+      doc = Class.new(SpecDocument) do
+        metadata title: "Q3 & <Q4>", author: "Acme", keywords: %w[a b]
+        def view_template = text("x")
+      end.new
+      inspector = described_class.new(doc)
+
+      expect(inspector.xmp).to start_with("<?xpacket begin=").and include("<pdf:Producer>")
+      expect(inspector.xmp.encoding).to eq(Encoding::UTF_8)
+      expect(inspector.xmp_values)
+        .to include("dc:title" => "Q3 & <Q4>", "dc:creator" => ["Acme"], "dc:subject" => %w[a b])
+      expect(inspector.xmp_values["xmp:CreateDate"]).to match(/\A\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ\z/)
+      expect(described_class.new(doc.to_pdf(xmp: false)).xmp).to be_nil
+      expect(described_class.new(doc.to_pdf(xmp: false)).xmp_values).to eq({})
+    end
+  end
+
   describe "#page_labels" do
     it "computes one label per page from the /PageLabels tree, nil before the first range" do
       doc = Class.new(SpecDocument) do

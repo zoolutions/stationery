@@ -39,7 +39,7 @@ class Views::Docs::Pages::DocumentsAndComponents < DocsUI::Page
           [ "default_text", "**style", "{}",
             [ :md, "Base text style for the whole document: `font`, `size`, `color`, `align`, `leading`, `kerning`, …" ] ],
           [ "metadata", "title:, author:, subject:, keywords:, creator:, producer:", "{}",
-            [ :md, "The PDF Info dictionary. An Array value is joined with `\", \"`; other keys pass through." ] ],
+            [ :md, "The PDF Info dictionary, mirrored in an XMP packet (`/Metadata`: `dc:title`, `dc:creator`, `dc:subject`, the `xmp:` dates, `pdf:Producer`). An Array value is joined with `\", \"`; other keys pass through; `xmp: false` leaves the packet out." ] ],
           [ "strict", "value = true", "false",
             [ :md, "Raise `Stationery::WarningsError` instead of writing a PDF that produced warnings." ] ],
           [ "page_template", "layer: :foreground", "—",

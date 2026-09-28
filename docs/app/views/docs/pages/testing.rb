@@ -47,6 +47,8 @@ class Views::Docs::Pages::Testing < DocsUI::Page
         pdf.image_count      # => 1
         pdf.bookmarks        # => ["Introduction", "Highlights", …]
         pdf.metadata         # => { Title: "Invoice", … }
+        pdf.xmp              # the XMP packet, or nil with metadata xmp: false
+        pdf.xmp_values       # => { "dc:title" => "Invoice", "dc:creator" => ["Acme"], "xmp:CreateDate" => "…", … }
         pdf.lang             # => "en", the catalog /Lang, or nil
         pdf.page_labels      # => ["i", "ii", "1", "2"] from page_labels, [] without
         pdf.attachments      # => [{ name: "factur-x.xml", mime: "text/xml", bytes: "<…>", … }]

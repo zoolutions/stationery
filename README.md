@@ -350,6 +350,10 @@ and across page breaks: a paragraph continued on the next page stays one `P`.
 - Headers, footers and page templates are pagination artifacts; backgrounds, borders and rules drawn
   outside any element are layout artifacts.
 - `metadata lang:` writes the catalog's `/Lang`; the title is shown instead of the file name.
+- Every document carries an XMP packet (`/Metadata`, uncompressed) mirroring the Info dictionary:
+  `dc:title`, `dc:creator`, `dc:description`, `dc:subject`, `dc:language`, the `xmp:` dates and
+  `pdf:Producer`. PDF/A and PDF/UA identification will live there; `metadata xmp: false` or
+  `to_pdf(xmp: false)` leaves it out.
 - An image or drawing without `alt:` (`Warnings::MissingAlt`) and a missing `lang`
   (`Warnings::MissingLanguage`) are warnings, so `strict` catches them.
 - Untagged documents (the default) are written exactly as before.
@@ -364,7 +368,7 @@ expect(ReportPdf.new).to have_structure(
 )
 ```
 
-The PDF is not labelled PDF/UA (no XMP `pdfuaid` metadata), and nothing checks colour contrast or
+The PDF is not labelled PDF/UA (the XMP packet has no `pdfuaid` schema yet), and nothing checks colour contrast or
 reading order you build out of positioned boxes (`box(at:)` joins the reading order where it paints).
 
 ### Debugging
@@ -652,7 +656,8 @@ The matcher names carry a `pdf_` prefix so they never clash with Capybara's
 titles. The RSpec matchers compose like the built-ins: `.and` / `.or`, and inside
 `all`, `include` or `match`. For anything else, `Stationery::Testing::Inspector.new(subject)`
 exposes `text`, `page_texts`, `page_count`, `links`, `internal_links`,
-`image_count`, `bookmarks`, `metadata`, `lang`, `page_labels`, `attachments`, `warnings`, `tagged?`, `untagged_text` and
+`image_count`, `bookmarks`, `metadata`, `xmp` (the packet), `xmp_values` (`{ "dc:title" => …, "dc:creator" => […] }`),
+`lang`, `page_labels`, `attachments`, `warnings`, `tagged?`, `untagged_text` and
 `structure` — a tagged PDF's structure tree as nested arrays, each element's text
 read from its marked content: `[type, "text"]`, `[type, [children]]` (its own text
 between the children, as for a `P` holding a `Link`) or `[type]` when empty; a
