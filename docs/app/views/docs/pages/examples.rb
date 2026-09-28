@@ -37,13 +37,17 @@ class Views::Docs::Pages::Examples < DocsUI::Page
      "option is on [Forms](/docs/forms)." ],
     [ "Postcard", "postcard",
      "An A5 landscape card: the photo collage on its own — a rounded, shadowed base photo with two tilted, " \
-     "white-framed snapshots over its corners — beside a greeting." ]
+     "white-framed snapshots over its corners — beside a greeting." ],
+    [ "Newsletter", "newsletter",
+     "A masthead across the page, then an article poured through two balanced `columns` with a rule " \
+     "between them: justified, hyphenated paragraphs with `orphans:` and `widows:`, headings kept with " \
+     "what follows, a photo with its caption kept together, and a note across the page below the columns." ]
   ].freeze
 
   title "Examples"
   eyebrow "Getting started"
 
-  def lead = "Eight complete documents from the gem's examples/ directory, rendered live by this site."
+  def lead = "Nine complete documents from the gem's examples/ directory, rendered live by this site."
 
   def content
     DocsUI::Section("Running them yourself") do

@@ -30,6 +30,7 @@ RSpec.describe "stationery in plain Ruby" do
           html "<h2>Heading</h2><p>A <a href='https://example.test'>link</a></p><ul><li>one</li></ul>"
           markdown "> quoted\\n\\n1. first\\n2. second"
           table [%w[Item Price], %w[Tea 3.50]], header: true
+          columns(count: 2, rule: true) { 4.times { |i| text "Column line \#{i}" } }
           svg %(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="5" height="5"/></svg>),
               width: 20, alt: "a square"
           text_field "name", value: "Ada", width: 120

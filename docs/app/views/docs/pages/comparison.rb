@@ -35,7 +35,8 @@ class Views::Docs::Pages::Comparison < DocsUI::Page
         | Orphans and widows | `orphans:` and `widows:` on text, default 1 | No | Yes, default 2 |
         | Headers, footers, page n of N | Page templates with any content, `header`/`footer`, regions | `repeat(:all)` blocks with `number_pages` | `@page` margin boxes and header/footer HTML with placeholders |
         | Tables across pages | Split rows, repeated header, `colspan`/`rowspan`, `split_rows:` | prawn-table: header repeat, spans, splitting | Yes, `thead` repeats |
-        | Balanced columns, text wrap around images | No | No | Floats yes; `columns` no |
+        | Balanced columns | `columns(count:, gap:, balance:, rule:)`, across pages | No | No |
+        | Text wrap around images | No | No | Floats yes |
         | Page labels | Yes | No | No |
       MD
     end

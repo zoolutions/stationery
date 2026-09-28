@@ -4,8 +4,9 @@ module Stationery
   module Rich
     class Renderer
       # What a block's CSS style becomes around the block: margins as spacers,
-      # a background and padding as a box, page-break rules as page breaks and
-      # kept-together groups, borders and widths as table options.
+      # a background and padding as a box, a column count as columns,
+      # page-break rules as page breaks and kept-together groups, borders and
+      # widths as table options.
       module Boxes
         PADDING = { padding_top: 0, padding_right: 1, padding_bottom: 2, padding_left: 3 }.freeze
 
@@ -16,7 +17,16 @@ module Stationery
         def styled(style, &)
           return yield if style.empty?
 
-          spaced(style) { boxed(style, &) }
+          spaced(style) { boxed(style) { columned(style, &) } }
+        end
+
+        # The block's content poured through balanced columns.
+        def columned(style, &)
+          count = style[:columns]
+          return yield unless count && count > 1
+
+          gap = style[:column_gap]
+          @component.columns(count:, **({ gap: } if gap), &)
         end
 
         # Page breaks and margins around the block, and the rule that keeps it

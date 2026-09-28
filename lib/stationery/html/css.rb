@@ -38,7 +38,7 @@ module Stationery
       # Properties read on the block an element becomes.
       BLOCK = %w[text-align background-color margin margin-top margin-bottom padding padding-top padding-right
                  padding-bottom padding-left border width page-break-before page-break-after break-before
-                 break-after page-break-inside break-inside].freeze
+                 break-after page-break-inside break-inside column-count column-gap columns].freeze
       FONT_SIZES = { "1" => 0.625, "2" => 0.8125, "3" => 1.0, "4" => 1.125, "5" => 1.5, "6" => 2.0,
                      "7" => 3.0 }.freeze
       KEYWORD_SIZES = { "xx-small" => 0.5625, "x-small" => 0.625, "small" => 0.8125, "medium" => 1.0,
@@ -145,6 +145,8 @@ module Stationery
         when "page-break-before", "break-before" then read(name, value, block, :break_before) { page_break(value) }
         when "page-break-after", "break-after" then read(name, value, block, :break_after) { page_break(value) }
         when "page-break-inside", "break-inside" then read(name, value, block, :keep_together) { avoid(value) }
+        when "column-count", "columns" then read(name, value, block, :columns) { column_count(value) }
+        when "column-gap" then read(name, value, block, :column_gap) { column_gap(value) }
         end
       end
 
@@ -270,6 +272,21 @@ module Stationery
         return true if %w[avoid avoid-page].include?(value.downcase)
 
         :none if value.casecmp?("auto")
+      end
+
+      # A number of columns; a column width (`columns: 12em`) is not read.
+      def column_count(value)
+        return :none if value.casecmp?("auto")
+
+        count = Integer(value, 10, exception: false)
+        count if count&.positive?
+      end
+
+      def column_gap(value)
+        return :none if value.casecmp?("normal")
+
+        gap = points(value)
+        gap unless gap&.negative?
       end
     end
   end

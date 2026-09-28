@@ -54,6 +54,16 @@ module Stationery
       @_builder.add(node)
     end
 
+    # One flow poured through `count` columns, newspaper style (a `row` is
+    # columns side by side with content of their own). `gap:` is the space
+    # between columns; `balance: true` ends them at nearly the same height
+    # where the content ends, `false` fills each before the next starts;
+    # `rule: true | { color:, width: }` draws a line between them. Continues
+    # across pages; may hold another `columns`.
+    def columns(count: 2, gap: 12, balance: true, rule: nil, align: nil, &)
+      @_builder.add(Layout::Columns.new(container(align:, &), count:, gap:, balance:, rule:))
+    end
+
     # A base with layers painted over it: every ordinary child is part of the
     # base (which sets the height), every `layer` floats over it relative to
     # the stack's rectangle, taking no space. The stack moves to the next
