@@ -6,7 +6,7 @@ module Stationery
   # A font file stationery cannot read or embed (CFF2, collections, WOFF, …).
   class UnsupportedFont < Error; end
 
-  # An image format stationery cannot embed (WebP, GIF, interlaced PNG, …).
+  # An image format stationery cannot embed (GIF, lossy WebP, interlaced PNG, …).
   class UnsupportedImage < Error; end
 
   # Raised by a strict render (`to_pdf(strict: true)`) that produced warnings.

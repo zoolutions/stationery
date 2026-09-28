@@ -26,6 +26,7 @@ RSpec.describe "stationery in plain Ruby" do
           File.open(@photo, "rb") { |io| image io, width: 40, alt: "from a File" }
           require "stringio" # the caller's own choice of IO
           image StringIO.new(File.binread(@photo)), width: 40, alt: "from a StringIO"
+          image File.join(File.dirname(@photo), "webp/alpha.webp"), width: 40, alt: "a lossless WebP"
           html "<h2>Heading</h2><p>A <a href='https://example.test'>link</a></p><ul><li>one</li></ul>"
           markdown "> quoted\\n\\n1. first\\n2. second"
           table [%w[Item Price], %w[Tea 3.50]], header: true

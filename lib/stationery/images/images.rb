@@ -1,13 +1,12 @@
 # frozen_string_literal: true
 
 module Stationery
-  # JPEG and PNG images, embedded as image XObjects.
+  # JPEG, PNG and lossless WebP images, embedded as image XObjects.
   module Images
     PNG_SIGNATURE = "\x89PNG\r\n\x1A\n".b
     JPEG_SIGNATURE = "\xFF\xD8".b
-    UNSUPPORTED = {
-      "GIF8" => "GIF", "RIFF" => "WebP", "II*\0" => "TIFF", "MM\0*" => "TIFF", "BM" => "BMP"
-    }.freeze
+    WEBP_SIGNATURE = /\ARIFF.{4}WEBP/mn
+    UNSUPPORTED = { "GIF8" => "GIF", "II*\0" => "TIFF", "MM\0*" => "TIFF", "BM" => "BMP" }.freeze
 
     module_function
 
@@ -17,7 +16,7 @@ module Stationery
       Cache.fetch(data) do
         Stationery.instrument("image.stationery", bytes: data.bytesize) do |event|
           parse(data).tap do |image|
-            event[:format] = image.is_a?(JPEG) ? "JPEG" : "PNG"
+            event[:format] = image.class.name.split("::").last
             event[:width] = image.width
             event[:height] = image.height
           end
@@ -39,11 +38,12 @@ module Stationery
     def parse(data)
       return JPEG.new(data) if data.start_with?(JPEG_SIGNATURE)
       return PNG.new(data) if data.start_with?(PNG_SIGNATURE)
+      return WebP.new(data) if data.match?(WEBP_SIGNATURE)
 
       format = UNSUPPORTED.find { |magic, _| data.start_with?(magic.b) }&.last
       raise UnsupportedImage, "#{format} images are not supported, convert to PNG or JPEG" if format
 
-      raise UnsupportedImage, "only PNG and JPEG images are supported"
+      raise UnsupportedImage, "only JPEG, PNG and lossless WebP images are supported"
     end
 
     def xobject(width, height, color_space, bits)

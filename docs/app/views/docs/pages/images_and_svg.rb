@@ -4,15 +4,22 @@ class Views::Docs::Pages::ImagesAndSvg < DocsUI::Page
   title "Images and SVG"
   eyebrow "Guide"
 
-  def lead = "JPEG and PNG images with aspect-preserving sizing, and the SVG subset icon sets use — drawn as vectors."
+  def lead = "JPEG, PNG and lossless WebP images with aspect-preserving sizing, and the SVG subset icon sets use — drawn as vectors."
 
   def content
     DocsUI::Section("Formats", description: "Decoded in Ruby, cached per process.") do
       md <<~'MD'
-        Images are **JPEG** (grey, RGB, CMYK) and **PNG** (every colour type, alpha as a soft mask, palette
-        transparency). The source is a file path or any IO (`StringIO`, an ActiveStorage download, …).
+        Images are **JPEG** (grey, RGB, CMYK), **PNG** (every colour type, alpha as a soft mask, palette
+        transparency) and lossless **WebP**. The source is a file path or any IO (`StringIO`, an ActiveStorage download, …).
         Parsed fonts and images are cached per process, keyed by content, so the same logo on every page is
         embedded once.
+
+        A WebP is decoded in Ruby (the VP8L bitstream, in a plain or an extended container; colour
+        profile and metadata chunks are skipped) and embedded like a PNG: RGB, with the alpha channel as
+        a soft mask when a pixel is not opaque. Decoding takes 0.2 to 0.4 s per megapixel, once per
+        process for the same bytes. Lossy and animated WebP raise `UnsupportedImage` naming which it
+        is, as does a file that is cut short or damaged; convert those to JPEG, PNG or lossless WebP
+        (`cwebp -lossless`).
       MD
     end
 
@@ -47,7 +54,7 @@ class Views::Docs::Pages::ImagesAndSvg < DocsUI::Page
 
     DocsUI::Section("Resolution", description: "Bitmaps keep their pixels.") do
       md <<~'MD'
-        A JPEG is embedded byte for byte and a PNG re-encoded losslessly, so a 1600 px photo drawn
+        A JPEG is embedded byte for byte and a PNG or WebP re-encoded losslessly, so a 1600 px photo drawn
         160 pt wide ships all 1600 px at 720 ppi. Print needs about 300 ppi (`width_in_points / 72 * 300`
         pixels: a 160 pt photo wants about 670 px) and screen PDFs half that.
 
@@ -64,7 +71,7 @@ class Views::Docs::Pages::ImagesAndSvg < DocsUI::Page
         image "photo.jpg", width: 160, max_ppi: nil   # this one is fine as it is
         ```
 
-        `downscale: true` resamples a **PNG** to `max_ppi` at its drawn size with a box filter (alpha
+        `downscale: true` resamples a **PNG** or a **WebP** to `max_ppi` at its drawn size with a box filter (alpha
         and palette transparency included) and embeds that; the layout, the tagged `Figure` and the
         text around it do not change. A **JPEG** is never re-encoded, so it only warns: size JPEGs
         before you embed them. With ActiveStorage, make a JPEG variant per drawn size
