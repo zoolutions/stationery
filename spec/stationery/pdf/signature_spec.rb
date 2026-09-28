@@ -137,7 +137,8 @@ RSpec.describe Stationery::PDF::Signature do
                                                      location: "Malmö", signed_at: be_within(60).of(Time.now),
                                                      subfilter: :"ETSI.CAdES.detached",
                                                      byte_range: signed_parts(pdf).last,
-                                                     signer: "CN=Test Signer rsa,O=Stationery,C=SE", valid: true
+                                                     signer: "CN=Test Signer rsa,O=Stationery,C=SE", valid: true,
+                                                     timestamp: nil
                                                    }])
     end
 
@@ -281,6 +282,86 @@ RSpec.describe Stationery::PDF::Signature do
       expect { Class.new(document) { sign certificate: "nope", key: pem } }
         .to raise_error(ArgumentError, /sign certificate: needs/)
       expect { Class.new(document) { sign certificate: :missing_method, key: pem } }.not_to raise_error
+    end
+  end
+
+  describe "with a timestamp" do
+    let(:tsa) { TimestampHelpers::FakeTSA.new(at: Time.utc(2026, 9, 28, 12, 0, 0)) }
+
+    def stamped(**) = plain.new.to_pdf(sign: { certificate:, key:, timestamp: { client: tsa }, ** })
+
+    it "carries the TSA's token as an unsigned attribute over the signature value and leaves room for it" do
+      cms, _signed, range = signed_parts(stamped)
+      info = OpenSSL::ASN1.decode(cms).value[1].value[0].value[4].value[0].value
+      token = timestamp_token(cms)
+
+      expect(range[2] - range[1]).to eq(2 + (16_384 * 2))
+      expect(token).not_to be_nil
+      wrapped = OpenSSL::ASN1::Sequence.new([OpenSSL::ASN1::Sequence.new([OpenSSL::ASN1::Integer.new(0)]), token])
+      response = OpenSSL::Timestamp::Response.new(wrapped.to_der)
+      expect(response.token_info.message_imprint).to eq(OpenSSL::Digest::SHA256.digest(info[5].value))
+      expect(response.token_info.gen_time).to eq(Time.utc(2026, 9, 28, 12, 0, 0))
+      expect(tsa.requests.size).to eq(1)
+    end
+
+    it "is read back by the inspector, and still verifies as a signature" do
+      pdf = stamped
+
+      expect(inspect_pdf(pdf).signatures).to match([include(
+        valid: true, signer: "CN=Test Signer rsa,O=Stationery,C=SE",
+        timestamp: { time: Time.utc(2026, 9, 28, 12, 0, 0), tsa: "CN=Test TSA,O=Stationery,C=SE", valid: true }
+      )])
+      expect(openssl_verdict(pdf)).to include("Verification successful") if openssl_verdict(pdf)
+    end
+
+    it "reports a token that is not over this signature as invalid" do
+      pdf = stamped
+      cms, _signed, range = signed_parts(pdf)
+      other = signed_parts(stamped(reason: "Another signature")).first
+      token = timestamp_token(other).to_der
+      swapped = cms.dup
+      swapped[swapped.index(timestamp_token(cms).to_der), token.bytesize] = token
+      forged = pdf.dup
+      forged[range[1] + 1, swapped.bytesize * 2] = swapped.unpack1("H*").upcase
+
+      expect(inspect_pdf(forged).signatures.first[:timestamp]).to include(valid: false, tsa: /Test TSA/)
+    end
+
+    it "takes the TSA over HTTP, and raises when it will not answer" do
+      with_tsa_server(tsa) do |url, _seen|
+        expect(inspect_pdf(plain.new.to_pdf(sign: { certificate:, key:, timestamp: url })).signatures.first)
+          .to include(timestamp: include(valid: true))
+      end
+      refusing = TimestampHelpers::FakeTSA.new(tamper: :status)
+      expect { plain.new.to_pdf(sign: { certificate:, key:, timestamp: { client: refusing } }) }
+        .to raise_error(Stationery::SignatureError, /refused the timestamp/)
+    end
+
+    it "raises when the timestamped signature does not fit, naming both" do
+      expect { stamped(contents_size: 2048) }
+        .to raise_error(ArgumentError,
+                        /\Athe signature and its timestamp take \d+ bytes, more than contents_size: 2048/)
+    end
+
+    it "keeps a PDF/A and PDF/UA claim, and works with encryption" do
+      sign = { certificate:, key:, timestamp: { client: tsa }, field: "approval" }
+      conformant = document.new.to_pdf(sign:, conformance: %i[pdf_a3b pdf_ua1])
+      encrypted = document.new.to_pdf(sign:, encrypt: { owner_password: "owner" })
+
+      expect(inspect_pdf(conformant).conformance).to eq(%i[pdf_a3b pdf_ua1])
+      expect([conformant, encrypted].map { inspect_pdf(it).signatures.first })
+        .to all(include(field: "approval", valid: true, timestamp: include(valid: true)))
+    end
+
+    it "is declared on the class like every other option" do
+      client = tsa
+      stamped = Class.new(plain) do
+        sign certificate: -> { SignatureHelpers.identity(:rsa).certificate },
+             key: -> { SignatureHelpers.identity(:rsa).key },
+             timestamp: { client: }
+      end
+
+      expect(inspect_pdf(stamped.new.to_pdf).signatures.first[:timestamp]).to include(valid: true)
     end
   end
 

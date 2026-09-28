@@ -12,6 +12,8 @@ module Stationery
     # Needs the pdf-reader gem, loaded on first use.
     class Inspector
       UTF16_BOM = "\xFE\xFF".b
+      # id-aa-signatureTimeStampToken: a signature's RFC 3161 timestamp.
+      TIMESTAMP_TOKEN = "1.2.840.113549.1.9.16.2.14"
       XMP_PROPERTY = %r{^\s*<((?!rdf:)[\w.-]+:[\w.-]+)>(.*?)</\1>$}
       XMP_ITEM = %r{<rdf:li[^>]*>(.*?)</rdf:li>}
       XMP_ENTITIES = { "&amp;" => "&", "&lt;" => "<", "&gt;" => ">", "&quot;" => '"' }.freeze
@@ -134,10 +136,13 @@ module Stationery
       end
 
       # Every signed signature field: `{ field:, name:, reason:, location:,
-      # signed_at:, subfilter:, byte_range:, signer:, valid: }`. `signer` is
-      # the signing certificate's subject ("CN=…,O=…"). `valid` is whether
-      # the signature covers the whole file and verifies against the
+      # signed_at:, subfilter:, byte_range:, signer:, valid:, timestamp: }`.
+      # `signer` is the signing certificate's subject ("CN=…,O=…"). `valid` is
+      # whether the signature covers the whole file and verifies against the
       # certificate it carries; the certificate's own trust is not judged.
+      # `timestamp` is nil, or `{ time:, tsa:, valid: }` for the RFC 3161 token
+      # a signature carries: `valid` when the token is over this signature
+      # and verifies against the TSA certificate it carries.
       def signatures
         form = catalog[:AcroForm]
         return [] unless form
@@ -207,13 +212,51 @@ module Stationery
       # parsed dictionary: it is the one string encryption leaves alone.
       def verdict(range)
         contents = pdf.byteslice(range[1], range[2] - range[1]).to_s
-        cms = OpenSSL::PKCS7.new(PDF::Signature.der([contents[1..-2]].pack("H*")))
+        der = PDF::Signature.der([contents[1..-2]].pack("H*"))
+        cms = OpenSSL::PKCS7.new(der)
         signed = pdf.byteslice(range[0], range[1]) + pdf.byteslice(range[2], range[3])
         flags = OpenSSL::PKCS7::NOVERIFY | OpenSSL::PKCS7::BINARY
         whole = range[0].zero? && range[2] + range[3] == pdf.bytesize && contents.start_with?("<")
-        { signer: signer(cms), valid: whole && cms.verify([], OpenSSL::X509::Store.new, signed, flags) }
+        { signer: signer(cms), valid: whole && cms.verify([], OpenSSL::X509::Store.new, signed, flags),
+          timestamp: timestamp(der) }
       rescue OpenSSL::OpenSSLError, ArgumentError, TypeError
-        { signer: nil, valid: false }
+        { signer: nil, valid: false, timestamp: nil }
+      end
+
+      # The timestamp token among the first SignerInfo's unsigned attributes,
+      # judged against that SignerInfo's signature value; nil without one.
+      def timestamp(der)
+        info = OpenSSL::ASN1.decode(der).value[1].value[0].value[4].value[0].value
+        unsigned = info[6..].to_a.find { |item| item.tag == 1 && item.tag_class == :CONTEXT_SPECIFIC }
+        attribute = unsigned&.value&.find { |one| one.value[0].oid == TIMESTAMP_TOKEN }
+        attribute && timestamp_verdict(attribute.value[1].value.first, info[5].value)
+      end
+
+      # The token verified as a TimeStampResp would be, against the signature
+      # value it should cover. The certificates it carries are the trust
+      # anchors (a TSA sends its chain, often without the root), so this
+      # says the token is sound, not that the TSA is one to trust.
+      def timestamp_verdict(token, signature)
+        granted = OpenSSL::ASN1::Sequence.new([OpenSSL::ASN1::Integer.new(0)])
+        response = OpenSSL::Timestamp::Response.new(OpenSSL::ASN1::Sequence.new([granted, token]).to_der)
+        info = response.token_info
+        covers = info.message_imprint == OpenSSL::Digest.digest(info.algorithm, signature)
+        { time: info.gen_time, tsa: signer(response.token), valid: covers && timestamp_verifies?(response) }
+      end
+
+      def timestamp_verifies?(response)
+        info = response.token_info
+        request = OpenSSL::Timestamp::Request.new
+        request.algorithm = info.algorithm
+        request.message_imprint = info.message_imprint
+        request.nonce = info.nonce if info.nonce
+        store = OpenSSL::X509::Store.new
+        store.flags = OpenSSL::X509::V_FLAG_PARTIAL_CHAIN
+        response.token.certificates.to_a.each { |certificate| store.add_cert(certificate) }
+        response.verify(request, store)
+        true
+      rescue OpenSSL::OpenSSLError
+        false
       end
 
       def signer(cms)

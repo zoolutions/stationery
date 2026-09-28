@@ -83,7 +83,8 @@ namespace :verify do
     abort failures.join("\n") if failures.any?
   end
 
-  desc "Verify a signed render of the invoice example with openssl, and with pdfsig when it is installed"
+  desc "Verify a signed render of the invoice example with openssl, and with pdfsig when it is installed " \
+       "(TSA_URL=http://… also timestamps it; with Docker, veraPDF checks the timestamped PDF/A-3b)"
   task :signature do
     $LOAD_PATH.unshift(File.expand_path("lib", __dir__))
     require "stationery"
@@ -106,6 +107,34 @@ namespace :verify do
     puts report
     abort "pdfsig does not call the signature valid" unless report.include?("Signature is Valid") &&
                                                             report.include?("Total document signed")
+    Rake::Task["verify:timestamp"].invoke if ENV["TSA_URL"]
+  end
+
+  # Not part of CI: it needs the network and a time-stamping authority.
+  desc "Timestamp a signed PDF/A-3b render of the invoice example at TSA_URL and verify it"
+  task :timestamp do
+    $LOAD_PATH.unshift(File.expand_path("lib", __dir__))
+    require "stationery"
+    require "stationery/testing/inspector"
+    url = ENV.fetch("TSA_URL") { abort "set TSA_URL to an RFC 3161 time-stamping authority" }
+    out = File.expand_path("tmp/signature", __dir__)
+    mkdir_p out
+    path = File.join(out, "timestamped_invoice.pdf")
+    pdf = example.call("invoice").to_pdf(path, sign: identity.call.merge(timestamp: url), conformance: :pdf_a3b)
+    signature = Stationery::Testing::Inspector.new(pdf).signatures.first
+    puts "timestamp: #{signature[:timestamp]}"
+    abort "the timestamp from #{url} does not verify" unless signature[:valid] && signature.dig(:timestamp, :valid)
+
+    if system("which pdfsig > #{File::NULL} 2>&1")
+      report = `pdfsig -nocert #{path} 2>&1`
+      puts report
+      abort "pdfsig does not call the timestamped signature valid" unless report.include?("Signature is Valid")
+    end
+    next puts("docker is not installed: veraPDF skipped") unless system("which docker > #{File::NULL} 2>&1")
+
+    sh "docker", "run", "--rm", "--platform", "linux/amd64", "-v", "#{out}:/data:ro",
+       ENV.fetch("VERAPDF_IMAGE", "verapdf/cli:latest"), "--format", "text", "-v", "--flavour", "3b",
+       "/data/timestamped_invoice.pdf"
   end
 
   desc "Validate the Factur-X example (PDF/A-3 and its EN 16931 XML) with Mustang (needs Docker)"
