@@ -14,8 +14,8 @@ module LayoutHelper
   def spacer(height) = L::Spacer.new(height)
   def flow(*children, **) = L::Flow.new(children, **)
 
-  def lines_of(count, prefix: "line")
-    text_node(Array.new(count) { |i| "#{prefix} #{i + 1}" }.join("\n"))
+  def lines_of(count, prefix: "line", **)
+    text_node(Array.new(count) { |i| "#{prefix} #{i + 1}" }.join("\n"), **)
   end
 
   # Paginates `root` onto pages of `size` and returns [pdf, paginator].

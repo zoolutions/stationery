@@ -34,6 +34,14 @@ module Stationery
         [with_lines(@lines.first(count)), with_lines(@lines.drop(count))]
       end
 
+      # [first `count` lines, the rest]; nil for an empty side.
+      def split_at(count)
+        return [nil, self] if count <= 0
+        return [self, nil] if count >= @lines.size
+
+        [with_lines(@lines.first(count)), with_lines(@lines.drop(count))]
+      end
+
       # A paragraph that fits `max_height`: truncated to whole lines, shrunk
       # (never below 4pt) or left as is for :visible.
       def fit(max_height, overflow:)

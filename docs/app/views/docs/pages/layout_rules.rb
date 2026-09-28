@@ -52,6 +52,25 @@ class Views::Docs::Pages::LayoutRules < DocsUI::Page
       MD
     end
 
+    DocsUI::Section("Page breaks in text", description: "orphans and widows.") do
+      md <<~'MD'
+        A paragraph splits between lines. `orphans:` is the fewest lines a break may leave at the foot of
+        a page and `widows:` the fewest it may carry to the next; both default to 1, so any line may end
+        or start a page. With larger values the break moves up until both are met, and a paragraph that
+        cannot meet them (it would leave too few lines behind, or is shorter than orphans plus widows)
+        moves to the next page whole. A paragraph that already starts a fresh page cannot move, so it
+        splits as best it can, keeping the widows if a line can still stay.
+
+        ```ruby
+        default_text orphans: 2, widows: 2          # for the whole document
+        text long_story, orphans: 3, widows: 3      # or per paragraph
+        html body, styles: { p: { orphans: 2, widows: 2 } }
+        ```
+
+        `text_style` sets them for a block like any text default.
+      MD
+    end
+
     DocsUI::Section("break_inside", description: "Soft avoid, auto, avoid.") do
       md <<~'MD'
         `break_inside:` is accepted by `box`, `row`, `column` and `text`:
