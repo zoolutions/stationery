@@ -24,6 +24,10 @@ module Stationery
                           0x3000 => 1.0 }.freeze
       SPACE_LIKE = { 0x2007 => "0", 0x2008 => "." }.freeze
       NO_FEATURES = [].freeze
+      # The bytes of text the shape and metrics memos hold before they start
+      # over. They exist for the words and lines a document repeats; without a
+      # limit a long document would keep every line it ever drew.
+      MEMO_BYTES = 1 << 16
       REPLACEMENT = "\uFFFD"
 
       attr_reader :ttf
@@ -41,6 +45,7 @@ module Stationery
         @blanks = {}
         @shapes = {}.compare_by_identity
         @metrics = {}.compare_by_identity
+        @memoised = 0
         @keys = { true => {}, false => {} }
         @frozen_keys = { true => {}.compare_by_identity, false => {}.compare_by_identity }
         @cid_keyed = ttf.cff? && ttf.cff.cid_keyed?
@@ -189,10 +194,17 @@ module Stationery
       # each blank or nil], remembered per string and feature tags.
       def shape(text, tags)
         (@shapes[tags] ||= {})[text] ||= begin
+          forget if (@memoised += text.bytesize) > MEMO_BYTES
           gids = text.each_char.map { |char| glyph_for(char) }
           gids, chars = tags.empty? ? [gids, text.chars] : substitute(gids, text, tags)
           [gids, chars, chars.map { |char| blank_units(char) }].each(&:freeze).freeze
         end
+      end
+
+      def forget
+        @shapes.each_value(&:clear)
+        @metrics.each_value(&:clear)
+        @memoised = 0
       end
 
       def substitute(gids, text, tags)
