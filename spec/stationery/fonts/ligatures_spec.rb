@@ -16,10 +16,14 @@ RSpec.describe Stationery::Fonts::Ligatures do
   end
 
   it "substitutes nothing for a font without ligatures" do
-    ttf = load("Inter-Regular.ttf")
+    inter = load("Inter-Regular.ttf")
+    bare = load("OpenSans-Regular.ttf")
+    allow(bare).to receive(:table_offset).with("GSUB").and_return(nil)
 
-    expect(described_class.for(ttf)).to equal(described_class::NONE)
+    expect(described_class.for(inter).substitute([4, 5])).to eq([[4, 1], [5, 1]])
+    expect(described_class.for(bare)).to equal(described_class::NONE)
     expect(described_class::NONE.substitute([4, 5])).to eq([[4, 1], [5, 1]])
+    expect(described_class::NONE.features).to eq([])
   end
 
   describe "in glyph runs" do

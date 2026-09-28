@@ -74,6 +74,19 @@ RSpec.describe Stationery::Document do
     expect(catalog_of(labelled.new.to_pdf(page_labels: nil))).not_to have_key(:PageLabels)
   end
 
+  it "applies OpenType features per element or from default_text, keeping the text extractable" do
+    plain = SpecDocument.build { text "2026" }.to_pdf
+    per_element = SpecDocument.build { text "2026", features: %i[onum] }.to_pdf
+    by_default = Class.new(SpecDocument) do
+      default_text features: %w[onum]
+      def view_template = text("2026")
+    end.new.to_pdf
+
+    expect(page_contents(per_element).first).not_to eq(page_contents(plain).first)
+    expect(page_contents(by_default).first).to eq(page_contents(per_element).first)
+    expect(text_of(per_element)).to eq("2026")
+  end
+
   it "writes metadata from the class and from the instance" do
     doc = Class.new(SpecDocument) do
       metadata title: "Invoice 42", author: "Acme"

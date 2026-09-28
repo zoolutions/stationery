@@ -106,7 +106,7 @@ renders them all, or render one with `stationery render examples/report.rb`.
 | `markdown(source, styles:, gap:, images:, base_path:, bookmarks:, links:)` | The same from CommonMark (plus GFM tables and strikethrough). |
 
 Text style options: `font`, `size`, `weight` (`:regular`, `:bold`), `style` (`:italic`), `color`,
-`letter_spacing`, `underline`, `strikethrough`, `link`, `opacity`, `kerning` (default `true`), `ligatures` (default `true`), `align` (`:left`, `:center`, `:right`, `:justify`), `leading`.
+`letter_spacing`, `underline`, `strikethrough`, `link`, `opacity`, `kerning` (default `true`), `ligatures` (default `true`), `features` (OpenType feature tags, e.g. `%i[smcp onum]`), `align` (`:left`, `:center`, `:right`, `:justify`), `leading`.
 `align: :justify` stretches the spaces of wrapped lines to the full width; the last line, lines
 ending in a newline and lines without spaces stay left-aligned (tabs are never stretched).
 Colours are `"#RRGGBB"`, `"RRGGBB"`, `"#RGB"`, `[r, g, b]` (0-255) or `[c, m, y, k]` (0-100).
@@ -526,12 +526,23 @@ line is never wider than the same line unkerned.
 
 Standard ligatures (fi, fl, ffi, …) come from the font's GSUB `liga` feature
 (LigatureSubst lookups, also behind Extension lookups) and are on by default;
-`ligatures: false` on an element or in `default_text` turns them off. Only
-`liga` applies, not `clig` or `dlig`. Ligatures form within a run of one
-style and font, never across a line break, and letter spacing turns them off.
-The PDF's ToUnicode map sends a ligature glyph back to all of its
-characters, so copied and extracted text still reads "office". Fonts
-without a `liga` feature (such as the bundled Inter) are unaffected.
+`ligatures: false` on an element or in `default_text` turns them off.
+Ligatures form within a run of one style and font, never across a line
+break, and letter spacing turns them off. The PDF's ToUnicode map sends a
+ligature glyph back to all of its characters, so copied and extracted text
+still reads "office". Fonts without a `liga` feature (such as the bundled
+Inter) are unaffected.
+
+Other OpenType features are opt-in per element, `text_style` or
+`default_text`: `features: %i[smcp onum]` applies the font's small caps and
+oldstyle figures, `tnum`/`pnum` pick tabular or proportional figures for
+tables, `zero` a slashed zero, `dlig` discretionary ligatures, `ss01`… the
+stylistic sets. Single (SingleSubst) and ligature (LigatureSubst) lookups
+are applied in the font's own order; a feature the font lacks is ignored,
+and `Font#features` lists what a font offers. Substituted glyphs keep
+their source characters in ToUnicode, so "2026" in oldstyle figures still
+extracts as "2026". Contextual features (`calt`, `clig`, `frac`) need
+lookup types the reader does not implement and do nothing.
 
 Images are JPEG (grey, RGB, CMYK) and PNG (every colour type, alpha as a soft
 mask). Parsed fonts and images are cached per process.
@@ -679,8 +690,9 @@ larger file. `PROFILE=1 bundle exec ruby -Ilib benchmark/profile.rb` prints the
 ## Limitations
 
 Fonts: no variable fonts (including CFF2) and no WOFF2 (it needs Brotli; convert to `.ttf` or
-`.woff`); shaping stops at pair kerning and standard `liga` ligatures, so scripts that need
-contextual shaping (Arabic, Indic, Thai) draw glyph by glyph, and colour or emoji glyphs no font
+`.woff`); shaping stops at pair kerning and single or ligature substitutions (`liga` by default,
+`smcp`, `onum`, `tnum`, `ss01`… on request), so contextual alternates (`calt`, `clig`, `frac`) do
+nothing and scripts that need contextual shaping (Arabic, Indic, Thai) draw glyph by glyph, and colour or emoji glyphs no font
 in the chain has are drawn as `.notdef` and reported. Text runs left to right; there is no
 hyphenation (lines break at spaces and after hyphens) and justification only widens spaces.
 

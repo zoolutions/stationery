@@ -23,6 +23,7 @@ module Stationery
                           0x2005 => 0.25, 0x2006 => 1.0 / 6, 0x2009 => 0.2, 0x200A => 0.125, 0x205F => 4.0 / 18,
                           0x3000 => 1.0 }.freeze
       SPACE_LIKE = { 0x2007 => "0", 0x2008 => "." }.freeze
+      NO_FEATURES = [].freeze
 
       attr_reader :ttf
 
@@ -32,9 +33,9 @@ module Stationery
         @pairs = {}
         @glyphs = {}
         @blanks = {}
-        @shapes = { true => {}, false => {} }
-        @advances = { true => {}, false => {} }
-        @kerns = { true => {}, false => {} }
+        @shapes = {}
+        @advances = {}
+        @kerns = {}
         @cid_keyed = ttf.cff? && ttf.cff.cid_keyed?
       end
 
@@ -44,13 +45,18 @@ module Stationery
       # word again (wrapping, then laying out the line) allocates nothing.
       # Letter spacing is added per glyph, so a ligature counts once; any
       # letter spacing turns ligatures off, as it does when drawing.
-      def width_of(text, size, letter_spacing: 0, kerning: false, ligatures: true)
+      # `features:` are OpenType feature tags applied on top of `liga`.
+      def width_of(text, size, letter_spacing: 0, kerning: false, ligatures: true, features: NO_FEATURES)
         ligatures &&= letter_spacing.zero?
-        width = scale(advance_units(text, ligatures), size) + (letter_spacing * shape(text, ligatures).first.size)
+        key = shape_key(ligatures, features)
+        width = scale(advance_units(text, key), size) + (letter_spacing * shape(text, key).first.size)
         return width unless kerning
 
-        width + (kerning_units(text, ligatures) * size / 1000.0)
+        width + (kerning_units(text, key) * size / 1000.0)
       end
+
+      # The GSUB feature tags this font can apply.
+      def features = @ttf.ligatures.features
 
       def ascender(size) = scale(@ttf.ascender, size)
       def descender(size) = -scale(@ttf.descender, size)
@@ -69,10 +75,11 @@ module Stationery
 
       def encode(text) = glyph_run(text).gids.map { |gid| code(gid) }.pack("n*")
 
-      # `ligatures:` substitutes the font's standard ligatures; `kerning:`
-      # then fills the adjustments with pair kerning between the glyphs.
-      def glyph_run(text, kerning: false, ligatures: true)
-        gids, chars, blanks = shape(text, ligatures)
+      # `ligatures:` substitutes the font's standard ligatures and `features:`
+      # any further OpenType features; `kerning:` then fills the adjustments
+      # with pair kerning between the glyphs.
+      def glyph_run(text, kerning: false, ligatures: true, features: NO_FEATURES)
+        gids, chars, blanks = shape(text, shape_key(ligatures, features))
         gids.each_with_index { |gid, i| @used[gid] ||= blanks[i] ? " " : chars[i] }
         adjust = gids.each_with_index.map do |gid, i|
           kern = kerning && i + 1 < gids.size ? pair(gid, gids[i + 1]) : 0
@@ -118,19 +125,30 @@ module Stationery
 
       private
 
+      # The feature tags to substitute with: `liga` when ligatures are on, plus
+      # the requested features. Frozen and shared, so it keys the memos cheaply.
+      def shape_key(ligatures, features)
+        features = Text::Style.features(features) unless features.frozen? && features.all?(String)
+        return features unless ligatures
+        return Gsub::LIGA if features.empty?
+
+        @keys ||= {}
+        @keys[features] ||= (features + Gsub::LIGA).sort.freeze
+      end
+
       # [gids, source text of each glyph, extra advance in font units after
-      # each blank or nil], remembered per string.
-      def shape(text, ligatures)
-        @shapes[ligatures][text] ||= begin
+      # each blank or nil], remembered per string and feature tags.
+      def shape(text, tags)
+        (@shapes[tags] ||= {})[text] ||= begin
           gids = text.each_char.map { |char| glyph_for(char) }
-          gids, chars = ligatures ? ligate(gids, text) : [gids, text.chars]
+          gids, chars = tags.empty? ? [gids, text.chars] : substitute(gids, text, tags)
           [gids, chars, chars.map { |char| blank_units(char) }].each(&:freeze).freeze
         end
       end
 
-      def ligate(gids, text)
+      def substitute(gids, text, tags)
         start = 0
-        glyphs = @ttf.ligatures.substitute(gids)
+        glyphs = @ttf.ligatures.substitute(gids, tags)
         chars = glyphs.map { |_gid, count| text[start, count].tap { start += count } }
         [glyphs.map(&:first), chars]
       end
@@ -152,15 +170,15 @@ module Stationery
         width - space
       end
 
-      def advance_units(text, ligatures)
-        @advances[ligatures][text] ||= begin
-          gids, _, blanks = shape(text, ligatures)
+      def advance_units(text, tags)
+        (@advances[tags] ||= {})[text] ||= begin
+          gids, _, blanks = shape(text, tags)
           gids.sum { |gid| @ttf.advance(gid) } + blanks.sum { |units| units || 0 }
         end
       end
 
-      def kerning_units(text, ligatures)
-        @kerns[ligatures][text] ||= shape(text, ligatures).first.each_cons(2).sum { |left, right| pair(left, right) }
+      def kerning_units(text, tags)
+        (@kerns[tags] ||= {})[text] ||= shape(text, tags).first.each_cons(2).sum { |left, right| pair(left, right) }
       end
 
       # Kerning between two glyphs in thousandths of an em.

@@ -3,15 +3,25 @@
 module Stationery
   module Text
     SCRIPT_SCALE = 0.583
+    NO_FEATURES = [].freeze
 
     # How a run of text looks. Immutable; derive variants with #with.
     Style = Data.define(:family, :size, :weight, :style, :color, :letter_spacing,
                         :underline, :strikethrough, :script, :link, :opacity, :kerning,
-                        :ligatures) do
+                        :ligatures, :features) do
+      # `features:` are OpenType feature tags (`:smcp`, `"onum"`, …) applied on
+      # top of `ligatures:`; kept as sorted frozen Strings so equal sets are
+      # equal styles.
       def initialize(family:, size: 10, weight: :regular, style: :normal, color: "#000000", letter_spacing: 0,
                      underline: false, strikethrough: false, script: nil, link: nil, opacity: nil, kerning: true,
-                     ligatures: true)
-        super
+                     ligatures: true, features: NO_FEATURES)
+        super(family:, size:, weight:, style:, color:, letter_spacing:, underline:, strikethrough:, script:, link:,
+              opacity:, kerning:, ligatures:, features: Style.features(features))
+      end
+
+      def self.features(tags)
+        tags = Array(tags).map(&:to_s).uniq.sort
+        tags.empty? ? NO_FEATURES : tags.freeze
       end
 
       # The size glyphs are drawn at: smaller for sub- and superscript.

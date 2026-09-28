@@ -14,6 +14,12 @@ module GsubBuilder
     Table.new(GposBuilder.gpos(features:, lookups:, version:).data)
   end
 
+  # SingleSubst format 1: every covered glyph plus `delta`.
+  def single_subst1(coverage, delta) = [1, 6, delta].pack("nns>") + coverage
+
+  # SingleSubst format 2: the substitute for each covered glyph, in coverage order.
+  def single_subst2(coverage, gids) = [2, 6 + (gids.size * 2), gids.size, *gids].pack("n*") + coverage
+
   # sets: { first_gid => { [component gids after the first] => ligature gid } },
   # coverage listing the first glyphs in order.
   def ligature_subst(coverage, sets)

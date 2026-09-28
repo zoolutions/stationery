@@ -5,7 +5,7 @@ module Stationery
   # (where the next node goes) and the text defaults in effect.
   class Builder
     STYLE_KEYS = %i[size color weight style letter_spacing underline strikethrough link opacity kerning
-                    ligatures].freeze
+                    ligatures features].freeze
 
     # Collects a row's columns; anything that is not already a column box is
     # wrapped in one.

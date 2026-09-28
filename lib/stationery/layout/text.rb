@@ -44,7 +44,7 @@ module Stationery
           font = @context.book.resolve(style).first
           run.text.split(/[ \t\n]+/).map do |word|
             font.width_of(word, style.render_size, letter_spacing: style.letter_spacing, kerning: style.kerning,
-                                                   ligatures: style.ligatures)
+                                                   ligatures: style.ligatures, features: style.features)
           end
         end.max || 0
       end
