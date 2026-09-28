@@ -1,0 +1,69 @@
+lib/stationery/testing/matchers.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 107-122,295
+lib/stationery/monochrome/canvas.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 1-19
+lib/stationery/images/resampled.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 37-42,45
+lib/stationery/monochrome/bitmap.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 1-68
+lib/stationery/monochrome/grid.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 1-131
+lib/stationery/monochrome.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 1-87
+lib/stationery.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 76-82
+lib/stationery/monochrome/rules.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 1-140
+lib/stationery/monochrome/painting.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 1-126
+spec/stationery/document_monochrome_spec.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 1-223
+spec/stationery/monochrome/dither_spec.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 1-43
+lib/stationery/warnings.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 93-113
+spec/stationery/monochrome/grid_spec.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 1-64
+spec/stationery/testing/inspector_colors_spec.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 1-68
+lib/stationery/pdf/canvases.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 9-10,12,17,22,30,36-44
+lib/stationery/images/png.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 48-51,69
+lib/stationery/images/webp.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 51-56
+docs/app/views/docs/pages/warnings.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 76-82
+docs/app/views/docs/pages/pages.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 7,178-179
+README.md
+  s_f5a1e2cf907cda::t_cbf7e404003959 443-444,510-569,1344,1373,1390-1391,1401-1405
+lib/stationery/monochrome/dither.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 1-74
+lib/stationery/testing/inspector.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 21-24,102-111,205-240
+spec/stationery/monochrome_spec.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 1-64
+lib/stationery/document.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 83-90,213-215,221-222,235-236,285,291-292
+docs/app/views/docs/pages/testing.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 27,61
+lib/stationery/minitest.rb
+  s_f5a1e2cf907cda::t_cbf7e404003959 21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "1ec1b6c4fa70c49e98580a787f8ebc2e65c8d25d",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
