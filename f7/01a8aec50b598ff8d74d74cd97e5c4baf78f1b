@@ -1,0 +1,51 @@
+spec/stationery/document_paint_on_spec.rb
+  s_f5a1e2cf907cda::t_0578a3de6cc52e 65,75,101
+  s_f5a1e2cf907cda::t_d5bcc0d6277acf 1-12,14-15,17-33,36-57,59,61-64,66,68-74,76-100,102-116,118-130
+  s_f5a1e2cf907cda::t_f867b15f0803ab 13,16,34-35,117
+  s_f5a1e2cf907cda::t_71d7f75d58b94b 58,60,67
+spec/stationery/canvas/interface_spec.rb
+  s_f5a1e2cf907cda::t_85306fcd9138fe 1-114,116-146
+  s_f5a1e2cf907cda::t_8ff0a21c1fe4de 115
+CHANGELOG.md
+  s_f5a1e2cf907cda::t_eb0cc56a4012aa 5
+spec/support/recording_canvas.rb
+  s_f5a1e2cf907cda::t_0578a3de6cc52e 79,82
+  s_f5a1e2cf907cda::t_9603437f84d3c1 1-78,83-91
+  s_f5a1e2cf907cda::t_f867b15f0803ab 80-81
+AGENTS.md
+  s_f5a1e2cf907cda::t_ad6fbc905f806b 17-20
+spec/stationery/path_spec.rb
+  s_f5a1e2cf907cda::t_ade14e1288fd1f 1-48
+lib/stationery/document.rb
+  s_f5a1e2cf907cda::t_9d22676cb3eb97 256
+lib/stationery/layout/paginator.rb
+  s_f5a1e2cf907cda::t_9d22676cb3eb97 15
+spec/stationery/canvas/path_spec.rb
+  s_f5a1e2cf907cda::t_f867b15f0803ab 1-23
+.rubocop.yml
+  s_f5a1e2cf907cda::t_f867b15f0803ab 34
+lib/stationery/canvas/interface.rb
+  s_f5a1e2cf907cda::t_f867b15f0803ab 102,105
+lib/stationery/page_templates.rb
+  s_f5a1e2cf907cda::t_9d22676cb3eb97 16
+lib/stationery/pdf/canvases.rb
+  s_f5a1e2cf907cda::t_9d22676cb3eb97 10
+lib/stationery/structure.rb
+  s_f5a1e2cf907cda::t_9d22676cb3eb97 17,20,23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "f701a8aec50b598ff8d74d74cd97e5c4baf78f1b",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
