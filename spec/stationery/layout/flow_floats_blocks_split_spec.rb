@@ -42,6 +42,22 @@ RSpec.describe Stationery::Layout::Flow do
       expect(paginator.warnings).to be_empty
     end
 
+    it "splits with a background beside the float, which spans the full width on both pages" do
+      box = boxed(text_node(words), background: "#EEEEEE", padding: [0, 0, 0, 6])
+      pdf, paginator = render_layout(flow(black(80, 60), box))
+      fills = page_contents(pdf).map do |content|
+        content.scan(/^([\d.]+) ([\d.]+) ([\d.]+) ([\d.]+) re$/).map { |rect| rect.map(&:to_f) }
+      end
+
+      expect(fills[0].map { |x, _, w, _| [x, w] }).to eq([[20.0, 260.0], [20.0, 80.0]])
+      expect(fills[0].first[1] + fills[0].first[3]).to eq(180.0)
+      expect(fills[1].map { |x, y, w, h| [x, w, y + h] }).to eq([[20.0, 260.0, 180.0]])
+      expect(pages_of(pdf)[0].map(&:first)).to eq(([100.0] * 5) + ([26.0] * 6))
+      expect(pages_of(pdf)[1].map(&:first).uniq).to eq([26.0])
+      expect(text_of(pdf).split).to eq(words.split)
+      expect(paginator.warnings).to be_empty
+    end
+
     it "wraps the lines a page break carries over again at the full width: the float stayed behind" do
       pdf, = render_layout(flow(lines_of(8), black(80, 40), boxed(text_node(words))))
       second = reader_for(pdf).pages[1].runs

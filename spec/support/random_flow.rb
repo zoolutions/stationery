@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-# A flow of paragraphs, nested boxes, lists, floats and runs of floats drawn
-# from a seed: the same seed is the same flow, on any machine. Every word is
+# A flow of paragraphs, nested boxes (with a background, a border, a shadow
+# or a link), lists, floats and runs of floats drawn from a seed: the same
+# seed is the same flow, on any machine. Every word is
 # written once (`words`) and every float is a grey box or an image (`floats`),
 # so a render can be checked against them. Nothing in it is taller than a
 # page of 260 pt by itself: a float is at most 120 pt tall and lies three
@@ -75,6 +76,8 @@ class RandomFlow
     options = { padding: @random.rand(0..8) }
     options[:background] = "#EEEEEE" if @random.rand(3).zero?
     options[:border] = { width: 1 } if @random.rand(3).zero?
+    options[:shadow] = true if @random.rand(6).zero?
+    options[:link] = "https://example.test" if @random.rand(6).zero?
     options[:break_inside] = :auto if @random.rand(3).zero?
     options
   end
