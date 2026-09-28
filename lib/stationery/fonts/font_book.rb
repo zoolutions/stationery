@@ -11,7 +11,11 @@ module Stationery
       # `fallbacks:` names the families tried, in order, for a character the
       # run's own family has no glyph for. `shaper:` places the glyphs of
       # every font of the book (see Shaper), told the text is in `language:`.
-      def initialize(families = {}, fallbacks: [], warnings: Warnings.new, shaper: nil, language: nil)
+      # `stand_ins:` has every font draw its stand-in for a character no font
+      # has (see Font#stand_in).
+      def initialize(families = {}, fallbacks: [], warnings: Warnings.new, shaper: nil, language: nil,
+                     stand_ins: false)
+        @stand_ins = stand_ins
         @shaper = Shaper.check(shaper)
         @language = language
         @families = families.dup
@@ -56,9 +60,9 @@ module Stationery
       private
 
       def font(path)
-        return Font.new(Registry.load(path)) unless @shaper
+        return Font.new(Registry.load(path)) unless @shaper || @stand_ins
 
-        Font.new(Registry.load(path), shaper: @shaper, path:, language: @language)
+        Font.new(Registry.load(path), shaper: @shaper, path:, language: @language, stand_ins: @stand_ins)
       end
 
       # Registered by name, bundled by name, an installed pack by name, then
