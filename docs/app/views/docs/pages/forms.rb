@@ -302,7 +302,10 @@ class Views::Docs::Pages::Forms < DocsUI::Page
           style around the field, in the document's own fonts: embedded, with the
           [fallbacks](/docs/fonts) applied per character. A value in any script the fonts cover is drawn;
           a character no font has is reported as a `MissingGlyph` [warning](/docs/warnings), as in any
-          other text, and raises under a [conformance](/docs/conformance) level.
+          other text, and drawn as `.notdef` inside a `Span` whose `ActualText` is the character, so
+          the appearance still extracts and copies as written. That holds for every line of a
+          `multiline:` field and every `comb:` cell. Under a [conformance](/docs/conformance) level it
+          raises instead.
         - **Check marks and radio dots** are vector paths. No appearance uses a symbol font.
 
         ```ruby
@@ -341,7 +344,8 @@ class Views::Docs::Pages::Forms < DocsUI::Page
 
         `Stationery::Forms::Field.new` placed with `canvas.widget` on a bare canvas has no document fonts
         to draw with. It falls back to the standard Helvetica in Windows-1252, where a character outside
-        that encoding shows as `?`. The five elements on this page never take that path.
+        that encoding shows as `?`: a real glyph, written without `ActualText`, while the field's `/V`
+        keeps the value. The five elements on this page never take that path.
       MD
     end
   end

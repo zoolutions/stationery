@@ -5,7 +5,8 @@ require "stringio"
 module FormHelpers
   UTF16_BOM = "\xFE\xFF".b
 
-  # Collects the strings a form XObject shows, decoded through its fonts.
+  # Collects the strings a form XObject shows, decoded through its fonts. A
+  # sequence with ActualText reads as that text, whatever it shows.
   class ShownText
     attr_reader :strings
 
@@ -14,9 +15,19 @@ module FormHelpers
       @strings = []
     end
 
+    def begin_marked_content_with_pl(_tag, properties) = @actual = properties[:ActualText]
+    def end_marked_content = @actual = nil
     def set_text_font_and_size(label, _size) = @font = @fonts.fetch(label)
-    def show_text(string) = @strings << @font.to_utf8(string)
-    def show_text_with_positioning(parts) = @strings << parts.grep(String).map { |part| @font.to_utf8(part) }.join
+    def show_text(string) = @strings << shown([string])
+    def show_text_with_positioning(parts) = @strings << shown(parts.grep(String))
+
+    private
+
+    def shown(parts)
+      return parts.map { |part| @font.to_utf8(part) }.join unless @actual
+
+      @actual.b.delete_prefix(UTF16_BOM).force_encoding(Encoding::UTF_16BE).encode(Encoding::UTF_8)
+    end
   end
 
   def form_objects(pdf, password: "") = PDF::Reader.new(StringIO.new(pdf), password:).objects
