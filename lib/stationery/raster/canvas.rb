@@ -18,6 +18,8 @@ module Stationery
       Picture = Data.define(:image, :x, :y, :width, :height, :opacity, :matrix, :clip)
       Glyphs = Data.define(:run, :x, :y, :font, :size, :color, :letter_spacing, :rise, :bold, :oblique, :opacity,
                            :matrix, :clip)
+      # A barcode, and the `calls` that draw it on pixels.
+      Native = Data.define(:symbol, :x, :y, :module_size, :height, :color, :native, :matrix, :clip, :calls)
 
       def initialize(page, list, template: false, debug: false, warnings: nil)
         @page = page
@@ -76,6 +78,17 @@ module Stationery
       def glyphs(run, x, y, font:, size:, color:, letter_spacing: 0, rise: 0, bold: false, oblique: false,
                  opacity: nil)
         @list << Glyphs.new(run, x, y, font, size, color, letter_spacing, rise, bold, oblique, opacity, @matrix, @clip)
+      end
+
+      # Records the barcode with the calls that draw it, so an output with
+      # barcodes of its own can draw it with those instead (see Native).
+      def barcode(symbol, x:, y:, module_size:, height: nil, color: "#000000", native: nil)
+        outer = @list
+        @list = []
+        super
+        outer << Native.new(symbol, x, y, module_size, height, Color.parse(color), native, @matrix, @clip, @list)
+      ensure
+        @list = outer
       end
     end
 

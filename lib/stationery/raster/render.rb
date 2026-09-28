@@ -54,7 +54,10 @@ module Stationery
 
       # Paints the document, then each page chosen onto a Surface, one at a
       # time, and answers [number, what the block makes of it] for each.
-      def paint
+      # The barcodes (Canvas::Native) that `native` answers true for are
+      # left off the surface and handed to the block after it, for an output
+      # that draws them with commands of its own.
+      def paint(native: nil)
         warnings = Warnings.new
         rules = Monochrome::Rules.new(@settings, warnings) if @settings
         canvases = Canvases.new(debug: @debug, warnings:, monochrome: rules)
@@ -63,7 +66,9 @@ module Stationery
 
         chosen(pages.size).map do |number|
           page = pages[number - 1]
-          [number, yield(surface(page, canvases.release(page)))]
+          list = canvases.release(page)
+          natives = native ? list.select { |call| call.is_a?(Canvas::Native) && native.call(call) } : []
+          [number, yield(surface(page, natives.empty? ? list : list - natives), natives)]
         end
       end
 

@@ -34,8 +34,9 @@ class Views::Docs::Pages::Examples < DocsUI::Page
      "header, and a barcode drawn on a `canvas`." ],
     [ "Shipping label", "shipping_label",
      "A 4 × 6 in label in black and white only, sized with `page size: \"4in x 6in\"` and `mm()`, declared " \
-     "`monochrome dpi: 203`, and written both as a PDF and, with `to_zpl`, as ZPL for a thermal label " \
-     "printer: `stationery render examples/shipping_label.rb --zpl`. See [Label printers](/docs/pages)." ],
+     "`monochrome dpi: 203`, with a Code 128 and a QR code from `barcode`, and written both as a PDF and, " \
+     "with `to_zpl`, as ZPL for a thermal label printer, which draws the two barcodes itself (`native: " \
+     "true`): `stationery render examples/shipping_label.rb --zpl`. See [Label printers](/docs/pages)." ],
     [ "Application form", "form",
      "An interactive AcroForm: labelled text fields, a comb postcode, a select box, a radio group, check " \
      "boxes with labels, a multiline note and a signature field. Fill it in any viewer; every field and " \

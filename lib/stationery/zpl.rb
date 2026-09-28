@@ -44,9 +44,10 @@ module Stationery
     end
 
     # One label: `bits` are the rows of a Raster::Render (1 for white).
-    def label(bits, width:, height:, copies:, compression:)
+    # `fields` are commands drawn over the picture (Native barcodes).
+    def label(bits, width:, height:, copies:, compression:, fields: [])
       "^XA^PW#{width}^LL#{height}^LH0,0^FO0,0#{graphic_field(bits, width:, height:, compression:)}" \
-        "^FS^PQ#{copies}^XZ\n"
+        "^FS#{fields.join}^PQ#{copies}^XZ\n"
     end
 
     # The ^GF command for `bits`, rows of `width` dots packed eight to a

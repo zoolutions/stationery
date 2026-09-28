@@ -260,11 +260,14 @@ module Stationery
     # default the class's monochrome dpi, else 203; `copies:` by default the
     # class's `print copies:`, else 1; `compression:` :z64 (the default) or
     # :hex; `monochrome:` true for the class's settings (or the defaults), or
-    # options laid over them. See ZPL.
-    def to_zpl(target = nil, dpi: nil, copies: nil, pages: nil, compression: :z64, monochrome: true, debug: false,
-               strict: self.class.config[:strict], shaper: self.class.config[:shaping][:shaper], **pdf_only)
+    # options laid over them; `native: true` has the printer draw every
+    # barcode that does not say otherwise (see ZPL::Native). See ZPL.
+    def to_zpl(target = nil, dpi: nil, copies: nil, pages: nil, compression: :z64, native: nil, monochrome: true,
+               debug: false, strict: self.class.config[:strict], shaper: self.class.config[:shaping][:shaper],
+               **pdf_only)
       Raster::Render.refuse(pdf_only, "to_zpl")
-      ZPL::Render.new(self, dpi:, copies:, pages:, compression:, monochrome:, debug:, strict:, shaper:).call(target)
+      ZPL::Render.new(self, dpi:, copies:, pages:, compression:, native:, monochrome:, debug:, strict:, shaper:)
+                 .call(target)
     end
 
     # Builds the document, lays it out and paints it on the canvases that

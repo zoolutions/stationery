@@ -66,6 +66,20 @@ module Stationery
         super
       end
 
+      # A barcode outside any transform is put on the dot grid: its corner
+      # on a dot and its module a whole number of dots, one at least, so
+      # every bar of a width prints as wide.
+      def barcode(symbol, x:, y:, module_size:, height: nil, color: "#000000", native: nil)
+        unless @ctm
+          grid = @monochrome.grid
+          x = grid.edge(x)
+          y = grid.edge(y)
+          module_size = [grid.dots(module_size), 1].max * grid.dot
+          height &&= [grid.dots(height), 1].max * grid.dot
+        end
+        super
+      end
+
       # The affine `inner` applied first, then `outer` ([a, b, c, d, e, f] each).
       def self.compose(outer, inner)
         a, b, c, d, e, f = outer

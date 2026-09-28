@@ -354,6 +354,36 @@ class Views::Docs::Pages::Elements < DocsUI::Page
       MD
     end
 
+    DocsUI::Section("barcode", description: "Code 128, EAN-13 and QR codes as vector bars.") do
+      md <<~'MD'
+        `barcode(data, type: :code128, level: nil, module_size: nil, width: nil, height: nil, color: "#000000",
+        quiet_zone: true, native: nil, align: nil, alt: nil)` encodes `data` in Ruby and draws it as one
+        filled path: sharp at any zoom and on any printer.
+
+        ```ruby
+        barcode "SX0042771903", module_size: 1.5, height: 44          # Code 128
+        barcode "400638133393", type: :ean13, height: 40              # the check digit is added
+        barcode "https://track.example/SX0042771903", type: :qr, level: :q, width: 60
+        ```
+
+        | Type | Data | Size |
+        | --- | --- | --- |
+        | `:code128` | printable ASCII; runs of digits in code set C | 11 modules a character, quiet zone 10 |
+        | `:ean13` | 12 digits (the check digit is added) or 13 (checked) | 95 modules, quiet zone 11 and 7 |
+        | `:qr` | any String, as bytes (UTF-8 marked with an ECI); `level: :l, :m (default), :q, :h` | the smallest of versions 1 to 40, quiet zone 4 |
+
+        `module_size:` is the width of the narrowest bar (a QR code's module) in points, 1 by default (2
+        for a QR code), or `width:` sets it from the whole width, quiet zones included. A barcode never
+        takes more than the width it is given: its module is made smaller to fit. In a monochrome render
+        it is put on the printer's dot grid, a whole number of dots a module. The digits under an EAN-13
+        are not drawn; write them with `text`. `native: true` asks `to_zpl` to have a label printer draw
+        it with its own command, see [Label printers](/docs/pages).
+
+        All of them were decoded with ZBar from pictures of what they draw: Code 128 and EAN-13 samples,
+        and QR codes filled to capacity at versions 1 to 40 and every level.
+      MD
+    end
+
     DocsUI::Section("stack and layer", description: "Overlapping content: a collage, a badge on a photo, a stamp on a card.") do
       md <<~'MD'
         `stack(gap: 0, align: nil) { … }` is a container whose ordinary children form the base and set the
