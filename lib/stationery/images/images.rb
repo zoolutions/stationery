@@ -46,6 +46,16 @@ module Stationery
       raise UnsupportedImage, "only JPEG, PNG and lossless WebP images are supported"
     end
 
+    # Why the pixels of `image` cannot be read (a JPEG of a kind that is not
+    # decoded), nil when they can.
+    def unreadable(image) = image.respond_to?(:unsupported) ? image.unsupported : nil
+
+    # The Pixels of `image`, to be drawn `width` × `height` pixels: a JPEG
+    # decodes no more of them than that needs (see JPEG#pixels).
+    def pixels(image, width, height)
+      image.is_a?(JPEG) ? image.pixels(at_least: [width.ceil, height.ceil]) : image.pixels
+    end
+
     def xobject(width, height, color_space, bits)
       { Type: :XObject, Subtype: :Image, Width: width, Height: height, ColorSpace: color_space, BitsPerComponent: bits }
     end

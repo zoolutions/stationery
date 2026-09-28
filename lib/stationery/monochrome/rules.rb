@@ -85,13 +85,14 @@ module Stationery
       end
 
       # `image` as it is printed: dithered at the dots it covers, `width` ×
-      # `height` points, when its pixels can be read. A JPEG, which is not
-      # decoded, is reported and kept.
+      # `height` points, when its pixels can be read. A JPEG of a kind that is
+      # not decoded is reported and kept.
       def bitmap(image, width, height, page)
-        return report_image(image, page) unless image.respond_to?(:pixels)
+        return report_image(image, page) if Images.unreadable(image)
 
         dots = [@grid.dots(width), @grid.dots(height)]
-        @bitmaps[[image, *dots]] ||= Bitmap.new(image.pixels, *dots, @settings.dither)
+        @bitmaps[[image, *dots]] ||= Bitmap.new(Images.pixels(image, *dots.map { [it, 1].max }), *dots,
+                                                @settings.dither)
       end
 
       # The opacity to paint a bitmap at: none under snap:, else the one it

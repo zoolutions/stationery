@@ -77,21 +77,22 @@ module Stationery
       def picture(call)
         matrix = matrix(call.matrix)
         box = [call.x, call.y, call.width, call.height]
-        return placeholder(Stationery::Path.new.rect(*box), call, matrix) unless call.image.respond_to?(:pixels)
+        return placeholder(Stationery::Path.new.rect(*box), call, matrix) if Images.unreadable(call.image)
 
         matrix, box = Adjust.picture(matrix, box) if Adjust.upright?(matrix)
         spans = clipped(fill_spans(Stationery::Path.new.rect(*box), matrix, false), mask(call.clip))
         inverse = Raster.invert(matrix)
         return unless inverse
 
-        wide = box[2] * Raster.scale(matrix)
-        pixels = pixels(call.image, wide)
-        smooth = @antialias && wide < pixels.width * 4 && box[3] * Raster.scale(matrix) < pixels.height * 4
+        wide, high = box[2, 2].map { |length| length * Raster.scale(matrix) }
+        pixels = pixels(call.image, wide, high)
+        smooth = @antialias && wide < pixels.width * 4 && high < pixels.height * 4
         picture = Picture.new(pixels, inverse, box, @surface.channels, smooth:)
         @surface.paint(spans, call.opacity || 1.0) { |x, y| picture.color_at(x, y) }
       end
 
-      # A bitmap that cannot be read (a JPEG): a grey box, crossed.
+      # A bitmap that cannot be read (a JPEG of a kind not decoded): a grey
+      # box, crossed.
       def placeholder(rect, call, matrix)
         mask = mask(call.clip)
         fill(fill_spans(rect, matrix, false), mask, PLACEHOLDER[:fill], call.opacity)
@@ -164,12 +165,16 @@ module Stationery
         end
       end
 
-      # The pixels of a bitmap drawn `wide` pixels wide: averaged down first
-      # when it has more.
-      def pixels(image, wide)
+      # The pixels of a bitmap drawn `wide` × `high` pixels: averaged down
+      # first when it has more (a JPEG decoded smaller first when it can).
+      def pixels(image, wide, high)
         target = [wide.ceil, 1].max
         @cache[[image, target]] ||= begin
-          pixels = @cache[image] ||= image.pixels
+          pixels = if image.is_a?(Images::JPEG)
+                     Images.pixels(image, target, [high, 1].max)
+                   else
+                     @cache[image] ||= image.pixels
+                   end
           # A one-bit picture's bitmaps are dithered at its dots already.
           @antialias && pixels.width > target ? Images::Resampled.new(pixels, target).pixels : pixels
         end
