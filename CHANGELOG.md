@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.0 (2026-09-28)
+
+Instrumentation, so a render shows up in AppSignal and friends, and a faster text pipeline.
+
+- Instrumentation: `Stationery.instrument` emits `render.stationery` (the whole `to_pdf`: `document:`, `pages:`, `bytes:`, `warnings:`), `build.stationery`, `paginate.stationery`, `write.stationery` (serialise, subset, deflate), `image.stationery` (each decode on a cache miss: `format:`, `width:`, `height:`, `bytes:`), `font.stationery` (`action: :parse` on a cache miss, `action: :subset` per embedded font with `glyphs:`) and `parse.stationery` (`format: :html | :markdown`). `Stationery.instrumenter` is `ActiveSupport::Notifications` when it is loaded (the Railtie pins it), so AppSignal, Skylight and log subscribers pick the events up with no setup; otherwise a no-op. Assign any object responding to `instrument(name, payload, &block)` to plug something else in. Output is unchanged.
+- `FontBook#resolve` memoises by family, weight and style instead of hashing the whole 13-field `Text::Style` on every measurement: the lookup is 4x faster and a photo-heavy 4-page document renders 22% faster.
+
 ## 0.5.0 (2026-09-27)
 
 Rotated, overlapping, cropped photos (the collage look), and fixes from the first weeks of use.
