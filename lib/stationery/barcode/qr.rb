@@ -105,13 +105,12 @@ module Stationery
         raw = Matrix.raw_modules(@version) / 8
         short = count - (raw % count)
         short_length = (raw / count) - ecc
-        divisor = ReedSolomon.divisor(ecc)
         offset = 0
         blocks = Array.new(count) do |index|
           length = short_length + (index < short ? 0 : 1)
           block = data[offset, length]
           offset += length
-          [block, ReedSolomon.remainder(block, divisor)]
+          [block, ReedSolomon::QR.remainder(block, ecc)]
         end
         (0..short_length).flat_map { |i| blocks.filter_map { |block, _| block[i] } } +
           (0...ecc).flat_map { |i| blocks.map { |_, check| check[i] } }
