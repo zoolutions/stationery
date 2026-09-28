@@ -5,6 +5,8 @@ module Stationery
     # One font's side of the shaper hook (see Shaper): asks the document's
     # shaper to place a text, checks the answer and remembers it per size,
     # features and text, so measuring a stretch and then drawing it asks once.
+    # Like the font's own memos, what is remembered starts over after
+    # Font::MEMO_BYTES of text, so a long document does not keep every line.
     class Shaping
       def initialize(font, shaper, path: nil, language: nil)
         @font = font
@@ -13,13 +15,17 @@ module Stationery
         @path = path
         @features = {}
         @runs = {}
+        @memoised = 0
       end
 
       # The ShapedRun of `text`, or nil when the shaper declines it.
       def run(text, size, kerning:, ligatures:, features:)
         features = switches(kerning ? true : false, ligatures ? true : false, features)
         runs = ((@runs[size] ||= {}.compare_by_identity)[features] ||= {})
-        runs.fetch(text) { runs[text] = shape(text, size, features) }
+        runs.fetch(text) do
+          forget if (@memoised += text.bytesize) > Font::MEMO_BYTES
+          runs[text] = shape(text, size, features)
+        end
       end
 
       # What the shaper is told about the font.
@@ -34,6 +40,11 @@ module Stationery
       end
 
       private
+
+      def forget
+        @runs.each_value { |sizes| sizes.each_value(&:clear) }
+        @memoised = 0
+      end
 
       # { tag => on }, one frozen Hash per set of switches so the runs are
       # remembered by its identity.
