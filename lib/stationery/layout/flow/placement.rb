@@ -76,11 +76,9 @@ module Stationery
 
         # The slot of the next child in the flow; `advance` takes it.
         def slot(node)
-          return Slot.new(top: start, left: aligned(node, 0, @width), width: node.width_in(@width), exclusions: nil) if
-            free?(start)
-          return wrapping(node) if node.wraps?
+          return plain(node) if free?(start)
 
-          block(node)
+          node.wraps? ? wrapping(node) : block(node)
         end
 
         def advance(slot, height)
@@ -91,6 +89,13 @@ module Stationery
         private
 
         def start = @cursor + (@content ? @gap : 0)
+
+        # Below every float: the full width, as in a flow without floats.
+        def plain(node)
+          own = node.fixed_width(@width)
+          left = own ? Geometry.align_offset(@align, @width, own) : 0
+          Slot.new(top: start, left:, width: own || @width, exclusions: nil)
+        end
 
         def wrapping(node)
           need = node.min_width
@@ -107,11 +112,6 @@ module Stationery
           width = fixed ? [fixed, space].min : space
           Slot.new(top:, left: left + (fixed ? Geometry.align_offset(@align, space, width) : 0), width:,
                    exclusions: nil)
-        end
-
-        def aligned(node, left, space)
-          own = node.fixed_width(space)
-          own ? left + Geometry.align_offset(@align, space, own) : left
         end
 
         # The first top from `from` down that the block takes: `from` itself,
