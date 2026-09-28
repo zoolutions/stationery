@@ -1,0 +1,61 @@
+spec/stationery/page_spec.rb
+  s_f5a1e2cf907cda::t_2ad6e567063a46 31-58,61-65
+  s_f5a1e2cf907cda::t_0b1765f0c336ea 59-60
+docs/app/views/docs/pages/pages.rb
+  s_f5a1e2cf907cda::t_b7b8be0e0bc3b0 21-23,27-34,36,38-83
+lib/stationery/page/format.rb
+  s_f5a1e2cf907cda::t_7ae6250020955b 53
+  s_f5a1e2cf907cda::t_66fc7814af2b7a 1-52,54-84
+lib/stationery/units.rb
+  s_f5a1e2cf907cda::t_c81dfe55223bda 1-45
+docs/app/views/docs/pages/documents_and_components.rb
+  s_f5a1e2cf907cda::t_b7b8be0e0bc3b0 34
+benchmark/metrics.rb
+  ai_agent 15,42-49,52,62-67,74-76,81-83
+lib/stationery.rb
+  ai_agent 57,59
+lib/stationery/document.rb
+  ai_agent 32-35,37
+lib/stationery/page.rb
+  ai_agent 22-24,26-30,39,88,90
+spec/bench/metrics_spec.rb
+  ai_agent 1-110
+README.md
+  s_f5a1e2cf907cda::t_df4dedc55f6c28 1331,1336-1347
+  s_f5a1e2cf907cda::t_b7b8be0e0bc3b0 384-399
+spec/stationery/document_page_spec.rb
+  s_f5a1e2cf907cda::t_777326b75489fe 1-55
+docs/app/views/docs/pages/performance.rb
+  s_f5a1e2cf907cda::t_df4dedc55f6c28 30
+CHANGELOG.md
+  s_f5a1e2cf907cda::t_b7b8be0e0bc3b0 7,10
+  s_f5a1e2cf907cda::t_393bcce1776246 6
+benchmark/features.rb
+  ai_agent 1-138
+spec/stationery/units_spec.rb
+  s_f5a1e2cf907cda::t_3c5b321ee7be8b 1-30,32-75
+  s_f5a1e2cf907cda::t_0b1765f0c336ea 31
+lib/stationery/component.rb
+  ai_agent 14
+benchmark/baseline.json
+  s_f5a1e2cf907cda::t_b56c27ed17818b 39-73
+spec/stationery/page/format_spec.rb
+  s_f5a1e2cf907cda::t_0b1765f0c336ea 70
+  s_f5a1e2cf907cda::t_ca3d35de6f8276 1-69,71-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "97676ecde61ec41baa08509ff5780ce71e28e20b",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
