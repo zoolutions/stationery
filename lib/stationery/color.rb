@@ -5,17 +5,36 @@ module Stationery
   # [c, m, y, k] in 0-100. Input values are never mutated.
   class Color
     HEX = /\A#?(\h{3}|\h{6})\z/
+    # The colours parsed from Strings that are remembered, by their String:
+    # every fill, stroke and run of text names its colour ("#000000"), and
+    # parsing it again made eleven objects. Past this many the memo starts
+    # over, as the fonts' memos do.
+    MEMO = 256
 
-    attr_reader :space, :components
+    @parsed = {}
+    @lock = Mutex.new
+
+    attr_reader :space, :components, :fill, :stroke
 
     def self.parse(value)
       case value
       when Color then value
-      when String then from_hex(value)
+      when String then @parsed[value] || remember(value)
       when Array then from_array(value)
       else invalid(value)
       end
     end
+
+    # A Hash keeps a frozen copy of a String key, so a String changed after
+    # it was parsed does not change what the memo holds.
+    def self.remember(value)
+      color = from_hex(value)
+      @lock.synchronize do
+        @parsed.clear if @parsed.size >= MEMO
+        @parsed[value] ||= color
+      end
+    end
+    private_class_method :remember
 
     def self.from_hex(value)
       hex = value[HEX, 1] || invalid(value)
@@ -35,14 +54,17 @@ module Stationery
       raise ArgumentError, "not a colour: #{value.inspect} (use \"#RRGGBB\", [r, g, b] or [c, m, y, k])"
     end
 
+    # The fill and stroke operators are written here, once: a colour is
+    # frozen, and one parsed from a String is drawn with again and again.
     def initialize(space, components)
       @space = space
       @components = components.freeze
+      numbers = components.map { |v| PDF::Serializer.number(v.round(4)) }.join(" ")
+      op = space == :rgb ? "rg" : "k"
+      @fill = "#{numbers} #{op}".freeze
+      @stroke = "#{numbers} #{op.upcase}".freeze
       freeze
     end
-
-    def fill = operator(false)
-    def stroke = operator(true)
 
     def ==(other)
       other.is_a?(Color) && other.space == space && other.components == components
@@ -50,13 +72,5 @@ module Stationery
     alias eql? ==
 
     def hash = [space, components].hash
-
-    private
-
-    def operator(stroke)
-      numbers = components.map { |v| PDF::Serializer.number(v.round(4)) }.join(" ")
-      op = space == :rgb ? "rg" : "k"
-      "#{numbers} #{stroke ? op.upcase : op}"
-    end
   end
 end
