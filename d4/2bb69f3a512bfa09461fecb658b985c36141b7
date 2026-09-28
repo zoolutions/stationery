@@ -1,0 +1,59 @@
+spec/stationery/text/wrapper_spec.rb
+  s_600b6bfbec0b19::t_49ff29d37983d8 61-64,66-69,73-75,79-94,96-121,127-129
+  s_600b6bfbec0b19::t_98362953fb3760 65,70-71,95,122-125
+  s_600b6bfbec0b19::t_09f0a2a939fd04 72,126
+  s_600b6bfbec0b19::t_c09423329e2739 76-78
+lib/stationery.rb
+  s_600b6bfbec0b19::t_f9e496f84eb511 70
+docs/app/views/docs/pages/elements.rb
+  s_600b6bfbec0b19::t_c2531519beeea9 62-63
+lib/stationery/hyphenation/patterns/sv.pat.txt
+  s_600b6bfbec0b19::t_960e2f104911df 1-4693
+spec/stationery/elements_spec.rb
+  s_600b6bfbec0b19::t_c6b29f02155637 293-298,300-324
+  s_600b6bfbec0b19::t_1fa9893e78c0aa 299
+README.md
+  s_600b6bfbec0b19::t_c2531519beeea9 547-557,707-709
+lib/stationery/hyphenation/patterns/en-us.pat.txt
+  s_600b6bfbec0b19::t_960e2f104911df 1-4938
+docs/app/views/docs/pages/fonts.rb
+  s_600b6bfbec0b19::t_c2531519beeea9 54-75
+lib/stationery/text/wrapper.rb
+  s_600b6bfbec0b19::t_eddee11bde7224 6-11,14-15,67,69-71,78-111,113,115-124,133,166-169,181,184
+  s_600b6bfbec0b19::t_09f0a2a939fd04 61-65,72,112,114
+lib/stationery/hyphenation.rb
+  s_600b6bfbec0b19::t_2df6dc07a99cd6 1-132
+lib/stationery/text/style.rb
+  s_600b6bfbec0b19::t_f9e496f84eb511 9,19
+spec/stationery/hyphenation_spec.rb
+  s_600b6bfbec0b19::t_2d032a203c883a 1-97
+lib/stationery/hyphenation/patterns/de-1996.pat.txt
+  s_600b6bfbec0b19::t_960e2f104911df 1-36709
+spec/stationery/rich/renderer_spec.rb
+  s_600b6bfbec0b19::t_c6b29f02155637 102-109,116-120
+  s_600b6bfbec0b19::t_e0d427ee914cac 110-115
+lib/stationery/hyphenation/patterns/LICENSES.md
+  s_600b6bfbec0b19::t_e9f78a858cc809 1-60
+lib/stationery/hyphenation/patterns/en-us.hyp.txt
+  s_600b6bfbec0b19::t_960e2f104911df 1-14
+lib/stationery/fonts/fallback.rb
+  s_600b6bfbec0b19::t_f9e496f84eb511 9-10,15
+lib/stationery/layout/text.rb
+  s_600b6bfbec0b19::t_f9e496f84eb511 45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "d42bb69f3a512bfa09461fecb658b985c36141b7",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
