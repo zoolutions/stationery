@@ -36,6 +36,41 @@
         "allocations": 299093,
         "pages": 10,
         "bytes": 26414
+      },
+      "article": {
+        "allocations": 49600,
+        "pages": 1,
+        "bytes": 39862
+      },
+      "newsletter": {
+        "allocations": 41959,
+        "pages": 1,
+        "bytes": 34514
+      },
+      "webp": {
+        "allocations": 12344,
+        "pages": 1,
+        "bytes": 19481
+      },
+      "html": {
+        "allocations": 228538,
+        "pages": 5,
+        "bytes": 38737
+      },
+      "pdf_ua": {
+        "allocations": 377440,
+        "pages": 6,
+        "bytes": 187382
+      },
+      "text_incremental": {
+        "allocations": 304117,
+        "pages": 10,
+        "bytes": 29667
+      },
+      "text_shaped": {
+        "allocations": 442311,
+        "pages": 10,
+        "bytes": 25606
       }
     }
   }

@@ -1264,10 +1264,23 @@ A lossless WebP is decoded in Ruby when it is first loaded, which a JPEG or an o
 above, by what is in it, and the image cache keeps it for the renders that follow.
 
 Time depends on the machine, so CI holds what does not: `bundle exec rake metrics`
-renders six fixed documents and compares the objects each render allocates, its
+renders fourteen fixed documents and compares the objects each render allocates, its
 page count and its bytes with `benchmark/baseline.json` (allocations may grow 3%,
 bytes 1%, pages not at all). A change that moves them on purpose records a new
 baseline with `bundle exec rake metrics:update` and says why in the commit.
+
+| Document | What it holds |
+|---|---|
+| `invoice`, `flyer`, `form` | The examples of those names: a table with a footer, images and drawings, form fields |
+| `table` | 1,500 rows × 5 columns with a repeating header, 46 pages |
+| `text`, `text_hyphenated`, `text_streamed` | Ten pages of headings and paragraphs: as they are, justified and hyphenated, and written to a block |
+| `article` | Floats: `examples/article.rb` |
+| `newsletter` | `columns`: `examples/newsletter.rb` |
+| `webp` | A lossless WebP of 320 × 240 px, decoded in the render that is measured |
+| `html` | `html` with a stylesheet, inline styles, a floated image, a table, lists and two columns, five pages |
+| `pdf_ua` | A tagged report under `conformance :pdf_ua1`, six pages |
+| `text_incremental` | The text document with a footer, rendered with `incremental` to a block |
+| `text_shaped` | The text document through a `shaper` written in Ruby, which answers the font's own glyphs |
 
 `bundle exec rake memory` reports what long documents hold while they render
 (`PAGES=5000` for more than its 1,000 pages): the peak resident set size of a render in
