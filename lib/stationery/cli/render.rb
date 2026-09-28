@@ -57,24 +57,39 @@ module Stationery
         OK
       end
 
-      # Documents that are new after loading FILE or whose view_template lives
-      # in it (so a file already loaded by the host still resolves).
+      # Documents that are new after loading FILE or that it defines (so a
+      # file already loaded by the host still resolves).
       def load_documents(path)
         before = descendants(Document)
         load(path)
         after = descendants(Document)
-        (after - before) | after.select { |klass| template_file(klass) == path }
+        (after - before) | after.select { |klass| defined_in?(klass, path) }
       end
 
       def pick(candidates, path)
         return named_class if @options[:class]
 
-        candidates = candidates.reject { |klass| template_file(klass).nil? }
+        candidates = local(candidates.reject { |klass| template_file(klass).nil? }, path)
         raise Error, "no Stationery::Document defined in #{path}" if candidates.empty?
         return candidates.first if candidates.one?
 
         names = candidates.map(&:name).sort.join(", ")
         raise Error, "several documents defined in #{path} (#{names}); choose one with --class NAME"
+      end
+
+      # The documents FILE itself defines, when it also loaded others (a
+      # document extending one from a file it requires).
+      def local(candidates, path)
+        defined_here = candidates.select { |klass| defined_in?(klass, path) }
+        defined_here.any? ? defined_here : candidates
+      end
+
+      # Whether FILE opens the class or holds its own view_template.
+      def defined_in?(klass, path)
+        method = klass.instance_method(:view_template)
+        return true if method.owner == klass && method.source_location&.first == path
+
+        !klass.name.nil? && Object.const_source_location(klass.name)&.first == path
       end
 
       def named_class
