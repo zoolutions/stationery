@@ -1,0 +1,19 @@
+spec/fixtures/images/jpeg/one_pixel.ppm
+  ai_agent 1-4
+spec/fixtures/images/jpeg/multiscan.ppm
+  ai_agent 1-5
+spec/fixtures/images/jpeg/ycc420.ppm
+  ai_agent 1-5
+spec/fixtures/images/jpeg/scaled_4.ppm
+  ai_agent 1-4
+spec/fixtures/images/jpeg/scaled_8.ppm
+  ai_agent 1-4
+spec/fixtures/images/jpeg/grey_restart.pgm
+  ai_agent 1-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "650d41d8de7ad7beb016f32c4d57354ef7ecbc14",
+  "prompts": {}
+}
