@@ -2,6 +2,7 @@
 
 require_relative "stationery/version"
 require_relative "stationery/errors"
+require_relative "stationery/instrumentation"
 require_relative "stationery/pdf/types"
 require_relative "stationery/pdf/serializer"
 require_relative "stationery/pdf/stream"

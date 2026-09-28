@@ -14,7 +14,15 @@ module Stationery
     # Accepts a path, a Pathname or an IO-like object (read from its start).
     def load(source)
       data = read(source)
-      Cache.fetch(data) { parse(data) }
+      Cache.fetch(data) do
+        Stationery.instrument("image.stationery", bytes: data.bytesize) do |event|
+          parse(data).tap do |image|
+            event[:format] = image.is_a?(JPEG) ? "JPEG" : "PNG"
+            event[:width] = image.width
+            event[:height] = image.height
+          end
+        end
+      end
     end
 
     def read(source)

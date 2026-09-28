@@ -36,10 +36,16 @@ module Stationery
         def fetch(path, index, mtime)
           key = [path, index]
           cached_mtime, ttf = @cache.delete(key)
-          ttf = TrueType.new(File.binread(path), index:) unless cached_mtime == mtime
+          ttf = parse(path, index) unless cached_mtime == mtime
           @cache[key] = [mtime, ttf]
           @cache.shift while @cache.size > SIZE
           ttf
+        end
+
+        def parse(path, index)
+          Stationery.instrument("font.stationery", path: File.basename(path), action: :parse) do
+            TrueType.new(File.binread(path), index:)
+          end
         end
       end
     end

@@ -23,6 +23,11 @@ module Stationery
       Railtie.add_renderer if app.config.stationery.renderer
     end
 
+    # Whatever the require order, a Rails app reports through ActiveSupport::Notifications.
+    initializer "stationery.instrumentation" do
+      Stationery.instrumenter = ActiveSupport::Notifications
+    end
+
     initializer "stationery.previews" do |app|
       Railtie.add_previews(app.routes) if app.config.stationery.show_previews
     end

@@ -606,6 +606,41 @@ between the children, as for a `P` holding a `Link`) or `[type]` when empty; a
   a browser per worker; stray processes and memory are the price.
 - **Typst** is excellent but a native extension and a second template language.
 
+## Instrumentation
+
+Every render reports its phases as events named `<phase>.stationery`, so an
+APM that subscribes to `ActiveSupport::Notifications` (AppSignal, Skylight,
+Rails' own log subscribers) shows where a slow PDF spends its time with no
+setup: AppSignal groups them under "stationery" in the event tree. Outside
+Rails the events go to a null instrumenter that costs one method call.
+
+| Event | Around | Payload |
+|---|---|---|
+| `render.stationery` | the whole `to_pdf` | `document:`, `pages:`, `bytes:`, `warnings:` (count) |
+| `build.stationery` | building the component tree | `document:` |
+| `paginate.stationery` | layout, page breaks and page templates | `document:`, `pages:` |
+| `write.stationery` | serialising, subsetting and deflating | `document:`, `bytes:` |
+| `image.stationery` | decoding one image (cache misses only) | `format:`, `width:`, `height:`, `bytes:` |
+| `font.stationery` | parsing a font file (`action: :parse`, cache misses only) or subsetting one for a document (`action: :subset`, `glyphs:`) | `path:` or `font:`, `action:` |
+| `parse.stationery` | parsing an `html` or `markdown` source | `format:`, `bytes:` |
+
+Payload values known only afterwards (`pages:`, `bytes:`) are filled in
+before the event finishes, so subscribers always see them. Log every phase
+slower than 100 ms:
+
+```ruby
+ActiveSupport::Notifications.subscribe(/\.stationery\z/) do |name, start, finish, _id, payload|
+  ms = (finish - start) * 1000
+  Rails.logger.info("#{name} #{ms.round}ms #{payload.inspect}") if ms > 100
+end
+```
+
+Any object answering `instrument(name, payload) { |payload| }` can take the
+events instead (`Stationery.instrumenter = MyInstrumenter.new`), and
+`Stationery.instrument("custom.stationery", key: value) { … }` adds your own
+spans inside a document. When you hit a slow render, a trace with these
+events attached is the most useful thing to put in an issue.
+
 ## Performance
 
 `bundle exec rake bench` renders two documents with Stationery and with Prawn

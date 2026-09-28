@@ -7,8 +7,10 @@ module Stationery
   # A CommonMark subset (plus GFM tables and strikethrough) to rich-text blocks (see Stationery::Rich).
   module Markdown
     def self.parse(source)
-      refs = {}
-      Resolver.new(refs).blocks(BlockParser.parse(source, refs))
+      Stationery.instrument("parse.stationery", format: :markdown, bytes: source.bytesize) do
+        refs = {}
+        Resolver.new(refs).blocks(BlockParser.parse(source, refs))
+      end
     end
 
     # Runs the raw text the block parser left in paragraphs, headings and cells through the inline parser.

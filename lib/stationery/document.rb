@@ -95,21 +95,9 @@ module Stationery
 
     def to_pdf(target = nil, strict: self.class.config[:strict], debug: false, encrypt: self.class.config[:encrypt],
                tagged: self.class.config[:tagged])
-      encryption = encrypt && PDF::Encryption::StandardSecurity.new(**encrypt)
-      tagging = Tagging::Tree.new if tagged
-      warnings = Warnings.new
-      book = Fonts::FontBook.new(self.class.config[:families], fallbacks: self.class.config[:fallbacks], warnings:)
-      call(builder = Builder.new(book:, text: self.class.config[:text]))
-      resources = Resources.new
-      pages = paginate(builder.root, book:, resources:, warnings:, debug:, tagging:)
-      outline = builder.outline.resolve(Structure.resolve(pages, warnings:, resources:, book:, tagging:))
-      tagging&.audit(pages, warnings, lang: metadata[:lang])
-      @warnings = warnings
-      @fields = Forms::AcroForm.values(pages)
-      raise WarningsError, warnings if strict && warnings.any?
-
-      assembler = PDF::Assembler.new(pages:, resources:, info:, outline:, encryption:, tagging:, lang: metadata[:lang])
-      write(assembler.render, target)
+      Stationery.instrument("render.stationery", document: self.class.name) do |event|
+        write(render_pdf(event, strict:, debug:, encrypt:, tagged:), target)
+      end
     end
 
     # Used by page templates to build nodes into their own root.
@@ -130,11 +118,43 @@ module Stationery
 
     private
 
+    # The PDF bytes; `event` is the render.stationery payload it fills in.
+    def render_pdf(event, strict:, debug:, encrypt:, tagged:)
+      tagging = Tagging::Tree.new if tagged
+      warnings = Warnings.new
+      book = Fonts::FontBook.new(self.class.config[:families], fallbacks: self.class.config[:fallbacks], warnings:)
+      builder = Builder.new(book:, text: self.class.config[:text])
+      Stationery.instrument("build.stationery", document: self.class.name) { call(builder) }
+      resources = Resources.new
+      pages = paginate(builder.root, book:, resources:, warnings:, debug:, tagging:)
+      outline = builder.outline.resolve(Structure.resolve(pages, warnings:, resources:, book:, tagging:))
+      tagging&.audit(pages, warnings, lang: metadata[:lang])
+      @warnings = warnings
+      @fields = Forms::AcroForm.values(pages)
+      event[:pages] = pages.size
+      event[:warnings] = warnings.size
+      raise WarningsError, warnings if strict && warnings.any?
+
+      assemble(pages, resources, outline, encrypt:, tagging:).tap { |pdf| event[:bytes] = pdf.bytesize }
+    end
+
+    def assemble(pages, resources, outline, encrypt:, tagging:)
+      encryption = encrypt && PDF::Encryption::StandardSecurity.new(**encrypt)
+      assembler = PDF::Assembler.new(pages:, resources:, info:, outline:, encryption:, tagging:,
+                                     lang: metadata[:lang])
+      Stationery.instrument("write.stationery", document: self.class.name) do |event|
+        assembler.render.tap { |pdf| event[:bytes] = pdf.bytesize }
+      end
+    end
+
     def paginate(root, book:, resources:, warnings:, debug:, tagging:)
-      regions = Regions.new(self.class.config[:regions], measure: region_measure(book))
-      paginator = Layout::Paginator.new(resources:, page: page_options, warnings:, debug:, regions:, tagging:)
-      paginator.paginate(root).tap do |pages|
-        PageTemplates.new(self, book:, resources:, debug:, regions:, warnings:, tagging:).apply(pages)
+      Stationery.instrument("paginate.stationery", document: self.class.name) do |event|
+        regions = Regions.new(self.class.config[:regions], measure: region_measure(book))
+        paginator = Layout::Paginator.new(resources:, page: page_options, warnings:, debug:, regions:, tagging:)
+        paginator.paginate(root).tap do |pages|
+          PageTemplates.new(self, book:, resources:, debug:, regions:, warnings:, tagging:).apply(pages)
+          event[:pages] = pages.size
+        end
       end
     end
 
