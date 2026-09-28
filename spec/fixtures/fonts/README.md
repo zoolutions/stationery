@@ -44,6 +44,24 @@ The glyph-id-to-CID values in `cff_spec.rb` come from
 `TTFont("NotoSansJP-Subset.otf")["CFF "].cff.topDictIndex[0].charset`
 (glyph names `cid01566`, … are the CIDs).
 
+## How outlines.json was made
+
+fontTools' outlines of a few glyphs of the fonts here, which
+`glyph_outlines_spec.rb` compares with `TrueType#outline`. Each glyph is drawn
+through a `fontTools.pens.basePen.BasePen` subclass that records `_moveTo`,
+`_lineTo`, `_curveToOne` and `_closePath` as `["move", x, y]`, `["line", x, y]`,
+`["curve", x1, y1, x2, y2, x, y]` and `["close"]`: BasePen decomposes
+components and raises each quadratic to a cubic. The glyphs, keyed by file
+(`#N` for a face of the collection) and character:
+
+```python
+GLYPHS = {"OpenSans-Regular.ttf": "oÁ%", "OpenSans-Regular.woff": "a", "OpenSans-Collection.ttc#1": "a",
+          "SourceSans3-Latin.otf": "g@", "NotoSansJP-Subset.otf": "語"}
+font = TTFont(path, fontNumber=face)
+glyph_set = font.getGlyphSet()
+glyph_set[font.getBestCmap()[ord(char)]].draw(pen)
+```
+
 ## How the .ttc and .woff fixtures were made
 
 With the same fontTools, from the `OpenSans-*.ttf` files here:

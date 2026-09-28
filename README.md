@@ -146,17 +146,20 @@ text more                                       # around the pull quote
 - Text (paragraphs, headings, the text inside a `group` or an `html` block) wraps: every line takes
   the width left at its own top and is aligned and justified in it. A paragraph whose widest word
   does not fit beside the floats starts below them.
-- A list item and a `box` that paints nothing of its own wrap what they hold: they keep the full
-  width, and their lines are narrow beside the float and wide below it. That is a box without
-  `background:`, `border:`, `shadow:` or `link:` and without `width:`, `height:`, `rotate:`,
-  `overflow:` or `valign:`. Its padding lies under the float, as a block's does in CSS, so beside
-  the float its lines are the float's `margin:` away from it. A list item keeps its indent from the
-  float, with the marker beside its first line.
-- Anything else (a `box` with a background, a border or a size of its own, a `row`, `columns`, `table`,
-  `rule`, `image`, `svg`, form field) is a block:
-  it goes beside the float in the width that is left, and keeps that width all the way down, when
-  its own width (or the least its content takes) fits there; else it starts below the float. A
-  `spacer` takes its height beside the float; a `page_break` ends the page and the float with it.
+- A list item and a `box` that takes the width it is given wrap what they hold, as a block does
+  in CSS: they keep the full width, and their lines are narrow beside the float and wide below it.
+  A box with a `background:`, a `border:`, a `shadow:` or a `link:` paints it across the full
+  width, under the float: the float is painted after the boxes beside it, so it sits on top of the
+  background, and a float with `opacity:` or a `shadow:` shows the background through it. The
+  box's padding lies under the float, as a block's does in CSS, so beside the float its lines are
+  the float's `margin:` away from it. A list item keeps its indent from the float, with the marker
+  beside its first line, over the background of its body if the body has one.
+- A `box` with a size or a place of its own (`width:`, `height:`, `rotate:`, `overflow:` other than
+  `:visible`, `valign:` other than `:top`), a `row`, `columns`, a `table`, `rule`, `image`, `svg` or
+  form field is a block: it goes beside the float in the width that is left, and keeps that width
+  all the way down, when its own width (or the least its content takes) fits there; else it starts
+  below the float. A `spacer` takes its height beside the float; a `page_break` ends the page and
+  the float with it.
 - Several floats: the next one goes beside those already there when it fits, else below them, and
   never above one written before it. Left and right floats share a line with the text between them.
 - The flow that holds a float is at least as tall as the float, so what follows a box, a column or a
@@ -165,7 +168,8 @@ text more                                       # around the pull quote
   after it could not start beside it there, it moves to the next page with that content. A
   paragraph beside a float splits between lines as always (`orphans:`, `widows:`); the lines carried
   over are wrapped again at the full width, because the float stayed behind. So are those of a list
-  item and of a box.
+  item and of a box. The part that stays on the page keeps the place its whole was given, beside
+  the floats or below them.
 - Floats written one after the other that are taller than a page together are cut before the
   first that does not fit: it starts the next page, with the floats and the text written after it,
   so the page it left holds the floats above it and nothing beside them. It is the same in a box, a
@@ -174,7 +178,9 @@ text more                                       # around the pull quote
   does not fit what is left of the page, they all go to the next.
 - What does not fit below the floats at the top of a page (a box that stays whole, a line where
   none is left) goes to the next page and leaves the floats behind.
-- In a tagged PDF the float is where it was written: an image is a `Figure`, a box has its `role:`.
+- In a tagged PDF the float is where it was written, painted after the boxes beside it or not: an
+  image is a `Figure`, a box has its `role:`, and a floated box without one beside a box with a
+  background is a `Div`, which keeps its content in place.
 
 A line beside a float is taken to be as tall as a line of the paragraph's own style when its width
 is looked up, so one much taller word may reach a little past a float's bottom edge before the text
@@ -358,7 +364,8 @@ signature_field "signature", label: "Signature of the applicant"
   in the text style around the field, in the document's own fonts: embedded, with the fallbacks
   applied per character, so a value in any script the fonts cover is drawn (`/V` holds it as
   Unicode). A character no font has is drawn as `.notdef` inside a `Span` whose `ActualText` is the
-  character, as in any other text, so the appearance still extracts as written. Check marks and radio dots are paths. `NeedAppearances` is set too, so viewers redraw
+  character, as in any other text (or as the font's stand-in under `conformance` with
+  `missing_glyphs: :replace`), so the appearance still extracts as written. Check marks and radio dots are paths. `NeedAppearances` is set too, so viewers redraw
   edited values; ZapfDingbats is listed for the ones that redraw a button's mark, never embedded
   and never used by the appearances themselves.
 - A field that can be edited keeps printable ASCII and Latin-1 in its font beyond the value it shows
@@ -449,7 +456,8 @@ render Callout.new(color: "#F3F4F6") { text "Amount due" }
 - After `to_pdf`, `document.warnings` is an Enumerable of everything the render noticed but did not
   raise on, each with a `#message`: overflows, SVG elements that were skipped (`UnsupportedSvg`), and
   the other `Stationery::Warnings::*` kinds (missing glyphs, unknown font families, skipped images,
-  unresolved links, duplicate anchors, and in a tagged render what is missing for accessibility).
+  unresolved links, duplicate anchors, in a tagged render what is missing for accessibility, and in a
+  [monochrome](#monochrome) render the colours and lines a one-bit printer cannot print as they are).
   Equal warnings are listed once; warnings from page templates
   are included. `to_pdf(strict: true)`, or `strict` at class level, raises `Stationery::WarningsError`
   (with `#warnings`) instead of writing a PDF that produced any; `to_pdf(strict: false)` opts one
@@ -514,6 +522,66 @@ source code did when it was read on 2026-09-28, "reported" what a user wrote in 
 | Firefox (pdf.js) | read, not used by the viewer (source; [bug 1243580](https://bugzilla.mozilla.org/show_bug.cgi?id=1243580)) | read, not used (source) | read, not used (source) | read, not used (source) | read, not used (source) | starts printing (source) |
 | Preview (macOS) | not tested | not tested | not tested | not tested | not tested | not tested |
 | Evince, Okular (poppler) | not tested | not tested | not tested | not tested | not tested | not tested |
+
+### Monochrome
+
+A thermal label printer (203 or 300 dpi), a receipt printer or an e-paper display prints black or
+nothing. Whatever else the PDF holds, the driver or the printer turns into dots of its own choosing:
+grey text comes out speckled, a light rule or background vanishes or turns into a dot pattern, and a
+line thinner than one dot prints or not depending on where it lands. `monochrome` makes those
+choices where they can be seen, before anything is printed:
+
+```ruby
+class ShelfLabel < Stationery::Document
+  page size: [mm(100), mm(60)], margin: mm(4)
+  monochrome dpi: 203                               # report what a 203 dpi printer cannot print as it is
+end
+
+ShelfLabel.new.to_pdf(monochrome: { snap: true })  # change it instead, for this render
+ShelfLabel.new.to_pdf(monochrome: false)           # as it was, byte for byte
+```
+
+| Option | Default | What it does |
+| --- | --- | --- |
+| `dpi:` | `203` | the printer's dots per inch: one dot is 72/dpi pt (0.355 pt at 203 dpi, 0.24 pt at 300) |
+| `snap:` | `false` | change colours and thin lines instead of reporting them |
+| `threshold:` | `0.5` | under `snap:`, a fill whose tone is darker is painted black, a lighter one is not painted |
+| `dither:` | `:floyd_steinberg` | how a bitmap becomes dots: `:floyd_steinberg`, `:ordered` (an 8 × 8 Bayer pattern) or `:threshold` (cut at half) |
+
+- **Colours.** Every colour that is not black or white, and anything painted at an `opacity:` below 1,
+  is a `Warnings::NotMonochrome` naming the colour and what painted it: `text`, `a rule` (a `rule`,
+  an underline, a strikethrough: a filled rectangle 3 pt thick or less), `a background` (any other
+  fill), `a border or line` (any stroke), `a gradient` or `an image`, once per colour, kind and page:
+  `text in #888888 on page 1 is not black or white`. `strict` raises on them. It sees whatever is
+  painted, by an element, an SVG or a `canvas { }` block alike.
+- **`snap: true`.** Text, rules, borders and lines are painted black, except white ones, which stay
+  white (white text on a black box). A fill is painted black when its tone is darker than
+  `threshold:` and left out when it is lighter; the tone is the colour's luma (ITU-R BT.601), an
+  opacity laid over white paper (black at 0.3 is a tone of 0.7). A gradient is black or left out
+  by the average tone of its stops. Opacity is taken away. Nothing is reported.
+- **Line widths.** A stroke or a rule thinner than a dot (`width × the scale of a transform`) is a
+  `Warnings::ThinLine` and is left as it is; with `snap: true` it is widened to a dot.
+- **The dot grid.** Outside any transform, a filled rectangle (a rule, a background, an underline)
+  and a stroke made of horizontal and vertical lines (a border, a table's cell borders, a line) are
+  put on the printer's grid, counted from the top left corner of the page: their edges on whole dots
+  and their widths whole numbers of dots, so a hairline is as wide on every label. A curve, a rounded
+  corner, a slanted line and anything under a transform keeps its geometry.
+- **Images.** A PNG or a lossless WebP is greyed (a transparent pixel is white paper), resampled to the
+  dots it covers at `dpi:` and dithered, and embedded as a one-bit DeviceGray image
+  (`/BitsPerComponent 1`): what prints is the pattern chosen here, not the driver's. A JPEG is not
+  decoded by stationery, so it is embedded as it is and reported (`an image in JPEG 640x480`).
+- `monochrome` at class level is inherited and adds to what the class inherits; `monochrome false`
+  takes it away. `to_pdf(monochrome:)` takes `true`, `false` or options laid over the class's.
+- Monochrome renders keep PDF/A and PDF/UA: the one-bit image is DeviceGray, which the sRGB output
+  intent covers (checked with veraPDF, PDF/A-3b and PDF/UA-1).
+- `Inspector#colors` lists what a PDF paints with, so a spec can hold it: `expect(pdf).to
+  have_pdf_colors("#000000")`.
+
+What it does not do: it does not decode or dither a JPEG (convert it to PNG), does not look at form
+fields (their widget draws them, not the page), does not put dashes, line caps or curves on the grid,
+and does not make small text bolder. It changes nothing without `monochrome`. The rules live in
+`Stationery::Monochrome::Rules` and `Monochrome::Grid`, apart from the PDF canvas, for a raster
+output to apply the same ones.
 
 ### Encryption
 
@@ -677,8 +745,40 @@ mislabelled: `ArgumentError` for options that contradict the level, `Stationery:
   standard Helvetica.
 - A character no font has raises at every level, naming the character and the family: it draws as
   `.notdef`, which text may not reference under PDF/A (6.2.11.8) or PDF/UA (7.21.8). Add a font or
-  `font_fallbacks` that covers it. Whitespace a font lacks draws as a blank and is accepted.
+  `font_fallbacks` that covers it, or let the render draw a stand-in with `missing_glyphs: :replace`
+  (below). Whitespace a font lacks draws as a blank and is accepted.
 - Without `conformance` nothing changes: the output is byte for byte what it was.
+
+A name in a script the fonts do not cover (a customer in Tokyo on an invoice archived as PDF/A) is
+where the raise turns up in practice. Applications rescued it and rendered again without the claim:
+
+```ruby
+begin
+  InvoicePdf.new(invoice).to_pdf
+rescue Stationery::ConformanceError => e
+  logger.warn(e.message)
+  InvoicePdf.new(invoice).to_pdf(conformance: nil)   # mislabelled no more, but no longer PDF/A
+end
+```
+
+`missing_glyphs: :replace` keeps the claim instead: a character no font has is drawn as the first
+of U+FFFD (�), U+25A1 (□) and `?` that the font drawing it has, inside the `Span` whose `ActualText`
+is the character, so the text still extracts, copies and reads aloud as written and nothing
+references `.notdef`. The stand-in has its own advance, so lines are measured as they are drawn.
+
+```ruby
+class InvoicePdf < Stationery::Document
+  conformance :pdf_a3b, missing_glyphs: :replace   # :raise is the default
+end
+
+InvoicePdf.new(invoice).to_pdf(conformance: :pdf_a3b, missing_glyphs: :replace) # per render
+```
+
+The `Warnings::MissingGlyph` stays (its `stand_in` is the character drawn, and `strict` still
+raises on it), so what was replaced is on record. A font that has none of the three, which a
+symbol font may not, still raises and says so. veraPDF passes 2b, 3b and ua1 with each of the
+three stand-ins, in body text, headers and page templates, form field values and shaped text.
+Without `conformance` the option changes nothing, and with `:raise` neither.
 
 `bundle exec rake verify:conformance` renders `examples/invoice.rb` as PDF/A-3b, and
 `examples/report.rb`, `examples/form.rb`, `examples/article.rb` (floats) and `examples/newsletter.rb`
@@ -1042,7 +1142,9 @@ a figure space, a narrow no-break space, …) is drawn as a blank of the
 character's conventional width, never as `.notdef`. Any other glyph no font
 has is drawn as the family's `.notdef` and reported as a
 `Warnings::MissingGlyph` counting each drawn occurrence (so `strict` raises
-on it, and a `conformance` level raises `ConformanceError`). The characters
+on it, and a `conformance` level raises `ConformanceError` unless it is
+declared with `missing_glyphs: :replace`, which draws the first of U+FFFD,
+U+25A1 and `?` the font has instead; see [PDF/A and PDF/UA](#pdfa-and-pdfua)). The characters
 themselves travel as the `ActualText` of a `Span` around the glyphs, so the
 text still extracts, copies and reads aloud as written. Fallback covers every text element,
 table cell, list marker, table of contents entry and page template text;
@@ -1164,7 +1266,8 @@ synthetic oblique, a superscript or letter spacing. Glyphs the shaper placed are
 not a character maps to them. Where the ToUnicode map cannot give the text (glyphs out of logical
 order, several glyphs for one cluster, a glyph that already stands for another text, glyph 0) the
 glyphs are shown in a `Span` whose `ActualText` is the characters in logical order. Glyph 0 is
-reported as a `Warnings::MissingGlyph`, like any other.
+reported as a `Warnings::MissingGlyph`, like any other, and under `conformance` with
+`missing_glyphs: :replace` it is drawn as the font's stand-in at the stand-in's advance.
 
 The limits of a hook:
 
@@ -1264,6 +1367,7 @@ RSpec.describe InvoicePdf do
   it { is_expected.to have_pdf_language("en") } # the catalog /Lang from `metadata lang:`
   it { is_expected.to have_page_labels(%w[i ii 1 2]) } # from `page_labels`
   it { is_expected.to have_print_preference(scaling: :none, copies: 2) } # from `print`
+  it { is_expected.to have_pdf_colors("#000000") } # every colour it paints with, from `monochrome`
   it { is_expected.to have_attachment("factur-x.xml", mime: "text/xml", relationship: :alternative) }
   it { is_expected.to have_conformance(:pdf_a3b) } # the level claimed in XMP, from `conformance`
   it { is_expected.to have_factur_x(profile: :en16931) } # the e-invoice XML, named in XMP and embedded
@@ -1292,6 +1396,7 @@ class InvoicePdfTest < Minitest::Test
     assert_pdf_language pdf, "en"
     assert_page_labels pdf, %w[i ii 1 2]
     assert_print_preference pdf, scaling: :none, copies: 2
+    assert_pdf_colors pdf, ["#000000"]
     assert_pdf_attachment pdf, "factur-x.xml", mime: "text/xml"
     assert_pdf_conformance pdf, :pdf_a3b
     assert_factur_x pdf, profile: :en16931
@@ -1308,7 +1413,8 @@ titles. The RSpec matchers compose like the built-ins: `.and` / `.or`, and insid
 `all`, `include` or `match`. For anything else, `Stationery::Testing::Inspector.new(subject)`
 exposes `text`, `page_texts`, `page_count`, `links`, `internal_links`,
 `image_count`, `bookmarks`, `metadata`, `xmp` (the packet), `xmp_values` (`{ "dc:title" => …, "dc:creator" => […] }`),
-`lang`, `page_labels`, `print_preferences` (`{ scaling: :none, pages: [1..3] }`), `attachments`, `conformance` (`[:pdf_a3b, :pdf_ua1]`), `factur_x`
+`lang`, `page_labels`, `print_preferences` (`{ scaling: :none, pages: [1..3] }`), `colors`
+(`["#000000", "#FF0000"]`), `attachments`, `conformance` (`[:pdf_a3b, :pdf_ua1]`), `factur_x`
 (`{ profile:, filename:, version:, xml: }`), `signatures` (`[{ field:, name:, reason:, location:,
 signed_at:, subfilter:, byte_range:, signer:, valid:, timestamp: }]`, the timestamp `nil` or
 `{ time:, tsa:, valid: }`), `warnings`, `tagged?`,
@@ -1317,6 +1423,12 @@ signed_at:, subfilter:, byte_range:, signer:, valid:, timestamp: }]`, the timest
 read from its marked content: `[type, "text"]`, `[type, [children]]` (its own text
 between the children, as for a `P` holding a `Link`) or `[type]` when empty; a
 `Figure` reads as its alt text.
+
+`colors` is every colour the page content and the form XObjects it draws set with `g`, `rg` and `k`
+(and their stroking forms), once each and sorted, as `"#RRGGBB"` (CMYK converted without a profile),
+with `"shading"` for a gradient and `"image"` for a bitmap that is not one bit of grey; a one-bit grey
+image, as `monochrome` embeds, paints black and white only and adds nothing. Opacity and form
+fields are not read. `have_pdf_colors("#000000")` and `assert_pdf_colors` hold the whole list.
 
 `text` and `page_texts` are the text of the page content as pdf-reader lays it out, line by line. A
 `Span` with `ActualText` (a stretch a shaper reordered, characters no font has) reads as that text,
@@ -1484,10 +1596,11 @@ own; a spacer that lands at the top of a column keeps its height. Text
 wraps around floated images and boxes, along their rectangles, never along a shape; the text
 after floats cut by a page break goes to the next page with the float that moved, never beside
 those that stayed; beside a float
-a table, a row, `columns` and a box with a background, a border or a size of its own are blocks of
-the width that is left, all the way down: a box is painted after the float written before it, so
-one that kept the full width would paint its background over the float (see
-[Floats](#floats)). Link and form-widget rectangles stay in page space inside `rotate`
+a table, a row, `columns` and a box with a size of its own are blocks of the width that is left,
+all the way down, where a box with a background wraps: a table resolves its column widths from
+its width, a row shares its width between its columns and `columns` divides it, and none of them
+can be laid out again at another width from some row on, which widening below the float would
+take (see [Floats](#floats)). Link and form-widget rectangles stay in page space inside `rotate`
 and `transform`, and `shadow:` is stacked rectangles, not a blur.
 
 PDF: PDF/A-2b, PDF/A-3b and PDF/UA-1 only (no PDF/A-1, no level A or U, no PDF/UA-2, no PDF/X),

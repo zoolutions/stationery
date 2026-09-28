@@ -99,25 +99,67 @@ RSpec.describe Stationery::Layout::Flow do
     end
   end
 
-  describe "a box that stays a block" do
+  describe "a box that paints something of its own" do
     let(:content) { flow(text_node("text")) }
 
-    it "is one with something of its own to paint, a size of its own or a place for its content" do
-      blocks = [{ background: "#EEEEEE" }, { border: { width: 1 } }, { shadow: true }, { link: "https://example.test" },
-                { width: 100 }, { width: 0.5 }, { width: :auto }, { height: 40 }, { rotate: 5 },
-                { overflow: :hidden }, { valign: :middle }]
+    # [x, width] of every rectangle filled on the first page, in the order painted.
+    def fills_of(pdf)
+      page_contents(pdf).first.scan(/^([\d.]+) [\d.]+ ([\d.]+) [\d.]+ re$/).map { |x, w| [x.to_f, w.to_f] }
+    end
 
+    it "wraps as a plain box does; a size of its own or a place for its content makes a block" do
+      wrapping = [{ background: "#EEEEEE" }, { border: { width: 1 } }, { shadow: true }, { link: "https://a.test" }]
+      blocks = [{ width: 100 }, { width: 0.5 }, { width: :auto }, { height: 40 }, { rotate: 5 }, { overflow: :hidden },
+                { valign: :middle }]
+
+      expect(wrapping.map { |options| Stationery::Layout::Box.new(content, **options).wraps? }).to all(be(true))
       expect(blocks.map { |options| Stationery::Layout::Box.new(content, **options).wraps? }).to all(be(false))
-      expect(Stationery::Layout::Box.new(content, padding: 4, min_height: 30, role: :section).wraps?).to be(true)
       expect(Stationery::Layout::Box.new(block(10, 10)).wraps?).to be(false)
     end
 
-    it "keeps the width the floats leave all the way down, its background beside the float" do
+    it "keeps the full width: its background runs under the float, its lines wrap beside it and widen below it" do
       tall = boxed(text_node(words.split.first(20).join(" ")), background: "#000000")
       pdf, = render_layout(flow(floated(block(80, 20)), tall))
 
-      expect(page_contents(pdf).first).to match(/^100 [\d.]+ 180 [\d.]+ re$/)
-      expect(tops_of(pdf).map(&:first).uniq).to eq([100.0])
+      expect(page_contents(pdf).first).to match(/^20 [\d.]+ 260 [\d.]+ re$/)
+      expect(tops_of(pdf).map(&:first).first(3)).to eq([100.0, 100.0, 20.0])
+    end
+
+    it "is painted before the floats beside it, which sit on top of its background" do
+      pdf, = render_layout(flow(floated(block(80, 20, background: "#000000")),
+                                floated(block(40, 20, background: "#000000"), :right),
+                                boxed(text_node(words), background: "#EEEEEE")))
+
+      expect(fills_of(pdf)).to eq([[20.0, 260.0], [20.0, 80.0], [240.0, 40.0]])
+    end
+
+    it "keeps its padding under the float: beside it the lines are the float's margin away" do
+      box = boxed(text_node(words), padding: 12, background: "#EEEEEE", border: { width: 1 })
+      pdf, = render_layout(flow(floated(block(80, line_height * 2), margin: 10), box))
+
+      expect(tops_of(pdf).map(&:first).first(3)).to eq([110.0, 110.0, 33.0])
+      expect(tops_of(pdf).first.last).to eq(33.0)
+    end
+
+    it "wraps between a left and a right float, and takes the full width below both" do
+      box = boxed(text_node(words), background: "#EEEEEE")
+      pdf, = render_layout(flow(floated(block(80, line_height * 3)), floated(block(60, line_height), :right), box))
+
+      expect(tops_of(pdf).map(&:first).first(4)).to eq([100.0, 100.0, 100.0, 20.0])
+      expect(ends_of(pdf).first).to be <= 220
+      expect(ends_of(pdf)[1]).to be > 220
+    end
+
+    it "wraps inside another box with a background, and inside a list item, beside the float" do
+      inner = boxed(text_node(words), background: "#FFFFFF", padding: [0, 0, 0, 5])
+      outer = boxed(inner, background: "#EEEEEE", padding: 5)
+      nested, = render_layout(flow(floated(block(80, line_height * 2)), outer))
+      listed, = render_layout(flow(floated(block(80, line_height * 2)), item(inner)))
+
+      expect(tops_of(nested).map(&:first).first(3)).to eq([100.0, 100.0, 30.0])
+      expect(fills_of(nested)).to eq([[20.0, 260.0], [25.0, 250.0]])
+      expect(tops_of(listed).sort_by { |x, top| [top, x] }.map(&:first).first(4)).to eq([100.0, 120.0, 120.0, 45.0])
+      expect(fills_of(listed)).to eq([[40.0, 240.0]])
     end
 
     it "is a float itself" do
@@ -151,6 +193,19 @@ RSpec.describe Stationery::Layout::Flow do
 
       expect(tops_of(pdf).last(2)).to eq([[20.0, nth_line(lines)], [40.0, nth_line(lines)]])
       expect(beside.measure(260)).to be_within(0.001).of((lines + 1) * line_height)
+    end
+
+    it "paints its marker after the background of its body, which it lies over beside the float" do
+      float = floated(block(80, line_height * 2))
+      plain, = render_layout(flow(float, item(boxed(text_node(words)))))
+      pdf, = render_layout(flow(float, item(boxed(text_node(words), background: "#EEEEEE"))))
+      content = page_contents(pdf).first
+      by_line = ->(tops) { tops.sort_by { |x, top| [top, x] }.first(2) }
+
+      expect(by_line.call(tops_of(pdf))).to eq(by_line.call(tops_of(plain)))
+      expect(by_line.call(tops_of(pdf))).to eq([[100.0, nth_line(0)], [120.0, nth_line(0)]])
+      expect(content.index(/^100 [\d.]+ Td$/)).to be > content.index(/^120 [\d.]+ Td$/)
+      expect(content.index(/^100 [\d.]+ Td$/)).to be > content.index(/ re$/)
     end
 
     it "wraps without a marker, as the rest of a split item does" do

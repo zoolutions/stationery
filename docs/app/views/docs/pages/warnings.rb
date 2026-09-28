@@ -29,8 +29,8 @@ class Views::Docs::Pages::Warnings < DocsUI::Page
           [ [ :code, "Overflow" ], "page, height, available",
             "Content taller than the space a page had for it was placed anyway (an :avoid box, an image, a region).",
             "content 912.0pt tall placed on page 3 with 770.0pt available" ],
-          [ [ :code, "MissingGlyph" ], "char, family, count",
-            "No font — the family, its fallbacks or Inter — has the character; it is drawn as .notdef, with the character kept as ActualText so the text still extracts. Whitespace is exempt: it draws as a blank of its width. Under a conformance level it raises ConformanceError instead: neither PDF/A nor PDF/UA lets text reference .notdef.",
+          [ [ :code, "MissingGlyph" ], "char, family, count, stand_in",
+            "No font — the family, its fallbacks or Inter — has the character; it is drawn as .notdef, with the character kept as ActualText so the text still extracts. Whitespace is exempt: it draws as a blank of its width. Under a conformance level it raises ConformanceError instead: neither PDF/A nor PDF/UA lets text reference .notdef. With missing_glyphs: :replace the level draws a stand-in the font has (U+FFFD, else U+25A1, else ?) and stand_in is that character; it is nil for .notdef.",
             "missing glyph \"☃\" (U+2603) in Brand, drawn 2 times as .notdef" ],
           [ [ :code, "UnknownFamily" ], "requested, used",
             "A text style named a family that is neither registered, bundled nor an installed pack; it drew with the first registered family (else bundled Inter). Reported once per name.",
@@ -73,7 +73,13 @@ class Views::Docs::Pages::Warnings < DocsUI::Page
             "tagged PDF has no language: set metadata lang:" ],
           [ [ :code, "ConformanceIssue" ], "level, subject",
             "A PDF/A render used CMYK colour or a CMYK JPEG, which the sRGB output intent does not cover.",
-            "PDF/A-3b: CMYK colour on page 1 is not covered by the sRGB output intent" ]
+            "PDF/A-3b: CMYK colour on page 1 is not covered by the sRGB output intent" ],
+          [ [ :code, "NotMonochrome" ], "color, kind, page",
+            "A monochrome render (without snap: true) painted a colour that is not black or white, or at an opacity below 1, or drew a JPEG, which is not dithered. color is \"#RRGGBB\" (with \" at opacity 0.5\"), or names the image; kind is :text, :rule, :background, :border, :gradient or :image. Reported once per colour, kind and page.",
+            "text in #888888 on page 1 is not black or white" ],
+          [ [ :code, "ThinLine" ], "width, kind, page, dpi",
+            "A monochrome render (without snap: true) drew a stroke or a rule thinner than one of the printer's dots (72/dpi pt), which prints or not depending on where it lands. snap: true widens it to a dot.",
+            "a rule 0.2 pt wide on page 1 is thinner than a dot at 203 dpi (0.355 pt): widen it, or snap: true" ]
         ]
       )
     end

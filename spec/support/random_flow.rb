@@ -1,16 +1,13 @@
 # frozen_string_literal: true
 
-# A flow of paragraphs, nested boxes, lists, floats and runs of floats drawn
-# from a seed: the same seed is the same flow, on any machine. Every word is
+# A flow of paragraphs, nested boxes (with a background, a border, a shadow
+# or a link), lists, floats and runs of floats drawn from a seed: the same
+# seed is the same flow, on any machine. Every word is
 # written once (`words`) and every float is a grey box or an image (`floats`),
 # so a render can be checked against them. Nothing in it is taller than a
 # page of 260 pt by itself: a float is at most 120 pt tall and lies three
-# boxes deep at most.
-#
-# A float is as wide as a fraction of its flow. One of a width in points can
-# be the least width of the box that holds it, and a block beside a float is
-# placed by its least width: the part of it cut at a page break, without the
-# float, would be placed elsewhere than the whole was.
+# boxes deep at most. A float has a width in points, which is the least
+# width of the box that holds it.
 class RandomFlow
   SIDES = %i[left right].freeze
   KINDS = %i[text text text box list float float run].freeze
@@ -71,7 +68,7 @@ class RandomFlow
 
   # One float in four is an image.
   def float_node
-    [:float, SIDES[@random.rand(2)], @random.rand(0.15..0.7).round(2), @random.rand(15..120),
+    [:float, SIDES[@random.rand(2)], @random.rand(40..180), @random.rand(15..120),
      @random.rand(4).zero? ? :image : :box]
   end
 
@@ -79,6 +76,8 @@ class RandomFlow
     options = { padding: @random.rand(0..8) }
     options[:background] = "#EEEEEE" if @random.rand(3).zero?
     options[:border] = { width: 1 } if @random.rand(3).zero?
+    options[:shadow] = true if @random.rand(6).zero?
+    options[:link] = "https://example.test" if @random.rand(6).zero?
     options[:break_inside] = :auto if @random.rand(3).zero?
     options
   end

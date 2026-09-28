@@ -18,6 +18,7 @@ module Stationery
       def assert_page_count(subject, count, msg = nil) = assert_pdf(Matchers::HavePageCount.new(count), subject, msg)
       def assert_pdf_link(subject, url, msg = nil) = assert_pdf(Matchers::HaveLink.new(url), subject, msg)
       def assert_image_count(subject, count, msg = nil) = assert_pdf(Matchers::HaveImageCount.new(count), subject, msg)
+      def assert_pdf_colors(subject, colors, msg = nil) = assert_pdf(Matchers::HaveColors.new(*colors), subject, msg)
       def assert_bookmark(subject, title, msg = nil) = assert_pdf(Matchers::HaveBookmark.new(title), subject, msg)
       def assert_pdf_language(subject, lang, msg = nil) = assert_pdf(Matchers::HaveLanguage.new(lang), subject, msg)
 

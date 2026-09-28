@@ -16,6 +16,27 @@ module Stationery
 
       def self.carried?(char) = CARRIED.match?(char)
 
+      # Yields each character of `text` that `font` lacks and nothing carries,
+      # in order and once per occurrence, walking the codepoints (Font#lacks?
+      # remembers the answer per codepoint): a text the font covers, which is
+      # nearly every one, allocates nothing. Text that is not UTF-8 is walked
+      # character by character, as every text was.
+      def self.each_missing(text, font)
+        return text.each_char { |char| yield char unless carried?(char) || font.glyph?(char) } unless utf8?(text)
+
+        text.each_codepoint { |codepoint| yield codepoint.chr(Encoding::UTF_8) if font.lacks?(codepoint) }
+      end
+
+      # Whether `text` has a character `font` lacks and nothing carries.
+      def self.missing?(text, font)
+        return text.each_char.any? { |char| !carried?(char) && !font.glyph?(char) } unless utf8?(text)
+
+        text.each_codepoint { |codepoint| return true if font.lacks?(codepoint) }
+        false
+      end
+
+      def self.utf8?(text) = text.encoding == Encoding::UTF_8 || text.ascii_only?
+
       def initialize(book)
         @book = book
         @found = {}
@@ -28,7 +49,7 @@ module Stationery
       def split(run)
         style = run.style
         font = @book.resolve(style).first
-        return [run] if run.text.each_char.all? { |char| self.class.carried?(char) || font.glyph?(char) }
+        return [run] unless self.class.missing?(run.text, font)
 
         chars = run.text.chars
         families = fill(chars.map { |char| family_for(char, style) unless self.class.carried?(char) }, style.family)

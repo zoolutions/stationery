@@ -15,17 +15,20 @@ module Stationery
       # A child that wraps (text, a nested flow, a list item, a box that
       # paints nothing of its own) keeps the full width and is given the
       # floats beside it as exclusions. It moves below the floats that
-      # leave less than its `min_width`. Any other child is a block
+      # leave less than its `placing_width`. Any other child is a block
       # beside the floats: it gets the width left between every float still
       # beside or below its top, all the way down, when its own width (or its
-      # `min_width`) fits there, else it moves below them.
+      # `placing_width`) fits there, else it moves below them. A part cut
+      # from a child at a page break is placed by the whole's width, so it
+      # keeps the slot the whole was cut in.
       class Placement
         Band = ::Stationery::Text::Exclusions::Band
 
         # Where one child goes: `top` and `left` from the flow's top left
         # corner, the `width` it is laid out at and, for one that wraps, the
-        # floats beside it.
-        Slot = Data.define(:top, :left, :width, :exclusions) do
+        # floats beside it. `need` is the width it was placed by beside
+        # floats (nil below them), which a part cut from it keeps.
+        Slot = Data.define(:top, :left, :width, :exclusions, :need) do
           def measure(node) = exclusions ? node.measure(width, exclusions:) : node.measure(width)
 
           def split(node, height, fresh:)
@@ -72,7 +75,7 @@ module Stationery
                              right: node.side == :left ? 0 : @width - x)
           @floor = top
           @lowest = [@lowest, top + height].max
-          Slot.new(top:, left: x, width:, exclusions: nil)
+          Slot.new(top:, left: x, width:, exclusions: nil, need: nil)
         end
 
         # The slot of the next child in the flow; `advance` takes it.
@@ -95,24 +98,24 @@ module Stationery
         def plain(node)
           own = node.fixed_width(@width)
           left = own ? Geometry.align_offset(@align, @width, own) : 0
-          Slot.new(top: start, left:, width: own || @width, exclusions: nil)
+          Slot.new(top: start, left:, width: own || @width, exclusions: nil, need: nil)
         end
 
         def wrapping(node)
-          need = node.min_width
+          need = node.placing_width
           top = clear(start) { |y| room(*below(y)) >= need - EPSILON }
-          Slot.new(top:, left: 0, width: @width, exclusions: exclusions_at(top))
+          Slot.new(top:, left: 0, width: @width, exclusions: exclusions_at(top), need:)
         end
 
         def block(node)
           fixed = node.fixed_width(@width)
-          need = fixed || node.min_width
+          need = fixed || node.placing_width
           top = clear(start) { |y| room(*below(y)) >= need - EPSILON }
           left, right = below(top)
           space = room(left, right)
           width = fixed ? [fixed, space].min : space
           Slot.new(top:, left: left + (fixed ? Geometry.align_offset(@align, space, width) : 0), width:,
-                   exclusions: nil)
+                   exclusions: nil, need:)
         end
 
         # The first top from `from` down that the block takes: `from` itself,
