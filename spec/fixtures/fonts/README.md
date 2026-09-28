@@ -14,9 +14,10 @@
   1.1. A CID-keyed CFF font (ROS Adobe-Identity-0) subset to "日本語テキスト",
   so its glyph ids differ from its CIDs.
 
-Used only by the test suite and not shipped in the gem, but for the four
-`OpenSans-*.ttf` files and their license (`OpenSans-LICENSE.txt`): the gem
-ships `examples/`, and `examples/invoice.rb` sets its text in them.
+Used only by the test suite and not shipped in the gem. `examples/invoice.rb`
+sets its text in the four `OpenSans-*.ttf` files (license: `OpenSans-LICENSE.txt`)
+when they are here, and in the bundled Inter when the examples run from an
+installed gem.
 
 ## How the .otf fixtures were made
 
