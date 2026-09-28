@@ -6,6 +6,7 @@ module Stationery
       # One table cell: content (a String, markup String or layout node) and its
       # options, which selections change until the table is laid out.
       class Cell
+        SIDES = %i[top right bottom left].freeze
         TEXT_OPTIONS = { size: :size, color: :color, weight: :weight, style: :style, font: :family,
                          letter_spacing: :letter_spacing }.freeze
 
@@ -103,14 +104,23 @@ module Stationery
           canvas.debug_rect(inner.x, inner.y, inner.width, inner.height, :cell_padding)
         end
 
+        # One path for the cell's border, centred on its edges: the rectangle
+        # when all four sides are drawn, else a line per side.
         def paint_borders(canvas, rect)
           width = @options[:border_width]
           return if width.nil? || width.zero?
 
-          color = @options[:border_color]
-          Array(@options[:borders]).each do |side|
-            x1, y1, x2, y2 = edge(side, rect)
-            canvas.line(x1, y1, x2, y2, color:, width:)
+          sides = Array(@options[:borders]).uniq
+          return if sides.empty?
+
+          canvas.path(stroke: @options[:border_color], line_width: width) do |path|
+            next path.rect(rect.x, rect.y, rect.width, rect.height) if (SIDES - sides).empty?
+
+            sides.each do |side|
+              x1, y1, x2, y2 = edge(side, rect)
+              path.move_to(x1, y1)
+              path.line_to(x2, y2)
+            end
           end
         end
 
