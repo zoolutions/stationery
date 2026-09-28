@@ -1,0 +1,132 @@
+lib/stationery/css/stylesheet.rb
+  s_600b6bfbec0b19::t_63c12d2d33179b 4,27,41-42
+  s_600b6bfbec0b19::t_a180509fe4d57b 7-11,17-19,24,36-40
+  s_600b6bfbec0b19::t_4b79f7c485bc05 52-53
+benchmark/baseline.json
+  s_600b6bfbec0b19::t_20ceca485f41f6 11,16,21,26,31
+lib/stationery/html/tree_builder.rb
+  s_600b6bfbec0b19::t_89f61f79549f2e 31-38,45,53
+  s_600b6bfbec0b19::t_3b37455ba4fbb6 3
+lib/stationery/warnings.rb
+  s_600b6bfbec0b19::t_5063e05487e759 50-58
+lib/stationery/html/tree_builder/collector.rb
+  s_600b6bfbec0b19::t_6b91806cc41151 10-11,16,32,34-35,38-39,50
+lib/stationery/elements.rb
+  s_600b6bfbec0b19::t_d23b0b4ee10aff 186,191
+lib/stationery/layout/flow.rb
+  s_600b6bfbec0b19::t_5337d68acdcfab 24,29-35,109-110,124,127,130-135
+  s_600b6bfbec0b19::t_264b732e915675 36-40,125-126,128-129
+lib/stationery/html/document.rb
+  s_600b6bfbec0b19::t_19a194b9379198 11-14,17
+lib/stationery/rich/renderer/indents.rb
+  s_600b6bfbec0b19::t_8ccc95870c5645 33
+spec/stationery/rich/renderer_css_spec.rb
+  s_600b6bfbec0b19::t_e42988b3826dca 1-4,6-21,23-25,30-36,39-46,50-85,88-91,93-110,113-161,163-164,176-200,202-236
+  s_600b6bfbec0b19::t_5e87c0e6679a40 26,29,47-49,162,172
+  s_600b6bfbec0b19::t_e865d1b35a600e 165-171,173-175
+  s_600b6bfbec0b19::t_64e4dba477ada7 5,27-28,37-38,86-87,111-112
+  s_600b6bfbec0b19::t_0b023d16f0dd2e 22,201
+  s_600b6bfbec0b19::t_b8622884b58777 92
+lib/stationery/layout/mark.rb
+  s_600b6bfbec0b19::t_264b732e915675 35
+  s_600b6bfbec0b19::t_5337d68acdcfab 34
+README.md
+  s_600b6bfbec0b19::t_0a8810f2b8fce7 105,141-143,150-193,204-207
+  s_600b6bfbec0b19::t_1a160dfbd32fb6 987-990
+spec/stationery/warnings_spec.rb
+  s_600b6bfbec0b19::t_7743ed554c983a 54-57
+spec/stationery/layout/flow_spec.rb
+  s_600b6bfbec0b19::t_7743ed554c983a 24-28,30-41
+  s_600b6bfbec0b19::t_5e87c0e6679a40 29
+lib/stationery/rich/renderer/boxes.rb
+  s_600b6bfbec0b19::t_8d613933e9f1d5 1-84,88-89,93-109
+  s_600b6bfbec0b19::t_b8622884b58777 85-87,90-92
+spec/stationery/text/runs_builder_spec.rb
+  s_600b6bfbec0b19::t_5e87c0e6679a40 23-26
+  s_600b6bfbec0b19::t_7743ed554c983a 21-22,27-36
+docs/app/views/docs/pages/warnings.rb
+  s_600b6bfbec0b19::t_45d0d5eca76c7a 53-55
+spec/stationery/elements_spec.rb
+  s_600b6bfbec0b19::t_e865d1b35a600e 83-93
+spec/stationery/layout/image_spec.rb
+  s_600b6bfbec0b19::t_7743ed554c983a 22-32
+lib/stationery/text/runs_builder.rb
+  s_600b6bfbec0b19::t_e0d7f4732f3161 49-50
+  s_600b6bfbec0b19::t_b8622884b58777 51-52
+lib/stationery/layout/node.rb
+  s_600b6bfbec0b19::t_5337d68acdcfab 45-46
+  s_600b6bfbec0b19::t_264b732e915675 47-48
+spec/stationery/html/tree_builder_spec.rb
+  s_600b6bfbec0b19::t_8ccc95870c5645 40-42,62-63,117
+spec/stationery/css/stylesheet_spec.rb
+  s_600b6bfbec0b19::t_020a0b6e85cb99 3
+  s_600b6bfbec0b19::t_e825fea946a38d 34-50
+docs/app/views/docs/pages/limitations.rb
+  s_600b6bfbec0b19::t_1a160dfbd32fb6 26
+spec/stationery/css/selector_spec.rb
+  s_600b6bfbec0b19::t_020a0b6e85cb99 3
+lib/stationery/elements/rich.rb
+  s_600b6bfbec0b19::t_3627b9688c3297 13-15,18-19,24
+  s_600b6bfbec0b19::t_5e87c0e6679a40 20-23
+lib/stationery/layout/image.rb
+  s_600b6bfbec0b19::t_d1c858816444ca 7-8,41,106,113-114,120
+  s_600b6bfbec0b19::t_b8622884b58777 48-50,109
+spec/stationery/html/tokenizer_spec.rb
+  s_600b6bfbec0b19::t_8ccc95870c5645 20-21
+lib/stationery/rich/nodes.rb
+  s_600b6bfbec0b19::t_0ae8139ce612a3 7-9,17-35,37-49,71,76
+spec/stationery/html/tree_builder/blocks_spec.rb
+  s_600b6bfbec0b19::t_c10824c3ded9f6 49,76
+  s_600b6bfbec0b19::t_ee7ccad369c278 117
+  s_600b6bfbec0b19::t_64e4dba477ada7 1-48,50-75,77-116,118-124
+lib/stationery/html/tokenizer.rb
+  s_600b6bfbec0b19::t_192a56d810b0d8 8-11,14-15
+  s_600b6bfbec0b19::t_0f67acea8b80b7 63,68-73
+lib/stationery/css/selector.rb
+  s_600b6bfbec0b19::t_63c12d2d33179b 4
+lib/stationery/html/css.rb
+  s_600b6bfbec0b19::t_5e87c0e6679a40 239
+  s_600b6bfbec0b19::t_64e4dba477ada7 142,167-168
+  s_600b6bfbec0b19::t_4b79f7c485bc05 66-67,88-89,105-109
+  s_600b6bfbec0b19::t_c10824c3ded9f6 166
+  s_600b6bfbec0b19::t_b8622884b58777 250-251
+  s_600b6bfbec0b19::t_17a3372e611059 1-65,68-87,90-104,110-141,143-152,155-158,160-165,169-238,240-249,252-276
+  s_600b6bfbec0b19::t_0b023d16f0dd2e 153-154,159
+lib/stationery/rich/renderer/inlines.rb
+  s_600b6bfbec0b19::t_0d262639de895f 18,20-23,57-60
+lib/stationery/svg/style.rb
+  s_600b6bfbec0b19::t_63c12d2d33179b 5-7,33
+lib/stationery/html/tree_builder/blocks.rb
+  s_600b6bfbec0b19::t_64e4dba477ada7 151,167-172
+  s_600b6bfbec0b19::t_7e17cc27d9965b 10-12,28-32,34,36-40,42,48-49,52,55,57-58,60-64,67-69,73-82,85-90,101-105,108,111,122,126-127,132,135,137,148-149,152-153,179
+  s_600b6bfbec0b19::t_b8622884b58777 56,95,150,154-166
+  s_600b6bfbec0b19::t_a180509fe4d57b 92-94
+lib/stationery.rb
+  s_600b6bfbec0b19::t_63c12d2d33179b 109
+lib/stationery/css.rb
+  s_600b6bfbec0b19::t_63c12d2d33179b 1-20
+lib/stationery/rich/renderer.rb
+  s_600b6bfbec0b19::t_a3d7f4aa6ec223 8,16-18,21,50-54,56,58-59,71,82,96-98,104-105,110-112,120,136-137,139-143
+  s_600b6bfbec0b19::t_5e87c0e6679a40 72
+spec/stationery/html/css_spec.rb
+  s_600b6bfbec0b19::t_0b023d16f0dd2e 45-46,60,63
+  s_600b6bfbec0b19::t_24b0cf50d9b1b7 1-44,47-59,61-62,64-79,81-121,124-128
+  s_600b6bfbec0b19::t_b8622884b58777 80
+  s_600b6bfbec0b19::t_5e87c0e6679a40 122-123
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "000b052c1cb68445c463d957b1947ff564ef5367",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
