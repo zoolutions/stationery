@@ -1,0 +1,22 @@
+CHANGELOG.md
+  s_632dbd6e2d0597::t_25890e9f7954b6 6
+spec/stationery/rich/renderer_margins_spec.rb
+  s_632dbd6e2d0597::t_cdcdfc5d284f99 111-113,116-120
+  s_632dbd6e2d0597::t_ff6a7428468de7 114-115
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "f4994d07aa2ec0cea0310a42d209f66c32faf1d0",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
