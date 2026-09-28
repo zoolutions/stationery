@@ -1,0 +1,15 @@
+README.md
+  ai_agent 139,178
+docs/app/views/docs/pages/examples.rb
+  ai_agent 54
+docs/app/views/docs/pages/elements.rb
+  ai_agent 329
+lib/stationery/rich/nodes.rb
+  ai_agent 20-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "5b9587a68129cf6daf8636ddb4136e9cf66e4ca7",
+  "prompts": {}
+}
