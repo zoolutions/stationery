@@ -30,7 +30,7 @@ class Views::Docs::Pages::Limitations < DocsUI::Page
         | Floats | Content that widens below a [float](/docs/elements#floats) in a `table`, a `row`, `columns` or a box with a background, a border, a shadow, a link or a size of its own | They are blocks of the width the float leaves, all the way down; text, list items and boxes that paint nothing of their own wrap |
         | Transforms | Annotations inside `rotate`/`transform` | Link and form-widget rectangles stay in untransformed page space |
         | Shadows | Blur | `shadow:` is stacked rounded rectangles at fading opacity, which reads as a soft shadow in print |
-        | PDF features | PDF/X, JavaScript and actions | Not written |
+        | PDF features | PDF/X, JavaScript and actions other than links and the print dialog | Not written |
         | Signatures | Long-term validation data (LTV, PAdES B-LT and B-LTA), a second signature, signing a file that already exists; keys other than RSA and EC | A render carries one [signature](/docs/conformance#digital-signatures) over the whole file; the rest needs incremental updates, which are not written. Another key type raises `ArgumentError` |
         | Conformance | PDF/A-1, PDF/A levels A and U, PDF/UA-2; CMYK colour and CMYK JPEGs in a conforming document | Only [PDF/A-2b, PDF/A-3b and PDF/UA-1](/docs/conformance) are claimed; CMYK is a `ConformanceIssue` warning |
         | Forms | Glyphs for text typed into a field beyond printable ASCII and Latin-1 (and a select's options) | The value a field is rendered with is drawn in the document's fonts, whatever its script; what a reader types outside the kept glyphs is drawn by the viewer in a font of its own |

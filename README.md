@@ -445,6 +445,66 @@ render Callout.new(color: "#F3F4F6") { text "Amount due" }
   (with `#warnings`) instead of writing a PDF that produced any; `to_pdf(strict: false)` opts one
   render out again.
 
+### Printing
+
+A PDF can say how it wants to be printed. For a page that is the medium itself (a label, a card, a
+pre-printed form) the defaults of a print dialog are the wrong ones: "fit to page" prints a
+100 × 60 mm label at 94 %.
+
+```ruby
+class ShelfLabel < Stationery::Document
+  page size: :label_100x50, margin: "3mm"
+  print scaling: :none, copies: 2, pick_tray_by_size: true, duplex: :simplex
+end
+
+ShelfLabel.new.to_pdf(print: { copies: 1 })           # laid over the hints of the class
+ShelfLabel.new.to_pdf(print: { duplex: nil })         # without one of them
+ShelfLabel.new.to_pdf(print: nil)                     # without any (false does the same)
+```
+
+| Option | Values | Written as |
+| --- | --- | --- |
+| `scaling:` | `:none`, `:default` | `/PrintScaling` `/None`, `/AppDefault` |
+| `copies:` | an Integer of 1 or more | `/NumCopies` |
+| `pick_tray_by_size:` | `true`, `false` | `/PickTrayByPDFSize` |
+| `duplex:` | `:simplex`, `:long_edge`, `:short_edge` | `/Duplex` `/Simplex`, `/DuplexFlipLongEdge`, `/DuplexFlipShortEdge` |
+| `pages:` | a Range of page numbers from 1, or a list of them: `1..3`, `[1..1, 3..4]`, `2..` | `/PrintPageRange` |
+| `dialog:` | `:on_open` | `/OpenAction << /S /Named /N /Print >>` |
+
+- The first five are entries of the catalog's `/ViewerPreferences` (ISO 32000-1, 12.2, table 150),
+  beside the `/DisplayDocTitle` of a tagged document. `dialog: :on_open` asks the viewer to open its
+  print dialog when the file is opened, as `window.print()` does for a page, without JavaScript.
+- `print` at class level adds to what the class inherits, and `to_pdf(print:)` to what the class
+  declares. A `nil` takes a hint away (`print copies: nil` in a subclass).
+- Every option is checked where it is written, the class body or the call of `to_pdf`, and raises
+  `ArgumentError` naming what it takes: `print scaling: is :none or :default, not :fit`. Ranges that
+  overlap are refused.
+- `pages:` counts from 1, as the file does, and is written in page order. How many pages there are is
+  known when the document is rendered: a range is cut at the last page (`2..` and `2..99` both end
+  there) and one that starts after it is left out, because a viewer drops a range that names a page
+  the document does not have.
+- `/ViewerPreferences` is allowed under PDF/A and PDF/UA. The print dialog is not an action PDF/A
+  has: `dialog: :on_open` with `conformance :pdf_a2b` or `:pdf_a3b` raises
+  `Stationery::ConformanceError` (ISO 19005-2/3, 6.5.1; veraPDF rule 6.5.1-2). PDF/UA-1 alone takes it.
+- The hints are written by every render: `incremental:`, signed and encrypted ones too.
+- `print` in a class body is this declaration. Inside `view_template` and every other method of a
+  document it is still `Kernel#print`.
+- `Inspector#print_preferences` reads them back as `print` takes them, `pages` as a list of ranges,
+  and `have_print_preference(scaling: :none)` and `assert_print_preference` assert them.
+
+They are hints: a viewer follows the ones it knows, and whoever prints can overrule them in the
+dialog. The table says what each viewer does and how that is known. Nothing in it was tried in a
+running viewer: "documented" is what the vendor's PDF reference says, "source" what the viewer's
+source code did when it was read on 2026-09-28, "reported" what a user wrote in the issue named.
+
+| Viewer | `scaling:` | `copies:` | `duplex:` | `pages:` | `pick_tray_by_size:` | `dialog:` |
+| --- | --- | --- | --- | --- | --- | --- |
+| Acrobat, Acrobat Reader | sets the dialog (documented) | sets the dialog, 2 to 5 (documented) | sets the dialog (documented) | sets the dialog (documented) | sets the dialog (documented) | opens the dialog (reported, [pdf.js 11442](https://github.com/mozilla/pdf.js/issues/11442)) |
+| Chrome, Edge (PDFium) | preset of the print preview (source) | preset of the print preview (source) | preset of the print preview (source) | not read (source) | not read (source) | starts printing (source) |
+| Firefox (pdf.js) | read, not used by the viewer (source; [bug 1243580](https://bugzilla.mozilla.org/show_bug.cgi?id=1243580)) | read, not used (source) | read, not used (source) | read, not used (source) | read, not used (source) | starts printing (source) |
+| Preview (macOS) | not tested | not tested | not tested | not tested | not tested | not tested |
+| Evince, Okular (poppler) | not tested | not tested | not tested | not tested | not tested | not tested |
+
 ### Encryption
 
 ```ruby
@@ -1183,6 +1243,7 @@ RSpec.describe InvoicePdf do
   it { is_expected.to have_no_warnings }
   it { is_expected.to have_pdf_language("en") } # the catalog /Lang from `metadata lang:`
   it { is_expected.to have_page_labels(%w[i ii 1 2]) } # from `page_labels`
+  it { is_expected.to have_print_preference(scaling: :none, copies: 2) } # from `print`
   it { is_expected.to have_attachment("factur-x.xml", mime: "text/xml", relationship: :alternative) }
   it { is_expected.to have_conformance(:pdf_a3b) } # the level claimed in XMP, from `conformance`
   it { is_expected.to have_factur_x(profile: :en16931) } # the e-invoice XML, named in XMP and embedded
@@ -1210,6 +1271,7 @@ class InvoicePdfTest < Minitest::Test
     assert_no_pdf_warnings pdf
     assert_pdf_language pdf, "en"
     assert_page_labels pdf, %w[i ii 1 2]
+    assert_print_preference pdf, scaling: :none, copies: 2
     assert_pdf_attachment pdf, "factur-x.xml", mime: "text/xml"
     assert_pdf_conformance pdf, :pdf_a3b
     assert_factur_x pdf, profile: :en16931
@@ -1226,7 +1288,7 @@ titles. The RSpec matchers compose like the built-ins: `.and` / `.or`, and insid
 `all`, `include` or `match`. For anything else, `Stationery::Testing::Inspector.new(subject)`
 exposes `text`, `page_texts`, `page_count`, `links`, `internal_links`,
 `image_count`, `bookmarks`, `metadata`, `xmp` (the packet), `xmp_values` (`{ "dc:title" => …, "dc:creator" => […] }`),
-`lang`, `page_labels`, `attachments`, `conformance` (`[:pdf_a3b, :pdf_ua1]`), `factur_x`
+`lang`, `page_labels`, `print_preferences` (`{ scaling: :none, pages: [1..3] }`), `attachments`, `conformance` (`[:pdf_a3b, :pdf_ua1]`), `factur_x`
 (`{ profile:, filename:, version:, xml: }`), `signatures` (`[{ field:, name:, reason:, location:,
 signed_at:, subfilter:, byte_range:, signer:, valid:, timestamp: }]`, the timestamp `nil` or
 `{ time:, tsa:, valid: }`), `warnings`, `tagged?`,
@@ -1408,8 +1470,8 @@ one that kept the full width would paint its background over the float (see
 [Floats](#floats)). Link and form-widget rectangles stay in page space inside `rotate`
 and `transform`, and `shadow:` is stacked rectangles, not a blur.
 
-PDF: PDF/A-2b, PDF/A-3b and PDF/UA-1 only (no PDF/A-1, no level A or U, no PDF/UA-2, no PDF/X) and
-no JavaScript. A render carries one signature (`/ETSI.CAdES.detached`, RSA or EC with SHA-256):
+PDF: PDF/A-2b, PDF/A-3b and PDF/UA-1 only (no PDF/A-1, no level A or U, no PDF/UA-2, no PDF/X),
+no JavaScript and no action but links and the print dialog (`print dialog: :on_open`). A render carries one signature (`/ETSI.CAdES.detached`, RSA or EC with SHA-256):
 no long-term validation data (PAdES B-LT), no second signature and no signing
 of a file that already exists, all of which need incremental updates.
 Form fields are set in the document's fonts, but text typed into one is drawn by the viewer:
