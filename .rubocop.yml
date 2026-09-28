@@ -33,15 +33,22 @@ Metrics/AbcSize:
   Exclude:
     - "lib/stationery/path.rb" # Bezier geometry is arithmetic by nature
     - "lib/stationery/fonts/outline.rb" # the same, scaled into a Path
+    - "lib/stationery/raster/flattener.rb" # curves to lines, point by point
+    - "lib/stationery/raster/stroker.rb" # the geometry of joins, caps and dashes
+    - "lib/stationery/raster/shading.rb" # a radial gradient's quadratic
 Metrics/CyclomaticComplexity:
   Max: 15
 Metrics/PerceivedComplexity:
   Max: 15
 Metrics/MethodLength:
   Max: 30
+  Exclude:
+    - "lib/stationery/raster/flattener.rb" # one pass over a path's segments, kept in one loop for speed
+    - "lib/stationery/raster/stroker.rb"
 Metrics/BlockLength:
   Exclude:
     - "Rakefile" # the release task reads top to bottom on purpose
+    - "lib/stationery/raster/flattener.rb"
 Metrics/ClassLength:
   Max: 300
 Metrics/ModuleLength:
@@ -53,7 +60,7 @@ Metrics/ParameterLists:
     - "lib/stationery/svg/**/*" # arcs take the SVG spec's seven arguments
 
 Naming/MethodParameterName:
-  AllowedNames: [a, d, "on", cx, cy, op, qx, qy, ux, uy, x, y, w, h, r, g, b, c, m, k, io, id, iv, at, to, x1, y1, x2, y2, x3, y3, dx, dy, rx, ry]
+  AllowedNames: [a, d, "on", cx, cy, op, qx, qy, ux, uy, x, y, w, h, r, g, b, c, m, k, io, id, iv, at, to, x1, y1, x2, y2, x3, y3, dx, dy, rx, ry, x0, y0, ox, oy, i, u, v]
 
 # Encryption algorithms are named after the cipher and key size.
 Naming/VariableNumber:
