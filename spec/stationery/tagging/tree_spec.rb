@@ -53,7 +53,7 @@ RSpec.describe Stationery::Tagging::Tree do
       expect(warnings.to_a).to eq([Stationery::Warnings::MissingLanguage.new,
                                    Stationery::Warnings::MissingAlt.new(kind: :image, page: 2)])
       expect(warnings.map(&:message)).to eq(["tagged PDF has no language: set metadata lang:",
-                                             "image on page 2 has no alt: text"])
+                                             "image on page 2 has no alt: text (alt: false marks decoration)"])
     end
 
     it "is quiet with a language and described figures" do

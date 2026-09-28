@@ -92,7 +92,7 @@ RSpec.describe Stationery::PDF::Conformance do
       end.new
 
       expect(doc.to_pdf(conformance: :pdf_a3b, tagged: true)).to have_conformance(:pdf_a3b)
-      expect(doc.warnings.map(&:message)).to eq(["image on page 1 has no alt: text",
+      expect(doc.warnings.map(&:message)).to eq(["image on page 1 has no alt: text (alt: false marks decoration)",
                                                  "heading 2 on page 1 skips a level: the first heading is heading 1"])
       expect(doc.tap { it.to_pdf(conformance: :pdf_a3b) }.warnings.to_a).to eq([])
     end
@@ -165,7 +165,8 @@ RSpec.describe Stationery::PDF::Conformance do
       decorative = Class.new(document) { define_method(:view_template) { image path, width: 20, alt: false } }
 
       expect { figure.new.to_pdf(conformance: :pdf_ua1) }
-        .to raise_error(Stationery::ConformanceError, "not PDF/UA-1:\n  image on page 1 has no alt: text")
+        .to raise_error(Stationery::ConformanceError,
+                        "not PDF/UA-1:\n  image on page 1 has no alt: text (alt: false marks decoration)")
       expect(decorative.new.to_pdf(conformance: :pdf_ua1)).to start_with("%PDF")
     end
 
@@ -180,7 +181,8 @@ RSpec.describe Stationery::PDF::Conformance do
       end
 
       expect { figures.new.to_pdf(conformance: :pdf_ua1) }.to raise_error(Stationery::ConformanceError) do |error|
-        expect(error.issues).to eq(["image on page 1 has no alt: text", "svg on page 1 has no alt: text"])
+        expect(error.issues).to eq(["image on page 1 has no alt: text (alt: false marks decoration)",
+                                    "svg on page 1 has no alt: text (alt: false marks decoration)"])
       end
     end
 

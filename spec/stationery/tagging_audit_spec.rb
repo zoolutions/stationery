@@ -109,8 +109,9 @@ RSpec.describe "Tagged PDF audit" do # rubocop:disable RSpec/DescribeClass
         svg drawing, width: 10
       end
 
-      expect(warnings_of(doc)).to eq(["image on page 1 has no alt: text", "svg on page 1 has no alt: text",
-                                      "svg on page 2 has no alt: text"])
+      expect(warnings_of(doc)).to eq(["image on page 1 has no alt: text (alt: false marks decoration)",
+                                      "svg on page 1 has no alt: text (alt: false marks decoration)",
+                                      "svg on page 2 has no alt: text (alt: false marks decoration)"])
       expect { doc.to_pdf(strict: true) }.to raise_error(Stationery::WarningsError)
     end
 
@@ -119,8 +120,8 @@ RSpec.describe "Tagged PDF audit" do # rubocop:disable RSpec/DescribeClass
       from_html = build { html %(<p>Logo</p><img src="rgb.jpg" alt="" width="10">), images: ->(_) { logo } }
       from_markdown = build { markdown "Logo\n\n![ ](rgb.jpg)\n", images: ->(_) { logo } }
 
-      expect(warnings_of(from_html)).to eq(["image on page 1 has no alt: text"])
-      expect(warnings_of(from_markdown)).to eq(["image on page 1 has no alt: text"])
+      expect(warnings_of(from_html)).to eq(["image on page 1 has no alt: text (alt: false marks decoration)"])
+      expect(warnings_of(from_markdown)).to eq(["image on page 1 has no alt: text (alt: false marks decoration)"])
     end
 
     it "accepts a decorative image and a blank alt: in a document that is not tagged" do

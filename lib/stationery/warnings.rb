@@ -61,7 +61,7 @@ module Stationery
     end
 
     MissingAlt = Data.define(:kind, :page) do
-      def message = "#{kind} on page #{page} has no alt: text"
+      def message = "#{kind} on page #{page} has no alt: text (alt: false marks decoration)"
     end
 
     # `allowed` is the deepest level the heading could have had: one below
