@@ -1,0 +1,43 @@
+README.md
+  ai_agent 518-522,536-541,592-593,607-608,1095-1097,1103-1145
+lib/stationery/tagging/tree.rb
+  ai_agent 15,28-42,61-72
+spec/stationery/tagging_region_links_spec.rb
+  ai_agent 1-154
+lib/stationery/tagging/element.rb
+  ai_agent 54-55,59
+lib/stationery/canvas/surfacing.rb
+  ai_agent 1-67
+docs/app/views/docs/pages/warnings.rb
+  ai_agent 69-70
+spec/stationery/pdf/conformance_spec.rb
+  ai_agent 225,243-259
+examples/shaping/extraction_matrix/pdfium.py
+  ai_agent 1-8
+examples/shaping/extraction_matrix/pdfkit.swift
+  ai_agent 1-6
+examples/shaping/extraction_matrix/pdfjs.mjs
+  ai_agent 1-18
+lib/stationery/canvas.rb
+  ai_agent 29
+lib/stationery/canvas/marking.rb
+  ai_agent 7-9,11-12,40,60-63,81,83,88-89
+examples/shaping/extraction_matrix.rb
+  ai_agent 1-208
+CHANGELOG.md
+  ai_agent 5-6,9
+spec/stationery/tagging_audit_spec.rb
+  ai_agent 158-159,161-163,166,174,177,181,184-189,195-196
+docs/app/views/docs/pages/conformance.rb
+  ai_agent 66,85-90,202-203
+Rakefile
+  ai_agent 46-53,80-81,86-88
+docs/app/views/docs/pages/fonts.rb
+  ai_agent 190-192,198-240
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "0e878ae93f64b57b749f4853e1ce7331647c8bb7",
+  "prompts": {}
+}
