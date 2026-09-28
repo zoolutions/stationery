@@ -11,9 +11,9 @@ gem "rouge"
 # and the README/CHANGELOG beside it feed several pages (see app/models/source_markdown.rb).
 gem "stationery", path: ".."
 
-# Optional: expose these docs to AI agents over MCP (a read-only /mcp endpoint).
-# Uncomment this and the /mcp route in config/routes.rb. See the docs-kit README.
-# gem "mcp"
+# The docs over MCP: a read-only /mcp endpoint (list_pages, get_page, search_docs)
+# served by docs-kit; the two routes are in config/routes.rb.
+gem "mcp"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.1.4"
