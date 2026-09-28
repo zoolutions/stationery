@@ -21,6 +21,10 @@ module Stationery
     end
   end
 
+  # Raised when a signature cannot be made as asked: the time-stamping
+  # authority is unreachable, refuses, or answers for something else.
+  class SignatureError < Error; end
+
   # Raised when a render cannot keep the conformance it claims (PDF/A,
   # PDF/UA): `levels` are the claimed levels, `issues` what breaks them.
   class ConformanceError < Error

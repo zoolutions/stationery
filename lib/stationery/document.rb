@@ -113,7 +113,8 @@ module Stationery
       # method name for certificate:, key:, chain: and passphrase:), and a
       # block may answer all of them, so keys are read when they are needed.
       # `field:` names the signature_field it fills; without it the
-      # signature is invisible. See PDF::Signature.
+      # signature is invisible. `timestamp:` is the URL of a time-stamping
+      # authority whose token makes it PAdES baseline B-T. See PDF::Signature.
       def sign(**options, &block)
         raise ArgumentError, "sign needs certificate: and key:, or a block answering them" unless block || options.any?
 

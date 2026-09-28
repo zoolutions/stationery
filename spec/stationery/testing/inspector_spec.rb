@@ -133,9 +133,17 @@ RSpec.describe Stationery::Testing::Inspector do
 
       signed = { field: "board.member", name: "Test Signer rsa", reason: "Godkänt", location: "Malmö",
                  signed_at: at, subfilter: :"ETSI.CAdES.detached", byte_range: [0, be > 0, be > 0, be > 0],
-                 signer: "CN=Test Signer rsa,O=Stationery,C=SE", valid: true }
+                 signer: "CN=Test Signer rsa,O=Stationery,C=SE", valid: true, timestamp: nil }
 
       expect(described_class.new(doc.to_pdf(sign:)).signatures).to match([signed])
+    end
+
+    it "reads a signature's timestamp: when, by which TSA, and whether it verifies" do
+      at = Time.utc(2026, 9, 28, 12, 30, 15)
+      pdf = document.to_pdf(sign: { **options, timestamp: { client: TimestampHelpers::FakeTSA.new(at:) } })
+
+      expect(described_class.new(pdf).signatures.first[:timestamp])
+        .to eq(time: at, tsa: "CN=Test TSA,O=Stationery,C=SE", valid: true)
     end
 
     it "is empty without a form or a signed field" do

@@ -57,7 +57,8 @@ class Views::Docs::Pages::Testing < DocsUI::Page
         pdf.attachments      # => [{ name: "factur-x.xml", mime: "text/xml", bytes: "<…>", … }]
         pdf.conformance      # => [:pdf_a3b, :pdf_ua1], the levels claimed in XMP
         pdf.factur_x         # => { profile: :en16931, filename: "factur-x.xml", version: "1.0", xml: "<?xml …" } or nil
-        pdf.signatures       # => [{ field: "approval", name: "Acme Legal", signer: "CN=…", signed_at: …, valid: true, … }]
+        pdf.signatures       # => [{ field: "approval", name: "Acme Legal", signer: "CN=…", signed_at: …, valid: true,
+                             #       timestamp: { time: …, tsa: "CN=…", valid: true }, … }]
         pdf.warnings         # the document's warnings after rendering it
         ```
 

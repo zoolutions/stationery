@@ -8,22 +8,26 @@ module Stationery
     #
     # The file is written once with room for the signature (`contents_size:`
     # bytes) and a placeholder /ByteRange; #apply then fills both in place, so
-    # no offset moves. Timestamps (PAdES-T), long-term validation data and a
-    # second signature need incremental updates, which Stationery does not
-    # write.
+    # no offset moves. `timestamp:` adds a time-stamping authority's token to
+    # the signature (PAdES baseline B-T, see Timestamp). Long-term validation
+    # data and a second signature need incremental updates, which Stationery
+    # does not write.
     #
     # OpenSSL is loaded when the first signature is made, never before.
     class Signature
       SUBFILTER = :"ETSI.CAdES.detached"
       CONTENTS_SIZE = 8192
+      # A timestamp token brings the TSA's certificate chain along.
+      TIMESTAMPED_CONTENTS_SIZE = 16_384
       BYTE_RANGE = "[0 0000000000 0000000000 0000000000]"
-      OPTIONS = %i[certificate key chain passphrase reason location contact name field at contents_size].freeze
+      OPTIONS = %i[certificate key chain passphrase reason location contact name field at contents_size
+                   timestamp].freeze
       # Options a Symbol names a document method for; elsewhere it is a value.
       SECRETS = %i[certificate key chain passphrase].freeze
       # Print and Locked: the widget of a signature that fills no field.
       INVISIBLE = 132
 
-      attr_reader :certificate, :key, :chain, :field, :at, :contents_size
+      attr_reader :certificate, :key, :chain, :field, :at, :contents_size, :timestamp
 
       class << self
         # The signature for `spec` (the options of `sign` and `to_pdf(sign:)`,
@@ -73,14 +77,15 @@ module Stationery
       end
 
       def initialize(certificate: nil, key: nil, chain: [], passphrase: nil, field: nil, at: Time.now,
-                     contents_size: CONTENTS_SIZE, **details)
+                     contents_size: nil, timestamp: nil, **details)
         require "openssl"
         @certificate = certificate_for(certificate, "certificate:")
         @key = key_for(key, passphrase)
         @chain = Array(chain).map { |link| certificate_for(link, "chain:") }
         @field = field&.to_s
         @at = at
-        @contents_size = contents_size
+        @timestamp = Timestamp.for(timestamp)
+        @contents_size = contents_size || (@timestamp ? TIMESTAMPED_CONTENTS_SIZE : CONTENTS_SIZE)
         @details = self.class.check(details)
         match!
       end
@@ -110,7 +115,8 @@ module Stationery
         range, first, last = gap(pdf)
         pdf.bytesplice(range, BYTE_RANGE.bytesize,
                        "[0 #{first} #{last} #{pdf.bytesize - last}]".ljust(BYTE_RANGE.bytesize))
-        signature = CMS.new(@certificate, @key, @chain).sign(pdf.byteslice(0, first) + pdf.byteslice(last..))
+        signed = pdf.byteslice(0, first) + pdf.byteslice(last..)
+        signature = CMS.new(@certificate, @key, @chain).sign(signed, timestamp: @timestamp&.method(:token))
         raise ArgumentError, too_large(signature) if signature.bytesize > @contents_size
 
         pdf.bytesplice(first + 1, @contents_size * 2, signature.unpack1("H*").upcase.ljust(@contents_size * 2, "0"))
@@ -133,7 +139,8 @@ module Stationery
       end
 
       def too_large(signature)
-        "the signature takes #{signature.bytesize} bytes, more than contents_size: #{@contents_size} leaves for it; " \
+        what = @timestamp ? "the signature and its timestamp take" : "the signature takes"
+        "#{what} #{signature.bytesize} bytes, more than contents_size: #{@contents_size} leaves for it; " \
           "pass a larger contents_size:"
       end
 

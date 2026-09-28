@@ -144,8 +144,15 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         | `/ByteRange` | The whole file but the `/Contents` string: `[0 a b c]` with `b + c` the file's size |
         | `/Contents` | The CMS SignedData in hex, padded with zeros to `contents_size:` bytes, never encrypted |
         | Signed attributes | content type, message digest (SHA-256), ESS signing-certificate-v2; no signing time |
+        | Unsigned attributes | With `timestamp:`, the TSA's RFC 3161 token over the signature value (`id-aa-signatureTimeStampToken`): PAdES baseline B-T |
         | Form | `/SigFlags 3`, no `NeedAppearances`; the field's `/V` is the signature dictionary |
         | Invisible signature | A field `Signature1` whose widget is `/Rect [0 0 0 0]`, `/F 132` (print, locked), on the first page |
+
+        `Inspector#signatures` reports the token as `timestamp: { time:, tsa:, valid: }`: `valid` when it
+        is over this signature and verifies against the TSA certificates it carries.
+        `TSA_URL=http://timestamp.digicert.com bundle exec rake verify:timestamp` timestamps a signed
+        PDF/A-3b render of the invoice example and checks it with the inspector, `pdfsig` and veraPDF;
+        it needs the network, so it is not part of CI.
 
         Check a signed file with poppler's `pdfsig`, or the signature itself with OpenSSL:
 

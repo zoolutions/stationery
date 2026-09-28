@@ -511,7 +511,8 @@ class ContractPdf < Stationery::Document
   sign certificate: -> { Rails.application.credentials.dig(:signing, :certificate) }, # PEM or OpenSSL object
        key: -> { Rails.application.credentials.dig(:signing, :key) },                 # read per render
        chain: -> { [File.read("config/intermediate.pem")] },
-       reason: "Approved", location: "Malmö", contact: "legal@acme.test"
+       reason: "Approved", location: "Malmö", contact: "legal@acme.test",
+       timestamp: "https://tsa.example/tsr"                                          # optional: PAdES B-T
   # sign { { certificate: signer.certificate, key: signer.key, field: "approval" } }  # or a block for all of it
 
   def view_template
@@ -537,19 +538,31 @@ ContractPdf.new.to_pdf(sign: { certificate:, key:, passphrase: "…" }) # per re
   signature is invisible: a field of its own (`Signature1`) whose widget has no size, on the first
   page. `name:` is the signer's name (the certificate's common name by default), `at:` the signing
   time (`Time.now`).
-- The file is written once, with `contents_size:` bytes (8192) kept free for the signature, which
-  is then filled in place. A long certificate chain may need more; a signature that does not fit
-  raises and says so.
+- `timestamp: "https://tsa.example/tsr"` asks an RFC 3161 time-stamping authority (TSA) to sign the
+  signature value and the time it saw it, and carries that token in the signature's unsigned
+  attributes: PAdES baseline B-T. A reader can then trust the signing time, and the signature, after
+  the signer's certificate has expired. It is one HTTP request per render, with Ruby's own
+  `net/http`; `timestamp: { url:, username:, password:, hash: :sha256 }` adds HTTP basic auth or
+  another digest (`:sha384`, `:sha512`), and `client:` (a callable given the request DER and
+  answering the response DER) replaces the HTTP client. A TSA that cannot be reached, refuses, or
+  answers for another request or another digest raises `Stationery::SignatureError`: the document
+  is never written without the timestamp it was asked for.
+- The file is written once, with `contents_size:` bytes kept free for the signature (8192, or
+  16384 with a timestamp, whose token brings the TSA's certificates along), which is then filled in
+  place. A long certificate chain may need more; a signature that does not fit raises and says so.
 - A signed form asks viewers not to regenerate appearances (`NeedAppearances` is left out) and
   sets `/SigFlags 3`. `encrypt:` and `conformance` combine with `sign`: the signature is the one
   string encryption leaves in the clear, and a signed PDF/A-3b or PDF/UA-1 file still validates.
-- Not covered: signature timestamps (PAdES-T) and long-term validation data (LTV), a second
-  signature, and signing a file that already exists. All of them need incremental updates;
-  Stationery signs what it renders, once. Whether a viewer trusts the signer is decided by the
-  certificate and the viewer's trust list, not by the file.
+- Not covered: long-term validation data (LTV: the revocation answers and document timestamps of
+  PAdES B-LT and B-LTA), a second signature, and signing a file that already exists. All of them
+  need incremental updates; Stationery signs what it renders, once. Whether a viewer trusts the
+  signer, or the TSA, is decided by their certificates and the viewer's trust list, not by the
+  file.
 
 `bundle exec rake verify:signature` signs `examples/invoice.rb` with a throwaway certificate and
-verifies it with `openssl cms -verify` and, when poppler is installed, `pdfsig`;
+verifies it with `openssl cms -verify` and, when poppler is installed, `pdfsig`; with
+`TSA_URL=http://timestamp.digicert.com` it also timestamps a PDF/A-3b render at that authority and
+checks the token (`verify:timestamp`, not part of CI: it needs the network).
 `verify:conformance` validates signed PDF/A-3b and PDF/UA-1 renders with veraPDF. In tests,
 `have_signature(name: "Acme Legal")` checks that a signature covers the whole file and verifies
 against the certificate it carries.
@@ -852,7 +865,8 @@ exposes `text`, `page_texts`, `page_count`, `links`, `internal_links`,
 `image_count`, `bookmarks`, `metadata`, `xmp` (the packet), `xmp_values` (`{ "dc:title" => …, "dc:creator" => […] }`),
 `lang`, `page_labels`, `attachments`, `conformance` (`[:pdf_a3b, :pdf_ua1]`), `factur_x`
 (`{ profile:, filename:, version:, xml: }`), `signatures` (`[{ field:, name:, reason:, location:,
-signed_at:, subfilter:, byte_range:, signer:, valid: }]`), `warnings`, `tagged?`,
+signed_at:, subfilter:, byte_range:, signer:, valid:, timestamp: }]`, the timestamp `nil` or
+`{ time:, tsa:, valid: }`), `warnings`, `tagged?`,
 `untagged_text` and
 `structure` — a tagged PDF's structure tree as nested arrays, each element's text
 read from its marked content: `[type, "text"]`, `[type, [children]]` (its own text
@@ -952,7 +966,7 @@ and `transform`, and `shadow:` is stacked rectangles, not a blur.
 
 PDF: PDF/A-2b, PDF/A-3b and PDF/UA-1 only (no PDF/A-1, no level A or U, no PDF/UA-2, no PDF/X) and
 no JavaScript. A render carries one signature (`/ETSI.CAdES.detached`, RSA or EC with SHA-256):
-no signature timestamp (PAdES-T) or long-term validation data, no second signature and no signing
+no long-term validation data (PAdES B-LT), no second signature and no signing
 of a file that already exists, all of which need incremental updates.
 Form fields are set in the document's fonts, but text typed into one is drawn by the viewer:
 characters outside the glyphs the field kept (ASCII and Latin-1) use the viewer's own font.
