@@ -16,14 +16,19 @@ module Stationery
         @warnings = warnings
       end
 
+      # With a block, each page is handed to it as soon as it is painted.
+      # Only what is still to be placed is held on to, so the nodes of a
+      # painted page can be collected once the caller lets go of the root.
       def paginate(root)
-        root = Flow.new([root]) unless root.is_a?(Flow)
+        remaining = root.is_a?(Flow) ? root : Flow.new([root])
+        root = nil # rubocop:disable Lint/UselessAssignment -- or this frame holds every node until the last page
         pages = []
-        remaining = root
         while remaining
           number = pages.size + 1
           page, head, remaining = next_page(remaining, number)
           place(page, head, number)
+          head = nil
+          yield page if block_given?
           pages << page
         end
         pages

@@ -218,7 +218,7 @@ module Stationery
       builder = builder_for(book)
       Stationery.instrument("build.stationery", document: self.class.name) { call(builder) }
       resources = Resources.new
-      pages = paginate(builder.root, book:, resources:, warnings:, debug:, tagging:)
+      pages = paginate(builder, book:, resources:, warnings:, debug:, tagging:)
       outline = builder.outline.resolve(Structure.resolve(pages, warnings:, resources:, book:, tagging:))
       tagging&.audit(pages, warnings, lang: metadata[:lang])
       @warnings = warnings
@@ -247,11 +247,13 @@ module Stationery
 
     def byte_count(pdf) = pdf.is_a?(String) ? pdf.bytesize : pdf
 
-    def paginate(root, book:, resources:, warnings:, debug:, tagging:)
+    # Takes the root from the builder as it hands it to the paginator, so
+    # nothing here keeps the nodes of a page that has been painted.
+    def paginate(builder, book:, resources:, warnings:, debug:, tagging:)
       Stationery.instrument("paginate.stationery", document: self.class.name) do |event|
         regions = Regions.new(self.class.config[:regions], measure: region_measure(book))
         paginator = Layout::Paginator.new(resources:, page: page_options, warnings:, debug:, regions:, tagging:)
-        paginator.paginate(root).tap do |pages|
+        paginator.paginate(builder.release).tap do |pages|
           PageTemplates.new(self, book:, resources:, debug:, regions:, warnings:, tagging:).apply(pages)
           event[:pages] = pages.size
         end

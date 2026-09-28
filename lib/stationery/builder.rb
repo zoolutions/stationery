@@ -56,6 +56,15 @@ module Stationery
       node
     end
 
+    # Hands the finished root over and forgets it: the paginator is then the
+    # only holder of the nodes, so those of a painted page can be collected.
+    def release
+      root = @root
+      @root = nil
+      @containers = []
+      root
+    end
+
     def within(container)
       @containers << container
       yield
