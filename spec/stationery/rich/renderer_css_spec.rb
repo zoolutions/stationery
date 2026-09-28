@@ -175,6 +175,20 @@ RSpec.describe "Stationery::Rich::Renderer" do
       expect(origins(list).map(&:last).uniq.size).to eq(1)
     end
 
+    it "pours the content of a block quote and of a code block through columns, inside their box" do
+      body = lines(4)
+      quote = render { html %(<blockquote style="columns: 2"><p>#{body}</p></blockquote>) }
+      plain = render { html %(<blockquote><p>#{body}</p></blockquote>) }
+      code = render { html %(<pre style="column-count: 2">#{body.gsub("<br>", "\n")}</pre>) }
+
+      expect(origins(plain).map(&:first).uniq.size).to eq(1)
+      expect(origins(quote).map(&:first).uniq.size).to eq(2)
+      expect(origins(quote).map(&:first).min).to eq(origins(plain).map(&:first).min)
+      expect(origins(quote).map(&:last).uniq.size).to eq(2)
+      expect(origins(code).map(&:first).uniq.size).to eq(2)
+      expect(origins(code).map(&:last).uniq.size).to eq(2)
+    end
+
     it "draws one column as it drew before and reports what it does not read" do
       document = self.document do
         html %(<div style="column-count: 1"><p>one</p></div><div style="columns: 12em; column-gap: -2px">x</div>)
