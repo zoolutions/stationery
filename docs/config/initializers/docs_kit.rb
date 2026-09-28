@@ -34,6 +34,8 @@ Rails.application.config.to_prepare do
                          "tables, lists, SVG, headers and footers, bookmarks and a table of contents — " \
                          "no Prawn, no headless Chrome, no native extensions."
     c.seo.site_url     = "https://stationery.zoolutions.llc"
+    # Landing-page screenshots from `bin/rails docs_kit:og` (re-run when the landing changes).
+    c.seo.og_image     = "og/og.png"
     c.seo.twitter_card = "summary_large_image"
     c.seo.twitter_site = "@mhenrixon"
     c.seo.locale       = "en_US"
