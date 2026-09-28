@@ -1,20 +1,20 @@
 # frozen_string_literal: true
 
 module Stationery
-  # Draws on one page in top-left coordinates (points, y grows downwards).
-  # Every operation is wrapped in its own graphics state so colours and line
-  # settings never leak into the next one.
+  # The PDF canvas: draws on one page in top-left coordinates (points, y
+  # grows downwards) by writing operators to the page's content. Every
+  # operation is wrapped in its own graphics state so colours and line
+  # settings never leak into the next one. What may be called on it is
+  # Canvas::Interface; `page` and `num` are the PDF canvas's own.
   class Canvas
-    include Text
-    include Debug
+    include Interface
+    include Glyphs
     include Marking
 
     CAPS = { butt: 0, round: 1, square: 2 }.freeze
     JOINS = { miter: 0, round: 1, bevel: 2 }.freeze
 
-    # `warnings` is the render's collector (nil on a bare canvas), for what a
-    # node notices only while painting, such as an oversized image.
-    attr_reader :page, :warnings
+    attr_reader :page
 
     # `template: true` records anchors apart, for canvases page templates draw on.
     # `tagging:` (a Tagging::Tree) marks content for a tagged PDF.
@@ -49,18 +49,6 @@ module Stationery
       end
     end
 
-    # Paints the block rotated `degrees` clockwise around the page point
-    # `around` ([x, y]), as CSS `rotate()` turns an element. Zero just yields.
-    def rotate(degrees, around:, &)
-      return yield self if degrees.zero?
-
-      radians = degrees * Math::PI / 180
-      cos = Math.cos(radians)
-      sin = Math.sin(radians)
-      cx, cy = around
-      transform([cos, sin, -sin, cos, cx - (cx * cos) + (cy * sin), cy - (cx * sin) - (cy * cos)], &)
-    end
-
     def clip(x, y, w, h, radius: 0)
       save do
         emit(Path.new(self).rounded_rect(x, y, w, h, radius).to_s, "W n")
@@ -87,35 +75,21 @@ module Stationery
       end
     end
 
-    def fill_rect(x, y, w, h, color:, opacity: nil)
-      shape(fill: color, opacity:) { |p| p.rect(x, y, w, h) }
-    end
-
-    def rounded_rect(x, y, w, h, radius:, fill: nil, stroke: nil, line_width: 1, dash: nil, opacity: nil)
-      shape(fill:, stroke:, line_width:, dash:, opacity:) { |p| p.rounded_rect(x, y, w, h, radius) }
-    end
-
-    def circle(cx, cy, r, fill: nil, stroke: nil, line_width: 1, opacity: nil)
-      shape(fill:, stroke:, line_width:, opacity:) { |p| p.ellipse(cx, cy, r, r) }
-    end
-
-    def line(x1, y1, x2, y2, color:, width: 1, dash: nil, cap: :butt, opacity: nil)
-      shape(stroke: color, line_width: width, dash:, cap:, opacity:) do |p|
-        p.move_to(x1, y1)
-        p.line_to(x2, y2)
+    # Fills and strokes `path`, a path of this canvas (see #outline).
+    def draw(path, fill: nil, stroke: nil, line_width: 1, cap: nil, join: nil, dash: nil, even_odd: false,
+             opacity: nil)
+      graphics(opacity:) do |ops|
+        ops << Color.parse(fill).fill if fill
+        ops << Color.parse(stroke).stroke if stroke
+        ops.concat(line_style(stroke, line_width, cap, join, dash))
+        ops << path.to_s << paint_operator(fill, stroke, even_odd)
       end
     end
 
-    def path(fill: nil, stroke: nil, line_width: 1, cap: :butt, join: :miter, dash: nil, even_odd: false,
-             opacity: nil, transform: nil, &)
-      shape(fill:, stroke:, line_width:, cap:, join:, dash:, even_odd:, opacity:, transform:, &)
-    end
-
-    # Paints `shading` inside the path the block traces. `matrix` maps the
-    # shading's coordinates into top-left page space.
-    def shade(shading, matrix:, transform: nil, even_odd: false, opacity: nil)
-      path = Path.new(self, transform:)
-      yield path
+    # Paints `shading` inside `path`: a gradient (SVG::Gradient::Fill), or a
+    # shading dictionary as it is written to the file.
+    def shade_path(path, shading, matrix:, even_odd: false, opacity: nil)
+      shading = SVG::Shading.dictionary(shading.gradient, shading.coords, shading.current) unless shading.is_a?(Hash)
       name = @page.use(:Shading, @resources.shading(shading))
       a, b, c, d, e, f = matrix
       graphics(opacity:) do |ops|
@@ -156,37 +130,9 @@ module Stationery
       adopt(annotation, tag, rect) if tag
     end
 
-    # Names the point `y` on this page as a link target.
-    def anchor(name, y)
-      (@template ? @page.template_anchors : @page.anchors) << [name.to_s, num_value(@page.height - y)]
-    end
-
-    # Leaves room for the page number `anchor` lands on; Structure fills it in
-    # and adds the `link:` area ([x, y, w, h]) when the anchor exists. `tags:`
-    # are the [link, number] elements they belong to in a tagged PDF.
-    def number_slot(anchor, x:, baseline:, width:, style:, link: nil, tags: nil)
-      @page.slots << Page::Slot.new(anchor.to_s, x, baseline, width, style, link, tags)
-    end
-
     def num(value) = PDF::Serializer.number(num_value(value))
 
     private
-
-    def num_value(value)
-      value.is_a?(Float) && value == value.round ? value.round : value
-    end
-
-    def shape(fill: nil, stroke: nil, line_width: 1, cap: nil, join: nil, dash: nil, even_odd: false,
-              opacity: nil, transform: nil)
-      path = Path.new(self, transform:)
-      yield path
-      graphics(opacity:) do |ops|
-        ops << Color.parse(fill).fill if fill
-        ops << Color.parse(stroke).stroke if stroke
-        ops.concat(line_style(stroke, line_width, cap, join, dash))
-        ops << path.to_s << paint_operator(fill, stroke, even_odd)
-      end
-    end
 
     def line_style(stroke, width, cap, join, dash)
       return [] unless stroke
