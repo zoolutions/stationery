@@ -36,8 +36,19 @@ module Stationery
       def fixed_width(available) = [@node.width_in(inner(available)) + horizontal, available].min
       def measure(width) = @node.measure(inner(width)) + @margin[0] + @margin[2]
 
+      # Keeps the float's place in the structure of a tagged PDF when it is
+      # painted after the content beside it (Flow::Floating): its node's own
+      # element joins the tree here, where the float was written, and a box
+      # without a role gets a Div to hold its content there.
+      def reserve(canvas)
+        @holder = Tagging::Element.new(:Div) if @node.tag.nil? && @holder.nil?
+        canvas.structure(@node.tag || @holder) { nil }
+      end
+
       def paint(canvas, x, y, width, _height = nil, **)
-        @node.paint(canvas, x + @margin[3], y + @margin[0], inner(width))
+        return @node.paint(canvas, x + @margin[3], y + @margin[0], inner(width)) unless @holder
+
+        canvas.structure(@holder) { @node.paint(canvas, x + @margin[3], y + @margin[0], inner(width)) }
       end
 
       private

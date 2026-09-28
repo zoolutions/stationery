@@ -25,6 +25,7 @@ module Stationery
 
       def splittable? = @body.splittable?
       def wraps? = @body.wraps?
+      def decorated? = @body.decorated?
       def natural_width = @indent + @body.natural_width
       def min_width = @indent + @body.min_width
       def break_inside = @body.break_inside
@@ -40,16 +41,19 @@ module Stationery
         end
       end
 
+      # Beside floats the marker, moved right by them, can lie over the body's
+      # background: then it is painted after the body, its element attached
+      # first so that a tagged PDF still reads it first.
       def paint(canvas, x, y, width, _height = nil, exclusions: nil)
         slot = beside(width, exclusions)
+        over = @marker && slot && @body.decorated?
         canvas.structure(@tag) do
-          if @marker
-            own = @marker.width_in(column)
-            @marker.paint(canvas, x + taken(exclusions) + column - own, y, own)
-          end
+          canvas.structure(@marker.tag) { nil } if over
+          paint_marker(canvas, x, y, exclusions) if @marker && !over
           canvas.structure(@body_tag) do
             slot ? slot.paint(@body, canvas, x, y) : @body.paint(canvas, x + @indent, y, body_width(width))
           end
+          paint_marker(canvas, x, y, exclusions) if over
         end
       end
 
@@ -66,6 +70,11 @@ module Stationery
       private
 
       def column = [@indent - @marker_gap, 0].max
+
+      def paint_marker(canvas, x, y, exclusions)
+        own = @marker.width_in(column)
+        @marker.paint(canvas, x + taken(exclusions) + column - own, y, own)
+      end
 
       # Where the body goes beside floats: measure, split and paint place it
       # by this one slot. It meets the floats as the item does, so its lines

@@ -57,6 +57,9 @@ module Stationery
       def placing_width = @placing_width || min_width
       def fixed_width(_available) = nil
       def wraps? = false
+      # Whether it wraps beside floats and paints something of its own under
+      # them, or holds a node that does: the floats are painted after it.
+      def decorated? = false
       # Whether it is taken out of the flow to one side (Floated).
       def float? = false
       # The width this node is laid out at inside a parent of `available`.
