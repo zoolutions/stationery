@@ -1,0 +1,37 @@
+spec/stationery/pdf/conformance_spec.rb
+  s_f5a1e2cf907cda::t_bddbc63c062853 225,243-259
+spec/stationery/tagging_region_links_spec.rb
+  s_f5a1e2cf907cda::t_75508f63ae27b5 1-12,14-57,59-86,88-90,92-105,108-109,116-154
+  s_f5a1e2cf907cda::t_24930a806d10b8 13,58,87,91,106-107,110-115
+lib/stationery.rb
+  s_f5a1e2cf907cda::t_2d35e91faf8380 65
+lib/stationery/tagging/element.rb
+  s_f5a1e2cf907cda::t_2d35e91faf8380 54-55,59
+lib/stationery/tagging/tree.rb
+  s_f5a1e2cf907cda::t_2d35e91faf8380 15,28-42,61-72
+spec/stationery/tagging_audit_spec.rb
+  s_f5a1e2cf907cda::t_c3666111b81442 158-159,161-163,166,174,177,181,184-189,195-196
+lib/stationery/canvas/marking.rb
+  s_f5a1e2cf907cda::t_d7d32075befd2d 7-9,11-12,40,60-63,81
+  s_f5a1e2cf907cda::t_2d35e91faf8380 83,88-89
+lib/stationery/canvas.rb
+  s_f5a1e2cf907cda::t_2d35e91faf8380 29
+lib/stationery/canvas/surfacing.rb
+  s_f5a1e2cf907cda::t_2d35e91faf8380 1-67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "49a4cde652681783e877a4df9c8c64a307866dbd",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
