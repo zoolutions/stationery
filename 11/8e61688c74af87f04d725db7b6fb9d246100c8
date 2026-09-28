@@ -1,0 +1,22 @@
+README.md
+  s_600b6bfbec0b19::t_4b09d965a4d536 664-683
+docs/app/views/docs/pages/limitations.rb
+  s_600b6bfbec0b19::t_94b0c84dd59897 16-19,21-30,36-44
+  s_600b6bfbec0b19::t_5e4f15eadf3f3e 20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "118e61688c74af87f04d725db7b6fb9d246100c8",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
