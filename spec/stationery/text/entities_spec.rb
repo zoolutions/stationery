@@ -13,8 +13,20 @@ RSpec.describe Stationery::Text::Entities do
     expect(decoded).to eq("a—b… €5 it’s Α ™ x")
   end
 
-  it "leaves unknown names verbatim" do
-    expect(described_class.decode("&foo; & &amp")).to eq("&foo; & &amp")
+  it "decodes hexadecimal references with either case of x and digits" do
+    expect(described_class.decode("Gray&#X27;s &#x00e9; &#XE9;")).to eq("Gray's é é")
+  end
+
+  it "leaves unknown names, malformed references and bare ampersands verbatim" do
+    expect(described_class.decode("&foo; & &amp &#; &#x; a &amp;&amp; b")).to eq("&foo; & &amp &#; &#x; a && b")
+  end
+
+  it "leaves references outside Unicode or in the surrogate range verbatim" do
+    expect(described_class.decode("&#99999999; &#xD800; &#0; ok &#x1F600;")).to eq("&#99999999; &#xD800; &#0; ok 😀")
+  end
+
+  it "decodes each reference once, so an escaped ampersand stays literal text" do
+    expect(described_class.decode("&amp;#39; &amp;lt;b&amp;gt;")).to eq("&#39; &lt;b&gt;")
   end
 
   it "does not load the HTML 4 table until an unknown name is seen" do

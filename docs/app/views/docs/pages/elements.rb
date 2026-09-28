@@ -33,9 +33,10 @@ class Views::Docs::Pages::Elements < DocsUI::Page
         `text(content = nil, markup: false, keep_with_next:, break_inside:, anchor:, bookmark:, **style)`
 
         Plain strings are always literal. `markup: true` reads `<b> <i> <u> <strikethrough> <sub> <sup> <br>
-        <color rgb=""> <font size="" name=""> <link href="">` and decodes numeric and all 252 HTML 4 named
-        entities. A block builds styled runs in Ruby with `plain`, `br`, `b`, `i`, `u`, `strikethrough`,
-        `sub`, `sup`, `color`, `size`, `font` and `link`.
+        <color rgb=""> <font size="" name=""> <link href="">` and decodes numeric (`&#39;`, `&#x27;`) and all
+        252 HTML 4 named entities, each once: escape user data (`ERB::Util.html_escape`) before wrapping it in
+        your own tags, and `&lt;b&gt;` stays the literal text `<b>`. A block builds styled runs in Ruby with
+        `plain`, `br`, `b`, `i`, `u`, `strikethrough`, `sub`, `sup`, `color`, `size`, `font` and `link`.
 
         ```ruby
         text "Invoice INV-7", size: 22, weight: :bold

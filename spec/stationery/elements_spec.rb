@@ -9,6 +9,7 @@ RSpec.describe Stationery::Elements do
     pdf = render do
       text "plain", weight: :bold, color: "#FF0000"
       text "<i>marked</i> up", markup: true
+      text "Queen&#39;s Road &amp; Gray&#X27;s Inn &lt;b&gt;", markup: true
       text do |t|
         t.b("built")
         t.plain(" too")
@@ -19,7 +20,8 @@ RSpec.describe Stationery::Elements do
       end
     end
 
-    expect(strings_of(pdf)).to eq(["plain", "marked", " up", "built", " too", "exec", " style"])
+    expect(strings_of(pdf))
+      .to eq(["plain", "marked", " up", "Queen's Road & Gray's Inn <b>", "built", " too", "exec", " style"])
     expect(page_contents(pdf).first).to include("1 0 0 rg")
   end
 
