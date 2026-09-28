@@ -3,7 +3,7 @@
     "recorded_with": "ruby 3.4.2 (2025-02-15 revision d2930f8e7a) +YJIT +PRISM [arm64-darwin24]",
     "documents": {
       "invoice": {
-        "allocations": 37260,
+        "allocations": 37259,
         "pages": 1,
         "bytes": 26598
       },
@@ -23,7 +23,7 @@
         "bytes": 27352
       },
       "flyer": {
-        "allocations": 101673,
+        "allocations": 101676,
         "pages": 4,
         "bytes": 127763
       },
