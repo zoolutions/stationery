@@ -12,6 +12,32 @@ RSpec.describe Stationery::Text::Wrapper do
     book.resolve(style).first.width_of(text, style.size, kerning: style.kerning)
   end
 
+  it "measures each segment once however many words join the line" do
+    font = book.resolve(base_style).first
+    allow(font).to receive(:width_of).and_call_original
+    words = %w[alpha beta gamma delta epsilon zeta eta theta iota kappa]
+
+    lines(words.join(" "), 1000)
+
+    # ten words, one space string shared by nine gaps is nine segments, and the line as a fragment
+    expect(font).to have_received(:width_of).exactly(words.size + 9 + 1).times
+  end
+
+  it "allocates no String to measure a word without soft hyphens" do
+    wrapper = described_class.new(book)
+    text = "harbour"
+
+    expect(wrapper.send(:plain, text)).to be(text)
+    expect(wrapper.send(:plain, "har\u00ADbour")).to eq("harbour")
+  end
+
+  it "does not take a word apart when it cannot be hyphenated" do
+    allow(Stationery::Hyphenation).to receive(:points).and_call_original
+
+    expect(lines("alpha beta gamma", width_of("alpha beta") + 1)).to eq(["alpha beta", "gamma"])
+    expect(Stationery::Hyphenation).not_to have_received(:points)
+  end
+
   it "keeps text that fits on one line" do
     expect(lines("Hello world", 1000)).to eq(["Hello world"])
   end
