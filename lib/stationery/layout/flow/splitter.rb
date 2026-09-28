@@ -64,9 +64,8 @@ module Stationery
         # it, and the first one of a fresh page always, so that one taller
         # than the page is kept and reported.
         def float(child, index)
-          rest = @children.drop(index)
-          return [part(@placed), part(rest)] if cut?(child, rest)
-          return move(rest) unless top? || lands?(rest, @placement)
+          return [part(@placed), part(@children.drop(index))] if cut?(child, index)
+          return move(@children.drop(index)) unless top? || lands?(@children.drop(index), @placement)
 
           @placement.float(child)
           @placed << child
@@ -77,10 +76,10 @@ module Stationery
         # floats above it staying behind. Below other content it does where
         # the floats written one after the other are cut; those that fit a
         # page together move on together.
-        def cut?(float, rest)
-          return false if fits?(float, @placement.dup.float(float)) || (top? && @placed.empty?)
+        def cut?(float, index)
+          return false if (top? && @placed.empty?) || fits?(float, @placement.dup.float(float))
 
-          top? || cut_run?(rest)
+          top? || cut_run?(@children.drop(index))
         end
 
         def fits?(float, slot) = slot.top + float.measure(slot.width) <= @height + EPSILON
