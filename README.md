@@ -843,19 +843,25 @@ events attached is the most useful thing to put in an issue.
 
 `bundle exec rake bench` renders two documents with Stationery and with Prawn
 2.5 + prawn-table, both embedding the same Open Sans TTF files
-(`benchmark/`, not part of CI). Apple M2 Max, Ruby 3.4.2 +YJIT, 27 September 2026:
+(`benchmark/`, not part of CI). Apple M2 Max, Ruby 3.4.2 +YJIT, 28 September 2026:
 
 | Document | Engine | Renders/s | Objects allocated | PDF bytes |
 |---|---|---:|---:|---:|
-| Invoice (1 page, `examples/invoice.rb`) | Stationery | 74.6 | 33,231 | 23,525 |
-| | Prawn | 45.4 (1.64x slower) | 88,558 | 33,034 |
-| Table, 1,500 rows × 5 columns, repeating header | Stationery | 1.47 (46 pages) | 4,462,820 | 233,389 |
-| | Prawn | 0.74 (40 pages; 1.99x slower) | 6,901,818 | 2,689,487 |
+| Invoice (1 page, `examples/invoice.rb`) | Stationery | 66.5 | 39,574 | 26,599 |
+| | Prawn | 41.3 (1.61x slower) | 88,558 | 33,034 |
+| Table, 1,500 rows × 5 columns, repeating header | Stationery | 2.31 (46 pages) | 2,596,554 | 133,754 |
+| | Prawn | 0.58 (40 pages; 4.01x slower) | 6,901,811 | 2,689,487 |
 
 Stationery compresses content streams; Prawn does not by default, hence the
 larger file. `PROFILE=1 bundle exec ruby -Ilib benchmark/profile.rb` prints the
 20 hottest frames of the table render under StackProf (wall mode; `MODE=cpu` or
 `MODE=object` for the others).
+
+Time depends on the machine, so CI holds what does not: `bundle exec rake metrics`
+renders six fixed documents and compares the objects each render allocates, its
+page count and its bytes with `benchmark/baseline.json` (allocations may grow 3%,
+bytes 1%, pages not at all). A change that moves them on purpose records a new
+baseline with `bundle exec rake metrics:update` and says why in the commit.
 
 ## Limitations
 

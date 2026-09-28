@@ -104,6 +104,18 @@ task :bench do
   ruby "-Ilib benchmark/table_50_pages.rb"
 end
 
+desc "Compare allocations, pages and bytes of fixed documents with benchmark/baseline.json"
+task :metrics do
+  ruby "-Ilib benchmark/metrics.rb"
+end
+
+namespace :metrics do
+  desc "Record benchmark/baseline.json for this Ruby, after a change made on purpose"
+  task :update do
+    ruby "-Ilib benchmark/metrics.rb --update"
+  end
+end
+
 namespace :fonts do
   desc "Download every font pack in the catalog and check its SHA-256s (needs network; not run in CI)"
   task :verify do

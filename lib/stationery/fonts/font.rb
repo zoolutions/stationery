@@ -33,9 +33,10 @@ module Stationery
         @pairs = {}
         @glyphs = {}
         @blanks = {}
-        @shapes = {}
-        @advances = {}
-        @kerns = {}
+        @shapes = {}.compare_by_identity
+        @metrics = {}.compare_by_identity
+        @keys = { true => {}, false => {} }
+        @frozen_keys = { true => {}.compare_by_identity, false => {}.compare_by_identity }
         @cid_keyed = ttf.cff? && ttf.cff.cid_keyed?
       end
 
@@ -49,10 +50,12 @@ module Stationery
       def width_of(text, size, letter_spacing: 0, kerning: false, ligatures: true, features: NO_FEATURES)
         ligatures &&= letter_spacing.zero?
         key = shape_key(ligatures, features)
-        width = scale(advance_units(text, key), size) + (letter_spacing * shape(text, key).first.size)
+        advance, kern = metrics(text, key)
+        width = scale(advance, size)
+        width += letter_spacing * shape(text, key).first.size unless letter_spacing.zero?
         return width unless kerning
 
-        width + (kerning_units(text, key) * size / 1000.0)
+        width + (kern * size / 1000.0)
       end
 
       # The GSUB feature tags this font can apply.
@@ -126,14 +129,22 @@ module Stationery
       private
 
       # The feature tags to substitute with: `liga` when ligatures are on, plus
-      # the requested features. Frozen and shared, so it keys the memos cheaply.
+      # the requested features. One Array per set of tags, so the memos are
+      # keyed by its identity: measuring a word hashes the word and nothing
+      # else. A style's frozen tags are looked up by identity too; any other
+      # Array is normalised first.
       def shape_key(ligatures, features)
-        features = Text::Style.features(features) unless features.frozen? && features.all?(String)
-        return features unless ligatures
-        return Gsub::LIGA if features.empty?
+        return ligatures ? Gsub::LIGA : NO_FEATURES if features.empty?
 
-        @keys ||= {}
-        @keys[features] ||= (features + Gsub::LIGA).sort.freeze
+        ligatures = ligatures ? true : false
+        return @frozen_keys[ligatures][features] ||= tags_for(ligatures, features) if features.frozen?
+
+        tags_for(ligatures, features)
+      end
+
+      def tags_for(ligatures, features)
+        features = Text::Style.features(features)
+        @keys[ligatures][features] ||= (ligatures ? (features + Gsub::LIGA).sort : features).freeze
       end
 
       # [gids, source text of each glyph, extra advance in font units after
@@ -170,15 +181,14 @@ module Stationery
         width - space
       end
 
-      def advance_units(text, tags)
-        (@advances[tags] ||= {})[text] ||= begin
+      # [advance in font units, kerning in thousandths of an em] of a string,
+      # remembered together so a measurement is one lookup.
+      def metrics(text, tags)
+        (@metrics[tags] ||= {})[text] ||= begin
           gids, _, blanks = shape(text, tags)
-          gids.sum { |gid| @ttf.advance(gid) } + blanks.sum { |units| units || 0 }
+          [gids.sum { |gid| @ttf.advance(gid) } + blanks.sum { |units| units || 0 },
+           gids.each_cons(2).sum { |left, right| pair(left, right) }].freeze
         end
-      end
-
-      def kerning_units(text, tags)
-        (@kerns[tags] ||= {})[text] ||= shape(text, tags).first.each_cons(2).sum { |left, right| pair(left, right) }
       end
 
       # Kerning between two glyphs in thousandths of an em.

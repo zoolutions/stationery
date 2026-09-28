@@ -6,6 +6,13 @@ module Stationery
     # header rows repeated after a page break, and splitting between rows. A
     # row taller than a fresh page, or any row with split_rows: true, is cut
     # through its cells and continues below the repeated header.
+    #
+    # The fragments a page break cuts a table into keep the whole table's
+    # column metrics, so every page resolves the same column widths, and the
+    # widths and row heights measured for the cut, so a page break measures
+    # nothing again. Laid out at another width they resolve and measure anew.
+    # Where no cell spans rows a cut can fall before any row, so the rows
+    # still to come are not placed on a grid until a page paints them.
     class Table < Node
       DEFAULT_CELL = { padding: 5, borders: %i[top right bottom left], border_width: 0.5,
                        border_color: "#000000" }.freeze
@@ -30,7 +37,7 @@ module Stationery
       end
 
       def row_count = @cells.size
-      def column_count = grid.column_count
+      def column_count = @column_count ||= grid.column_count
       def cell(row, column) = grid.at(row, column)
 
       def rows(spec) = Selection.new(self, Selection.indexes(spec, row_count), (0...column_count).to_a)
@@ -53,6 +60,7 @@ module Stationery
         @column_widths = nil
         @column_metrics = nil
         @row_heights = nil
+        @column_count = nil
         @grid = nil
       end
 
@@ -80,10 +88,11 @@ module Stationery
       def paint(canvas, x, y, width, _height = nil, **)
         widths = column_widths(width)
         heights = row_heights(width)
+        lefts = offsets(widths)
+        tops = offsets(heights)
         canvas.structure(@tag) do
           grid.placements.each do |p|
-            rect = Rect.new(x + widths[0...p.column].sum, y + heights[0...p.row].sum,
-                            widths[p.columns].sum, heights[p.rows].sum)
+            rect = Rect.new(x + lefts[p.column], y + tops[p.row], widths[p.columns].sum, heights[p.rows].sum)
             paint_cell(canvas, p, rect)
           end
         end
@@ -96,13 +105,44 @@ module Stationery
         count += 1 while count < row_count && used + heights[count] <= height + EPSILON && (used += heights[count])
         return [self, nil] if count == row_count
 
-        count = grid.boundaries.grep(@header..count).max
-        split_row(count, width, height - heights.first(count).sum, fresh: options[:fresh]) || split_before(count)
+        count = grid.boundaries.grep(@header..count).max if row_spans?
+        split_row(count, width, height - heights.first(count).sum, fresh: options[:fresh]) ||
+          split_before(count, width)
+      end
+
+      protected
+
+      # Becomes a fragment holding `rows`, with the column widths and row
+      # heights its table measured at `width`.
+      def carry(rows, continued, widths, heights)
+        @cells = rows
+        @continued = continued
+        @grid = nil
+        @column_widths = widths
+        @row_heights = heights
+        self
       end
 
       private
 
       def grid = @grid ||= Grid.new(@cells)
+
+      # Whether any cell spans rows, of the table a fragment was cut from too.
+      def row_spans?
+        return @row_spans if defined?(@row_spans)
+
+        @row_spans = @cells.any? { |row| row.any? { |cell| cell.rowspan > 1 } }
+      end
+
+      # The placements of one row, which no cell from above reaches into.
+      def placements_in(row)
+        return grid.placements.select { |placement| placement.row == row } if row_spans?
+
+        Grid.new([@cells[row]]).placements
+      end
+
+      # Where each column or row starts: the sizes before it, summed.
+      def offsets(sizes) = Array.new(sizes.size) { |index| sizes[0...index].sum }
 
       def paint_cell(canvas, placement, rect)
         cell = placement.cell
@@ -123,28 +163,42 @@ module Stationery
       end
 
       def cell_tag(cell, header)
+        return Tagging::Element.new(:TD) unless header || cell.colspan > 1 || cell.rowspan > 1
+
         attributes = { Scope: (:Column if header), ColSpan: (cell.colspan if cell.colspan > 1),
                        RowSpan: (cell.rowspan if cell.rowspan > 1) }.compact
         Tagging::Element.new(header ? :TH : :TD, attributes: attributes.empty? ? {} : { Table: attributes })
       end
 
-      def split_before(count)
+      def split_before(count, width)
         return [nil, self] if count == @header
 
-        [with_rows(@cells.first(count)), with_rows(@cells.first(@header) + @cells.drop(count), continued: true)]
+        heights = row_heights(width)
+        [fragment(@cells.first(count), width, heights.first(count)),
+         fragment(@cells.first(@header) + @cells.drop(count), width,
+                  heights.first(@header) + heights.drop(count), continued: true)]
       end
 
       def split_row(row, width, space, fresh:)
         return unless @split_rows || (fresh && row == @header)
-        return unless grid.boundaries.include?(row + 1)
+        return if row_spans? && !grid.boundaries.include?(row + 1)
 
         widths = column_widths(width)
-        placements = grid.placements.select { |p| p.row == row }
+        placements = placements_in(row)
         heads, tails = RowSplitter.new(placements, widths:, context: @context).call(space)
         return unless heads
 
-        [with_rows(@cells.first(row) + [heads], widths:),
-         with_rows(@cells.first(@header) + [tails] + @cells.drop(row + 1), widths:, continued: true)]
+        heights = row_heights(width)
+        above, below = [heads, tails].map { |cells| [row_height(placements, cells, widths)] }
+        [fragment(@cells.first(row) + [heads], width, heights.first(row) + above),
+         fragment(@cells.first(@header) + [tails] + @cells.drop(row + 1), width,
+                  heights.first(@header) + below + heights.drop(row + 1), continued: true)]
+      end
+
+      # The height of a cut row's part. No cell of a row that can be cut
+      # spans rows, so it is its tallest cell.
+      def row_height(placements, cells, widths)
+        placements.zip(cells).map { |placement, cell| cell.measure(@context, widths[placement.columns].sum) }.max
       end
 
       def build_cell(content, defaults)
@@ -187,9 +241,13 @@ module Stationery
         @row_heights[width] ||= grid.row_heights(column_widths(width)) { |p, span| p.cell.measure(@context, span) }
       end
 
-      def with_rows(rows, widths: @widths, continued: @continued)
-        self.class.new(rows, context: @context, widths:, width: @width, header: @header, split_rows: @split_rows,
-                             tag: @tag, continued:)
+      # A copy holding other rows of this table. Its cells are built and
+      # tagged already and its column metrics are this table's.
+      def fragment(rows, width, heights, continued: @continued)
+        %i[natural_width min_width].each { |metric| column_metric(metric) }
+        column_count
+        row_spans?
+        dup.carry(rows, continued, { width => column_widths(width) }, { width => heights })
       end
     end
   end

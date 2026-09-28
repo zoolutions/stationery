@@ -39,7 +39,7 @@ module Stationery
         @type = type
         @alt = alt
         @kind = kind
-        @attributes = attributes.transform_values(&:dup)
+        @attributes = attributes.empty? ? {} : attributes.transform_values(&:dup)
         @kids = []
       end
 

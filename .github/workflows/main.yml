@@ -48,6 +48,20 @@ jobs:
       - name: Examples render
         run: bundle exec rake examples
 
+  metrics:
+    runs-on: ubuntu-latest
+    name: Metrics gate
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4" # the Ruby benchmark/baseline.json was recorded with
+          bundler-cache: true
+      - name: Allocations, pages and bytes against the baseline
+        run: bundle exec rake metrics
+
   conformance:
     runs-on: ubuntu-latest
     name: PDF/A and PDF/UA (veraPDF)

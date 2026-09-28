@@ -100,6 +100,35 @@ RSpec.describe Stationery::Layout::Table do
     expect(positions_of(pdf).first.first).to be_within(0.01).of(23)
   end
 
+  describe "cell borders" do
+    def border_ops(**cell)
+      pdf, = render_layout(table([[spacer(0)]], widths: [100], cell: { padding: 10, **cell }))
+      page_contents(pdf).first
+    end
+
+    it "strokes four sides as one rectangle centred on the cell's edges" do
+      expect(border_ops).to eq("q\n0 0 0 RG\n0.5 w\n20 160 100 20 re\nS\nQ\n")
+    end
+
+    it "strokes fewer sides as one path with a line for each" do
+      expect(border_ops(borders: %i[top bottom], border_width: 2, border_color: "#FF0000"))
+        .to eq("q\n1 0 0 RG\n2 w\n20 180 m\n120 180 l\n20 160 m\n120 160 l\nS\nQ\n")
+    end
+
+    it "strokes one side as the line it always was" do
+      expect(border_ops(borders: [:left])).to eq("q\n0 0 0 RG\n0.5 w\n20 180 m\n20 160 l\nS\nQ\n")
+    end
+
+    it "draws nothing without sides or without a width" do
+      expect(border_ops(borders: [])).to eq("")
+      expect(border_ops(border_width: 0)).to eq("")
+    end
+
+    it "takes a side named twice once" do
+      expect(border_ops(borders: %i[top top])).to eq("q\n0 0 0 RG\n0.5 w\n20 180 m\n120 180 l\nS\nQ\n")
+    end
+  end
+
   it "accepts layout nodes as cell content" do
     node = table([[text_node("<b>node</b>"), "text"]])
 

@@ -113,6 +113,40 @@ RSpec.describe Stationery::Fonts::Font do
     end
   end
 
+  describe "measurement memos" do
+    def allocations
+      GC.disable
+      before = GC.stat(:total_allocated_objects)
+      yield
+      GC.stat(:total_allocated_objects) - before
+    ensure
+      GC.enable
+    end
+
+    it "measures a word it has measured before without allocating" do
+      font.width_of("Invoice", 10, kerning: true)
+
+      expect(allocations { 50.times { font.width_of("Invoice", 10, kerning: true) } }).to be <= 1
+    end
+
+    it "shares one memo between equal feature sets, however they are written" do
+      first = font.width_of("1111", 10, features: %w[pnum].freeze)
+
+      expect(font.width_of("1111", 10, features: %w[pnum].freeze)).to eq(first)
+      expect(font.width_of("1111", 10, features: %i[pnum])).to eq(first)
+      expect(font.instance_variable_get(:@shapes).keys).to eq([%w[liga pnum]])
+    end
+
+    it "keeps ligatures and features apart in the memos" do
+      on = font.glyph_run("office", ligatures: true).gids
+      off = font.glyph_run("office", ligatures: false).gids
+
+      expect(on.size).to be < off.size
+      expect(font.glyph_run("office", ligatures: nil).gids).to eq(off)
+      expect(font.glyph_run("office", ligatures: true, features: %w[liga]).gids).to eq(on)
+    end
+  end
+
   it "exposes vertical metrics scaled to a size" do
     expect(font.ascender(10)).to be_between(9, 12)
     expect(font.descender(10)).to be_between(2, 4)

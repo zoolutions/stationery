@@ -26,6 +26,7 @@ module Stationery
         @current = []
         @pending_space = []
         @fallback = fallback_style
+        @widths = {}.compare_by_identity
         items(runs).each { |item| place(item) }
         finish unless @current.empty? && @lines.any? && !@ended_with_newline
         @lines
@@ -97,6 +98,8 @@ module Stationery
       # its hyphen) fits `available`; nil when the word offers no break that
       # fits. Soft hyphens name the breaks and suppress the patterns.
       def hyphenated(word, available)
+        return unless @explicit || word.first&.style&.hyphenate
+
         chars = word.flat_map { |segment| segment.text.chars.map { |char| Segment.new(char, segment.style) } }
         break_points(chars).reverse_each do |index|
           head = chars.first(index).reject { |segment| segment.text == SOFT_HYPHEN }
@@ -164,7 +167,7 @@ module Stationery
       def fragments(segments)
         x = 0
         segments.chunk_while { |a, b| a.style == b.style }.filter_map do |group|
-          text = group.map(&:text).join.delete(SOFT_HYPHEN)
+          text = plain(group.map(&:text).join)
           next if text.empty?
 
           font, face = @book.resolve(group.first.style)
@@ -178,11 +181,17 @@ module Stationery
       end
 
       def line_width = width(@current)
-      def characters(segments) = segments.sum { |segment| segment.text.delete(SOFT_HYPHEN).length }
+      def characters(segments) = segments.sum { |segment| plain(segment.text).length }
 
+      # A line is summed again for every word that joins it; its segments
+      # are the same objects each time, so each is measured once per wrap.
       def width(segments)
-        segments.sum { |segment| measure(segment.text.delete(SOFT_HYPHEN), segment.style) }
+        segments.sum { |segment| @widths[segment] ||= measure(plain(segment.text), segment.style) }
       end
+
+      # The text without its soft hyphens; the same String when it has none,
+      # which is nearly always, so measuring a word allocates nothing.
+      def plain(text) = text.include?(SOFT_HYPHEN) ? text.delete(SOFT_HYPHEN) : text
 
       def measure(text, style)
         font = @book.resolve(style).first
