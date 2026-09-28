@@ -16,13 +16,15 @@ module Stationery
       # flushed, instead of one String at the end; a signature needs the
       # finished file, so it cannot be streamed. `writer:` is the Writer that
       # already holds the bodies of pages sealed as they were painted; it
-      # brings its own encryption and sink.
+      # brings its own encryption and sink. `print:` are the hints of
+      # PrintHints for the catalog.
       def initialize(pages:, resources:, info: {}, outline: [], encryption: nil, tagging: nil, lang: nil,
                      page_labels: nil, attachments: [], xmp: true, xmp_extensions: {}, xmp_schemas: [],
-                     conformance: nil, signature: nil, sink: nil, writer: nil)
+                     conformance: nil, signature: nil, sink: nil, writer: nil, print: nil)
         raise ArgumentError, "a signed document cannot be streamed: sign needs the whole file" if signature && sink
 
         @writer = writer
+        @print = print
         @sink = sink
         @xmp_schemas = xmp_schemas
         @conformance = conformance
@@ -60,7 +62,7 @@ module Stationery
         entries = catalog(tree, outlines, @form.write)
                   .merge(accessibility(writer), metadata(writer, info, now), Attachments.write(writer, @attachments))
         entries.merge!(@conformance.catalog_entries(writer)) if @conformance
-        pdf = writer.render(root: writer.add(entries), info: writer.add(info))
+        pdf = writer.render(root: writer.add(hinted(entries)), info: writer.add(info))
         @signature ? @signature.apply(pdf) : pdf
       end
 
@@ -71,6 +73,15 @@ module Stationery
         catalog[:PageLabels] = @page_labels if @page_labels
         catalog[:AcroForm] = form if form
         outlines ? catalog.merge(Outlines: outlines, PageMode: :UseOutlines) : catalog
+      end
+
+      # The catalog with the print hints: those of /ViewerPreferences join
+      # the /DisplayDocTitle of a tagged document.
+      def hinted(entries)
+        return entries unless @print
+
+        hints = PrintHints.catalog_entries(@print, pages: @pages.size)
+        entries.merge(hints) { |_key, written, hint| written.merge(hint) }
       end
 
       def accessibility(writer)
