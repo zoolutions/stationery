@@ -220,6 +220,26 @@ RSpec.describe Stationery::PDF::Conformance do
       expect(kept.new.to_pdf(conformance: :pdf_ua1)).to have_conformance(:pdf_ua1)
     end
 
+    it "raises on a link that is in no Link element, one issue each" do
+      linked = Class.new(document) do
+        footer { text "example.com", link: "https://example.com" }
+        define_method(:view_template) do
+          text "Report", heading: 1
+          canvas(height: 20) { |canvas, rect| canvas.link(rect.x, rect.y, 50, 20, "#top") }
+          anchor "top"
+        end
+      end
+
+      expect { linked.new.to_pdf(conformance: %i[pdf_a3b pdf_ua1]) }
+        .to raise_error(Stationery::ConformanceError) do |error|
+          expect(error.issues)
+            .to eq(["link to #top drawn by canvas.link without a tag: on page 1 is outside the structure tree (7.18.5)",
+                    "link to https://example.com in the footer of page 1 is outside the structure tree (7.18.5)"])
+        end
+      expect(linked.new.to_pdf(conformance: :pdf_a3b)).to have_conformance(:pdf_a3b)
+      expect(linked.new.tap { it.to_pdf(conformance: :pdf_a3b, tagged: true) }.warnings.size).to eq(2)
+    end
+
     it "may be encrypted" do
       expect(document.new.to_pdf(conformance: :pdf_ua1, encrypt: { owner_password: "o" })).to include("/Encrypt")
     end
