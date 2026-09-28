@@ -41,6 +41,13 @@ module Stationery
           end
           Poured.new(columns:, rest:)
         end
+
+        # [the first column at `height`, the pour of what it leaves through
+        # the columns after it (nil when it leaves nothing)].
+        def first(height)
+          head, tail = @flow.split(@width, height)
+          [head, tail && self.class.new(tail, @width, @count - 1)]
+        end
       end
     end
   end

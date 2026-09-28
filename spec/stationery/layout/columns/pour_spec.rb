@@ -39,6 +39,31 @@ RSpec.describe Stationery::Layout::Columns::Pour do
     expect(poured).to be_complete
   end
 
+  describe "#first" do
+    it "cuts the first column and pours what it leaves through the columns after it" do
+      head, rest = pour(flow(lines_of(7)), count: 3).first(3 * line_height)
+
+      expect(head.measure(120)).to be_within(0.001).of(3 * line_height)
+      expect([rest.count, rest.width]).to eq([2, 120])
+      expect(rest.total).to be_within(0.001).of(4 * line_height)
+    end
+
+    it "leaves no pour when the first column takes everything" do
+      head, rest = pour(flow(lines_of(3)), count: 3).first(3 * line_height)
+
+      expect(head.measure(120)).to be_within(0.001).of(3 * line_height)
+      expect(rest).to be_nil
+    end
+
+    it "has no first column when nothing fits the height" do
+      tall = Stationery::Layout::Box.new(flow(lines_of(6)), height: 100)
+      head, rest = pour(flow(tall, text_node("after")), count: 3).first(50)
+
+      expect(head).to be_nil
+      expect(rest.total).to be_within(0.001).of(100 + line_height)
+    end
+  end
+
   it "is empty and complete for an empty flow" do
     poured = pour(flow).call(100)
 

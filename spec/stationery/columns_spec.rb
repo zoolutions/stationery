@@ -27,6 +27,15 @@ RSpec.describe "columns" do # rubocop:disable RSpec/DescribeClass
     expect(doc).to have_no_warnings
   end
 
+  it "fills balanced columns evenly" do
+    body = lines(10)
+    page = placed(SpecDocument.build { columns(count: 3, gap: 10) { text body } }.to_pdf).first
+    columns = page.group_by { |_, (x, _)| x.round }.transform_values { |runs| runs.map(&:first) }
+    expected = lines(10).split("\n")
+
+    expect(columns).to eq(20 => expected[0, 4], 110 => expected[4, 3], 200 => expected[7, 3])
+  end
+
   it "takes a count, a gap and text alignment" do
     body = lines(3)
     pdf = SpecDocument.build { columns(count: 3, gap: 10, align: :right) { text body } }.to_pdf
@@ -96,6 +105,15 @@ RSpec.describe "columns" do # rubocop:disable RSpec/DescribeClass
       expect(parent_tree(pdf)).to eq(0 => %i[H1 H2 P P P P])
       expect(strings_of(pdf))
         .to eq(["Title", "Lead", *Array.new(6) { |i| "line #{i + 1}" }, "End", "After"])
+    end
+
+    it "reads columns filled evenly in order, a paragraph split across three of them as one P" do
+      body = lines(10)
+      pdf = build { columns(count: 3) { text body } }.to_pdf
+
+      expect(struct_tree(pdf)).to eq([[:Document, nil, [[:P, nil, [[0, 0], [0, 1], [0, 2]]]]]])
+      expect(strings_of(pdf)).to eq(body.split("\n"))
+      expect(inspect_pdf(pdf).untagged_text).to be_empty
     end
 
     it "marks the rule as an artifact and keeps a paragraph split across pages and columns as one P" do

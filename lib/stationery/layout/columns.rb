@@ -9,9 +9,10 @@ module Stationery
     #
     # `balance: true` ends the columns at nearly the same height wherever the
     # content ends: on the last page of the block and before a page break
-    # inside it. A page the content does not fit on takes columns of the full
-    # height left, and the rest continues on the next page. `balance: false`
-    # fills each column before the next one starts.
+    # inside it. The Balancer finds the height and the Leveller fills the
+    # columns evenly in it. A page the content does not fit on takes columns
+    # of the full height left, and the rest continues on the next page.
+    # `balance: false` fills each column before the next one starts.
     #
     # Below other content the block starts only when every column takes
     # something in the height left; otherwise it moves to the next page. On a
@@ -33,6 +34,7 @@ module Stationery
         @balance = self.class.balance_option(balance)
         @rule = self.class.rule_option(rule)
         @fragments = {}
+        @poured = {}
       end
 
       def self.count_option(value)
@@ -72,11 +74,13 @@ module Stationery
 
       # Content that cannot fit columns as tall as the tallest page is never
       # placed whole, so its height is estimated instead of balanced: a long
-      # block is measured on every page it continues on.
+      # block is measured on every page it continues on. For the same reason
+      # the height is that of the columns filled in order, which levelling
+      # keeps: the columns are levelled when they are placed.
       def measure(width)
         memoize_by_width(width) do
           single = @flow.measure(column_width(width))
-          single > @count * MAX_HEIGHT ? single / @count : fragment(width).measure(width)
+          single > @count * MAX_HEIGHT ? single / @count : poured(width).height(column_width(width))
         end
       end
 
@@ -88,7 +92,7 @@ module Stationery
         return [self, nil] if !breaks? && measure(width) <= height + EPSILON
 
         segment, after = segments(column_width(width))
-        pour = Pour.new(segment, column_width(width), @count)
+        pour = pour(segment, width)
         poured = pour.call(height, fresh:)
         return ended(pour, poured, height, after) if poured.complete?
         return [nil, self] if !fresh && poured.columns.size < @count
@@ -96,20 +100,30 @@ module Stationery
         continued(poured, after)
       end
 
-      # The block as it is laid out with all the height it wants. Content a
-      # pour cannot place (page breaks where nothing can break the page)
-      # stays in one column.
+      # The block as it is laid out with all the height it wants.
       def fragment(width)
         @fragments[width] ||= begin
-          pour = Pour.new(@flow, column_width(width), @count)
-          poured = @balance ? Balancer.new(pour).call : pour.call(Float::INFINITY)
-          placed(poured.complete? ? poured : Poured.new(columns: [@flow], rest: nil))
+          poured = poured(width)
+          placed(@balance ? Leveller.new(pour(@flow, width)).call(poured) : poured)
         end
       end
 
       private
 
       def gaps = @gap * (@count - 1)
+
+      def pour(flow, width) = Pour.new(flow, column_width(width), @count)
+
+      # The flow poured with all the height it wants, the columns filled in
+      # order. Content a pour cannot place (page breaks where nothing can
+      # break the page) stays in one column.
+      def poured(width)
+        @poured[width] ||= begin
+          pour = pour(@flow, width)
+          poured = @balance ? Balancer.new(pour).call : pour.call(Float::INFINITY)
+          poured.complete? ? poured : Poured.new(columns: [@flow], rest: nil)
+        end
+      end
 
       # [what comes before the first page break inside, what comes after it].
       def segments(width)
@@ -119,10 +133,13 @@ module Stationery
         [segment || @flow.with_children([]), after]
       end
 
-      # The content ends on this page: balanced, and whatever follows a page
-      # break inside goes to the next page.
+      # The content ends on this page: balanced and levelled, and whatever
+      # follows a page break inside goes to the next page.
       def ended(pour, poured, height, after)
-        poured = Balancer.new(pour, limit: height, fallback: poured).call if @balance
+        if @balance
+          poured = Balancer.new(pour, limit: height, fallback: poured).call
+          poured = Leveller.new(pour, limit: height).call(poured)
+        end
         [placed(poured), after && with_flow(after)]
       end
 
