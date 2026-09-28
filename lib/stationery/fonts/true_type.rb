@@ -90,6 +90,13 @@ module Stationery
         @cff ||= CFF.new(table_data("CFF ")) if cff?
       end
 
+      # The contours of a glyph in font units, y up (an Outline), from the
+      # `glyf` table or the CFF charstrings. Read afresh on every call;
+      # Font#outline remembers them for a document.
+      def outline(gid)
+        cff? ? cff.outline(gid) : GlyfOutline.read(self, gid)
+      end
+
       def fixed_pitch?
         @fixed_pitch
       end
