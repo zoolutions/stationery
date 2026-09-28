@@ -684,17 +684,71 @@ gem "stationery", require: "stationery/rails"
 
 ### Large documents
 
+A render holds what it still has to paint. The nodes of a page are let go once the page is
+painted, a table measures its rows as pages reach them, the fonts forget the lines they shaped
+after 64 KB of text, and a page nothing paints on again (no header, footer or page template, no
+contents page number waiting on it) keeps its deflated content stream instead of its operators.
+None of that changes a byte of the file.
+
 `to_pdf { |chunk| … }` streams the file to the block in pieces as it is written and answers the
-number of bytes: the first bytes leave sooner and no output buffer is built. Peak memory does
-not drop. Layout runs in full before the first byte (pagination has to see every page) and the
-laid-out pages are what a render holds: a 938-page document peaks at 187 MB as a String and
-185 MB streamed. The streamed file lists its objects in the order they were written, a page's
-before the next page's and fonts, the structure tree and the catalog last; the String keeps them
-in numbered order. Both are the same document. A signed document cannot go to a block, since the
-signature covers every byte (`ArgumentError`). `to_pdf`, `to_pdf(path)` and `to_pdf(io)` build the
-String and return it. In a controller with `ActionController::Live`,
-`document.to_pdf { |chunk| response.stream.write(chunk) }` streams a download; `send_pdf` and
-`render pdf:` buffer.
+number of bytes: the first bytes leave sooner and no output buffer is built. Every page is laid
+out and painted before the first byte. The streamed file lists its objects in the order they
+were written, a page's before the next page's and fonts, the structure tree and the catalog
+last; the String keeps them in numbered order. Both are the same document. A signed document
+cannot go to a block, since the signature covers every byte (`ArgumentError`). `to_pdf`,
+`to_pdf(path)` and `to_pdf(io)` build the String and return it. In a controller with
+`ActionController::Live`, `document.to_pdf { |chunk| response.stream.write(chunk) }` streams a
+download; `send_pdf` and `render pdf:` buffer.
+
+`to_pdf(incremental: true)`, or `incremental` at class level, writes each page's content as soon
+as the page is painted and lets go of it; with a block it is handed over before the next page is
+painted. It is for long documents with headers, footers, page templates or a table of contents:
+those are painted once every page is known, so without it such a document holds the operators
+of every page until then.
+
+```ruby
+class StatementPdf < Stationery::Document
+  incremental                                   # or to_pdf(incremental: true) for one render
+  footer { |page| text "Page #{page.number} of #{page.count}" }
+end
+
+StatementPdf.new(account).to_pdf { |chunk| response.stream.write(chunk) }
+```
+
+- The file is the same document written another way: page contents first, then fonts, the page
+  tree, the outline and the catalog. What is painted once every page is known is a content
+  stream of its own, under or over the page's body, so a page has up to three and the file is
+  larger (1.5 → 1.7 MB for 1,039 pages with a footer).
+- To a block, bytes leave while pages are painted: an error raised on a late page leaves the
+  block with the start of a file.
+- A render that has to be checked before anything is written takes the usual path, as if
+  `incremental:` were not given: one with `conformance:` (PDF/A, PDF/UA, Factur-X: the audit
+  reads the painted pages), one with `sign:` (the signature covers the finished file), and a
+  `strict` one that goes to a block (a warning on the last page has to stop the first byte).
+  `strict` to a String, a path or an IO is incremental and raises before anything is written.
+- A document with none of them is written the same either way and gains nothing in memory.
+
+Peak resident memory of one render in a fresh process, and the megabytes still alive when
+pagination ends (`bundle exec rake memory`; Apple M2 Max, Ruby 3.4.2 +YJIT, on a busy machine:
+two runs of the same render peak up to a fifth apart, what is alive repeats):
+
+| Document | Pages | | Before | Now | `incremental: true` |
+|---|---:|---|---:|---:|---:|
+| Headings and paragraphs | 1,000 | peak | 391 MB | 111 MB | 108 MB |
+| | | alive | 216 MB | 17 MB | 14 MB |
+| | 5,001 | peak | 1,556 MB | 350 MB | 415 MB |
+| | | alive | 1,062 MB | 41 MB | 25 MB |
+| The same with a footer and a table of contents | 1,039 | peak | 397 MB | 145 MB | 106 MB |
+| | | alive | 222 MB | 44 MB | 11 MB |
+| | 5,189 | peak | 1,643 MB | 614 MB | 446 MB |
+| | | alive | 1,080 MB | 180 MB | 20 MB |
+| One table of 33,000 rows | 1,000 | peak | 901 MB | 653 MB | 648 MB |
+| | | alive | 494 MB | 28 MB | 25 MB |
+| One table of 165,000 rows | 5,000 | peak | 3,792 MB | 2,952 MB | 2,955 MB |
+| | | alive | 2,437 MB | 65 MB | 49 MB |
+
+What is left is the document as it was built: every node exists before the first page is
+painted, and a table resolves its column widths from every cell.
 
 Controllers gain `render pdf:` and `send_pdf`:
 
@@ -1172,6 +1226,12 @@ renders six fixed documents and compares the objects each render allocates, its
 page count and its bytes with `benchmark/baseline.json` (allocations may grow 3%,
 bytes 1%, pages not at all). A change that moves them on purpose records a new
 baseline with `bundle exec rake metrics:update` and says why in the commit.
+
+`bundle exec rake memory` reports what long documents hold while they render
+(`PAGES=5000` for more than its 1,000 pages): the peak resident set size of a render in
+a fresh process, and what is alive when building, pagination and writing end. It
+moves with the machine and gates nothing; the figures are under
+[Large documents](#large-documents).
 
 ## Limitations
 

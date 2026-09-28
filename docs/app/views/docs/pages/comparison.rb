@@ -100,7 +100,7 @@ class Views::Docs::Pages::Comparison < DocsUI::Page
         | Instrumentation | ActiveSupport::Notifications events | No | No |
         | Warnings instead of silent drops | `document.warnings`, `strict` | No | Warnings on stderr |
         | Rails | `render pdf:`, `send_pdf`, previews | Community gems | `render pdf:` in the wicked_pdf style |
-        | Streaming output | Partial: `to_pdf { \|chunk\| }` streams the write phase; layout runs first, so peak memory does not drop | `render_file` only | Yes: page-by-page streaming to a block or a sink, bounded memory |
+        | Streaming output | `to_pdf { \|chunk\| }` streams the write phase; `incremental: true` writes each page as it is painted, so memory follows what is left to paint (the document is built in full first) | `render_file` only | Yes: page-by-page streaming to a block or a sink, bounded memory |
         | Performance regression gate | `rake metrics` in CI | No | `cargo bench` metrics in CI |
       MD
     end

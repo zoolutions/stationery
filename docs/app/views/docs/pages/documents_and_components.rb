@@ -44,6 +44,8 @@ class Views::Docs::Pages::DocumentsAndComponents < DocsUI::Page
             [ :md, "The PDF Info dictionary, mirrored in an XMP packet (`/Metadata`: `dc:title`, `dc:creator`, `dc:subject`, the `xmp:` dates, `pdf:Producer`). An Array value is joined with `\", \"`; other keys pass through; `xmp: false` leaves the packet out." ] ],
           [ "strict", "value = true", "false",
             [ :md, "Raise `Stationery::WarningsError` instead of writing a PDF that produced warnings." ] ],
+          [ "incremental", "value = true", "false",
+            [ :md, "Write each page as soon as it is painted, so a long document with headers or footers holds far less; also `to_pdf(incremental:)`. See [Rendering](#rendering)." ] ],
           [ "page_template", "layer: :foreground", "—",
             [ :md, "A block run on every page after pagination; `layer: :background` paints under the content." ] ],
           [ "header / footer", "height:, gap:, on:", "gap: 8, on: :all",
@@ -66,8 +68,17 @@ class Views::Docs::Pages::DocumentsAndComponents < DocsUI::Page
         ```
 
         With a block, `to_pdf { |chunk| … }` streams the file in pieces as it is written and answers the
-        number of bytes: the first bytes leave sooner and no output buffer is built. Peak memory does not
-        drop, because layout runs in full before the first byte. A signed document cannot go to a block.
+        number of bytes: the first bytes leave sooner and no output buffer is built. Every page is laid
+        out and painted before the first byte. A signed document cannot go to a block.
+
+        `incremental: true` (or `incremental` at class level) writes each page's content as soon as the
+        page is painted and lets go of it, to a block before the next page is painted. It is for long
+        documents with headers, footers, page templates or a table of contents, which are painted once
+        every page is known and become content streams of their own; the file lists its page contents
+        first and is a little larger. A render with `conformance:` or `sign:`, and a `strict` one that
+        goes to a block, take the usual path, since they must be checked before a byte is written. To
+        a block, an error on a late page leaves the start of a file. The figures are on the
+        [Performance](/docs/performance#large-documents) page.
 
         `strict: false` opts one render out of a class-level `strict`; `debug:` outlines layout rectangles
         (see [Pages](/docs/pages#debug-outlines)).
