@@ -93,6 +93,18 @@ RSpec.describe Stationery::Document, "#to_png" do
     expect(light.warnings.map(&:class)).to eq([Stationery::Warnings::NotMonochrome])
   end
 
+  it "draws a JPEG, decoded no larger than it needs" do
+    path = jpeg_path("scaled")
+    document = SpecDocument.build { image path, width: 32, height: 24 }
+    image = Stationery::Images.load(path)
+    allow(image).to receive(:pixels).and_call_original
+    png = document.to_png(dpi: 72).first
+
+    expect(document.warnings.to_a).to be_empty
+    expect(image).to have_received(:pixels).with(at_least: [32, 24])
+    expect(pixel(png, 20 + 16, 20 + 12)).not_to eq([255, 255, 255])
+  end
+
   it "refuses what only a PDF has when it is asked for, and leaves it alone from the class" do
     signed = Class.new(SpecDocument) do
       encrypt owner_password: "x"

@@ -92,7 +92,9 @@ module Stationery
 
     # A monochrome render painting what a one-bit printer cannot print as
     # it is: `color` is "#RRGGBB", with " at opacity 0.5" when it is
-    # translucent, or names an image it cannot dither ("JPEG 640x480").
+    # translucent, or names an image it cannot dither ("JPEG 640x480", a
+    # JPEG of a kind that is not decoded: lossless, arithmetic-coded or
+    # 12-bit).
     # `kind` is what painted it: :text, :rule (a rule, an underline or a
     # strikethrough), :background (any other fill), :border (any stroke),
     # :gradient or :image.

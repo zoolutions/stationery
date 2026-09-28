@@ -212,12 +212,23 @@ RSpec.describe Stationery::Document do
       expect(document.warnings.to_a).to be_empty
     end
 
-    it "reports a JPEG, which it does not decode" do
-      path = image_path("rgb.jpg")
-      document = SpecDocument.build { image path, width: 20 }
-      document.to_pdf(monochrome: true)
+    it "dithers a JPEG as it dithers any bitmap" do
+      path = jpeg_path("scaled")
+      document = SpecDocument.build { image path, width: 72 }
+      pdf = document.to_pdf(monochrome: { dpi: 100 })
 
-      expect(not_monochrome(document).map(&:to_h)).to eq([{ color: "JPEG 4x3", kind: :image, page: 1 }])
+      expect(image_dictionary(pdf)).to include(Width: 100, Height: 75, BitsPerComponent: 1, ColorSpace: :DeviceGray)
+      expect(pdf).not_to include("/DCTDecode")
+      expect(document.warnings.to_a).to be_empty
+    end
+
+    it "reports a JPEG of a kind it does not decode, and embeds it as it is" do
+      path = jpeg_path("arithmetic")
+      document = SpecDocument.build { image path, width: 20 }
+      pdf = document.to_pdf(monochrome: true)
+
+      expect(not_monochrome(document).map(&:to_h)).to eq([{ color: "JPEG 8x8", kind: :image, page: 1 }])
+      expect(pdf).to include("/DCTDecode")
     end
   end
 end
