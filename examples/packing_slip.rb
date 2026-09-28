@@ -88,7 +88,7 @@ class ExamplePackingSlip < Stationery::Document
     spacer 4
     text @order, size: 8, color: MUTED, letter_spacing: 2
     spacer 8
-    text "Shipped 27 September 2026 · 3 parcels · DHL Freight", size: 8, color: MUTED
+    text "Shipped 27 September 2026 · 3 parcels · Example Freight", size: 8, color: MUTED
   end
 
   def items_table

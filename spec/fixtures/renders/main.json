@@ -74,12 +74,12 @@
     },
     "packing_slip": {
       "string": {
-        "bytes": "01139a1cea6afda07ab3accd1262899753f4761c522011043fd5d98196e20ba3",
-        "objects": "076eb2593f6914a5c3bf7f0a7598c2aebefb23910ce79d16cdfbfa2dbc8daac2"
+        "bytes": "b97f243f73d64fbf7138915d30854b0b3d7f4eff9ef4eaf8531fdad1d6fdc001",
+        "objects": "681b8c51ef699525e1c02c3e6fa86063260330d0eb672e5beddd943968e1307f"
       },
       "block": {
-        "bytes": "8315c7adc649b49009abbdadf1b53c65284cf287e16686ee2071ddc4de41bac7",
-        "objects": "d4b2d6b027a318b5263091169be8f612d4d4905fdbc6f7825c229d02168317e9"
+        "bytes": "409d469d7b7f9724ffb51f89be75d8b311f58013ce20834eae4ffb6b9ab60e99",
+        "objects": "63eab536986f5dc42f8304c2343e00bbef1578f897e09bbd7380d9a0848e92fa"
       }
     },
     "postcard": {
@@ -104,12 +104,12 @@
     },
     "shipping_label": {
       "string": {
-        "bytes": "b577a971e9a06a27579a81ea6bde0a98c06584b45109c04e139904756776991d",
-        "objects": "1deb2e8e7fec4df76d12961b77c9a8a488286706817c979bdda8cbe5c28fe0d0"
+        "bytes": "c773b4d9abb078ba26ddb0e1b0583522e94c277dfca66ca728cc4d548caaa991",
+        "objects": "4602950bd1186e6a45f179939033f75c480fb6ba02e9ffd1371729a0a3f9212d"
       },
       "block": {
-        "bytes": "e6162ae07b0f113af044bd1f1599dc44eee2dcb4890535cafc7e21b52f419da1",
-        "objects": "fb4fa0f988889f9e4b62ea34f460ad4f246afc018ee8d366c65f7bbcb5b0eb79"
+        "bytes": "0efc76797f68e41be488fc0f5d7afcc8e759e7f621b5add74e6296b2f0c95d91",
+        "objects": "3988380b528b3a101907e6d35e6e73d511b85c0763bb15b1769e7bdb86055909"
       }
     },
     "accessible_report": {
