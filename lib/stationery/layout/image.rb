@@ -25,7 +25,7 @@ module Stationery
         super()
         @tag = alt == false ? nil : Tagging::Element.new(:Figure, alt:, kind: :image)
         @image = source.respond_to?(:build) ? source : Images.load(source)
-        @name = source.is_a?(String) || source.is_a?(Pathname) ? File.basename(source.to_s) : "inline image"
+        @name = name_of(source)
         @max_ppi = max_ppi
         @downscale = downscale
         @width = width
@@ -57,6 +57,14 @@ module Stationery
       end
 
       private
+
+      # What a warning calls the image: the file's name for a path, a
+      # Pathname or an open File (anything with a path), else "inline image".
+      # Asked by duck type: Pathname is not loaded in plain Ruby.
+      def name_of(source)
+        path = source.is_a?(String) ? source : (source.to_path if source.respond_to?(:to_path))
+        path ? File.basename(path) : "inline image"
+      end
 
       def paint_clipped(canvas, x, y, w, h)
         return paint_image(canvas, x, y, w, h) unless @fit == :cover || @radius.positive?

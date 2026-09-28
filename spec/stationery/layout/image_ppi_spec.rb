@@ -44,6 +44,16 @@ RSpec.describe Stationery::Layout::Image do
     expect(warnings.first.message).to start_with('image "inline image" 620px wide')
   end
 
+  it "names whatever has a path by its file: a Pathname, or an open File" do
+    named = [Pathname.new(path), File.open(path, "rb")].map do |source|
+      render(described_class.new(source, width: 72)).last.first.source
+    ensure
+      source.close if source.respond_to?(:close)
+    end
+
+    expect(named).to eq([File.basename(path)] * 2)
+  end
+
   it "reports the same image and size once, and each drawn size on its own" do
     flow = Stationery::Layout::Flow.new([described_class.new(path, width: 72), described_class.new(path, width: 72),
                                          described_class.new(path, width: 60)])
