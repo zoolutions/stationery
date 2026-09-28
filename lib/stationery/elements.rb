@@ -17,7 +17,7 @@ module Stationery
       runs = text_runs(content, style, markup, &)
       node = Layout::Text.new(runs, context: @_builder.context(style), align: settings[:align],
                                     leading: settings[:leading], orphans: settings[:orphans], widows: settings[:widows],
-                                    tag: Tagging::Element.new(Tagging.heading(heading)))
+                                    tag: @_builder.element(Tagging.heading(heading)))
       node.keep_with_next = keep_with_next
       node.break_inside = break_inside
       @_builder.add(mark(node, anchor, bookmark))
@@ -32,7 +32,7 @@ module Stationery
     # `margin:` away from the text that wraps beside it; it needs a `width:`.
     def box(at: nil, align: nil, gap: 0, width: nil, keep_with_next: nil, break_inside: nil, anchor: nil, bookmark: nil,
             float: nil, margin: nil, **, &)
-      node = Layout::Box.new(container(align:, gap:, &), width:, **)
+      node = Layout::Box.new(container(align:, gap:, &), width:, tagged: @_builder.tagged?, **)
       node.keep_with_next = keep_with_next
       node.break_inside = break_inside
       node = mark(node, anchor, bookmark)
@@ -53,7 +53,7 @@ module Stationery
     # A row column: `width:` in points, as a fraction (0.5), :auto or nil for
     # an equal share. Takes every box option.
     def column(width: nil, align: nil, gap: 0, break_inside: nil, **, &)
-      node = Layout::Box.new(container(align:, gap:, &), width:, **)
+      node = Layout::Box.new(container(align:, gap:, &), width:, tagged: @_builder.tagged?, **)
       node.break_inside = break_inside
       @_builder.add(node)
     end
@@ -87,7 +87,7 @@ module Stationery
     def layer(top: nil, right: nil, bottom: nil, left: nil, width: nil, height: nil, align: nil, gap: 0, **, &)
       raise ArgumentError, "layer must be inside a stack" unless @_builder.in_stack?
 
-      box = Layout::Box.new(container(align:, gap:, &), **)
+      box = Layout::Box.new(container(align:, gap:, &), tagged: @_builder.tagged?, **)
       @_builder.add(Layout::Layer.new(box, top:, right:, bottom:, left:, width:, height:))
     end
 
@@ -140,7 +140,7 @@ module Stationery
     # :left` or `:right` takes it to that side of the flow it is in, `margin:`
     # away from the text that wraps beside it (`align:` is then not read).
     def image(source, align: nil, float: nil, margin: nil, **)
-      node = Layout::Image.new(source, **@_builder.images, **)
+      node = Layout::Image.new(source, tagged: @_builder.tagged?, **@_builder.images, **)
       return @_builder.add(floated(node, float, margin)) if float || margin
 
       @_builder.add(align ? Layout::Flow.new([node], align:) : node)

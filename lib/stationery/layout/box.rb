@@ -27,16 +27,16 @@ module Stationery
 
       def initialize(content = Flow.new, padding: 0, background: nil, border: nil, radius: 0, width: nil,
                      height: nil, min_height: nil, overflow: :visible, valign: :top, opacity: nil, link: nil, outset: 0,
-                     open: [], decoration: :slice, role: nil, rotate: 0, shadow: nil)
+                     open: [], decoration: :slice, role: nil, rotate: 0, shadow: nil, tagged: true)
         raise ArgumentError, "pass height: or min_height:, not both" if height && min_height
 
         super()
-        @tag = role && Tagging::Element.new(Tagging.role(role))
+        @tag = role && tagged ? Tagging::Element.new(Tagging.role(role)) : nil
         @min_height = min_height
         @open = open
         @decoration = decoration
         @link = link
-        @link_tag = link && Tagging::Element.new(:Link)
+        @link_tag = link && tagged ? Tagging::Element.new(:Link) : nil
         @outset = Geometry.box(outset)
         @content = content
         @padding = Geometry.box(padding)

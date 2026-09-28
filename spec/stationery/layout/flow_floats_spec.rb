@@ -145,16 +145,16 @@ RSpec.describe Stationery::Layout::Flow do
 
   describe "other children" do
     it "places a block that fills the width beside the float, in the width that is left" do
-      pdf, = render_layout(flow(floated(block(80, 50), margin: 10),
-                                Stationery::Layout::Box.new(flow(text_node("boxed")), background: "#000000"),
-                                Stationery::Layout::Rule.new(height: 2)))
+      boxed = Stationery::Layout::Box.new(flow(text_node("boxed")), background: "#000000", valign: :middle)
+      pdf, = render_layout(flow(floated(block(80, 50), margin: 10), boxed, Stationery::Layout::Rule.new(height: 2)))
 
       expect(rects_of(pdf)).to eq([[110.0, 20.0, 170.0, line_height.round(4)],
                                    [110.0, nth_line(1), 170.0, 2.0]])
     end
 
     it "keeps a block at that width all the way down, also below the float" do
-      tall = Stationery::Layout::Box.new(flow(text_node(words.split.first(20).join(" "))), background: "#000000")
+      text = text_node(words.split.first(20).join(" "))
+      tall = Stationery::Layout::Box.new(flow(text), background: "#000000", valign: :middle)
       pdf, = render_layout(flow(floated(block(80, 20)), tall))
 
       expect(rects_of(pdf).first.first(3)).to eq([100.0, 20.0, 180.0])

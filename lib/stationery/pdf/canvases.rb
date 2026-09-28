@@ -17,6 +17,9 @@ module Stationery
         @monochrome = monochrome
       end
 
+      # Whether the canvases build a structure tree.
+      def tagging? = !@tagging.nil?
+
       # The canvas the content of `page` is painted on.
       def body(page)
         canvas(page, debug: @debug, tagging: @tagging, warnings: @warnings)

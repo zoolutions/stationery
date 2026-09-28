@@ -9,7 +9,7 @@ module Stationery
       # `alt:` describes the drawing in a tagged PDF; `alt: false` marks it decorative.
       def initialize(document, width: nil, height: nil, color: "#000000", context: nil, alt: nil)
         super()
-        @tag = alt == false ? nil : Tagging::Element.new(:Figure, alt:, kind: :svg)
+        @tag = alt == false || (context && !context.tagged) ? nil : Tagging::Element.new(:Figure, alt:, kind: :svg)
         @document = document
         @context = context
         @width = width

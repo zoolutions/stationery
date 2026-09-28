@@ -261,7 +261,7 @@ module Stationery
     def paint_on(canvases, warnings: Warnings.new, shaper: self.class.config[:shaping][:shaper], each_page: nil,
                  stand_ins: false)
       book = book_for(warnings, shaper, stand_ins)
-      builder = builder_for(book)
+      builder = builder_for(book, tagged: tagging?(canvases))
       Stationery.instrument("build.stationery", document: self.class.name) { call(builder) }
       pages = paginate(builder, canvases, each_page, book:, warnings:)
       destinations = Structure.resolve(pages, warnings:, book:, canvases:)
@@ -280,15 +280,22 @@ module Stationery
     end
 
     # Builds a page template or region block into a fresh root node.
-    def template_root(info, book:, &)
-      builder = builder_for(book)
+    # `tagged:` is whether the render writes a structure tree.
+    def template_root(info, book:, tagged: true, &)
+      builder = builder_for(book, tagged:)
       build_with(builder) { instance_exec(info, &) }
       builder.root
     end
 
     private
 
-    def builder_for(book) = Builder.new(book:, text: self.class.config[:text], images: self.class.config[:images])
+    def builder_for(book, tagged: true)
+      Builder.new(book:, text: self.class.config[:text], images: self.class.config[:images], tagged:)
+    end
+
+    # Whether `canvases` build a structure tree; ones that do not say are
+    # taken to, so their nodes carry their elements as they always did.
+    def tagging?(canvases) = canvases.respond_to?(:tagging?) ? canvases.tagging? : true
 
     def book_for(warnings, shaper, stand_ins)
       Fonts::FontBook.new(self.class.config[:families], fallbacks: self.class.config[:fallbacks], warnings:,

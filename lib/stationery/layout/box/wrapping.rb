@@ -3,20 +3,24 @@
 module Stationery
   module Layout
     class Box < Node
-      # A box beside floats. One that paints nothing of its own and takes the
-      # width it is given is a block as CSS knows it: it keeps the full width
-      # of its flow and hands the floats to its content (`exclusions:`, from
-      # its own top), which wraps beside them and takes the full width below
-      # them. The content meets the floats inside the padding: padding that
-      # lies under a float is not added to it.
+      # A box beside floats. One that takes the width it is given is a block
+      # as CSS knows it: it keeps the full width of its flow, paints its
+      # background, border and shadow across it, and hands the floats to its
+      # content (`exclusions:`, from its own top), which wraps beside them and
+      # takes the full width below them. The content meets the floats inside
+      # the padding: padding that lies under a float is not added to it. The
+      # floats beside a box that paints something of its own are painted
+      # after it (Flow::Floating), so they sit on top of its background.
       #
-      # Any other box is a block of the width the floats leave, all the way
-      # down: one with a background, a border, a shadow or a link, which
-      # would be painted over a float that was painted before it, and one
-      # with a width or a height of its own, a rotated or a clipped one, or
-      # one that places its content by `valign:`.
+      # A box with a width or a height of its own, a rotated or a clipped
+      # one, or one that places its content by `valign:`, is a block of the
+      # width the floats leave, all the way down.
       module Wrapping
-        def wraps? = !sized? && !painted? && @content.wraps?
+        def wraps? = !sized? && @content.wraps?
+
+        # Whether it paints something of its own under the floats beside it,
+        # or wraps a box that does.
+        def decorated? = wraps? && (painted? || @content.decorated?)
 
         private
 
@@ -34,7 +38,7 @@ module Stationery
 
           top, right, _bottom, left = insets
           Flow::Placement::Slot.new(top:, left:, width: inner_width(width),
-                                    exclusions: exclusions.inset(top:, right:, left:))
+                                    exclusions: exclusions.inset(top:, right:, left:), need: nil)
         end
 
         def content_height(width, exclusions)

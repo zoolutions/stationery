@@ -17,9 +17,9 @@ module Stationery
           @options = options
           @slot = slot
           @paragraphs = {}
-          @tag = Tagging::Element.new(:TOCI)
-          @link = Tagging::Element.new(:Link)
-          @reference = Tagging::Element.new(:Reference)
+          @tag = context.element(:TOCI)
+          @link = context.element(:Link)
+          @reference = context.element(:Reference)
         end
 
         def measure(width) = paragraph(width).height
