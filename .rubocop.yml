@@ -36,6 +36,9 @@ Metrics/AbcSize:
     - "lib/stationery/raster/flattener.rb" # curves to lines, point by point
     - "lib/stationery/raster/stroker.rb" # the geometry of joins, caps and dashes
     - "lib/stationery/raster/shading.rb" # a radial gradient's quadratic
+    - "lib/stationery/images/jpeg/idct.rb" # the inverse DCT unrolled: it runs for every block
+    - "lib/stationery/images/jpeg/reduced_idct.rb"
+    - "lib/stationery/images/jpeg/upsampler.rb" # a triangle filter, sample by sample
 Metrics/CyclomaticComplexity:
   Max: 15
 Metrics/PerceivedComplexity:
@@ -45,6 +48,8 @@ Metrics/MethodLength:
   Exclude:
     - "lib/stationery/raster/flattener.rb" # one pass over a path's segments, kept in one loop for speed
     - "lib/stationery/raster/stroker.rb"
+    - "lib/stationery/images/jpeg/idct.rb" # the inverse DCT unrolled: it runs for every block
+    - "lib/stationery/images/jpeg/reduced_idct.rb"
 Metrics/BlockLength:
   Exclude:
     - "Rakefile" # the release task reads top to bottom on purpose
