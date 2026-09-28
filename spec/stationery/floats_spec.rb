@@ -144,6 +144,49 @@ RSpec.describe "Floats" do
     end
   end
 
+  describe "beside a float" do
+    it "wraps the items of a list, which take the full width below the float" do
+      text = words.split.first(24).join(" ")
+      pdf = build do
+        box(float: :left, width: 80, height: 20, background: "#000000")
+        ul(indent: 12) do
+          li text
+          li "second"
+        end
+      end.to_pdf
+      xs = origins(pdf).map(&:first)
+
+      expect(xs.first(2)).to eq([112.0, 112.0])
+      expect(xs.drop(2).uniq).to eq([32.0])
+      expect(strings_of(pdf).last).to eq("second")
+    end
+
+    it "wraps the text of a box without a background or a border, and of the html inside it" do
+      text = words.split.first(24).join(" ")
+      pdf = build do
+        box(float: :right, width: 80, height: 20, background: "#000000")
+        box(padding: [0, 0, 0, 10]) { html "<ul><li>#{text}</li></ul><p>#{text}</p>" }
+      end.to_pdf
+      ends = reader_for(pdf).pages.first.runs.group_by { |run| run.origin.y }.values
+                            .map { |runs| runs.map { |run| run.x + run.width }.max }
+
+      expect(ends.first(2)).to all(be <= 200.5)
+      expect(ends.drop(2).max).to be > 200
+      expect(origins(pdf).map(&:first).uniq).to eq([46.0, 30.0])
+    end
+
+    it "keeps a box with a background a block of the width that is left" do
+      text = words.split.first(24).join(" ")
+      pdf = build do
+        box(float: :left, width: 80, height: 20)
+        box(background: "#EEEEEE") { text text }
+      end.to_pdf
+
+      expect(rects(pdf).first.values_at(0, 2)).to eq([100.0, 180.0])
+      expect(origins(pdf).map(&:first).uniq).to eq([100.0])
+    end
+  end
+
   describe "columns" do
     it "wraps the text of a column around a float in it; the next column is free of it" do
       text = words
@@ -195,6 +238,24 @@ RSpec.describe "Floats" do
 
       expect(struct_types(pdf)).to eq([[:Document, [:H1, :Figure, :P, [:Note, [:P]], :P]]])
       expect(struct_tree(pdf).first.last[1][1]).to eq("A photo")
+      expect(inspect_pdf(pdf).untagged_text).to be_empty
+    end
+
+    it "tags a list and a box that wrap beside a float in the order they were written, across pages" do
+      source = photo
+      text = Array.new(90) { |i| "word#{i}" }.join(" ")
+      pdf = build(tagged) do
+        image source, float: :left, width: 60, alt: "A photo"
+        ol { li text }
+        box(padding: 4, role: :section, break_inside: :auto) { text text }
+        text "End"
+      end.to_pdf
+
+      expect(page_count(pdf)).to be > 1
+      expect(struct_types(pdf)).to eq(
+        [[:Document, [:Figure, [:L, [[:LI, [:Lbl, [:LBody, [:P]]]]]], [:Sect, [:P]], :P]]]
+      )
+      expect(text_of(pdf).scan(/word\d+/)).to eq(text.split * 2)
       expect(inspect_pdf(pdf).untagged_text).to be_empty
     end
   end

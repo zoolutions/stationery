@@ -78,6 +78,33 @@ RSpec.describe Stationery::Layout::ListItem do
     expect([node.break_inside, node.body.break_inside, node.avoid_break?]).to eq([:avoid, :avoid, true])
   end
 
+  describe "beside floats" do
+    let(:beside) do
+      band = Stationery::Text::Exclusions::Band.new(top: 0, bottom: line_height * 2, left: 150, right: 0)
+      Stationery::Text::Exclusions.new([band])
+    end
+    let(:words) { Array.new(40) { |i| "word#{i}" }.join(" ") }
+
+    it "wraps, and is taller beside them than without them" do
+      node = item(text_node(words))
+
+      expect(node.wraps?).to be(true)
+      expect(node.measure(260, exclusions: beside)).to be > node.measure(260)
+      expect(item(Stationery::Layout::Image.new(image_path("rgb.jpg"), height: 60)).wraps?).to be(true)
+    end
+
+    it "is itself when it fits, and splits into what it measured" do
+      node = item(text_node(words))
+      whole = node.measure(260, exclusions: beside)
+      head, tail = node.split(260, line_height * 3, exclusions: beside)
+
+      expect(node.split(260, whole, exclusions: beside)).to eq([node, nil])
+      expect(node.split(260, node.measure(260))).to eq([node, nil])
+      expect(head.measure(260, exclusions: beside)).to be_within(0.001).of(line_height * 3)
+      expect([head.marker, tail.marker]).to eq([node.marker, nil])
+    end
+  end
+
   it "accumulates the indent of nested items" do
     pdf, = render_layout(item(text_node("outer"), item(text_node("inner"))))
 

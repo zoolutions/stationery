@@ -36,7 +36,7 @@ class Views::Docs::Pages::ImagesAndSvg < DocsUI::Page
         | `fit: :cover` with `width:` and `height:` | scaled to fill the box, aspect preserved, the excess cropped around the centre (CSS `object-fit: cover`) |
         | `radius:` | corners rounded by that many points (the image is clipped) |
         | `rotate:` | turned that many degrees clockwise around its centre; the space it takes up does not change (CSS `transform: rotate`) |
-        | `float: :left` or `:right` | taken to that side of the flow; the text that follows wraps beside it, `margin:` away (CSS `float`) |
+        | `float: :left` or `:right` | taken to that side of the flow; the text and the lists that follow wrap beside it, `margin:` away (CSS `float`) |
 
         An image is never wider than the space it is given; it scales down to the column. `align:`
         (`:left`, `:center`, `:right`) positions a narrower image and is not read on a floated one.

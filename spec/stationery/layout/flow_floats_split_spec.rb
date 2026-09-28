@@ -154,8 +154,8 @@ RSpec.describe Stationery::Layout::Flow do
     expect(text_of(pdf).split.drop(1)).to eq(words.split)
   end
 
-  it "splits a box beside a float and continues it at the full width" do
-    box = boxed(text_node(words))
+  it "splits a box that is a block beside a float and continues it at the full width" do
+    box = boxed(text_node(words), border: { width: 0 })
     pdf, = render_layout(flow(black(80, 60), box))
 
     expect(pages_of(pdf)[0].map(&:first).uniq).to eq([100.0])
@@ -201,8 +201,8 @@ RSpec.describe Stationery::Layout::Flow do
     expect(inspect_pdf(broken).page_texts).to eq(%w[Heading next])
   end
 
-  it "wraps the text of a box that was beside a float again where the box continues" do
-    box = boxed(text_node(words, align: :right))
+  it "wraps the text of a box that was a block beside a float again where the box continues" do
+    box = boxed(text_node(words, align: :right), border: { width: 0 })
     pdf, = render_layout(flow(black(80, 60), box))
     ends = reader_for(pdf).pages.map { |page| page.runs.map { |run| (run.x + run.width).round }.uniq }
 
@@ -213,8 +213,9 @@ RSpec.describe Stationery::Layout::Flow do
     expect(text_of(pdf).split).to eq(words.split)
   end
 
-  it "wraps the rest of a list item that was beside a float again" do
-    item = Stationery::Layout::ListItem.new(text_node("1."), flow(text_node(words)), indent: 20, marker_gap: 4)
+  it "wraps the rest of a list item whose body is a block beside a float again" do
+    body = boxed(text_node(words), border: { width: 0 })
+    item = Stationery::Layout::ListItem.new(text_node("1."), body, indent: 20, marker_gap: 4)
     pdf, = render_layout(flow(black(80, 60), item))
 
     expect(pages_of(pdf)[0].map(&:first).uniq).to eq([100.0, 120.0])

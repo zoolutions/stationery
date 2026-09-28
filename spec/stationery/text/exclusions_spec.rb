@@ -30,6 +30,29 @@ RSpec.describe Stationery::Text::Exclusions do
     expect(exclusions.insets(24, 12)).to eq([0, 0])
   end
 
+  describe "#inset" do
+    it "is what the bands take inside a rectangle that starts further down and further in" do
+      exclusions = described_class.new([band(0, 30, 50, 0), band(20, 60, 0, 40)])
+
+      expect(exclusions.inset(top: 5, right: 10, left: 8).bands).to eq([band(0, 25, 42, 0), band(15, 55, 0, 30)])
+      expect(exclusions.inset(top: 0, right: 0, left: 0)).to eq(exclusions)
+    end
+
+    it "leaves out a band that ends above the rectangle or takes nothing from it" do
+      exclusions = described_class.new([band(0, 30, 50, 0), band(20, 60, 0, 40)])
+
+      expect(exclusions.inset(top: 30, right: 0, left: 0).bands).to eq([band(0, 30, 0, 40)])
+      expect(exclusions.inset(top: 0, right: 40, left: 0).bands).to eq([band(0, 30, 50, 0)])
+    end
+
+    it "is nothing when no band is left" do
+      exclusions = described_class.new([band(0, 30, 50, 0)])
+
+      expect(exclusions.inset(top: 30, right: 0, left: 0)).to be_nil
+      expect(exclusions.inset(top: 0, right: 0, left: 50)).to be_nil
+    end
+  end
+
   it "compares and hashes by its bands, so it can key a memo" do
     one = described_class.new([band(0, 30, 50, 0)])
     same = described_class.new([band(0, 30, 50, 0)])

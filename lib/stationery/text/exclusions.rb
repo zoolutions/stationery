@@ -22,6 +22,17 @@ module Stationery
         end
         [left, right]
       end
+
+      # What is left of them inside a rectangle that starts `top` further
+      # down and lies `left` and `right` in from the edges (the content of a
+      # box, inside its padding and border); nil when that is nothing.
+      def inset(top:, right:, left:)
+        Exclusions.of(bands.filter_map do |band|
+          inner = band.with(top: [band.top - top, 0].max, bottom: band.bottom - top,
+                            left: [band.left - left, 0].max, right: [band.right - right, 0].max)
+          inner if inner.bottom > Exclusions::EPSILON && (inner.left.positive? || inner.right.positive?)
+        end)
+      end
     end
 
     class Exclusions
