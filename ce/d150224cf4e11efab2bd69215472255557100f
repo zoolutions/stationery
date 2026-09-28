@@ -1,0 +1,29 @@
+docs/app/views/docs/pages/limitations.rb
+  s_632dbd6e2d0597::t_5a3f6105ea1409 29
+docs/app/views/docs/pages/elements.rb
+  s_632dbd6e2d0597::t_5a3f6105ea1409 329-330,333
+docs/app/views/docs/pages/images_and_svg.rb
+  s_632dbd6e2d0597::t_5a3f6105ea1409 39
+CHANGELOG.md
+  s_632dbd6e2d0597::t_5a3f6105ea1409 3-7
+README.md
+  s_632dbd6e2d0597::t_5a3f6105ea1409 139-146,157-158,1277-1279
+docs/app/views/docs/pages/layout_rules.rb
+  s_632dbd6e2d0597::t_5a3f6105ea1409 36-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "ced150224cf4e11efab2bd69215472255557100f",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
