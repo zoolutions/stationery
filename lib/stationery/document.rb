@@ -24,7 +24,7 @@ module Stationery
                       superclass.config.transform_values(&:dup)
                     else
                       { page: { size: :letter, margin: 36 }, families: {}, fallbacks: [], text: {}, metadata: {},
-                        templates: [], regions: [], strict: false, tagged: false }
+                        templates: [], regions: [], strict: false, tagged: false, images: {} }
                     end
       end
 
@@ -56,6 +56,13 @@ module Stationery
       def page_labels(spec)
         PDF::PageLabels.entries(spec)
         config[:page_labels] = spec
+      end
+
+      # Bitmap defaults: `max_ppi:` (300; nil disables) is the resolution
+      # above twice of which a drawn image is reported as oversized, and
+      # `downscale: true` resamples PNGs to it. See Layout::Image.
+      def images(**options)
+        config[:images] = config[:images].merge(options)
       end
 
       # Raise WarningsError instead of writing a PDF that produced warnings.
@@ -119,19 +126,21 @@ module Stationery
 
     # Builds a page template or region block into a fresh root node.
     def template_root(info, book:, &)
-      builder = Builder.new(book:, text: self.class.config[:text])
+      builder = builder_for(book)
       build_with(builder) { instance_exec(info, &) }
       builder.root
     end
 
     private
 
+    def builder_for(book) = Builder.new(book:, text: self.class.config[:text], images: self.class.config[:images])
+
     # The PDF bytes; `event` is the render.stationery payload it fills in.
     def render_pdf(event, strict:, debug:, encrypt:, tagged:, page_labels:)
       tagging = Tagging::Tree.new if tagged
       warnings = Warnings.new
       book = Fonts::FontBook.new(self.class.config[:families], fallbacks: self.class.config[:fallbacks], warnings:)
-      builder = Builder.new(book:, text: self.class.config[:text])
+      builder = builder_for(book)
       Stationery.instrument("build.stationery", document: self.class.name) { call(builder) }
       resources = Resources.new
       pages = paginate(builder.root, book:, resources:, warnings:, debug:, tagging:)

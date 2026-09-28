@@ -32,10 +32,12 @@ module Stationery
       end
     end
 
-    attr_reader :root, :book, :list_depth
+    # `images` are the document's bitmap defaults (max_ppi:, downscale:).
+    attr_reader :root, :book, :list_depth, :images
 
-    def initialize(book:, text: {})
+    def initialize(book:, text: {}, images: {})
       @book = book
+      @images = images
       @root = Layout::Flow.new
       @containers = [@root]
       @text = [text]

@@ -123,7 +123,7 @@ module Stationery
     # `alt:` describes the image in a tagged PDF (false: decorative). Sizing,
     # `fit: :cover`, `radius:` and `rotate:` as for Layout::Image.
     def image(source, align: nil, **)
-      node = Layout::Image.new(source, **)
+      node = Layout::Image.new(source, **@_builder.images, **)
       @_builder.add(align ? Layout::Flow.new([node], align:) : node)
     end
 

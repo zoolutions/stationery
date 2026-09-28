@@ -62,7 +62,7 @@ module Stationery
         box = page.content_box
         height = head.measure(box.width)
         @warnings << Overflow.new(page: number, height:, available: box.height) if height > box.height + EPSILON
-        canvas = Canvas.new(page, @resources, debug: @debug, tagging: @tagging)
+        canvas = Canvas.new(page, @resources, debug: @debug, tagging: @tagging, warnings: @warnings)
         head.paint(canvas, box.x, box.y, box.width)
         canvas.debug_rect(box.x, box.y, box.width, box.height, :page)
       end

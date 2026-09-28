@@ -12,16 +12,19 @@ module Stationery
     CAPS = { butt: 0, round: 1, square: 2 }.freeze
     JOINS = { miter: 0, round: 1, bevel: 2 }.freeze
 
-    attr_reader :page
+    # `warnings` is the render's collector (nil on a bare canvas), for what a
+    # node notices only while painting, such as an oversized image.
+    attr_reader :page, :warnings
 
     # `template: true` records anchors apart, for canvases page templates draw on.
     # `tagging:` (a Tagging::Tree) marks content for a tagged PDF.
-    def initialize(page, resources, template: false, debug: false, tagging: nil)
+    def initialize(page, resources, template: false, debug: false, tagging: nil, warnings: nil)
       @page = page
       @resources = resources
       @template = template
       @debug = debug
       @tagging = tagging
+      @warnings = warnings
       @marked = 0
     end
 

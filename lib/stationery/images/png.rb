@@ -9,6 +9,8 @@ module Stationery
     # mask for grey/RGB tRNS).
     class PNG
       CHANNELS = { 0 => 1, 2 => 3, 3 => 1, 4 => 2, 6 => 4 }.freeze
+      # Colour samples per pixel once palette and alpha are unpacked.
+      COLOR_CHANNELS = { 0 => 1, 2 => 3, 3 => 3, 4 => 1, 6 => 3 }.freeze
 
       attr_reader :width, :height
 
@@ -20,6 +22,13 @@ module Stationery
       end
 
       def inspect = "#<#{self.class} #{@width}x#{@height}>"
+
+      # This image scaled down to `width` pixels (a Resampled), memoised per
+      # width; the same instance is shared through the image cache.
+      def resample(width)
+        @resampled ||= {}
+        @resampled[width] ||= Resampled.new(pixels, width)
+      end
 
       def build(writer)
         return build_with_alpha(writer) if alpha_channel?
@@ -37,6 +46,63 @@ module Stationery
       end
 
       private
+
+      # Every sample as 8 bits, colour rows apart from alpha rows: palette and
+      # sub-byte greys expanded, 16-bit samples dropped to their high byte, a
+      # colour-key or palette transparency turned into an alpha row set.
+      def pixels
+        channels = CHANNELS[@color_type]
+        color = []
+        alpha = []
+        Scanlines.each(@idat, @height, [(channels * @bit_depth) / 8, 1].max,
+                       ((@width * channels * @bit_depth) + 7) / 8) do |row|
+          samples = samples_of(row)
+          case @color_type
+          when 3 then palette_pixels(samples, color, alpha)
+          when 4, 6 then split_pixels(samples, channels, color, alpha)
+          else keyed_pixels(samples, channels, color, alpha)
+          end
+        end
+        Pixels.new(width: @width, height: @height, channels: COLOR_CHANNELS[@color_type],
+                   color:, alpha: alpha.empty? ? nil : alpha)
+      end
+
+      # A row's samples at 8 bits.
+      def samples_of(row)
+        case @bit_depth
+        when 8 then row
+        when 16 then row.each_slice(2).map(&:first)
+        else
+          scale = 255 / ((1 << @bit_depth) - 1)
+          bits = row.pack("C*").unpack1("B*")
+          values = bits.scan(/.{#{@bit_depth}}/o).first(@width).map { |b| b.to_i(2) }
+          @color_type == 3 ? values : values.map { |v| v * scale }
+        end
+      end
+
+      def palette_pixels(indexes, color, alpha)
+        palette = @palette.bytes
+        alphas = @transparency&.bytes
+        color << indexes.flat_map { |i| palette[i * 3, 3] }
+        alpha << indexes.map { |i| alphas[i] || 255 } if alphas
+      end
+
+      def split_pixels(samples, channels, color, alpha)
+        color << samples.each_slice(channels).flat_map { |px| px[0...-1] }
+        alpha << samples.each_slice(channels).map(&:last)
+      end
+
+      # Grey or RGB, with a tRNS colour key (compared at the file's bit depth)
+      # becoming a fully transparent alpha.
+      def keyed_pixels(samples, channels, color, alpha)
+        color << samples
+        return unless @transparency
+
+        key = @transparency.unpack("n*").first(channels).map do |v|
+          @bit_depth == 16 ? v >> 8 : v * (255 / ((1 << @bit_depth) - 1))
+        end
+        alpha << samples.each_slice(channels).map { |px| px == key ? 0 : 255 }
+      end
 
       def read_chunks(data)
         pos = PNG_SIGNATURE.bytesize
