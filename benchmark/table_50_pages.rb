@@ -15,5 +15,6 @@ module Bench
 end
 
 if $PROGRAM_NAME == __FILE__
-  Bench.compare("stationery" => -> { Bench::StationeryTable.new.to_pdf }, "prawn" => -> { Bench.prawn_table })
+  Bench.compare({ "stationery" => -> { Bench::StationeryTable.new.to_pdf }, "prawn" => -> { Bench.prawn_table } },
+                html: Bench::HTML.table)
 end

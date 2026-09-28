@@ -83,6 +83,10 @@ GEM
       rubocop (~> 1.89)
       rubocop-ast (>= 1.44.0, < 2.0)
     ruby-progressbar (1.13.0)
+    sghtmltopdf (0.5.1)
+    sghtmltopdf (0.5.1-aarch64-linux)
+    sghtmltopdf (0.5.1-arm64-darwin)
+    sghtmltopdf (0.5.1-x86_64-linux)
     simplecov (1.3.1)
     stackprof (0.2.28)
     ttfunk (1.8.0)
@@ -92,8 +96,10 @@ GEM
     unicode-emoji (4.3.0)
 
 PLATFORMS
+  aarch64-linux
   arm64-darwin-27
   ruby
+  x86_64-linux
 
 DEPENDENCIES
   benchmark-ips
@@ -108,6 +114,7 @@ DEPENDENCIES
   rubocop-rake (~> 0.7)
   rubocop-rspec (~> 3.0)
   rubocop-thread_safety (~> 0.7)
+  sghtmltopdf (~> 0.5.1)
   simplecov
   stackprof
   stationery!
@@ -149,6 +156,10 @@ CHECKSUMS
   rubocop-rspec (3.10.2) sha256=0b3e2ecc592cd10ecbf0095bb58d1e357905276e069643523cc19eb7495f65e2
   rubocop-thread_safety (0.8.0) sha256=71fe5e7894fb9acfbd4c2dcd394feabc35bd690f75b0bc846e1504d9e31f9034
   ruby-progressbar (1.13.0) sha256=80fc9c47a9b640d6834e0dc7b3c94c9df37f08cb072b7761e4a71e22cff29b33
+  sghtmltopdf (0.5.1) sha256=ec45e1a3e5abb4580deee02d8cf58425296a3985b2e4be351d411dc264310075
+  sghtmltopdf (0.5.1-aarch64-linux) sha256=d95e396cdf4024c277ee9657352c8c770b5d330ffa42ec2fb44f9cddd7a4ccde
+  sghtmltopdf (0.5.1-arm64-darwin) sha256=4786e9ddbad0b83f1da328d64be6a929c91c806e6cfa76c7b26a85e6e2ca6030
+  sghtmltopdf (0.5.1-x86_64-linux) sha256=b71b1b0a01d7f4617678e9d502651519e30056dba14585c30cce75f48ae2f2df
   simplecov (1.3.1) sha256=b326d38e819053499aa2ebe35d544d8bd780eba143a50f48a624b450ad87feec
   stackprof (0.2.28) sha256=4ec2ace02f386012b40ca20ef80c030ad711831f59511da12e83b34efb0f9a04
   stationery (0.9.0)

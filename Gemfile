@@ -25,5 +25,8 @@ group :benchmark do
   gem "benchmark-ips", require: false
   gem "prawn", require: false
   gem "prawn-table", require: false
+  # The third `rake bench` lane: an HTML-to-PDF engine in Rust, precompiled for
+  # Linux and macOS. `rake bench` runs without it and says so.
+  gem "sghtmltopdf", "~> 0.5.1", require: false
   gem "stackprof", require: false
 end

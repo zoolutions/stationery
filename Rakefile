@@ -173,10 +173,11 @@ end
 
 task default: %i[spec rubocop]
 
-desc "Benchmark against Prawn (bundle exec rake bench)"
+desc "Benchmark against Prawn and, when its gem is installed, sghtmltopdf (bundle exec rake bench)"
 task :bench do
   ruby "-Ilib benchmark/invoice.rb"
   ruby "-Ilib benchmark/table_50_pages.rb"
+  ruby "-Ilib benchmark/photos.rb"
 end
 
 desc "Compare allocations, pages and bytes of fixed documents with benchmark/baseline.json"
