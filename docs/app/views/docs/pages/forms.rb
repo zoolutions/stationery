@@ -417,6 +417,10 @@ class Views::Docs::Pages::Forms < DocsUI::Page
                                                "terms" => false, "signature" => nil)
           end
 
+          it "shows the applicant on the page" do
+            expect(document).to have_pdf_text("Astrid Lindqvist", fields: true)
+          end
+
           it "renders without warnings, such as a glyph no font has" do
             expect(document).to have_no_warnings
           end
@@ -426,6 +430,12 @@ class Views::Docs::Pages::Forms < DocsUI::Page
           end
         end
         ```
+
+        A value is drawn by its widget and is no part of the page content, so `have_pdf_text` leaves it
+        out. `fields: true` reads what the fields show as well, each where it is on its page; so do
+        `have_pdf_text_on_page`, `assert_pdf_text`, `refute_pdf_text`, `Inspector#text` and
+        `Inspector#page_texts`. A widget that is hidden shows nothing, and the marks of a check box and a
+        radio button are paths, which read as nothing.
 
         In a tagged document `Inspector#structure` lists each field as `[:Form]` between the text around
         it, which is how to assert the reading order:

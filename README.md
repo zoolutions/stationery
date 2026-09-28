@@ -83,7 +83,7 @@ renders them all, or render one with `stationery render examples/report.rb`.
 | `text { b "Total"; plain " due" }` | Styled runs in Ruby. Take a block argument (`{ \|t\| t.b @x }`) to keep your own `self`. |
 | `box(padding:, background:, border:, radius:, width:, height:, min_height:, overflow:, at:, link:, outset:, break_inside:, decoration:, rotate:, shadow:, float:, margin:) { }` | A container. Moves to the next page whole when it fits there and continues across pages when it does not; `break_inside: :auto` splits it at any page break, `:avoid` never splits it. At a cut, `decoration: :slice` (default) drops the padding and border, `:clone` keeps the padding. `overflow: :truncate` or `:shrink_to_fit` for fixed heights; a fixed `height:` never splits. `min_height:` is a floor that still splits: the first fragment keeps as much of it as the page holds, the next carries the rest (not combinable with `height:`). `at: [x, y]` pins it to a page position. `link:` makes the whole box clickable. `outset:` bleeds the background past the box (e.g. into the page margins). `rotate: -3` turns the painted box around its centre (layout box unchanged, never splits; a `link:` keeps its unrotated rectangle). `shadow: true` or `{ offset: [0, 4], blur: 8, color:, opacity: 0.15 }` paints a soft drop shadow under it, taking no space. `overflow: :hidden` clips the content to the rounded outline. `float: :left` or `:right` with a `width:` takes it to that side, `margin:` away from the text that wraps beside it: see [Floats](#floats). |
 | `row(gap:, align:, break_inside:) { column(width:) { } }` | Columns side by side. `width:` is points, a fraction (`0.5`), `:auto` or `nil` (equal share). Splits across pages like a box, every column at once; a row with a fixed-height column never splits; columns with `min_height:` do. |
-| `columns(count:, gap:, balance:, rule:) { }` | One flow poured through `count` columns, newspaper style: column 1 top to bottom, then column 2. Breaks where a page would (between lines with `orphans:`/`widows:`, never inside `break_inside: :avoid`, `keep_with_next` honoured). `balance: true` (default) ends the columns at nearly the same height where the content ends; `false` fills each before the next. Continues across pages; `page_break` inside ends the page; `rule: true \| { color:, width: }` draws a line between columns. |
+| `columns(count:, gap:, balance:, rule:) { }` | One flow poured through `count` columns, newspaper style: column 1 top to bottom, then column 2. Breaks where a page would (between lines with `orphans:`/`widows:`, never inside `break_inside: :avoid`, `keep_with_next` honoured). `balance: true` (default) ends the columns at nearly the same height where the content ends and fills them evenly, what cannot be shared going to the earlier columns (ten lines in three columns are 4, 3 and 3); `false` fills each before the next. Continues across pages; `page_break` inside ends the page; `rule: true \| { color:, width: }` draws a line between columns. |
 | `table(rows, widths:, width:, header:, split_rows:, cell:) { \|t\| }` | Tables. Cells are strings, layout nodes, procs built with the DSL (`-> { image logo }`) or components. Style with `t.row(0)`, `t.rows(-1)`, `t.column(1)`, `t.columns(1..)`, chained, plus `t.zebra`. Header rows repeat after a page break. A cell may be `{ content:, colspan:, rowspan: }` plus any cell option; rows list only the cells they start, as in HTML, and pages never break through a rowspan. Spans are set in the rows, not through selections. A row taller than the page continues on the next page, cut through its cells, with the header repeated; `split_rows: true` cuts any row that reaches the page bottom instead of moving it whole. |
 | `image(path_or_io, width:, height:, fit:, align:, radius:, rotate:, max_ppi:, downscale:, float:, margin:)` | JPEG, PNG or lossless WebP, aspect preserved. `fit: [w, h]` scales to fit inside; `fit: :cover` fills `width:` × `height:` and crops around the centre. `radius:` rounds the corners; `rotate:` turns it (degrees, clockwise) without changing the space it takes. Drawn at more than twice `max_ppi:` (300) it is reported as oversized; `downscale: true` resamples a PNG or WebP to that resolution instead. |
 | `svg(source_or_path, width:, height:, color:, align:)` | Vector icons and drawings; `currentColor` takes `color:` (or the `color` an element sets). Linear and radial gradients (`fill="url(#id)"`, `href` chains, both gradient units); `text`/`tspan` in the document's fonts; `<style>` stylesheets (element, class, id and `*` selectors); `use`, `symbol` sprites and nested `svg` viewports (`viewBox`, `preserveAspectRatio`); `clipPath` (both `clipPathUnits`). |
@@ -220,17 +220,19 @@ ignored and reported. At-rules are skipped, except that rules inside `@media pri
 | `text-align` | `left`, `center`, `right`, `justify` | paragraphs, headings, cells, images; inherited from a container |
 | `background-color` | as `color`, or `transparent` | `p`, `div` and other containers, `blockquote`, `pre`, `table`, `td`, `th` |
 | `padding`, `padding-top` … `padding-left` | one to four lengths in `px` or `pt` | the same |
-| `margin`, `margin-top`, `margin-bottom` | lengths in `px` or `pt`; top and bottom only, added to `gap:` | blocks |
+| `margin`, `margin-top` … `margin-left` | one to four lengths in `px` or `pt`: top and bottom are added to `gap:`, left and right indent the block. A negative margin is drawn as none | blocks, and a floated `img` |
 | `border` | `1px solid #ccc` in any order, `none` | `table` (every cell), `td`, `th` |
 | `width` | `px`, `pt`, `%`, `auto` | `img`, `table`, and `td`/`th` (column widths, when every cell of the first row has one) |
-| `float` | `left`, `right`, `none` | `img` only: the text that follows wraps beside it. Its `margin` (all four sides) is kept around it, else `styles: { img: { float_margin: 8 } }` towards the text |
+| `float` | `left`, `right`, `none` | `img` only: the text that follows wraps beside it. Its `margin`, with `margin-top` … `margin-left` over it, is kept around it, else `styles: { img: { float_margin: 8 } }` towards the text |
 | `page-break-before`, `page-break-after`, `break-before`, `break-after` | `always`, `page`, `auto` | blocks |
 | `page-break-inside`, `break-inside` | `avoid`, `auto` | blocks |
 | `column-count`, `columns` | a number of columns, `auto` (a column width is not read) | `div` and other containers, `p`, headings, lists, tables, `blockquote`, `pre` |
 | `column-gap` | a length in `px` or `pt`, `normal` | the same |
 
+`margin` and its sides are read in the order of the cascade: a side wins over a `margin` declared
+before it or by a lesser rule, and a `margin` takes back the sides declared before it.
 `<font color size>`, `<center>` and `<img align="left|right">` (a float) are read the same way.
-Everything else (`display`, `float` on anything but an image, `position`, `font-family`, `line-height`, `em` lengths outside `font-size`, `url()` values,
+Everything else (`display`, `float` on anything but an image, `position`, `font-family`, `line-height`, `em` lengths outside `font-size`, `auto` margins, a negative `margin-left` or `margin-right`, `url()` values,
 inline backgrounds) is ignored and named in the `UnsupportedCss` warning, so `strict` catches
 content that expects more than this. No value is ever fetched: `url()` and `@import` are dropped.
 
@@ -355,6 +357,10 @@ signature_field "signature", label: "Signature of the applicant"
   signer, unless `sign field:` signs it (see [Digital signatures](#digital-signatures)).
 - `document.fields` returns `{ name => value }` for the last render (a check box's value is `true` or
   `false`, an unchecked radio group's and a signature field's `nil`). Encrypted documents keep their fields fillable.
+- In tests, `document.fields` is what the form was filled with, and `have_pdf_text("Astrid", fields:
+  true)` or `assert_pdf_text pdf, "Astrid", fields: true` finds what a field shows on the page. A
+  value is drawn by its widget and is no part of the page content, so the text leaves it out
+  without `fields: true` (see [Testing](#testing)).
 
 ## Components
 
@@ -489,7 +495,9 @@ and across page breaks: a paragraph continued on the next page stays one `P`.
 - `table_of_contents` is `TOC` > `TOCI` > `Link` (the title and its annotation) and `Reference` (the
   page number).
 - `html`/`markdown` tag headings `H1`–`H6` (with or without `bookmarks: true`) and block quotes
-  `BlockQuote`, and give images their `alt`.
+  `BlockQuote`, and give images their `alt`. In `html`, `<img alt="">` is decoration as `alt: false`
+  is (an `<img>` without the attribute is a description missing). Markdown has no way to say so:
+  `![](photo.png)` is a description missing, and decoration goes through `html` or `image`.
 - Headers, footers and page templates are pagination artifacts; backgrounds, borders and rules drawn
   outside any element are layout artifacts.
 - `metadata lang:` writes the catalog's `/Lang`; the title is shown instead of the file name.
@@ -497,8 +505,15 @@ and across page breaks: a paragraph continued on the next page stays one `P`.
   `dc:title`, `dc:creator`, `dc:description`, `dc:subject`, `dc:language`, the `xmp:` dates and
   `pdf:Producer`. PDF/A and PDF/UA identification lives there (see
   [PDF/A and PDF/UA](#pdfa-and-pdfua)); `metadata xmp: false` or `to_pdf(xmp: false)` leaves it out.
-- An image or drawing without `alt:` (`Warnings::MissingAlt`) and a missing `lang`
-  (`Warnings::MissingLanguage`) are warnings, so `strict` catches them.
+- An image or drawing without `alt:`, or with a blank one (`alt: ""`, whitespace alone, which
+  veraPDF would accept), is a `Warnings::MissingAlt`; `alt: false` is how decoration is marked.
+- A heading level that is skipped is a `Warnings::SkippedHeading` (`level`, `allowed`, `page`): the
+  first heading is `heading: 1` and a heading is at most one level below the heading before it
+  (`1`, then `3` skips `2`). Going back up is free (`3`, then `1`). Headings are read in the order of
+  the structure tree, inside sections, lists, table cells, columns and floats; those of headers,
+  footers and page templates are artifacts and do not count.
+- A missing `lang` is a `Warnings::MissingLanguage`. All three are warnings, so `strict` catches them,
+  and `conformance :pdf_ua1` raises on the first two.
 - Untagged documents (the default) are written exactly as before.
 
 Check the tree in tests with `have_structure` and `have_tagged_content` (see [Testing](#testing)):
@@ -544,7 +559,10 @@ mislabelled: `ArgumentError` for options that contradict the level, `Stationery:
 - **PDF/UA-1** (ISO 14289): turns `tagged` on, needs `metadata title:` and `lang:`, writes
   `pdfuaid:part`, shows the title in the viewer, orders tabs by structure (`/Tabs /S`) and gives
   every link annotation a description (`/Contents`: the URL, or the target page). A figure without
-  `alt:` raises; mark decoration with `alt: false`. Encryption is allowed.
+  `alt:` or with a blank one raises (7.3); mark decoration with `alt: false`, or `<img alt="">` in
+  `html`. A heading level that is skipped raises (7.4.2): the first heading is `heading: 1`, and a
+  heading is at most one level below the heading before it. PDF/A alone asks for neither.
+  Encryption is allowed.
 - Combined, the XMP packet also describes the `pdfuaid` schema to PDF/A (`pdfaExtension:schemas`).
 - Interactive form fields are allowed: their appearances draw with embedded fonts and paths, every
   field has a `/TU`, and `NeedAppearances` and ZapfDingbats are left out. Only a field made without
@@ -1046,8 +1064,8 @@ The limits of a hook:
 - Vertical advances are not read: text runs horizontally.
 - A reader that takes `ActualText` for the text (the gem's `Inspector`) gets it as written. poppler
   (`pdftotext` 26.09) and MuPDF (1.28) run their own reordering over it and return a right-to-left
-  stretch reversed. pdf-reader, and so `Inspector#text`, drops a `Span` whose first glyph has no
-  advance (a mark drawn first); `Inspector#structure` does not.
+  stretch reversed. pdf-reader's own `Page#text` drops a `Span` whose first glyph has no advance (a
+  mark drawn first); the `Inspector` does not.
 
 [`examples/shaping/harfbuzz_shaper.rb`](https://github.com/zoolutions/stationery/blob/main/examples/shaping/harfbuzz_shaper.rb)
 is an adapter for HarfBuzz through the [`harfbuzz-ruby`](https://github.com/ydah/harfbuzz) gem
@@ -1081,6 +1099,7 @@ RSpec.describe InvoicePdf do
 
   it { is_expected.to have_pdf_text("Invoice INV-7") }
   it { is_expected.to have_pdf_text_on_page(2, /Total €[\d ,]+/) }
+  it { is_expected.to have_pdf_text("Astrid Lindqvist", fields: true) } # with what the form fields show
   it { is_expected.to have_page_count(2) }
   it { is_expected.to have_pdf_link("mailto:hello@acme.test") }
   it { is_expected.to have_image_count(1) }
@@ -1108,6 +1127,7 @@ class InvoicePdfTest < Minitest::Test
 
     assert_pdf_text pdf, "Invoice INV-7"
     refute_pdf_text pdf, "DRAFT"
+    assert_pdf_text pdf, "Astrid Lindqvist", fields: true
     assert_page_count pdf, 2
     assert_pdf_link pdf, /acme\.test/
     assert_no_pdf_warnings pdf
@@ -1138,6 +1158,20 @@ signed_at:, subfilter:, byte_range:, signer:, valid:, timestamp: }]`, the timest
 read from its marked content: `[type, "text"]`, `[type, [children]]` (its own text
 between the children, as for a `P` holding a `Link`) or `[type]` when empty; a
 `Figure` reads as its alt text.
+
+`text` and `page_texts` are the text of the page content as pdf-reader lays it out, line by line. A
+`Span` with `ActualText` (a stretch a shaper reordered, characters no font has) reads as that text,
+once, whatever glyphs it shows.
+
+A form field's value is not page content: its widget draws it, so `have_pdf_text("Astrid")` does not
+find the value of a `text_field`. `fields: true` reads what the form fields show as well, each where
+it is on its page: `have_pdf_text("Astrid", fields: true)`, `have_pdf_text_on_page(1, "Astrid",
+fields: true)`, `assert_pdf_text pdf, "Astrid", fields: true`, `refute_pdf_text`, and
+`Inspector#text(fields: true)` and `#page_texts(fields: true)`. What is read is the normal appearance
+of every widget that is not hidden, in the state the widget is in, and never a button's `Off` state
+(the marks of a `checkbox` and a `radio` are paths and read as nothing). Without `fields: true` the
+text is what it always was, and the failure of `have_pdf_text` over a text that a field shows says
+so.
 
 ## Why not Prawn, Chrome or Typst?
 
@@ -1263,16 +1297,18 @@ Images are JPEG, PNG (non-interlaced) and lossless WebP (not lossy or animated W
 than 33 megapixels) and never fetched from a URL; a JPEG is embedded at its
 source resolution (only PNG and WebP can be downscaled), so an oversized one is reported, not resized. `html` reads a fixed subset of CSS (colours, sizes, weights, alignment, margins, padding, table
 borders and widths, page breaks; see [What CSS is read](#what-css-is-read)), not a layout
-engine's worth: no `display`, positioning, `font-family` or selectors with combinators, and floats
-for images only.
+engine's worth: no `display`, positioning, `font-family`, `auto` or negative margins or selectors
+with combinators, and floats for images only, with their `margin` around them.
 `markdown` reads no CSS, and raw HTML inside Markdown stays literal text.
 
 Layout: a box with a fixed `height:` never splits (use `min_height:` for a floor that can); a row
 splits only when every column can; a rotated box and a `stack` move to the next page whole.
-`columns` balances to the shortest height that holds the content and fills the columns in order
-(ten lines in three columns are 4, 4 and 2), has columns of one width, nothing spanning them
-(end the block, write the full-width content, start another) and no column break of its own; a
-spacer that lands at the top of a column keeps its height. Text
+`columns` balances to the shortest height that holds the content and fills the columns evenly
+from the first one on (ten lines in three columns are 4, 3 and 3): a column takes what fits the
+height balanced for it and the columns after it, so one that ends above a block that cannot
+split may stay shorter than the column after it. It has columns of one width, nothing spanning
+them (end the block, write the full-width content, start another) and no column break of its
+own; a spacer that lands at the top of a column keeps its height. Text
 wraps around floated images and boxes, along their rectangles, never along a shape; beside a float
 a table, a row, `columns` and a box with a background, a border or a size of its own are blocks of
 the width that is left, all the way down: a box is painted after the float written before it, so

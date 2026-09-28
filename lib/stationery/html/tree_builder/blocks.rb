@@ -27,13 +27,13 @@ module Stationery
         ALIGN = /\A\s*(left|center|right|justify)\s*\z/i
         # What makes a container a block of its own instead of flattening into its parent.
         BOXED = %i[background padding padding_top padding_right padding_bottom padding_left margin margin_top
-                   margin_bottom break_before break_after keep_together columns].freeze
+                   margin_right margin_bottom margin_left break_before break_after keep_together columns].freeze
         # What a block of its own takes besides.
         WITH_BOX = %i[column_gap].freeze
         INHERITED = %i[align].freeze
         # What an image takes from its style, and what a floated one takes too.
         IMAGE = %i[width align].freeze
-        FLOATED = %i[width float margin margin_top margin_bottom].freeze
+        FLOATED = %i[width float margin margin_top margin_right margin_bottom margin_left].freeze
         EMPTY = {}.freeze
 
         def self.convert(root, css = Css.parse([])) = new(css).blocks_of(root, EMPTY, EMPTY)
@@ -129,10 +129,14 @@ module Stationery
         def image(attributes, style)
           return unless attributes["src"]
 
-          Rich::Image.new(src: attributes["src"], alt: attributes["alt"],
+          Rich::Image.new(src: attributes["src"], alt: description(attributes["alt"]),
                           width: dimension(attributes["width"]), height: dimension(attributes["height"]),
                           style: style.slice(*(style[:float] ? FLOATED : IMAGE)))
         end
+
+        # An alt that is there and empty is how HTML marks decoration (false,
+        # as `image alt: false`); one that is not there is a description missing.
+        def description(alt) = alt && !Tagging.blank?(alt) && alt
 
         def dimension(value) = value&.[](/\A\s*(\d+)/, 1)&.to_i
 

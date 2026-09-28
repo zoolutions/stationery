@@ -11,7 +11,10 @@ module Stationery
     #     include Stationery::Testing::Assertions
     #   end
     module Assertions
-      def assert_pdf_text(subject, expected, msg = nil) = assert_pdf(Matchers::HaveText.new(expected), subject, msg)
+      def assert_pdf_text(subject, expected, msg = nil, fields: false)
+        assert_pdf(Matchers::HaveText.new(expected, fields:), subject, msg)
+      end
+
       def assert_page_count(subject, count, msg = nil) = assert_pdf(Matchers::HavePageCount.new(count), subject, msg)
       def assert_pdf_link(subject, url, msg = nil) = assert_pdf(Matchers::HaveLink.new(url), subject, msg)
       def assert_image_count(subject, count, msg = nil) = assert_pdf(Matchers::HaveImageCount.new(count), subject, msg)
@@ -42,8 +45,8 @@ module Stationery
       def assert_pdf_structure(subject, tree, msg = nil) = assert_pdf(Matchers::HaveStructure.new(tree), subject, msg)
       def assert_tagged_content(subject, msg = nil) = assert_pdf(Matchers::HaveTaggedContent.new, subject, msg)
 
-      def refute_pdf_text(subject, expected, msg = nil)
-        matcher = Matchers::HaveText.new(expected)
+      def refute_pdf_text(subject, expected, msg = nil, fields: false)
+        matcher = Matchers::HaveText.new(expected, fields:)
         assert(!matcher.matches?(subject), msg || matcher.failure_message_when_negated)
       end
 
