@@ -1,0 +1,15 @@
+docs/app/views/docs/pages/examples.rb
+  ai_agent 40-44,50
+examples/newsletter.rb
+  ai_agent 1-108
+spec/integration/newsletter_spec.rb
+  ai_agent 1-48
+docs/spec/requests/examples_spec.rb
+  ai_agent 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "6fb3895115a82e6d6ad22376616f5a1eeec3d9ca",
+  "prompts": {}
+}

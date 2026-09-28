@@ -1,0 +1,17 @@
+CHANGELOG.md
+  ai_agent 3-4,7-8
+README.md
+  ai_agent 73,86,179-180,1061-1065
+docs/app/views/docs/pages/elements.rb
+  ai_agent 152-195
+docs/app/views/docs/pages/limitations.rb
+  ai_agent 28
+docs/app/views/docs/pages/comparison.rb
+  ai_agent 38-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "2304f32f96d35daa00e2594722050d8c27aad875",
+  "prompts": {}
+}
