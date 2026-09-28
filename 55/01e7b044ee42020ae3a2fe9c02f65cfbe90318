@@ -1,0 +1,21 @@
+spec/stationery/document_to_zpl_spec.rb
+  s_f5a1e2cf907cda::t_570c941ea2b755 81-90
+CHANGELOG.md
+  s_f5a1e2cf907cda::t_df81aded6bdbf4 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "5501e7b044ee42020ae3a2fe9c02f65cfbe90318",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
