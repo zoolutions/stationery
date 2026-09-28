@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Form field appearances keep characters no font has, as body text does since 0.10.1: a text field's value (single line, `multiline:` and `comb:` cells), a select's value and a signature field's label wrap each run of `.notdef` glyphs in a `/Span` with `/ActualText`, inside the text object and inside `/Tx BMC … EMC`, so `text_field "name", value: "日本語"` extracts as `日本語`. The appearances were already written this way; it is now specified and documented. The `MissingGlyph` warning and the bytes of values the fonts cover are unchanged. A field made without a font book (`Forms::Field.new` on a bare canvas) still writes a character outside Windows-1252 as `?` without `ActualText`: that is a real glyph, and `/V` holds the value.
+
 ## 0.10.1 (2026-09-28)
 
 - Extracted text keeps characters no font has: each run of `.notdef` glyphs is wrapped in a `/Span` with `/ActualText` holding the written characters, and ToUnicode maps glyph 0 to U+FFFD instead of the first missing character drawn, so `日本語` set in a font without those glyphs copies out as `日本語`, not `日日日`. The `MissingGlyph` warning and the bytes of text the fonts cover are unchanged.

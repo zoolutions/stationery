@@ -40,7 +40,8 @@ module Stationery
 
       # The operators showing `text` at the current text position: a font
       # selection and a string per run of one font. Characters no font has
-      # draw as .notdef and are reported, as in any other text.
+      # draw as .notdef inside a Span with their ActualText (see
+      # Fonts::GlyphRun) and are reported, as in any other text.
       def show(text, size)
         runs(text, size).flat_map do |font, run|
           report(font, run)
@@ -86,7 +87,8 @@ module Stationery
     end
 
     # The standard Helvetica, not embedded: text is Windows-1252 bytes and
-    # characters outside it become "?".
+    # characters outside it become "?". That is a glyph of its own, not
+    # .notdef, so it is shown without ActualText; the field's /V has the value.
     class Standard
       NAME = :Helv
       FONT = { Type: :Font, Subtype: :Type1, BaseFont: :Helvetica, Encoding: :WinAnsiEncoding }.freeze

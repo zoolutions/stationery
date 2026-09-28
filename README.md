@@ -284,7 +284,8 @@ signature_field "signature", label: "Signature of the applicant"
 - Every widget carries its own appearance, so the form looks the same in every viewer. Text is set
   in the text style around the field, in the document's own fonts: embedded, with the fallbacks
   applied per character, so a value in any script the fonts cover is drawn (`/V` holds it as
-  Unicode). Check marks and radio dots are paths. `NeedAppearances` is set too, so viewers redraw
+  Unicode). A character no font has is drawn as `.notdef` inside a `Span` whose `ActualText` is the
+  character, as in any other text, so the appearance still extracts as written. Check marks and radio dots are paths. `NeedAppearances` is set too, so viewers redraw
   edited values; ZapfDingbats is listed for the ones that redraw a button's mark, never embedded
   and never used by the appearances themselves.
 - A field that can be edited keeps printable ASCII and Latin-1 in its font beyond the value it shows
