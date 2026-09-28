@@ -6,8 +6,6 @@ module Stationery
     # each MCID belongs to (what the parent tree maps back from).
     class Tree
       HEADING = /\AH[1-6]\z/
-      # What an alt text has when it describes anything: a character that is not whitespace.
-      DESCRIPTION = /[^[:space:]]/
 
       attr_reader :root
 
@@ -33,7 +31,7 @@ module Stationery
       def audit(pages, warnings, lang:)
         warnings << Warnings::MissingLanguage.new unless lang
         figures(@root).each do |figure|
-          next if figure.alt.to_s.match?(DESCRIPTION)
+          next unless Tagging.blank?(figure.alt)
 
           page = pages.index(figure.marked_content.first.page) + 1
           warnings << Warnings::MissingAlt.new(kind: figure.kind, page:)

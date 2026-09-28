@@ -186,6 +186,19 @@ RSpec.describe Stationery::PDF::Conformance do
       end
     end
 
+    it "writes an html image with an empty alt as decoration and raises on one without an alt" do
+      path = image_path("rgb.jpg")
+      page = lambda do |markup|
+        Class.new(document) { define_method(:view_template) { html markup, images: ->(_) { path } } }.new
+      end
+
+      expect(page.call(%(<p>Logo</p><img src="rgb.jpg" alt="" width="10">)).to_pdf(conformance: :pdf_ua1))
+        .to have_conformance(:pdf_ua1)
+      expect { page.call(%(<p>Logo</p><img src="rgb.jpg" width="10">)).to_pdf(conformance: :pdf_ua1) }
+        .to raise_error(Stationery::ConformanceError,
+                        "not PDF/UA-1:\n  image on page 1 has no alt: text (alt: false marks decoration)")
+    end
+
     it "raises on heading levels that are skipped, one issue each" do
       skipping = Class.new(document) do
         define_method(:view_template) do

@@ -129,10 +129,14 @@ module Stationery
         def image(attributes, style)
           return unless attributes["src"]
 
-          Rich::Image.new(src: attributes["src"], alt: attributes["alt"],
+          Rich::Image.new(src: attributes["src"], alt: description(attributes["alt"]),
                           width: dimension(attributes["width"]), height: dimension(attributes["height"]),
                           style: style.slice(*(style[:float] ? FLOATED : IMAGE)))
         end
+
+        # An alt that is there and empty is how HTML marks decoration (false,
+        # as `image alt: false`); one that is not there is a description missing.
+        def description(alt) = alt && !Tagging.blank?(alt) && alt
 
         def dimension(value) = value&.[](/\A\s*(\d+)/, 1)&.to_i
 

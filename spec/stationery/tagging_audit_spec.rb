@@ -115,13 +115,30 @@ RSpec.describe "Tagged PDF audit" do # rubocop:disable RSpec/DescribeClass
       expect { doc.to_pdf(strict: true) }.to raise_error(Stationery::WarningsError)
     end
 
-    it "warns about an html or markdown image without a description" do
+    it "takes an html image with an empty alt for decoration, floated or not" do
       logo = self.logo
-      from_html = build { html %(<p>Logo</p><img src="rgb.jpg" alt="" width="10">), images: ->(_) { logo } }
-      from_markdown = build { markdown "Logo\n\n![ ](rgb.jpg)\n", images: ->(_) { logo } }
+      doc = build do
+        html %(<p>Logo</p><img src="rgb.jpg" alt="" width="10"><img src="rgb.jpg" alt=" " width="10">) +
+             %(<p><img src="rgb.jpg" alt="" width="10" style="float: right">Beside</p>), images: ->(_) { logo }
+      end
+      pdf = doc.to_pdf
 
-      expect(warnings_of(from_html)).to eq(["image on page 1 has no alt: text (alt: false marks decoration)"])
-      expect(warnings_of(from_markdown)).to eq(["image on page 1 has no alt: text (alt: false marks decoration)"])
+      expect(doc.warnings).to be_empty
+      expect(image_count(pdf)).to eq(1)
+      expect(page_contents(pdf).first.scan(%r{/Artifact BMC\nq\n[^\n]+ cm\n/Im1 Do}).size).to eq(3)
+      expect(struct_types(pdf)).to eq([[:Document, %i[P P]]])
+    end
+
+    it "warns about an html image without an alt and a markdown image without a description" do
+      logo = self.logo
+      from_html = build { html %(<p>Logo</p><img src="rgb.jpg" width="10">), images: ->(_) { logo } }
+      empty = build { markdown "Logo\n\n![](rgb.jpg)\n", images: ->(_) { logo } }
+      blank = build { markdown "Logo\n\n![ ](rgb.jpg)\n", images: ->(_) { logo } }
+
+      [from_html, empty, blank].each do |doc|
+        expect(warnings_of(doc)).to eq(["image on page 1 has no alt: text (alt: false marks decoration)"])
+        expect(struct_types(doc.to_pdf)).to eq([[:Document, %i[P Figure]]])
+      end
     end
 
     it "accepts a decorative image and a blank alt: in a document that is not tagged" do

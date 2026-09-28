@@ -66,6 +66,7 @@ RSpec.describe Stationery::HTML::TreeBuilder::Blocks do
       <p><img src="a.png" style="float: left; margin: 0 8pt 4pt 0; width: 40%">Beside</p>
       <img src="b.png" align="right" style="margin-top: 2pt">
       <img src="c.png" style="margin: 3pt">
+      <img src="d.png" alt="" style="float: left">
     HTML
 
     expect(parse(html)).to eq(
@@ -73,7 +74,8 @@ RSpec.describe Stationery::HTML::TreeBuilder::Blocks do
                        style: { width: 0.4, float: :left, margin: [0.0, 8.0, 4.0, 0.0] }),
        para("Beside"),
        rich::Image.new(src: "b.png", alt: nil, width: nil, height: nil, style: { float: :right, margin_top: 2.0 }),
-       rich::Image.new(src: "c.png", alt: nil, width: nil, height: nil, style: {})]
+       rich::Image.new(src: "c.png", alt: nil, width: nil, height: nil, style: {}),
+       rich::Image.new(src: "d.png", alt: false, width: nil, height: nil, style: { float: :left })]
     )
   end
 
