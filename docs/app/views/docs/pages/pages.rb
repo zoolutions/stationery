@@ -18,14 +18,69 @@ class Views::Docs::Pages::Pages < DocsUI::Page
         | `:a3` | 841.89 × 1190.55 |
         | `:a4` | 595.28 × 841.89 |
         | `:a5` | 419.53 × 595.28 |
+        | `:a6` | 297.64 × 419.53 |
+        | `:a7` | 209.76 × 297.64 |
+        | `:b5` | 498.9 × 708.66 |
         | `:letter` (default) | 612 × 792 |
         | `:legal` | 612 × 1008 |
         | `:tabloid` | 792 × 1224 |
+        | `:dl` (envelope, 110 × 220 mm) | 311.81 × 623.62 |
+        | `:c5` (envelope, 162 × 229 mm) | 459.21 × 649.13 |
+        | `:c6` (envelope, 114 × 162 mm) | 323.15 × 459.21 |
+        | `:label_4x6` (4 × 6 in) | 288 × 432 |
+        | `:label_4x3` | 288 × 216 |
+        | `:label_4x2` | 288 × 144 |
+        | `:label_100x150` (100 × 150 mm) | 283.46 × 425.2 |
+        | `:label_100x50` | 283.46 × 141.73 |
         | `[width, height]` | any size, in points |
+        | `["102mm", "74mm"]`, `"4in x 6in"` | any size, with its units |
 
-        `layout: :landscape` swaps width and height. `margin:` (default 36) takes one value, `[y, x]`,
-        `[top, x, bottom]`, `[top, right, bottom, left]` or `{ top:, right:, bottom:, left:, x:, y: }`.
-        An unknown size raises `ArgumentError`.
+        `layout: :landscape` swaps width and height: envelopes are listed short edge first, so it is the
+        side the address is on. `margin:` (default 36) takes one value, `[y, x]`, `[top, x, bottom]`,
+        `[top, right, bottom, left]` or `{ top:, right:, bottom:, left:, x:, y: }`, each in points or
+        as a length with its unit (`"3mm"`).
+
+        A size or a margin that cannot be read raises `ArgumentError` when the class is defined, with
+        what `page` takes.
+      MD
+    end
+
+    DocsUI::Section("Millimetres and inches", description: "Units for labels, envelopes and pre-printed forms.") do
+      md <<~'MD'
+        Every size and position is in points (1/72 inch). `mm`, `cm`, `inch` and `pt` convert to them, in
+        the class body and in `view_template` of every component and document:
+
+        ```ruby
+        class Label < Stationery::Document
+          page size: [mm(102), mm(74)], margin: mm(3)
+
+          def view_template
+            box(at: [mm(20), mm(45)], width: mm(60)) { text "Fragile" }
+          end
+        end
+        ```
+
+        They are private methods, `Numeric` is not patched, and a method of your own with one of the
+        names wins. Any other class gets them with `include Stationery::Units`, or calls
+        `Stationery::Units.mm(102)`.
+
+        `page` also reads lengths written with their unit:
+
+        ```ruby
+        page size: ["102mm", "74mm"], margin: "3mm"
+        page size: "4in x 6in", margin: ["0.25in", "0.5in"]
+        page size: "102 x 74 mm"          # the first length takes the unit of the second
+        ```
+
+        | Part | Accepted |
+        | --- | --- |
+        | Number | digits, with a fraction after a point: `102`, `101.6`. No sign, exponent or comma |
+        | Unit | `mm`, `cm`, `in`, `pt`, in either case |
+        | Between the two lengths of a size | `x` or `×` |
+        | Spaces | around numbers, units and the `x`, or none: `"4inx6in"` |
+
+        `Stationery::Units.points("3mm")` reads one length. Unit strings are read by `page` (and
+        `Stationery::Page.new`); elements take points, so write `padding: mm(3)` there.
       MD
     end
 

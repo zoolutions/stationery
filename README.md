@@ -381,6 +381,22 @@ render Callout.new(color: "#F3F4F6") { text "Amount due" }
 ## Pages
 
 - `page size: :a4 | :a3 | :a5 | :letter | :legal | :tabloid | [w, h], margin:, layout: :landscape`
+- Sizes are points. `mm(102)`, `cm(2)`, `inch(4)` and `pt(12)` convert to them in every component and
+  document (`include Stationery::Units` anywhere else), and `page` reads lengths with their unit:
+
+  ```ruby
+  class Label < Stationery::Document
+    page size: ["102mm", "74mm"], margin: "3mm"     # or "102 x 74 mm", "4in x 6in", [mm(102), mm(74)]
+
+    def view_template = box(at: [mm(20), mm(45)], width: mm(60)) { text "Fragile" }
+  end
+  ```
+
+  Units are `mm`, `cm`, `in` and `pt`; decimals take a point (`"101.6mm"`). Beside the office sizes there
+  are `:a6`, `:a7`, `:b5`, the envelopes `:dl`, `:c5` and `:c6` (short edge first: `layout: :landscape`
+  is the address side) and the label stock `:label_4x6`, `:label_4x3`, `:label_4x2`, `:label_100x150`
+  and `:label_100x50`. A size or margin that cannot be read raises `ArgumentError` when the class is
+  defined.
 - `page_template { |page| … }` runs on every page after pagination with `page.number`, `page.count`,
   `page.width`, `page.height`, `page.margin` and `page.content_box`. `page_template(layer: :background)`
   paints under the content (full-bleed backgrounds).
