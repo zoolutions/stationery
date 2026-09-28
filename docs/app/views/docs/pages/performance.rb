@@ -23,6 +23,16 @@ class Views::Docs::Pages::Performance < DocsUI::Page
       MD
     end
 
+    DocsUI::Section("Large documents", description: "What streaming does and does not save.") do
+      md <<~'MD'
+        `to_pdf { |chunk| … }` hands the file out in pieces as it is written: first bytes sooner, no
+        output buffer. It does not lower peak memory, which layout sets before the first byte is
+        written: a 938-page text document peaks at 187 MB as a String and 185 MB streamed, for a
+        1.1 MB file. The metrics gate renders the ten-page text document both ways (`text` and
+        `text_streamed`).
+      MD
+    end
+
     DocsUI::Section("Instrumentation", description: "From the README — events for AppSignal and friends.") do
       md SourceMarkdown.readme_section("Instrumentation")
     end

@@ -54,6 +54,46 @@ RSpec.describe Stationery::PDF::Writer do
     expect(reader_for(render(writer)).page_count).to eq(0)
   end
 
+  describe "streaming" do
+    def fill(writer)
+      later = writer.reserve
+      first = writer.add(Stationery::PDF::Stream.new("q Q"))
+      writer.flush
+      writer.set(later, { After: first })
+    end
+
+    it "keeps the String in numbered order, flushed or not" do
+      fill(writer)
+      pdf = render(writer)
+
+      expect(pdf.index("1 0 obj")).to be < pdf.index("2 0 obj")
+    end
+
+    it "hands a sink the file in flush order, with offsets that hold" do
+      pieces = []
+      streaming = described_class.new(sink: ->(bytes) { pieces << bytes.dup })
+      fill(streaming)
+
+      expect(render(streaming)).to eq(pieces.sum(&:bytesize))
+      file = pieces.join
+      expect(file.index("2 0 obj")).to be < file.index("1 0 obj")
+      xref_at = file[/startxref\n(\d+)/, 1].to_i
+      offsets = file.byteslice(xref_at..).scan(/^(\d{10}) 00000 n /).flatten.map(&:to_i)
+      offsets.each_with_index do |offset, index|
+        expect(file.byteslice(offset, "#{index + 1} 0 obj".bytesize)).to eq("#{index + 1} 0 obj")
+      end
+      expect(reader_for(file).page_count).to eq(0)
+    end
+
+    it "refuses to set an object a sink already has" do
+      streaming = described_class.new(sink: ->(_) {})
+      stream = streaming.add(Stationery::PDF::Stream.new("q Q"))
+      streaming.flush
+
+      expect { streaming.set(stream, {}) }.to raise_error(Stationery::Error, /already written/)
+    end
+  end
+
   context "with encryption" do
     subject(:writer) { described_class.new(encryption:) }
 

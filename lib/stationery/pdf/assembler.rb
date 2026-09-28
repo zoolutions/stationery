@@ -11,10 +11,16 @@ module Stationery
       # with `xmp_extensions:` as further schemas and `xmp_schemas:` describing
       # them to PDF/A (see XMP); `conformance:` (a PDF::Conformance) adds what
       # PDF/A and PDF/UA ask of the file; `signature:` (a PDF::Signature)
-      # signs it.
+      # signs it. `sink:` (anything answering `call(bytes)`) receives the file
+      # in pieces as each page is written, in the order the objects are
+      # flushed, instead of one String at the end; a signature needs the
+      # finished file, so it cannot be streamed.
       def initialize(pages:, resources:, info: {}, outline: [], encryption: nil, tagging: nil, lang: nil,
                      page_labels: nil, attachments: [], xmp: true, xmp_extensions: {}, xmp_schemas: [],
-                     conformance: nil, signature: nil)
+                     conformance: nil, signature: nil, sink: nil)
+        raise ArgumentError, "a signed document cannot be streamed: sign needs the whole file" if signature && sink
+
+        @sink = sink
         @xmp_schemas = xmp_schemas
         @conformance = conformance
         @signature = signature
@@ -31,15 +37,19 @@ module Stationery
         @encryption = encryption
       end
 
+      # The file as a String, or the number of bytes streamed to the sink.
       def render
-        writer = Writer.new(encryption: @encryption)
+        writer = Writer.new(encryption: @encryption, sink: @sink)
         tree = writer.reserve
         refs = @resources.build(writer)
         @form = Forms::AcroForm.new(writer, fonts: refs.fetch(:Font), signature: @signature,
                                             need_appearances: @conformance.nil? && @signature.nil?)
         kids = @kids = @pages.map { writer.reserve }
         @structure = @tagging && Tagging::Writer.new(@tagging, pages: @pages, refs: kids)
-        @pages.each_with_index { |page, index| write_page(writer, page, kids[index], tree, refs) }
+        @pages.each_with_index do |page, index|
+          write_page(writer, page, kids[index], tree, refs)
+          writer.flush
+        end
         writer.set(tree, { Type: :Pages, Kids: kids, Count: kids.size })
         outlines = OutlineWriter.new(writer, @outline, kids).write
         now = Time.now
