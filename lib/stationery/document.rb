@@ -25,7 +25,7 @@ module Stationery
                     else
                       { page: { size: :letter, margin: 36 }, families: {}, fallbacks: [], text: {}, metadata: {},
                         templates: [], regions: [], strict: false, tagged: false, incremental: false, images: {},
-                        attachments: [], shaping: {} }
+                        attachments: [], shaping: {}, missing_glyphs: :raise }
                     end
       end
 
@@ -107,10 +107,13 @@ module Stationery
 
       # Claims PDF/A-2b, PDF/A-3b and/or PDF/UA-1 (`conformance :pdf_a3b,
       # :pdf_ua1`) and writes what the level asks for; a render that cannot
-      # keep the claim raises. See PDF::Conformance.
-      def conformance(*levels)
-        PDF::Conformance.for(levels)
+      # keep the claim raises. See PDF::Conformance. `missing_glyphs:` is what
+      # a character no font has does: :raise (the default), or :replace to
+      # draw it as the first of U+FFFD, U+25A1 and "?" its font has.
+      def conformance(*levels, missing_glyphs: :raise)
+        PDF::Conformance.for(levels, missing_glyphs:)
         config[:conformance] = levels.flatten
+        config[:missing_glyphs] = missing_glyphs
       end
 
       # Makes every render a Factur-X / ZUGFeRD e-invoice: PDF/A-3b with the
@@ -191,10 +194,11 @@ module Stationery
                tagged: self.class.config[:tagged], page_labels: self.class.config[:page_labels], attachments: [],
                xmp: metadata[:xmp] != false, conformance: self.class.config[:conformance],
                factur_x: self.class.config[:factur_x], sign: self.class.config[:sign],
-               shaper: self.class.config[:shaping][:shaper], incremental: self.class.config[:incremental], &block)
+               shaper: self.class.config[:shaping][:shaper], incremental: self.class.config[:incremental],
+               missing_glyphs: self.class.config[:missing_glyphs], &block)
       invoice = PDF::FacturX.for(factur_x, self)
       attachments = PDF::Attachments.merge(self.class.config[:attachments], attachments, invoice&.attachment)
-      conformance = PDF::Conformance.for(invoice ? invoice.conformance(conformance) : conformance)
+      conformance = PDF::Conformance.for(invoice ? invoice.conformance(conformance) : conformance, missing_glyphs:)
       conformance&.validate!(encrypt:, metadata:, attachments:)
       signature = PDF::Signature.for(sign, self)
       raise ArgumentError, "a signed document cannot be streamed to a block: sign needs the whole file" if
@@ -229,12 +233,17 @@ module Stationery
 
     def builder_for(book) = Builder.new(book:, text: self.class.config[:text], images: self.class.config[:images])
 
+    def book_for(warnings, shaper, conformance)
+      Fonts::FontBook.new(self.class.config[:families], fallbacks: self.class.config[:fallbacks], warnings:,
+                                                        shaper:, language: metadata[:lang],
+                                                        stand_ins: conformance&.replace_missing_glyphs?)
+    end
+
     # The PDF bytes; `event` is the render.stationery payload it fills in.
     def render_pdf(event, strict:, debug:, tagged:, conformance:, shaper:, incremental:, **assembly)
       tagging = Tagging::Tree.new if tagged
       warnings = Warnings.new
-      book = Fonts::FontBook.new(self.class.config[:families], fallbacks: self.class.config[:fallbacks], warnings:,
-                                                               shaper:, language: metadata[:lang])
+      book = book_for(warnings, shaper, conformance)
       builder = builder_for(book)
       Stationery.instrument("build.stationery", document: self.class.name) { call(builder) }
       resources = Resources.new

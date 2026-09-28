@@ -18,8 +18,13 @@ module Stationery
     # text (glyphs out of logical order, several glyphs for one cluster, a
     # glyph already standing for another text, .notdef) the glyphs are shown
     # inside a Span whose ActualText is the characters in logical order.
+    #
+    # When the render replaces missing glyphs (see Font#stand_in), a glyph 0
+    # of the shaper's answer is drawn as the font's stand-in, a StandIn, at
+    # the stand-in's own advance, and shown inside a Span like .notdef.
     ShapedRun = Data.define(:font, :size, :glyphs, :texts, :extra, :rise) do
       def self.build(font, size, text, glyphs)
+        glyphs = self::StandIn.for(font, glyphs) if font.stand_in
         starts = glyphs.map(&:cluster).uniq.sort
         texts = starts.each_with_index.to_h do |start, index|
           [start, text[(index.zero? ? 0 : start)...(starts[index + 1] || text.length)]]
@@ -45,7 +50,7 @@ module Stationery
 
       # The characters the shaper found no glyph for.
       def missing
-        glyphs.select { |glyph| glyph.gid.zero? }.map(&:cluster).uniq.flat_map { |cluster| texts[cluster].chars }
+        glyphs.select { |glyph| missing?(glyph) }.map(&:cluster).uniq.flat_map { |cluster| texts[cluster].chars }
       end
 
       def to_operator
@@ -89,14 +94,18 @@ module Stationery
 
       # Marks the glyph as used, and answers whether the font's ToUnicode maps
       # it to its cluster's text. A glyph sharing its cluster holds the text
-      # only until a glyph drawn on its own claims another.
+      # only until a glyph drawn on its own claims another. A stand-in is
+      # the glyph of its own character, whatever it stands for.
       def own?(glyph, alone)
         text = texts[glyph.cluster]
-        return font.use(glyph.gid, text) == text && glyph.gid.positive? if alone
+        stand_in = glyph.is_a?(ShapedRun::StandIn)
+        return font.use(glyph.gid, text) == text && glyph.gid.positive? if alone && !stand_in
 
-        font.use(glyph.gid, text, loosely: true)
+        stand_in ? font.use(glyph.gid, font.stand_in.char) : font.use(glyph.gid, text, loosely: true)
         false
       end
+
+      def missing?(glyph) = glyph.gid.zero? || glyph.is_a?(ShapedRun::StandIn)
 
       def marked(indices, trailing)
         text = indices.map { |index| glyphs[index].cluster }.uniq.sort.map { |cluster| texts[cluster] }.join
@@ -155,6 +164,15 @@ module Stationery
       end
 
       def hex(ids) = ids.map { |gid| font.code(gid) }.pack("n*").unpack1("H*").upcase
+    end
+
+    # The glyph a font draws where the shaper answered glyph 0.
+    class ShapedRun::StandIn < Shaper::Glyph # rubocop:disable Style/ClassAndModuleChildren
+      def self.for(font, glyphs)
+        gid = font.stand_in.gid
+        advance = font.ttf.advance(gid)
+        glyphs.map { |glyph| glyph.gid.zero? ? new(gid:, advance:, cluster: glyph.cluster) : glyph }
+      end
     end
   end
 end

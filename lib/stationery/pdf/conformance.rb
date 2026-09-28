@@ -27,19 +27,32 @@ module Stationery
       OUTPUT_CONDITION = "sRGB IEC61966-2.1"
       PRINT = 4
       CMYK_OPERATOR = /^(?:-?[\d.]+ ){4}[kK]$/
+      # What a character no font has does: :raise, or :replace to draw the
+      # font's stand-in for it (see Fonts::Font#stand_in).
+      MISSING_GLYPHS = %i[raise replace].freeze
+      NO_STAND_IN = ', and the font drawing it has none of U+FFFD, U+25A1 and "?" to draw in its place'
 
-      attr_reader :levels
+      attr_reader :levels, :missing_glyphs
 
       def self.label(level) = LEVELS.dig(level.to_sym, :label) || level.to_s
 
-      # The Conformance for `levels` (a Symbol, an Array or nil); nil without any.
-      def self.for(levels)
+      # The Conformance for `levels` (a Symbol, an Array or nil); nil without
+      # any. `missing_glyphs:` is checked even then.
+      def self.for(levels, missing_glyphs: :raise)
         levels = Array(levels).flatten.compact
-        levels.empty? ? nil : new(*levels)
+        missing_glyphs(missing_glyphs)
+        levels.empty? ? nil : new(*levels, missing_glyphs:)
       end
 
-      def initialize(*levels)
+      def self.missing_glyphs(value)
+        return value.to_sym if value.respond_to?(:to_sym) && MISSING_GLYPHS.include?(value.to_sym)
+
+        raise ArgumentError, "unknown missing_glyphs: #{value.inspect} (use :raise or :replace)"
+      end
+
+      def initialize(*levels, missing_glyphs: :raise)
         @levels = levels.flatten.map(&:to_sym).uniq
+        @missing_glyphs = self.class.missing_glyphs(missing_glyphs)
         unknown = @levels - LEVELS.keys
         raise ArgumentError, "unknown conformance #{unknown.map(&:inspect).join(", ")} (use #{names})" if unknown.any?
         raise ArgumentError, "conformance takes one PDF/A level, got #{archival.join(" and ")}" if archival.size > 1
@@ -47,6 +60,8 @@ module Stationery
 
       def pdf_a? = archival.any?
       def pdf_ua? = @levels.include?(:pdf_ua1)
+      # Whether a character no font has is drawn as the font's stand-in.
+      def replace_missing_glyphs? = @missing_glyphs == :replace
       # The PDF/A part (2 or 3), nil without one.
       def part = archival.first && LEVELS.dig(archival.first, :part)
 
@@ -133,11 +148,16 @@ module Stationery
 
       # A character no font has draws as .notdef, which text may not reference
       # under PDF/A (ISO 19005-2/3, 6.2.11.8) or PDF/UA (ISO 14289-1, 7.21.8).
-      # Whitespace a font lacks draws as a blank and is not among them.
+      # Whitespace a font lacks draws as a blank and is not among them. Nor is
+      # a character drawn as its font's stand-in (`missing_glyphs: :replace`),
+      # which is a glyph of the font like any other; a font that has no
+      # stand-in drew .notdef all the same.
       def glyphs(warnings)
-        warnings.grep(Warnings::MissingGlyph).map do |glyph|
-          format('"%<char>s" (U+%<code>04X) is in no font of %<family>s: add a font or font_fallbacks that covers it',
-                 char: glyph.char, code: glyph.char.ord, family: glyph.family)
+        warnings.grep(Warnings::MissingGlyph).reject(&:stand_in).map do |glyph|
+          format('"%<char>s" (U+%<code>04X) is in no font of %<family>s%<stand_in>s: ' \
+                 "add a font or font_fallbacks that covers it",
+                 char: glyph.char, code: glyph.char.ord, family: glyph.family,
+                 stand_in: replace_missing_glyphs? ? NO_STAND_IN : "")
         end
       end
 
