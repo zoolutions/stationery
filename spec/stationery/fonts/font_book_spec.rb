@@ -12,6 +12,15 @@ RSpec.describe Stationery::Fonts::FontBook do
     expect(face.path).to end_with("OpenSans-Bold.ttf")
   end
 
+  it "memoises by family, weight and style only" do
+    book = open_sans_book
+    plain = book.resolve(base_style(weight: :bold))
+
+    expect(book.resolve(base_style(weight: :bold, size: 18, color: "#123456", underline: true))).to equal(plain)
+    expect(book.resolve(base_style(weight: :bold, style: :italic))).not_to equal(plain)
+    expect(book.resolve(base_style(weight: :regular)).last.path).to end_with("OpenSans-Regular.ttf")
+  end
+
   it "falls back to the first registered family for an unknown name and warns once" do
     book = open_sans_book
     2.times { book.resolve(base_style(family: "Nope")) }
