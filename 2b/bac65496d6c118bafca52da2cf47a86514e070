@@ -1,0 +1,48 @@
+benchmark/metrics.rb
+  s_600b6bfbec0b19::t_fe3c29d82c3a7d 15,42-43,45-46,62,64-66,70-73
+  s_600b6bfbec0b19::t_27205ac111b46e 63
+lib/stationery/pdf/assembler.rb
+  s_600b6bfbec0b19::t_c20d9ad2ef00f3 14-16,19-22,39,41,48-51
+spec/stationery/document_spec.rb
+  s_600b6bfbec0b19::t_756183a856ec7a 14,17,20-33,35-36
+  s_600b6bfbec0b19::t_e365ac953f30bc 15
+spec/stationery/document_to_pdf_streaming_spec.rb
+  s_600b6bfbec0b19::t_651b171ad783ab 1-81
+lib/stationery/pdf/writer.rb
+  s_600b6bfbec0b19::t_c7441058ef0c00 8-12,15,19,21,24-27,38-39,48-63,70-72,74-78,88-89,91,94-97,99,101-107
+  s_600b6bfbec0b19::t_c20d9ad2ef00f3 23
+  s_600b6bfbec0b19::t_5898e1792fdc61 65
+lib/stationery/document.rb
+  s_600b6bfbec0b19::t_c20d9ad2ef00f3 156-158,166,221,226,231,233,237-238,264-266,269,271-277
+  s_600b6bfbec0b19::t_651b171ad783ab 159-162,171-174,176,178,267-268,270,278-282
+Rakefile
+  s_600b6bfbec0b19::t_9f570b3c5e3212 93-94
+spec/stationery/pdf/writer_spec.rb
+  s_600b6bfbec0b19::t_fe3c29d82c3a7d 57-97
+benchmark/baseline.json
+  s_600b6bfbec0b19::t_54d6877e445c12 34-38
+docs/app/views/docs/pages/documents_and_components.rb
+  s_600b6bfbec0b19::t_92183d1cc21dc2 58-59,63-64,68-69
+  s_600b6bfbec0b19::t_651b171ad783ab 70-72
+docs/app/views/docs/pages/performance.rb
+  s_600b6bfbec0b19::t_92183d1cc21dc2 26-36
+README.md
+  s_600b6bfbec0b19::t_92183d1cc21dc2 70,574-580,584-585
+  s_600b6bfbec0b19::t_651b171ad783ab 581-583
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "2bbac65496d6c118bafca52da2cf47a86514e070",
+  "prompts": {},
+  "sessions": {
+    "s_600b6bfbec0b19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07aa85e9-e3ee-4c79-91ec-f8ee3120df8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
