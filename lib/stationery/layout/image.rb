@@ -13,7 +13,7 @@ module Stationery
     #
     # A bitmap keeps its pixels: drawn at more than twice `max_ppi:` (300;
     # nil disables) it is reported as a Warnings::OversizedImage, and with
-    # `downscale: true` a PNG is resampled to `max_ppi` at its drawn size
+    # `downscale: true` a PNG or WebP is resampled to `max_ppi` at its drawn size
     # instead (a JPEG is never re-encoded; resize it before embedding).
     class Image < Node
       DEFAULT_MAX_PPI = 300

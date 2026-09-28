@@ -74,6 +74,12 @@ RSpec.describe Stationery::Instrumentation do
       .to eq(format: "JPEG", width: 4, height: 3, bytes: File.size(image_path("rgb.jpg")))
   end
 
+  it "reports a lossless WebP as WebP" do
+    Stationery::Images.load(image_path("webp/photo.webp"))
+
+    expect(payload("image.stationery")).to eq(format: "WebP", width: 40, height: 32, bytes: 2958)
+  end
+
   it "reports font parsing on a registry miss and subsetting on every render" do
     document.to_pdf
     fonts = font_events

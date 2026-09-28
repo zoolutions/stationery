@@ -3,7 +3,7 @@
 Pure-Ruby PDF documents built from Phlex-style components. Describe the page
 with rows, columns, boxes, tables, text and images; a box-layout engine
 measures, places and paginates them; a small PDF writer embeds subsetted
-TrueType and OpenType fonts, JPEG/PNG images and SVG drawings.
+TrueType and OpenType fonts, JPEG, PNG and lossless WebP images and SVG drawings.
 
 **Documentation: [stationery.zoolutions.llc](https://stationery.zoolutions.llc)**
 
@@ -84,7 +84,7 @@ renders them all, or render one with `stationery render examples/report.rb`.
 | `box(padding:, background:, border:, radius:, width:, height:, min_height:, overflow:, at:, link:, outset:, break_inside:, decoration:, rotate:, shadow:) { }` | A container. Moves to the next page whole when it fits there and continues across pages when it does not; `break_inside: :auto` splits it at any page break, `:avoid` never splits it. At a cut, `decoration: :slice` (default) drops the padding and border, `:clone` keeps the padding. `overflow: :truncate` or `:shrink_to_fit` for fixed heights; a fixed `height:` never splits. `min_height:` is a floor that still splits: the first fragment keeps as much of it as the page holds, the next carries the rest (not combinable with `height:`). `at: [x, y]` pins it to a page position. `link:` makes the whole box clickable. `outset:` bleeds the background past the box (e.g. into the page margins). `rotate: -3` turns the painted box around its centre (layout box unchanged, never splits; a `link:` keeps its unrotated rectangle). `shadow: true` or `{ offset: [0, 4], blur: 8, color:, opacity: 0.15 }` paints a soft drop shadow under it, taking no space. `overflow: :hidden` clips the content to the rounded outline. |
 | `row(gap:, align:, break_inside:) { column(width:) { } }` | Columns side by side. `width:` is points, a fraction (`0.5`), `:auto` or `nil` (equal share). Splits across pages like a box, every column at once; a row with a fixed-height column never splits; columns with `min_height:` do. |
 | `table(rows, widths:, width:, header:, split_rows:, cell:) { \|t\| }` | Tables. Cells are strings, layout nodes, procs built with the DSL (`-> { image logo }`) or components. Style with `t.row(0)`, `t.rows(-1)`, `t.column(1)`, `t.columns(1..)`, chained, plus `t.zebra`. Header rows repeat after a page break. A cell may be `{ content:, colspan:, rowspan: }` plus any cell option; rows list only the cells they start, as in HTML, and pages never break through a rowspan. Spans are set in the rows, not through selections. A row taller than the page continues on the next page, cut through its cells, with the header repeated; `split_rows: true` cuts any row that reaches the page bottom instead of moving it whole. |
-| `image(path_or_io, width:, height:, fit:, align:, radius:, rotate:, max_ppi:, downscale:)` | JPEG or PNG, aspect preserved. `fit: [w, h]` scales to fit inside; `fit: :cover` fills `width:` × `height:` and crops around the centre. `radius:` rounds the corners; `rotate:` turns it (degrees, clockwise) without changing the space it takes. Drawn at more than twice `max_ppi:` (300) it is reported as oversized; `downscale: true` resamples a PNG to that resolution instead. |
+| `image(path_or_io, width:, height:, fit:, align:, radius:, rotate:, max_ppi:, downscale:)` | JPEG, PNG or lossless WebP, aspect preserved. `fit: [w, h]` scales to fit inside; `fit: :cover` fills `width:` × `height:` and crops around the centre. `radius:` rounds the corners; `rotate:` turns it (degrees, clockwise) without changing the space it takes. Drawn at more than twice `max_ppi:` (300) it is reported as oversized; `downscale: true` resamples a PNG or WebP to that resolution instead. |
 | `svg(source_or_path, width:, height:, color:, align:)` | Vector icons and drawings; `currentColor` takes `color:` (or the `color` an element sets). Linear and radial gradients (`fill="url(#id)"`, `href` chains, both gradient units); `text`/`tspan` in the document's fonts; `<style>` stylesheets (element, class, id and `*` selectors); `use`, `symbol` sprites and nested `svg` viewports (`viewBox`, `preserveAspectRatio`); `clipPath` (both `clipPathUnits`). |
 | `wrap(gap:, row_gap:, align:) { }` | Children side by side at their own widths, wrapping onto new rows (chips, tags). |
 | `stack(gap:, align:) { }` | A base with layers painted over it: ordinary children set the height, `layer` children float over them and take no space. Moves to the next page whole. |
@@ -846,15 +846,17 @@ drawn, and between ideographic characters (CJK ideographs, kana, Hangul), keepin
 a closing mark such as 。」 on the line before it and an opening bracket with what
 follows, so Japanese, Chinese and Korean text wraps without spaces.
 
-Images are JPEG (grey, RGB, CMYK) and PNG (every colour type, alpha as a soft
-mask). Parsed fonts and images are cached per process.
+Images are JPEG (grey, RGB, CMYK), PNG (every colour type, alpha as a soft
+mask) and lossless WebP (decoded in Ruby and embedded like a PNG, alpha as a
+soft mask; lossy and animated WebP raise `UnsupportedImage`). Parsed fonts and
+images are cached per process.
 
 A bitmap keeps its pixels, so a 1600 px photo drawn 160 pt wide ships all
 1600 px at 720 ppi. An image drawn at more than twice the document's
 `max_ppi` (300, or `images max_ppi: 220` at class level, `nil` to switch the
 check off) is reported as a `Warnings::OversizedImage` naming the file, its
 pixel width and the resolution it lands at. `images downscale: true` (or
-`image(..., downscale: true)`) resamples a PNG to `max_ppi` at its drawn size
+`image(..., downscale: true)`) resamples a PNG or a WebP to `max_ppi` at its drawn size
 before embedding it, alpha included; a JPEG is embedded byte for byte, so
 resize it before you embed it (an ActiveStorage variant per drawn size,
 preprocessed, keeps a render to a download).
@@ -1027,6 +1029,10 @@ table render under StackProf (wall mode; `MODE=cpu` or `MODE=object` for the oth
 `SGHTMLTOPDF=0 bundle exec rake bench` leaves the third engine out, as does a machine
 without its gem.
 
+A lossless WebP is decoded in Ruby when it is first loaded, which a JPEG or an opaque PNG
+(both passed through) never is: a 1000 × 1000 px image takes 0.2 to 0.4 s on the machine
+above, by what is in it, and the image cache keeps it for the renders that follow.
+
 Time depends on the machine, so CI holds what does not: `bundle exec rake metrics`
 renders six fixed documents and compares the objects each render allocates, its
 page count and its bytes with `benchmark/baseline.json` (allocations may grow 3%,
@@ -1048,8 +1054,9 @@ SVG covers the shapes, gradients, text, stylesheets, `use`/`symbol` sprites and 
 sets and exports use, nothing else: `image`, `mask`, `pattern`, `filter` and `textPath` are skipped
 and reported, text inside a `clipPath` does not clip, and the shapes of a clip path join into one
 path, so overlapping shapes wound in opposite directions cancel where they overlap.
-Images are JPEG and PNG (non-interlaced) and never fetched from a URL; a JPEG is embedded at its
-source resolution (only PNGs can be downscaled), so an oversized one is reported, not resized. `html` reads a fixed subset of CSS (colours, sizes, weights, alignment, margins, padding, table
+Images are JPEG, PNG (non-interlaced) and lossless WebP (not lossy or animated WebP, and no more
+than 33 megapixels) and never fetched from a URL; a JPEG is embedded at its
+source resolution (only PNG and WebP can be downscaled), so an oversized one is reported, not resized. `html` reads a fixed subset of CSS (colours, sizes, weights, alignment, margins, padding, table
 borders and widths, page breaks; see [What CSS is read](#what-css-is-read)), not a layout
 engine's worth: no `display`, floats, positioning, `font-family` or selectors with combinators.
 `markdown` reads no CSS, and raw HTML inside Markdown stays literal text.
