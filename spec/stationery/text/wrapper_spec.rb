@@ -153,6 +153,41 @@ RSpec.describe Stationery::Text::Wrapper do
     end
   end
 
+  describe "zero-width spaces and CJK" do
+    it "breaks at a zero-width space and never draws it" do
+      expect(lines("alpha\u200Bbeta gamma", width_of("gamma") + 0.5)).to eq(%w[alpha beta gamma])
+      expect(lines("al\u200Bpha", 1000)).to eq(["alpha"])
+    end
+
+    it "breaks between ideographic characters" do
+      expect(lines("日本語のテキスト", width_of("日本語") + 0.5)).to eq(%w[日本語 のテキ スト])
+    end
+
+    it "keeps a closing mark on the line before it and an opening bracket with what follows" do
+      expect(lines("「日本」です。", width_of("日本") + 0.5)).to eq(["「日", "本」", "で", "す。"])
+    end
+
+    it "breaks between Latin and CJK text in a mixed word" do
+      expect(lines("abc漢字def", width_of("abc漢字") + 0.5)).to eq(%w[abc漢字 def])
+    end
+
+    it "never hyphenates a CJK unit" do
+      allow(Stationery::Hyphenation).to receive(:points).and_call_original
+
+      result = lines("日本語", width_of("日") + 0.5, style: base_style(hyphenate: true))
+
+      expect(result).to eq(%w[日 本 語])
+      expect(Stationery::Hyphenation).not_to have_received(:points)
+    end
+
+    it "splits a word into break units" do
+      expect(Stationery::Text::Breaks.units("東京（とうきょう）"))
+        .to eq([["東", false], ["京", false], ["（と", false], ["う", false], ["きょ", false], ["う）", false]])
+      expect(Stationery::Text::Breaks.units("hello")).to eq([["hello", false]])
+      expect(Stationery::Text::Breaks.units("。")).to eq([["。", true]])
+    end
+  end
+
   it "measures each fragment and places it along the line" do
     line = described_class.new(book).wrap(Stationery::Text::Markup.parse("ab <b>cd</b>", base_style), 1000).first
 

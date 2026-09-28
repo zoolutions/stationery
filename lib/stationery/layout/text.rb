@@ -53,13 +53,15 @@ module Stationery
         @natural_width ||= paragraph(Float::INFINITY).lines.map(&:width).max || 0
       end
 
+      # The widest piece that cannot be broken: a word, or one break unit of a
+      # word with CJK characters.
       def min_width
         @min_width ||= @runs.flat_map do |run|
-          style = run.style
-          font = @context.book.resolve(style).first
-          run.text.delete(::Stationery::Text::Wrapper::SOFT_HYPHEN).split(/[ \t\n]+/).map do |word|
-            font.width_of(word, style.render_size, letter_spacing: style.letter_spacing, kerning: style.kerning,
-                                                   ligatures: style.ligatures, features: style.features)
+          font = @context.book.resolve(run.style).first
+          run.text.delete(::Stationery::Text::Wrapper::SOFT_HYPHEN).split(/[ \t\n\u200B]+/).map do |word|
+            next piece_width(font, run.style, word) unless ::Stationery::Text::Breaks.cjk?(word)
+
+            ::Stationery::Text::Breaks.units(word).map { |unit, _| piece_width(font, run.style, unit) }.max
           end
         end.max || 0
       end
@@ -78,6 +80,11 @@ module Stationery
 
         head, tail = paragraph.split_at(kept)
         [head && from(head), tail && from(tail)]
+      end
+
+      def piece_width(font, style, text)
+        font.width_of(text, style.render_size, letter_spacing: style.letter_spacing, kerning: style.kerning,
+                                               ligatures: style.ligatures, features: style.features)
       end
 
       def paragraph(width)

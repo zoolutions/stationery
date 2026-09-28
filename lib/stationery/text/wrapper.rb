@@ -3,7 +3,8 @@
 module Stationery
   module Text
     # Greedy line breaking over styled runs. Breaks at spaces (the space is
-    # dropped at the break) and after hyphens; a word that does not fit is
+    # dropped at the break), after hyphens, at a zero-width space (U+200B,
+    # HTML's <wbr>) and between ideographic characters (see Breaks); a word that does not fit is
     # hyphenated when it may be (a soft hyphen U+00AD names the break points,
     # else the style's `hyphenate` language), and a word wider than the line
     # is broken between characters. A word that changes style midway
@@ -12,6 +13,7 @@ module Stationery
     class Wrapper
       TOKEN = /\n|[ \t]+|[^ \t\n-]*-+|[^ \t\n-]+/
       SOFT_HYPHEN = "­"
+      ZERO_WIDTH_SPACE = Breaks::ZERO_WIDTH_SPACE
       EPSILON = 0.0001
 
       Segment = Data.define(:text, :style)
@@ -34,20 +36,65 @@ module Stationery
 
       private
 
-      # [:word, segments] | [:space, segments] | [:newline]
+      # [:word, segments] | [:space, segments] | [:newline]. A word that runs
+      # on into the next styled run stays one word ("<b>Tot</b>al"); a
+      # zero-width space is an empty :space, a break that draws nothing; a
+      # word with CJK characters is cut into its break units (Breaks).
       def items(runs)
         items = []
+        @join = false # whether the next token may continue the last word
         runs.each do |run|
-          run.text.scan(TOKEN) do |token|
-            if token == "\n" then items << [:newline]
-            elsif token.match?(/\A[ \t]/) then items << [:space, [Segment.new(token, run.style)]]
-            elsif items.last&.first == :word && !items.last.last.last.text.end_with?("-")
-              items.last.last << Segment.new(token, run.style)
-            else items << [:word, [Segment.new(token, run.style)]]
+          if run.text.include?(ZERO_WIDTH_SPACE)
+            run.text.split(ZERO_WIDTH_SPACE, -1).each_with_index do |part, index|
+              if index.positive?
+                items << [:space, []]
+                @join = false
+              end
+              tokens(items, part, run.style)
             end
+          else
+            tokens(items, run.text, run.style)
           end
         end
         items
+      end
+
+      def tokens(items, text, style)
+        text.scan(TOKEN) do |token|
+          if token == "\n"
+            items << [:newline]
+            @join = false
+          elsif token.match?(/\A[ \t]/)
+            items << [:space, [Segment.new(token, style)]]
+            @join = false
+          else
+            word_units(items, token, style)
+          end
+        end
+      end
+
+      # A Latin word is one unit and may run on into the next styled run
+      # unless it ends in a hyphen; a word with CJK characters is cut into
+      # its break units, none of which the next token continues. Latin words
+      # skip the unit split, so they cost no allocation of their own.
+      def word_units(items, token, style)
+        if Breaks.cjk?(token)
+          Breaks.units(token).each do |text, glued|
+            add_unit(items, text, style, glued)
+            @join = false
+          end
+        else
+          add_unit(items, token, style, false)
+          @join = !token.end_with?("-")
+        end
+      end
+
+      def add_unit(items, text, style, glued)
+        if (@join || glued) && items.last&.first == :word
+          items.last.last << Segment.new(text, style)
+        else
+          items << [:word, [Segment.new(text, style)]]
+        end
       end
 
       def place((kind, segments))
@@ -115,6 +162,8 @@ module Stationery
         return (1...chars.length).select { |index| chars[index - 1].text == SOFT_HYPHEN } if @explicit
 
         text = chars.map(&:text).join
+        return [] if Breaks.cjk?(text)
+
         language = chars.first.style.hyphenate or return []
         core = text[/\p{L}+/] or return []
         offset = text.index(core)

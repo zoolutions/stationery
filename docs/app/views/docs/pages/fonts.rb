@@ -62,6 +62,15 @@ class Views::Docs::Pages::Fonts < DocsUI::Page
         from the patterns; it is never measured or drawn and never reaches the PDF, so an unbroken word
         copies out whole. A hyphenated line is justifiable like any other wrapped line.
 
+        ### Line breaking
+
+        Lines break at spaces, after hyphens and at hyphenation points, and also at a zero-width space
+        (U+200B, `<wbr>` in HTML), which is never drawn and never reaches the PDF, and between ideographic
+        characters — CJK ideographs, kana, Hangul, fullwidth forms — so Japanese, Chinese and Korean text
+        wraps without spaces. A closing mark (。、」）ー and the small kana) stays on the line before it and
+        an opening bracket (「（) with what follows, the usual kinsoku rules. Justification still widens
+        spaces only, so a line of CJK text is set flush left.
+
         ```ruby
         default_text hyphenate: "de"
         text "Die Silbentrennung der Donaudampfschifffahrt"   # Silben- / trennung … at a narrow width
