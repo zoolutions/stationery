@@ -1,0 +1,26 @@
+docs/app/views/docs/pages/warnings.rb
+  ai_agent 45,78
+README.md
+  s_f5a1e2cf907cda::t_1f499c1666b94c 584,635-636,1268-1278,1604-1608,1655
+  s_f5a1e2cf907cda::t_47770560545558 581-583,585,593,614,619-621
+docs/app/views/docs/pages/images_and_svg.rb
+  s_f5a1e2cf907cda::t_43d2159d51ecf9 23-30
+CHANGELOG.md
+  s_f5a1e2cf907cda::t_aeede23dd54b79 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "e895c1e063eeec577c3179c65950abc62db02cd9",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
