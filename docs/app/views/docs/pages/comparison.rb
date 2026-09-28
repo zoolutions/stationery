@@ -64,9 +64,9 @@ class Views::Docs::Pages::Comparison < DocsUI::Page
         | | Stationery | Prawn | sghtmltopdf |
         | --- | --- | --- | --- |
         | JPEG, PNG | Yes | Yes | Yes |
-        | WebP, GIF | No | No | WebP yes, GIF no |
+        | WebP, GIF | Lossless WebP; lossy WebP and GIF no | No | WebP yes, GIF no |
         | SVG | Inline and file: shapes, paths, gradients, text, stylesheets, `use`, `symbol`, `clipPath`; no `mask`, `pattern`, `filter` | No (prawn-svg is a separate gem) | By reference through `<img>` (usvg); inline `<svg>` no |
-        | Oversized-image warning, downscaling | Yes; PNG resampling | No | No |
+        | Oversized-image warning, downscaling | Yes; PNG and WebP resampling | No | No |
         | Rotation, shadows, overlays | `rotate:` on images and boxes, `shadow:`, `stack`/`layer` | `rotate` blocks; `transparent`; no shadows | CSS `transform`, `box-shadow`, positioning |
         | Direct drawing | `canvas` with paths, clips, transforms | Full graphics API | No |
       MD

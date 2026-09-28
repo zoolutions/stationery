@@ -241,7 +241,7 @@ class Views::Docs::Pages::Elements < DocsUI::Page
   end
 
   def media
-    DocsUI::Section("image", description: "JPEG and PNG.") do
+    DocsUI::Section("image", description: "JPEG, PNG and lossless WebP.") do
       md <<~'MD'
         `image(path_or_io, width: nil, height: nil, fit: nil, align: nil, opacity: nil)`
 

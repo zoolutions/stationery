@@ -39,7 +39,7 @@ class Views::Docs::Pages::Warnings < DocsUI::Page
             "An SVG used elements that cannot be drawn (mask, pattern, …) or a use or clip-path that leads nowhere; the rest is drawn.",
             "SVG \"logo.svg\" uses unsupported elements: mask, use: #icon not found" ],
           [ [ :code, "OversizedImage" ], "source, pixels, ppi, limit",
-            "A bitmap drawn at more than twice max_ppi (300 by default; images max_ppi: sets it, nil switches it off); resize it, or downscale: true for a PNG.",
+            "A bitmap drawn at more than twice max_ppi (300 by default; images max_ppi: sets it, nil switches it off); resize it, or downscale: true for a PNG or WebP.",
             "image \"photo.jpg\" 1600px wide is drawn at 720 ppi (limit 300); resize it before embedding" ],
           [ [ :code, "SkippedImage" ], "source, reason",
             "An html/markdown image resolved nowhere, pointed outside base_path or was remote.",

@@ -22,7 +22,7 @@ class Views::Docs::Pages::Limitations < DocsUI::Page
         | SVG | `image`, `mask`, `pattern`, `filter`, `textPath`; text inside a `clipPath`; stylesheet selectors with combinators (`g path`, `a > b`) | Skipped and listed in an `UnsupportedSvg` warning, as are a `use` or a `clip-path` whose target is missing |
         | SVG (approximated) | Gradient `reflect`/`repeat` spreads (drawn as `pad`), per-stop opacity (the first stop's), gradient strokes (the middle colour), rotated or skewed text (upright, uniformly scaled), `dominant-baseline` | Reported in `UnsupportedSvg` where it changes the drawing |
         | SVG (clip paths) | The union of a clip path's shapes as separate regions | The shapes join into one clipping path, so overlapping shapes wound in opposite directions cancel where they overlap |
-        | Images | GIF, WebP, TIFF, BMP, interlaced PNG; remote URLs; JPEG resampling (a JPEG is embedded at its source resolution, only a PNG can be downscaled) | `UnsupportedImage` naming the format; an image drawn at more than twice `max_ppi` is reported as `OversizedImage`; `html`/`markdown` skip a remote or unreadable image with a `SkippedImage` warning |
+        | Images | GIF, lossy and animated WebP, TIFF, BMP, interlaced PNG; remote URLs; JPEG resampling (a JPEG is embedded at its source resolution, only a PNG or a lossless WebP can be downscaled) | `UnsupportedImage` naming the format; an image drawn at more than twice `max_ppi` is reported as `OversizedImage`; `html`/`markdown` skip a remote or unreadable image with a `SkippedImage` warning |
         | HTML / Markdown | CSS outside the [subset `html` reads](/docs/elements#html-and-markdown): `display`, floats, positioning, `font-family`, `line-height`, inline backgrounds, selectors with combinators or pseudo-classes; `script`/`iframe`/`video`, task lists, footnotes, math; raw HTML inside Markdown | Unread styles are named in an `UnsupportedCss` warning; unknown elements render their text; raw HTML in Markdown stays literal |
         | Nesting | HTML elements or Markdown block quotes and lists nested deeper than `max_depth:` (64), more than 12 levels of indented block quotes and lists, SVG elements nested deeper than 128, a chain of more than 32 `use`s | Flattened into the deepest level kept, text and shapes included, and reported as a `NestingLimit` warning (the `use` chain in `UnsupportedSvg`) |
         | Layout | A fixed `height:` box, a rotated box and a `stack` never split; a row splits only when every column can; no balanced columns | The node moves to the next page whole; taller than a page it is placed anyway and reported as an `Overflow` warning |
@@ -43,7 +43,7 @@ class Views::Docs::Pages::Limitations < DocsUI::Page
         A JPEG is embedded byte for byte, so size it before you embed it: for print,
         `width_in_points / 72 * 300` pixels is plenty (a 160 pt photo needs about 670 px), and screen
         PDFs need half that. An image drawn at more than twice `max_ppi` is reported as an
-        `OversizedImage`, and a PNG can be resampled with `downscale: true` — see
+        `OversizedImage`, and a PNG or a lossless WebP can be resampled with `downscale: true` — see
         [Resolution](/docs/images-and-svg#resolution).
       MD
     end
