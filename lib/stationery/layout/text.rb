@@ -54,8 +54,10 @@ module Stationery
         from(paragraph(width).fit(height, overflow:))
       end
 
+      # Kept as a number: the lines of a paragraph set at no width are of no
+      # use to a page.
       def natural_width
-        @natural_width ||= (@paragraph || paragraph(Float::INFINITY)).lines.map(&:width).max || 0
+        @natural_width ||= (@paragraph || wrap(Float::INFINITY)).lines.map(&:width).max || 0
       end
 
       # The widest piece that cannot be broken: a word, or one break unit of a
@@ -102,10 +104,12 @@ module Stationery
       def paragraph(width, exclusions = nil)
         return @paragraph.at(width) if @paragraph
 
-        @paragraphs[exclusions ? [width, exclusions] : width] ||= ::Stationery::Text::Paragraph.new(
-          @runs, book: @context.book, width:, align: @align, leading: @leading, fallback_style: @context.style,
-                 exclusions:
-        )
+        @paragraphs[exclusions ? [width, exclusions] : width] ||= wrap(width, exclusions)
+      end
+
+      def wrap(width, exclusions = nil)
+        ::Stationery::Text::Paragraph.new(@runs, book: @context.book, width:, align: @align, leading: @leading,
+                                                 fallback_style: @context.style, exclusions:)
       end
 
       def from(paragraph)

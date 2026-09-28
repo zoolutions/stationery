@@ -15,6 +15,7 @@ RSpec.describe Stationery::Layout::Mark do
     mark = described_class.new(child, ["intro"])
 
     expect(mark.measure(200)).to eq(child.measure(200))
+    expect(mark.height_within(200, 5)).to eq(child.height_within(200, 5))
     expect([mark.natural_width, mark.min_width]).to eq([child.natural_width, child.min_width])
     expect(mark.fixed_width(100)).to be_nil
     expect([mark.splittable?, mark.page_break?, mark.avoid_break?]).to eq([true, false, false])

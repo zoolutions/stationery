@@ -12,8 +12,13 @@ module Stationery
     # widths and row heights measured for the cut, so a page break measures
     # nothing again. Laid out at another width they resolve and measure anew.
     # Where no cell spans rows a cut can fall before any row, so the rows
-    # still to come are not placed on a grid until a page paints them.
+    # still to come are not placed on a grid until a page paints them, nor
+    # measured until a page reaches them: a long table holds the wrapped
+    # lines of the page being filled, not of every row.
     class Table < Node
+      # How far over a limit the rows measured so far must be before the rest
+      # is left unmeasured: more than any rounding in their sum.
+      SLACK = 0.001
       DEFAULT_CELL = { padding: 5, borders: %i[top right bottom left], border_width: 0.5,
                        border_color: "#000000" }.freeze
 
@@ -85,6 +90,17 @@ module Stationery
 
       def measure(width) = row_heights(width).sum
 
+      def height_within(width, limit)
+        return measure(width) if row_spans?
+
+        used = 0
+        row_count.times do |row|
+          used += height_of(width, row)
+          return used if used > limit + SLACK
+        end
+        measure(width)
+      end
+
       def paint(canvas, x, y, width, _height = nil, **)
         widths = column_widths(width)
         heights = row_heights(width)
@@ -99,10 +115,12 @@ module Stationery
       end
 
       def split(width, height, **options)
-        heights = row_heights(width)
+        heights = measured(width)
+        [@header, row_count].min.times { |row| height_of(width, row) }
         used = heights.first(@header).sum
         count = @header
-        count += 1 while count < row_count && used + heights[count] <= height + EPSILON && (used += heights[count])
+        count += 1 while count < row_count && used + height_of(width, count) <= height + EPSILON &&
+                         (used += heights[count])
         return [self, nil] if count == row_count
 
         count = grid.boundaries.grep(@header..count).max if row_spans?
@@ -173,7 +191,7 @@ module Stationery
       def split_before(count, width)
         return [nil, self] if count == @header
 
-        heights = row_heights(width)
+        heights = measured(width)
         [fragment(@cells.first(count), width, heights.first(count)),
          fragment(@cells.first(@header) + @cells.drop(count), width,
                   heights.first(@header) + heights.drop(count), continued: true)]
@@ -188,7 +206,7 @@ module Stationery
         heads, tails = RowSplitter.new(placements, widths:, context: @context).call(space)
         return unless heads
 
-        heights = row_heights(width)
+        heights = measured(width)
         above, below = [heads, tails].map { |cells| [row_height(placements, cells, widths)] }
         [fragment(@cells.first(row) + [heads], width, heights.first(row) + above),
          fragment(@cells.first(@header) + [tails] + @cells.drop(row + 1), width,
@@ -237,8 +255,36 @@ module Stationery
       end
 
       def row_heights(width)
+        heights = measured(width)
+        heights.each_index { |row| heights[row] || height_of(width, row) } if heights.include?(nil)
+        heights
+      end
+
+      # The row heights measured so far at `width`, nil for a row no page has
+      # reached. A rowspan ties its rows' heights together, so a table with
+      # one measures them all at once.
+      def measured(width)
         @row_heights ||= {}
-        @row_heights[width] ||= grid.row_heights(column_widths(width)) { |p, span| p.cell.measure(@context, span) }
+        @row_heights[width] ||= if row_spans?
+                                  grid.row_heights(column_widths(width)) { |p, span| p.cell.measure(@context, span) }
+                                else
+                                  Array.new(row_count)
+                                end
+      end
+
+      # The height of one row: its tallest cell at the width it spans.
+      def height_of(width, row)
+        measured(width)[row] ||= begin
+          widths = column_widths(width)
+          column = 0
+          tallest = 0
+          @cells[row].each do |cell|
+            span = cell.colspan == 1 ? widths[column] : widths[column, cell.colspan].sum
+            column += cell.colspan
+            tallest = [tallest, cell.measure(@context, span)].max
+          end
+          tallest
+        end
       end
 
       # A copy holding other rows of this table. Its cells are built and

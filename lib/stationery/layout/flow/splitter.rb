@@ -43,7 +43,7 @@ module Stationery
           remaining = @slot ? @height - @slot.top : @height - @used - gap
           return broken(child, gap, remaining, index) if child.breaks?
 
-          height = measure(child)
+          height = within(child, remaining)
           return fits(child, height, gap, remaining - height, index) if height <= remaining + EPSILON
           return [part(@placed), part(after(index))] if child.is_a?(Spacer)
 
@@ -100,7 +100,7 @@ module Stationery
           following = 0
           (index + 1).upto(@children.size - 1) do |at|
             node = @children[at]
-            following += node.measure(node.width_in(@width))
+            following += node.height_within(node.width_in(@width), want - following)
             break if following >= want
           end
           left_after + EPSILON < [want, following].min
@@ -127,6 +127,12 @@ module Stationery
         def top? = @fresh && (@placement ? !@placement.content? : @placed.empty?)
 
         def measure(child) = @slot ? @slot.measure(child) : child.measure(child.width_in(@width))
+
+        # The child's height, or any height above `limit` when it is taller:
+        # a long table then leaves the rows beyond the page unmeasured.
+        def within(child, limit)
+          @slot ? @slot.measure(child) : child.height_within(child.width_in(@width), limit)
+        end
 
         def cut(child, remaining)
           return @slot.split(child, remaining, fresh: top?) if @slot

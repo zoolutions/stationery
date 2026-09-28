@@ -126,6 +126,24 @@ RSpec.describe Stationery::Layout::Flow do
     expect(reader_for(pdf).pages.first.text).to include("Heading", "one")
   end
 
+  it "asks a long table for no more of its height than the page or a keep_with_next needs" do
+    rows = Array.new(60) { |index| ["row #{index}"] }
+    table = Stationery::Layout::Table.new(rows, context: ctx)
+    marked = Stationery::Layout::Mark.new(Stationery::Layout::Table.new(rows, context: ctx), ["rows"])
+    heading = text_node("Heading").tap { |t| t.keep_with_next = 40 }
+    late = [table, marked.child].map { |node| node.cell(59, 0) }
+    late.each { |cell| allow(cell).to receive(:measure).and_call_original }
+
+    head, tail = flow(heading, table).split(260, 160)
+    marked_head, = flow(marked).split(260, 160)
+
+    expect(head.children.map(&:class)).to eq([Stationery::Layout::Text, Stationery::Layout::Table])
+    expect([head.children.last, marked_head.children.first.child].map(&:row_count)).to eq([6, 6])
+    expect(late).to all(have_received(:measure).exactly(0).times)
+    expect(tail.measure(260)).to be > 160
+    expect(late.first).to have_received(:measure).once
+  end
+
   it "keeps a numeric keep_with_next satisfied when enough follows on the same page" do
     heading = text_node("Heading").tap { |t| t.keep_with_next = 30 }
     pdf, = render_layout(flow(spacer(60), heading, lines_of(10, prefix: "body")))

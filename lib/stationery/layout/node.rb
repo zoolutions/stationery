@@ -18,6 +18,9 @@ module Stationery
     # The layout protocol. Every node can:
     #
     # - measure(width)            → its height at that width
+    # - height_within(width, limit)
+    #                             → its height at that width or, when that is
+    #                               more than `limit`, any height above it
     # - paint(canvas, x, y, width, height = nil, **)
     # - split(width, height, fresh: false)
     #                             → [part that fits, remainder] (nil for an empty side);
@@ -35,6 +38,10 @@ module Stationery
 
       def measure(_width) = raise(NotImplementedError, "#{self.class} must implement measure")
       def paint(_canvas, _x, _y, _width, _height = nil, **) = raise(NotImplementedError, "#{self.class}#paint")
+
+      # What a page asks a node it may have to split: a long table answers
+      # without measuring the rows beyond the limit.
+      def height_within(width, _limit) = measure(width)
 
       def splittable? = false
       # Moves whole to a fresh page before splitting; splits only when it does
