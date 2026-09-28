@@ -1,0 +1,9 @@
+benchmark/baseline.json
+  ai_agent 6,11,16,21,26,31,36,41,46,51,56,61,66,71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "17674f9e87a0819887de4baf982c3f360e8c439b",
+  "prompts": {}
+}
