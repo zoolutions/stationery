@@ -92,7 +92,8 @@ module Stationery
       end
 
       # A page's entries: PDF/UA tabs through annotations in structure order.
-      def page_entries(page) = pdf_ua? && page.annotations.any? ? { Tabs: :S } : {}
+      # `annotated` is whether the page has any, its own or a signature's.
+      def page_entries(page, annotated: page.annotations.any?) = pdf_ua? && annotated ? { Tabs: :S } : {}
 
       # A link annotation's entries: printable, and described for PDF/UA.
       def annotation_entries(link)

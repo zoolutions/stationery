@@ -248,7 +248,8 @@ signature_field "signature", label: "Signature of the applicant"
   with several widgets. A name used as both a field and a group raises `ArgumentError`.
 - `read_only:`, `required:`, `multiline:`, `max_length:` and `comb:` set the matching field flags.
 - A radio group's value is its checked choice's `value` (`Off` when none is checked); a select box
-  lists its `options:` and draws the chosen `value`; a signature field is left unsigned for the signer.
+  lists its `options:` and draws the chosen `value`; a signature field is left unsigned for the
+  signer, unless `sign field:` signs it (see [Digital signatures](#digital-signatures)).
 - `document.fields` returns `{ name => value }` for the last render (a check box's value is `true` or
   `false`, an unchecked radio group's and a signature field's `nil`). Encrypted documents keep their fields fillable.
 
@@ -490,13 +491,67 @@ InvoicePdf.new(invoice).to_pdf(factur_x: { xml:, profile: :extended }) # per ren
   with `<?xml` or `<rsm:CrossIndustryInvoice` raises `ArgumentError`, and what is inside is your
   invoicing code's. `examples/e_invoice.rb` builds a minimal EN 16931 document from the example
   invoice's lines.
-- Everything PDF/A-3b asks applies: no `encrypt:`, no form fields.
+- Everything PDF/A-3b asks applies: no `encrypt:`. Form fields and a signature are fine.
 - Without `factur_x` nothing changes.
 
 `bundle exec rake verify:factur_x` validates `examples/e_invoice.rb` with the
 [Mustang](https://www.mustangproject.org) validator through Docker: the PDF/A-3 container and the
 XML against the EN 16931 schema and business rules. CI runs it with `verify:conformance`. In
 tests, `have_factur_x(profile: :en16931)` checks that the invoice is named in XMP and embedded.
+
+### Digital signatures
+
+`sign` signs the file with a certificate and its private key, so a reader can tell who issued it
+and that not a byte changed since. It needs nothing but Ruby's own `openssl`, loaded when the first
+signature is made.
+
+```ruby
+class ContractPdf < Stationery::Document
+  sign certificate: -> { Rails.application.credentials.dig(:signing, :certificate) }, # PEM or OpenSSL object
+       key: -> { Rails.application.credentials.dig(:signing, :key) },                 # read per render
+       chain: -> { [File.read("config/intermediate.pem")] },
+       reason: "Approved", location: "Malmö", contact: "legal@acme.test"
+  # sign { { certificate: signer.certificate, key: signer.key, field: "approval" } }  # or a block for all of it
+
+  def view_template
+    text "Contract"
+    signature_field "approval", label: "Approved by" # `field: "approval"` signs this one
+  end
+end
+
+ContractPdf.new.to_pdf(sign: { certificate:, key:, passphrase: "…" }) # per render; nil for none
+```
+
+- The signature is `/SubFilter /ETSI.CAdES.detached`: a detached CMS over every byte of the file
+  except the signature itself, SHA-256 with an RSA (PKCS #1 v1.5) or EC (ECDSA) key, with the
+  signed attributes PAdES baseline B-B asks for (content type, message digest and the ESS
+  signing-certificate-v2 that binds it to the certificate; the signing time is the dictionary's
+  `/M`). The certificate and its `chain:` travel in the signature.
+- `certificate:` and `chain:` take an `OpenSSL::X509::Certificate` or PEM, `key:` an
+  `OpenSSL::PKey` or PEM (`passphrase:` when it is encrypted). Any value may be a block or callable
+  answering it for the document being rendered, and `certificate:`, `key:`, `chain:` and
+  `passphrase:` a method name, so secrets are read when they are needed and never at class load.
+  A key that is not the certificate's raises `ArgumentError`.
+- `field:` names the `signature_field` to sign, which keeps its appearance. Without it the
+  signature is invisible: a field of its own (`Signature1`) whose widget has no size, on the first
+  page. `name:` is the signer's name (the certificate's common name by default), `at:` the signing
+  time (`Time.now`).
+- The file is written once, with `contents_size:` bytes (8192) kept free for the signature, which
+  is then filled in place. A long certificate chain may need more; a signature that does not fit
+  raises and says so.
+- A signed form asks viewers not to regenerate appearances (`NeedAppearances` is left out) and
+  sets `/SigFlags 3`. `encrypt:` and `conformance` combine with `sign`: the signature is the one
+  string encryption leaves in the clear, and a signed PDF/A-3b or PDF/UA-1 file still validates.
+- Not covered: signature timestamps (PAdES-T) and long-term validation data (LTV), a second
+  signature, and signing a file that already exists. All of them need incremental updates;
+  Stationery signs what it renders, once. Whether a viewer trusts the signer is decided by the
+  certificate and the viewer's trust list, not by the file.
+
+`bundle exec rake verify:signature` signs `examples/invoice.rb` with a throwaway certificate and
+verifies it with `openssl cms -verify` and, when poppler is installed, `pdfsig`;
+`verify:conformance` validates signed PDF/A-3b and PDF/UA-1 renders with veraPDF. In tests,
+`have_signature(name: "Acme Legal")` checks that a signature covers the whole file and verifies
+against the certificate it carries.
 
 ### Debugging
 
@@ -751,6 +806,7 @@ RSpec.describe InvoicePdf do
   it { is_expected.to have_attachment("factur-x.xml", mime: "text/xml", relationship: :alternative) }
   it { is_expected.to have_conformance(:pdf_a3b) } # the level claimed in XMP, from `conformance`
   it { is_expected.to have_factur_x(profile: :en16931) } # the e-invoice XML, named in XMP and embedded
+  it { is_expected.to have_signature(name: "Acme Legal") } # covers the whole file and verifies
   it { is_expected.to have_tagged_content } # a tagged PDF with every text tagged or an artifact
   it { is_expected.to have_structure([[:Document, [[:H1, "Invoice"], [:P, "INV-7"]]]]) }
 end
@@ -776,6 +832,7 @@ class InvoicePdfTest < Minitest::Test
     assert_pdf_attachment pdf, "factur-x.xml", mime: "text/xml"
     assert_pdf_conformance pdf, :pdf_a3b
     assert_factur_x pdf, profile: :en16931
+    assert_pdf_signature pdf, name: "Acme Legal"
     assert_tagged_content pdf
     assert_pdf_structure pdf, [[:Document, [[:H1, "Invoice"], [:P, "INV-7"]]]]
   end
@@ -789,7 +846,8 @@ titles. The RSpec matchers compose like the built-ins: `.and` / `.or`, and insid
 exposes `text`, `page_texts`, `page_count`, `links`, `internal_links`,
 `image_count`, `bookmarks`, `metadata`, `xmp` (the packet), `xmp_values` (`{ "dc:title" => …, "dc:creator" => […] }`),
 `lang`, `page_labels`, `attachments`, `conformance` (`[:pdf_a3b, :pdf_ua1]`), `factur_x`
-(`{ profile:, filename:, version:, xml: }`), `warnings`, `tagged?`,
+(`{ profile:, filename:, version:, xml: }`), `signatures` (`[{ field:, name:, reason:, location:,
+signed_at:, subfilter:, byte_range:, signer:, valid: }]`), `warnings`, `tagged?`,
 `untagged_text` and
 `structure` — a tagged PDF's structure tree as nested arrays, each element's text
 read from its marked content: `[type, "text"]`, `[type, [children]]` (its own text
@@ -886,8 +944,10 @@ splits only when every column can; a rotated box and a `stack` move to the next 
 does not wrap around images. Link and form-widget rectangles stay in page space inside `rotate`
 and `transform`, and `shadow:` is stacked rectangles, not a blur.
 
-PDF: PDF/A-2b, PDF/A-3b and PDF/UA-1 only (no PDF/A-1, no level A or U, no PDF/UA-2, no PDF/X); no
-digital signing (`signature_field` is an empty field) and no JavaScript.
+PDF: PDF/A-2b, PDF/A-3b and PDF/UA-1 only (no PDF/A-1, no level A or U, no PDF/UA-2, no PDF/X) and
+no JavaScript. A render carries one signature (`/ETSI.CAdES.detached`, RSA or EC with SHA-256):
+no signature timestamp (PAdES-T) or long-term validation data, no second signature and no signing
+of a file that already exists, all of which need incremental updates.
 Form fields are set in the document's fonts, but text typed into one is drawn by the viewer:
 characters outside the glyphs the field kept (ASCII and Latin-1) use the viewer's own font.
 

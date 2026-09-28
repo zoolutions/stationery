@@ -119,6 +119,39 @@ RSpec.describe Stationery::Testing::Inspector do
     end
   end
 
+  describe "#signatures" do
+    let(:identity) { signer }
+    let(:options) { { certificate: identity.certificate, key: identity.key } }
+
+    it "lists every signed field with what it says and whether it verifies" do
+      doc = SpecDocument.build do
+        signature_field "board.chair", label: "Chair"
+        signature_field "board.member", label: "Member"
+      end
+      at = Time.utc(2026, 9, 28, 12, 30, 15)
+      sign = { **options, field: "board.member", at:, reason: "Godkänt", location: "Malmö" }
+
+      signed = { field: "board.member", name: "Test Signer rsa", reason: "Godkänt", location: "Malmö",
+                 signed_at: at, subfilter: :"ETSI.CAdES.detached", byte_range: [0, be > 0, be > 0, be > 0],
+                 signer: "CN=Test Signer rsa,O=Stationery,C=SE", valid: true }
+
+      expect(described_class.new(doc.to_pdf(sign:)).signatures).to match([signed])
+    end
+
+    it "is empty without a form or a signed field" do
+      expect(described_class.new(document).signatures).to eq([])
+      expect(described_class.new(SpecDocument.build { signature_field "empty" }).signatures).to eq([])
+    end
+
+    it "calls a signature it cannot read invalid" do
+      pdf = document.to_pdf(sign: options)
+      range = pdf[%r{/ByteRange \[([\d ]+)\]}, 1].split.map(&:to_i)
+      broken = pdf.dup.tap { |bytes| bytes.bytesplice(range[1] + 1, 8, "00000000") }
+
+      expect(described_class.new(broken).signatures).to match([include(signer: nil, valid: false)])
+    end
+  end
+
   describe "#xmp and #xmp_values" do
     it "reads the packet and its properties, or nil and {} without one" do
       doc = Class.new(SpecDocument) do

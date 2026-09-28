@@ -183,6 +183,30 @@ module Stationery
         end
       end
 
+      class HaveSignature < Base
+        def initialize(name: nil, valid: true)
+          super(name)
+          @valid = valid
+        end
+
+        def description
+          "have #{@valid ? "a valid" : "an invalid"} signature#{" by #{show(@expected)}" if @expected}"
+        end
+
+        private
+
+        def match?(pdf)
+          pdf.signatures.any? { |one| (@expected.nil? || one[:name] == @expected) && one[:valid] == @valid }
+        end
+
+        def actual
+          signatures = @inspector.signatures
+          return "got none" if signatures.empty?
+
+          "got #{signatures.map { |one| "#{one[:name].inspect} (#{one[:valid] ? "valid" : "invalid"})" }.join(", ")}"
+        end
+      end
+
       class HaveNoWarnings < Base
         def description = "have no warnings"
 
@@ -227,6 +251,7 @@ module Stationery
       def have_attachment(name, **) = HaveAttachment.new(name, **)
       def have_conformance(*levels) = HaveConformance.new(*levels)
       def have_factur_x(profile: nil) = HaveFacturX.new(profile:)
+      def have_signature(name: nil, valid: true) = HaveSignature.new(name:, valid:)
       def have_no_warnings = HaveNoWarnings.new
       def have_structure(expected) = HaveStructure.new(expected)
       def have_tagged_content = HaveTaggedContent.new

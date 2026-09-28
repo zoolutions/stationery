@@ -28,7 +28,8 @@ class Views::Docs::Pages::Limitations < DocsUI::Page
         | Layout | A fixed `height:` box, a rotated box and a `stack` never split; a row splits only when every column can; no balanced columns | The node moves to the next page whole; taller than a page it is placed anyway and reported as an `Overflow` warning |
         | Transforms | Annotations inside `rotate`/`transform` | Link and form-widget rectangles stay in untransformed page space |
         | Shadows | Blur | `shadow:` is stacked rounded rectangles at fading opacity, which reads as a soft shadow in print |
-        | PDF features | PDF/X, digital signing (`signature_field` is an empty `/Sig` field), JavaScript and actions | Not written |
+        | PDF features | PDF/X, JavaScript and actions | Not written |
+        | Signatures | Signature timestamps (PAdES-T), long-term validation data (LTV), a second signature, signing a file that already exists; keys other than RSA and EC | A render carries one [signature](/docs/conformance#digital-signatures) over the whole file; the rest needs incremental updates, which are not written. Another key type raises `ArgumentError` |
         | Conformance | PDF/A-1, PDF/A levels A and U, PDF/UA-2; CMYK colour and CMYK JPEGs in a conforming document | Only [PDF/A-2b, PDF/A-3b and PDF/UA-1](/docs/conformance) are claimed; CMYK is a `ConformanceIssue` warning |
         | Forms | Glyphs for text typed into a field beyond printable ASCII and Latin-1 (and a select's options) | The value a field is rendered with is drawn in the document's fonts, whatever its script; what a reader types outside the kept glyphs is drawn by the viewer in a font of its own |
 

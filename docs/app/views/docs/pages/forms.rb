@@ -457,11 +457,14 @@ class Views::Docs::Pages::Forms < DocsUI::Page
   end
 
   def signing
-    DocsUI::Section("Signing", description: "What a signature field is, and is not.") do
+    DocsUI::Section("Signing", description: "Empty for a viewer to sign, or signed by the document itself.") do
       md <<~'MD'
         `signature_field` writes an empty signature field: a place in the document where a signature
         goes. The signer fills it in a viewer that can sign, such as Acrobat, with their own certificate.
-        The document itself is written unsigned.
+        To sign at render time instead, give the document a certificate and key with `sign` and name
+        the field: `sign certificate:, key:, field: "approval"`. The field keeps its appearance and
+        the file carries a PAdES baseline signature over every byte. See
+        [Digital signatures](/docs/conformance#digital-signatures).
       MD
     end
   end

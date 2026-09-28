@@ -107,6 +107,21 @@ module Stationery
         config[:factur_x] = { xml: source, **options }
       end
 
+      # Signs every render with a digital signature over the whole file:
+      # `sign certificate: pem, key: pem, reason: "Approved"`. A value may be
+      # a block or callable answering it for the document being rendered (a
+      # method name for certificate:, key:, chain: and passphrase:), and a
+      # block may answer all of them, so keys are read when they are needed.
+      # `field:` names the signature_field it fills; without it the
+      # signature is invisible. See PDF::Signature.
+      def sign(**options, &block)
+        raise ArgumentError, "sign needs certificate: and key:, or a block answering them" unless block || options.any?
+
+        options = PDF::Signature.check(options)
+        PDF::Signature.new(**options) unless block || PDF::Signature.deferred?(options)
+        config[:sign] = block || options
+      end
+
       # Encrypts every render with the standard security handler; see
       # PDF::Encryption::StandardSecurity for the options.
       def encrypt(**)
@@ -141,13 +156,14 @@ module Stationery
     def to_pdf(target = nil, strict: self.class.config[:strict], debug: false, encrypt: self.class.config[:encrypt],
                tagged: self.class.config[:tagged], page_labels: self.class.config[:page_labels], attachments: [],
                xmp: metadata[:xmp] != false, conformance: self.class.config[:conformance],
-               factur_x: self.class.config[:factur_x])
+               factur_x: self.class.config[:factur_x], sign: self.class.config[:sign])
       invoice = PDF::FacturX.for(factur_x, self)
       attachments = PDF::Attachments.merge(self.class.config[:attachments], attachments, invoice&.attachment)
       conformance = PDF::Conformance.for(invoice ? invoice.conformance(conformance) : conformance)
       conformance&.validate!(encrypt:, metadata:, attachments:)
       options = { strict:, debug:, encrypt:, tagged: tagged || conformance&.pdf_ua?, page_labels:, attachments:,
-                  xmp: xmp || !conformance.nil?, conformance:, invoice: }
+                  xmp: xmp || !conformance.nil?, conformance:, invoice:,
+                  signature: PDF::Signature.for(sign, self) }
       Stationery.instrument("render.stationery", document: self.class.name) do |event|
         write(render_pdf(event, **options), target)
       end
@@ -197,12 +213,12 @@ module Stationery
     end
 
     def assemble(pages, resources, outline, encrypt:, tagging:, page_labels:, attachments:, xmp:, conformance:,
-                 invoice:)
+                 invoice:, signature:)
       encryption = encrypt && PDF::Encryption::StandardSecurity.new(**encrypt)
       assembler = PDF::Assembler.new(pages:, resources:, info:, outline:, encryption:, tagging:, xmp:,
                                      lang: metadata[:lang], page_labels: PDF::PageLabels.entries(page_labels),
                                      attachments:, conformance:, xmp_extensions: invoice&.xmp_extensions || {},
-                                     xmp_schemas: [invoice&.xmp_schema].compact)
+                                     xmp_schemas: [invoice&.xmp_schema].compact, signature:)
       Stationery.instrument("write.stationery", document: self.class.name) do |event|
         assembler.render.tap { |pdf| event[:bytes] = pdf.bytesize }
       end

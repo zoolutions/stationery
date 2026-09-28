@@ -53,6 +53,14 @@ RSpec.describe Stationery::PDF::Serializer do
     expect(described_class.dump(Stationery::PDF::TextString.new("ok"), crypt)).to eq("<6B6F>")
   end
 
+  it "writes a Verbatim as it is, whatever the crypt hook" do
+    placeholder = Stationery::PDF::Verbatim.new("<0000>")
+
+    expect(dump(placeholder)).to eq("<0000>")
+    expect(described_class.dump({ Contents: placeholder, Name: "ab" }, :reverse.to_proc))
+      .to eq("<</Contents <0000> /Name <6261>>>")
+  end
+
   it "refuses values it cannot represent" do
     expect { dump(Object.new) }.to raise_error(ArgumentError, /cannot serialize Object/)
   end

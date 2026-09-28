@@ -11,5 +11,9 @@ module Stationery
     # A human-readable string (document info, outline titles): written as a
     # literal when ASCII, as UTF-16BE with a byte order mark otherwise.
     TextString = Data.define(:value)
+
+    # PDF syntax written as it is and never encrypted: a signature's /Contents
+    # and /ByteRange, which are filled in once the file is written.
+    Verbatim = Data.define(:source)
   end
 end

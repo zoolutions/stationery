@@ -9,7 +9,8 @@ module Stationery
     # TextString for human-readable text that may need UTF-16.
     #
     # `crypt`, when given, receives every string's bytes (the writer binds it
-    # to the object being written) and the result is written as hex.
+    # to the object being written) and the result is written as hex. A
+    # Verbatim is written as it is.
     module Serializer
       NAME_ESCAPE = %r{[^\x21-\x7E]|[#%()/<>\[\]{}]}n
       LITERAL_ESCAPE = /[\\()\r]/n
@@ -25,6 +26,7 @@ module Stationery
         when Array then "[#{value.map { |v| dump(v, crypt) }.join(" ")}]"
         when HexString then hex(value.bytes, crypt)
         when TextString then text(value.value, crypt)
+        when Verbatim then value.source
         when String then crypt ? hex(value, crypt) : literal(value)
         when Integer, true, false then value.to_s
         when Float then number(value)
