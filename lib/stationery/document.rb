@@ -226,6 +226,23 @@ module Stationery
       end
     end
 
+    # Builds the document, lays it out and paints it on the canvases that
+    # `canvases` makes (see PDF::Canvases and Canvas::Interface): what a
+    # render does before its output is written, whatever the output is.
+    # Answers the pages, hands each to `each_page` as soon as its content is
+    # painted, and yields the bookmarks whose anchors were painted.
+    def paint_on(canvases, warnings: Warnings.new, shaper: self.class.config[:shaping][:shaper], each_page: nil,
+                 stand_ins: false)
+      book = book_for(warnings, shaper, stand_ins)
+      builder = builder_for(book)
+      Stationery.instrument("build.stationery", document: self.class.name) { call(builder) }
+      pages = paginate(builder, canvases, each_page, book:, warnings:)
+      destinations = Structure.resolve(pages, warnings:, book:, canvases:)
+      yield builder.outline.resolve(destinations) if block_given?
+      @warnings = warnings
+      pages
+    end
+
     # Used by page templates to build nodes into their own root.
     def build_with(builder)
       previous = @_builder
@@ -246,25 +263,22 @@ module Stationery
 
     def builder_for(book) = Builder.new(book:, text: self.class.config[:text], images: self.class.config[:images])
 
-    def book_for(warnings, shaper, conformance)
+    def book_for(warnings, shaper, stand_ins)
       Fonts::FontBook.new(self.class.config[:families], fallbacks: self.class.config[:fallbacks], warnings:,
-                                                        shaper:, language: metadata[:lang],
-                                                        stand_ins: conformance&.replace_missing_glyphs?)
+                                                        shaper:, language: metadata[:lang], stand_ins:)
     end
 
     # The PDF bytes; `event` is the render.stationery payload it fills in.
     def render_pdf(event, strict:, debug:, tagged:, conformance:, shaper:, incremental:, **assembly)
       tagging = Tagging::Tree.new if tagged
       warnings = Warnings.new
-      book = book_for(warnings, shaper, conformance)
-      builder = builder_for(book)
-      Stationery.instrument("build.stationery", document: self.class.name) { call(builder) }
       resources = Resources.new
       sealer = sealer_for(incremental, conformance, **assembly)
-      pages = paginate(builder, sealer, book:, resources:, warnings:, debug:, tagging:)
-      outline = builder.outline.resolve(Structure.resolve(pages, warnings:, resources:, book:, tagging:))
+      outline = nil
+      canvases = PDF::Canvases.new(resources, debug, tagging, warnings)
+      stand_ins = conformance&.replace_missing_glyphs? || false
+      pages = paint_on(canvases, warnings:, shaper:, each_page: sealer, stand_ins:) { |bookmarks| outline = bookmarks }
       tagging&.audit(pages, warnings, lang: metadata[:lang])
-      @warnings = warnings
       conformance&.audit!(pages, resources:, warnings:)
       @fields = Forms::AcroForm.values(pages)
       event[:pages] = pages.size
@@ -304,12 +318,12 @@ module Stationery
 
     # Takes the root from the builder as it hands it to the paginator, so
     # nothing here keeps the nodes of a page that has been painted.
-    def paginate(builder, sealer, book:, resources:, warnings:, debug:, tagging:)
+    def paginate(builder, canvases, each_page, book:, warnings:)
       Stationery.instrument("paginate.stationery", document: self.class.name) do |event|
         regions = Regions.new(self.class.config[:regions], measure: region_measure(book))
-        paginator = Layout::Paginator.new(resources:, page: page_options, warnings:, debug:, regions:, tagging:)
-        paginator.paginate(builder.release) { |page| sealer.call(page) }.tap do |pages|
-          PageTemplates.new(self, book:, resources:, debug:, regions:, warnings:, tagging:).apply(pages)
+        paginator = Layout::Paginator.new(canvases:, page: page_options, warnings:, regions:)
+        paginator.paginate(builder.release) { |page| each_page&.call(page) }.tap do |pages|
+          PageTemplates.new(self, book:, canvases:, regions:, warnings:).apply(pages)
           event[:pages] = pages.size
         end
       end

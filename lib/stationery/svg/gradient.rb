@@ -12,6 +12,18 @@ module Stationery
 
       Stop = Data.define(:offset, :color, :opacity)
 
+      # A gradient as a canvas is handed it to paint with (see
+      # Canvas::Interface#shade): its `kind` (:linear or :radial), its
+      # `coords` in gradient space (see #coords) and its `stops`, the colour
+      # `current` standing for `currentColor`.
+      Fill = Data.define(:gradient, :coords, :current) do
+        def kind = gradient.kind
+
+        # [[offset, [r, g, b]], …] from offset 0 to offset 1, each colour's
+        # components from 0 to 1. The ends extend (spread `pad`).
+        def stops = Shading.padded(gradient.stops).map { |stop| [stop.offset, gradient.rgb(stop, current)] }
+      end
+
       # Every gradient in the document, by id; stops take `sheet` rules.
       def self.collect(root, sheet = Stylesheet::EMPTY)
         elements = {}

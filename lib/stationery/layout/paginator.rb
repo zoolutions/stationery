@@ -7,10 +7,12 @@ module Stationery
     class Paginator
       attr_reader :warnings
 
-      def initialize(resources:, page: {}, warnings: Warnings.new, debug: false, regions: nil, tagging: nil)
-        @resources = resources
-        @tagging = tagging
-        @debug = debug
+      # `canvases:` makes the canvas of each page (see PDF::Canvases); without
+      # them the pages are painted for a PDF that names what it draws in
+      # `resources:`.
+      def initialize(resources: nil, canvases: nil, page: {}, warnings: Warnings.new, debug: false, regions: nil,
+                     tagging: nil)
+        @canvases = canvases || PDF::Canvases.new(resources, debug, tagging, warnings)
         @page_options = page
         @regions = regions
         @warnings = warnings
@@ -67,7 +69,7 @@ module Stationery
         box = page.content_box
         height = head.measure(box.width)
         @warnings << Overflow.new(page: number, height:, available: box.height) if height > box.height + EPSILON
-        canvas = Canvas.new(page, @resources, debug: @debug, tagging: @tagging, warnings: @warnings)
+        canvas = @canvases.body(page)
         head.paint(canvas, box.x, box.y, box.width)
         canvas.debug_rect(box.x, box.y, box.width, box.height, :page)
       end
