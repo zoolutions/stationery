@@ -42,7 +42,7 @@ module Stationery
         @min_width ||= @runs.flat_map do |run|
           style = run.style
           font = @context.book.resolve(style).first
-          run.text.split(/[ \t\n]+/).map do |word|
+          run.text.delete(::Stationery::Text::Wrapper::SOFT_HYPHEN).split(/[ \t\n]+/).map do |word|
             font.width_of(word, style.render_size, letter_spacing: style.letter_spacing, kerning: style.kerning,
                                                    ligatures: style.ligatures, features: style.features)
           end
