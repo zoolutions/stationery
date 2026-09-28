@@ -176,7 +176,7 @@ ignored and reported. At-rules are skipped, except that rules inside `@media pri
 | `width` | `px`, `pt`, `%`, `auto` | `img`, `table`, and `td`/`th` (column widths, when every cell of the first row has one) |
 | `page-break-before`, `page-break-after`, `break-before`, `break-after` | `always`, `page`, `auto` | blocks |
 | `page-break-inside`, `break-inside` | `avoid`, `auto` | blocks |
-| `column-count`, `columns` | a number of columns, `auto` (a column width is not read) | `div` and other containers, `p`, headings, lists, tables |
+| `column-count`, `columns` | a number of columns, `auto` (a column width is not read) | `div` and other containers, `p`, headings, lists, tables, `blockquote`, `pre` |
 | `column-gap` | a length in `px` or `pt`, `normal` | the same |
 
 `<font color size>` and `<center>` are read the same way. Everything else (`display`, `float`,

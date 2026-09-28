@@ -79,7 +79,9 @@ module Stationery
       end
 
       def blockquote(quote)
-        @component.box(role: :blockquote, **@styles[:blockquote], **box_options(quote.style)) { group(quote.blocks) }
+        @component.box(role: :blockquote, **@styles[:blockquote], **box_options(quote.style)) do
+          columned(quote.style) { group(quote.blocks) }
+        end
       end
 
       def list(list)
@@ -94,7 +96,7 @@ module Stationery
       def code(block)
         font = @styles[:code][:font]
         @component.box(**@styles[:pre], **box_options(block.style)) do
-          @component.text(block.text, **({ font: } if font))
+          columned(block.style) { @component.text(block.text, **({ font: } if font)) }
         end
       end
 
