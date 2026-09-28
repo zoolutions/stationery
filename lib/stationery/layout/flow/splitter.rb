@@ -8,7 +8,8 @@ module Stationery
       # never splits: one that does not fit what is left of the page, or whose
       # following content would not start beside it there, moves to the next
       # page with that content; floats left last on a page by a child that
-      # moves on go with it.
+      # moves on go with it. Floats that stack taller than a page are cut
+      # between two of them.
       #
       # The children after the one being placed are named by its index and
       # copied only where the flow is cut: once a page, not once a child.
@@ -59,13 +60,21 @@ module Stationery
           [part(@placed), part(after(index))]
         end
 
+        # Below other content a float is placed when the floats written with
+        # it fit and what follows them starts beside them. Below nothing but
+        # floats on a fresh page it is placed when it fits itself: the first
+        # one always, so that one taller than the page is kept and reported.
         def float(child, index)
           return move(@children.drop(index)) unless top? || lands?(@children.drop(index), @placement)
 
-          @placement.float(child)
+          slot = @placement.float(child)
+          return [part(@placed), part(@children.drop(index))] unless @placed.empty? || fits?(child, slot)
+
           @placed << child
           nil
         end
+
+        def fits?(float, slot) = slot.top + float.measure(slot.width) <= @height + EPSILON
 
         # A child holding a page break: what comes before the break stays on
         # this page, the rest goes to the next, however much room is left. One
@@ -112,12 +121,25 @@ module Stationery
             head, tail = cut(child, remaining)
             # A nested flow can finish on this page (its trailing spacer
             # dropped at the break) and hand back no remainder.
-            return [part(@placed + [head]), part([tail, *rest].compact)] if head
+            return [part(@placed + [head]), part([tail, *rest].compact)] if head && !over?(head, remaining)
           end
-          return [part(@placed.empty? ? [child] : @placed + [child]), part(rest)] if top?
+          return [part(@placed.empty? ? [child] : @placed + [child]), part(rest)] if top? && !leaves?(child)
 
           move([child, *rest])
         end
+
+        # Whether the part of a child cut below the floats of a fresh page
+        # runs over the page: first on the page it had to take something.
+        def over?(head, remaining) = floats_above? && measure(head) > remaining + EPSILON
+
+        # Whether a child that does not fit below the floats of a fresh page
+        # leaves them for the next page. One taller than the page by itself
+        # and in one piece stays with them, and is reported.
+        def leaves?(child)
+          floats_above? && (may_split?(child) || child.measure(child.width_in(@width)) <= @height + EPSILON)
+        end
+
+        def floats_above? = !@placement.nil? && top? && !@placed.empty?
 
         def may_split?(child, top: top?)
           !child.avoid_break? && (!child.prefer_whole? || top)
@@ -141,9 +163,10 @@ module Stationery
         end
 
         # The break before `nodes`. Floats placed last go with them: what
-        # wraps beside them is the first of `nodes`.
+        # wraps beside them is the first of `nodes`. Those of a fresh page
+        # with nothing else on it stay: they would come back as they are.
         def move(nodes)
-          return [part(@placed), part(nodes)] unless @placement && @placed.last&.float?
+          return [part(@placed), part(nodes)] unless @placement && @placed.last&.float? && !top?
 
           kept = @placed.reverse.drop_while(&:float?).reverse
           [part(kept), part(@placed.drop(kept.size) + nodes)]
@@ -173,7 +196,7 @@ module Stationery
 
             slot = node.float? ? placement.float(node) : placement.slot(node)
             return landed?(node, slot) unless node.float?
-            return false if slot.top + node.measure(slot.width) > @height + EPSILON
+            return false unless fits?(node, slot)
           end
           true
         end
