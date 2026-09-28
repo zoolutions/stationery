@@ -8,7 +8,8 @@ module Stationery
     # cannot meet them moves to the next page whole, unless it is already
     # first on a fresh page, where it splits as best it can. Beside floats
     # (`exclusions:`) its lines take the width each has; what a page break
-    # carries over no longer has the floats beside it.
+    # carries over no longer has the floats beside it, and is wrapped again
+    # where the width is another (the rest of a box that was beside a float).
     class Text < Node
       attr_reader :runs
 
@@ -54,7 +55,7 @@ module Stationery
       end
 
       def natural_width
-        @natural_width ||= paragraph(Float::INFINITY).lines.map(&:width).max || 0
+        @natural_width ||= (@paragraph || paragraph(Float::INFINITY)).lines.map(&:width).max || 0
       end
 
       # The widest piece that cannot be broken: a word, or one break unit of a
@@ -99,10 +100,12 @@ module Stationery
       end
 
       def paragraph(width, exclusions = nil)
-        @paragraph || (@paragraphs[exclusions ? [width, exclusions] : width] ||= ::Stationery::Text::Paragraph.new(
+        return @paragraph.at(width) if @paragraph
+
+        @paragraphs[exclusions ? [width, exclusions] : width] ||= ::Stationery::Text::Paragraph.new(
           @runs, book: @context.book, width:, align: @align, leading: @leading, fallback_style: @context.style,
                  exclusions:
-        ))
+        )
       end
 
       def from(paragraph)

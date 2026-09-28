@@ -109,4 +109,34 @@ RSpec.describe Stationery::Layout::Text do
       expect(node.split(200, (line_height * 2) + 1, exclusions: beside)).to eq([nil, node])
     end
   end
+
+  describe "what a split carried over, where the width is another" do
+    let(:words) { Array.new(60) { |i| "word#{i}" }.join(" ") }
+
+    it "is wrapped again at that width, and at its own width stays as it was" do
+      node = text_node(words)
+      _head, tail = node.split(120, (line_height * 3) + 1)
+      narrow = tail.send(:paragraph, 120)
+
+      expect(tail.measure(120)).to eq(narrow.height)
+      expect(tail.measure(260)).to be < tail.measure(120)
+      expect(tail.send(:paragraph, 260).lines.map(&:width).max).to be > 120
+    end
+
+    it "keeps its natural width" do
+      node = text_node(words)
+      _head, tail = node.split(120, (line_height * 3) + 1)
+
+      expect(tail.natural_width).to eq(tail.send(:paragraph, 120).lines.map(&:width).max)
+    end
+
+    it "splits again at the new width" do
+      _head, tail = text_node(words).split(120, (line_height * 3) + 1)
+      head, rest = tail.split(260, (line_height * 2) + 1)
+
+      expect(head.send(:paragraph, 260).lines.size).to eq(2)
+      expect(head.send(:paragraph, 260).lines.first.width).to be > 120
+      expect(rest.measure(260)).to be > 0
+    end
+  end
 end

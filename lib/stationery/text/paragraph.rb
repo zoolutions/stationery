@@ -6,20 +6,39 @@ module Stationery
     # and draw. Beside floats (`exclusions:`) every line has its own width
     # and offset; the lines a split carries over are wrapped again without
     # the floats, which stay on the page the first lines are on.
+    #
+    # A piece of a split paragraph keeps the runs of the whole and knows
+    # where it starts: after `skipped` lines of a wrap that was free of the
+    # floats from line `free_from`. The piece that holds the end of the text
+    # (`last`) can so be wrapped again at another width (#at).
     class Paragraph
       MIN_SHRINK_SIZE = 4
 
       attr_reader :runs, :lines, :width, :align, :leading, :exclusions
 
-      def initialize(runs, book:, width:, align: :left, leading: 0, lines: nil, fallback_style: nil, exclusions: nil)
+      def initialize(runs, book:, width:, align: :left, leading: 0, lines: nil, fallback_style: nil, exclusions: nil,
+                     skipped: 0, free_from: nil, last: true)
         @runs = lines ? runs : book.fallback(runs)
         @book = book
         @width = width
         @align = align
         @leading = leading
         @fallback_style = fallback_style || runs.first&.style
-        @exclusions = exclusions unless lines
+        @exclusions = exclusions
+        @skipped = skipped
+        @free_from = free_from
+        @last = last
         @lines = lines || wrap
+      end
+
+      # This paragraph where the width is another: what it has left of its
+      # text, wrapped again. At its own width, and for a piece whose end a
+      # split cut off, that is the paragraph itself.
+      def at(width)
+        return self if !@last || (width - @width).abs <= Wrapper::EPSILON
+
+        (@others ||= {})[width] ||= self.class.new(left, book: @book, width:, align: @align, leading: @leading,
+                                                         fallback_style: @fallback_style)
       end
 
       def height
@@ -34,7 +53,7 @@ module Stationery
         return [self, nil] if count == @lines.size
         return [nil, self] if count.zero?
 
-        [with_lines(@lines.first(count)), rest_from(count)]
+        [with_lines(@lines.first(count), last: false), rest_from(count)]
       end
 
       # [first `count` lines, the rest]; nil for an empty side.
@@ -42,7 +61,7 @@ module Stationery
         return [nil, self] if count <= 0
         return [self, nil] if count >= @lines.size
 
-        [with_lines(@lines.first(count)), rest_from(count)]
+        [with_lines(@lines.first(count), last: false), rest_from(count)]
       end
 
       # A paragraph that fits `max_height`: truncated to whole lines, shrunk
@@ -93,22 +112,30 @@ module Stationery
         end.size
       end
 
-      def wrap(free_from: nil)
+      def wrap(free_from: @free_from)
         Wrapper.new(@book).wrap(@runs, @width, fallback_style: @fallback_style, exclusions: @exclusions,
                                                leading: @leading, free_from:)
+      end
+
+      # The runs of the text from this piece's first line on.
+      def left
+        Wrapper.new(@book).rest(@runs, @width, @skipped, fallback_style: @fallback_style, exclusions: @exclusions,
+                                                         leading: @leading, free_from: @free_from)
       end
 
       # The lines after the first `count`, wrapped again when a float is
       # beside any of them.
       def rest_from(count)
         rest = @lines.drop(count)
-        rest = wrap(free_from: count).drop(count) if rest.any? { |line| line.available && line.available < @width }
-        with_lines(rest)
+        from = @skipped + count
+        return with_lines(rest, skipped: from) unless rest.any? { |line| line.available && line.available < @width }
+
+        with_lines(wrap(free_from: from).drop(from), skipped: from, free_from: from)
       end
 
-      def with_lines(lines)
+      def with_lines(lines, skipped: @skipped, free_from: @free_from, last: @last)
         self.class.new(@runs, book: @book, width: @width, align: @align, leading: @leading, lines:,
-                              fallback_style: @fallback_style)
+                              fallback_style: @fallback_style, exclusions: @exclusions, skipped:, free_from:, last:)
       end
 
       def shrink(max_height)

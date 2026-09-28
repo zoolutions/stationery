@@ -101,4 +101,54 @@ RSpec.describe Stationery::Text::Paragraph do
       expect(para.split(1)).to eq([nil, para])
     end
   end
+
+  describe "at another width" do
+    let(:tall) { exclusions(band(0, line_height * 6, 80, 0)) }
+
+    it "is itself at its own width" do
+      para = paragraph(words)
+      _head, tail = para.split((line_height * 2) + 1)
+
+      expect(para.at(200)).to be(para)
+      expect(tail.at(200)).to be(tail)
+    end
+
+    it "wraps what a split carried over again, from its first line on" do
+      para = paragraph(words, width: 120, align: :justify, leading: 2)
+      head, tail = para.split(((line_height + 2) * 3) + 1)
+      wide = tail.at(260)
+
+      expect(wide.width).to eq(260)
+      expect(wide.align).to eq(:justify)
+      expect(wide.leading).to eq(2)
+      expect(wide.lines.size).to be < tail.lines.size
+      expect((head.lines + wide.lines).map(&:text).join(" ")).to eq(words)
+      expect(tail.at(260)).to be(wide)
+    end
+
+    it "knows where a piece of a piece starts" do
+      _head, tail = paragraph(words, width: 120).split((line_height * 3) + 1)
+      middle, last = tail.split((line_height * 2) + 1)
+
+      expect(last.at(260).lines.map(&:text).join(" "))
+        .to eq(words.delete_prefix("#{paragraph(words, width: 120).lines.first(5).map(&:text).join(" ")} "))
+      expect(middle.at(260)).to be(middle)
+    end
+
+    it "leaves the first part of a split as it is: its end was cut off" do
+      head, = paragraph(words, width: 120).split((line_height * 3) + 1)
+
+      expect(head.at(260)).to be(head)
+    end
+
+    it "counts the lines that were beside a float" do
+      para = paragraph(words, exclusions: tall)
+      head, tail = para.split((line_height * 3) + 1)
+      _more, last = tail.split((line_height * 2) + 1)
+
+      expect((head.lines + tail.at(150).lines).map(&:text).join(" ")).to eq(words)
+      expect((head.lines + tail.lines.first(2) + last.at(150).lines).map(&:text).join(" ")).to eq(words)
+      expect(tail.at(150).lines.map(&:offset).uniq).to eq([0])
+    end
+  end
 end

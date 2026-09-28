@@ -132,10 +132,14 @@ RSpec.describe "Floats" do
           end
           column { text "Other" }
         end
-        table [[-> { box(float: :right, width: 20, height: 20, background: "#000000") || text("Cell") }]], width: :full
+        cell = lambda do
+          box(float: :left, width: 20, height: 20, background: "#000000")
+          text "Cell"
+        end
+        table [[cell]], width: :full, cell: { padding: 0 }
       end.to_pdf
 
-      expect(origins(pdf).first.first).to eq(50.0)
+      expect(origins(pdf).map(&:first)).to eq([50.0, 50.0, 50.0, 20.0, 155.0, 40.0])
       expect(rects(pdf).map { |rect| rect.values_at(2, 3) }).to include([30.0, 30.0], [20.0, 20.0])
     end
   end

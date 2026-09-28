@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "wrapper/remainder"
+
 module Stationery
   module Text
     # Greedy line breaking over styled runs. Breaks at spaces (the space is
@@ -18,6 +20,8 @@ module Stationery
     # lines from `free_from` on are wrapped as if the floats were gone: what
     # is left of a paragraph after a page break.
     class Wrapper
+      include Remainder
+
       TOKEN = /\n|[ \t]+|[^ \t\n-]*-+|[^ \t\n-]+/
       SOFT_HYPHEN = "­"
       ZERO_WIDTH_SPACE = Breaks::ZERO_WIDTH_SPACE
@@ -37,7 +41,7 @@ module Stationery
         @fallback = fallback_style
         @widths = {}.compare_by_identity
         beside(exclusions, max_width, leading, free_from) if exclusions
-        items(runs).each { |item| place(item) }
+        place_all(items(runs))
         finish unless @current.empty? && @lines.any? && !@ended_with_newline
         @lines
       end
@@ -124,10 +128,10 @@ module Stationery
           @current.concat(@pending_space, word)
         elsif (head, tail = hyphenated(word, @max - line_width - width(@pending_space)))
           @current.concat(@pending_space, head)
-          finish(wrapped: true)
+          finish(wrapped: true, carry: tail)
           return place_word(tail, explicit:)
         else
-          finish(wrapped: true)
+          finish(wrapped: true, carry: word)
           @current.concat(word)
         end
         @pending_space = []
@@ -141,7 +145,7 @@ module Stationery
           head, tail = hyphenated(@current, @max)
           if head
             @current = head
-            finish(wrapped: true)
+            finish(wrapped: true, carry: tail)
             @current = tail
           else
             break_long_word
@@ -198,19 +202,21 @@ module Stationery
       end
 
       def keep_overflow(fitting, piece)
-        rest = remaining_after(fitting.size)
+        rest = [piece, *remaining_after(fitting.size).drop(1)]
         @current = fitting
-        finish(wrapped: true)
-        @current = [piece, *rest.drop(1)]
+        finish(wrapped: true, carry: rest)
+        @current = rest
       end
 
       def remaining_after(count)
         @current.flat_map { |segment| segment.text.chars.map { |char| Segment.new(char, segment.style) } }.drop(count)
       end
 
-      def finish(wrapped: false)
+      # `carry` is what the word broken at the end of the line has left.
+      def finish(wrapped: false, carry: nil)
         segments = wrapped ? @current : @current + @pending_space
         @lines << line(fragments(trim_trailing(segments)), wrapped)
+        throw :stopped, carry.to_a if @stop == @lines.size
         @current = []
         @pending_space = []
         next_line if @exclusions

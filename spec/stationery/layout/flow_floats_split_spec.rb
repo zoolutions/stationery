@@ -200,4 +200,26 @@ RSpec.describe Stationery::Layout::Flow do
     expect(floats_of(broken)).to eq([1, 0])
     expect(inspect_pdf(broken).page_texts).to eq(%w[Heading next])
   end
+
+  it "wraps the text of a box that was beside a float again where the box continues" do
+    box = boxed(text_node(words, align: :right))
+    pdf, = render_layout(flow(black(80, 60), box))
+    ends = reader_for(pdf).pages.map { |page| page.runs.map { |run| (run.x + run.width).round }.uniq }
+
+    expect(pages_of(pdf)[0].map(&:first).min).to be >= 100
+    expect(ends.first(2)).to eq([[280], [280]])
+    expect(reader_for(pdf).pages[1].runs.first.text.split.size)
+      .to be > reader_for(pdf).pages[0].runs.first.text.split.size
+    expect(text_of(pdf).split).to eq(words.split)
+  end
+
+  it "wraps the rest of a list item that was beside a float again" do
+    item = Stationery::Layout::ListItem.new(text_node("1."), flow(text_node(words)), indent: 20, marker_gap: 4)
+    pdf, = render_layout(flow(black(80, 60), item))
+
+    expect(pages_of(pdf)[0].map(&:first).uniq).to eq([100.0, 120.0])
+    expect(pages_of(pdf)[1].map(&:first).uniq).to eq([40.0])
+    expect(reader_for(pdf).pages[1].runs.first.text.split.size)
+      .to be > reader_for(pdf).pages[0].runs.last.text.split.size
+  end
 end
