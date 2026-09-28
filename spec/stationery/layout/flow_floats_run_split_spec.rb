@@ -48,12 +48,30 @@ RSpec.describe Stationery::Layout::Flow do
     expect(paginator.warnings).to be_empty
   end
 
-  it "moves a run below other content to the next page and cuts it there" do
+  it "cuts a run below other content where it no longer fits what is left of the page" do
     pdf, paginator = render_layout(flow(text_node("A line first."), *run_of, text_node(words)))
 
-    expect(floats_of(pdf)).to eq([0, 2, 1])
-    expect(pages_of(pdf)[2].first).to eq([170.0, 20.0])
+    expect(floats_of(pdf)).to eq([2, 1])
+    expect(pages_of(pdf)).to match([[[20.0, 20.0]], include([170.0, 20.0])])
     expect(text_of(pdf).split.last(40)).to eq(words.split)
+    expect(paginator.warnings).to be_empty
+  end
+
+  it "moves floats that fit a page together to the next page together" do
+    pdf, paginator = render_layout(flow(lines_of(6), black(100, 60), black(100, 60, :right), black(100, 40),
+                                        text_node("between")))
+
+    expect(floats_of(pdf)).to eq([0, 3])
+    expect(pages_of(pdf)[1]).to eq([[120.0, 20.0]])
+    expect(paginator.warnings).to be_empty
+  end
+
+  it "keeps a heading with the first float of a run that is cut" do
+    heading = text_node("Heading").tap { |node| node.keep_with_next = true }
+    pdf, paginator = render_layout(flow(spacer(30), heading, *run_of, text_node("beside")))
+
+    expect(floats_of(pdf)).to eq([1, 2])
+    expect(reader_for(pdf).pages[0].text).to include("Heading")
     expect(paginator.warnings).to be_empty
   end
 

@@ -9,7 +9,7 @@ module Stationery
       # following content would not start beside it there, moves to the next
       # page with that content; floats left last on a page by a child that
       # moves on go with it. Floats that stack taller than a page are cut
-      # between two of them.
+      # before the first that does not fit.
       #
       # The children after the one being placed are named by its index and
       # copied only where the flow is cut: once a page, not once a child.
@@ -60,21 +60,40 @@ module Stationery
           [part(@placed), part(after(index))]
         end
 
-        # Below other content a float is placed when the floats written with
-        # it fit and what follows them starts beside them. Below nothing but
-        # floats on a fresh page it is placed when it fits itself: the first
-        # one always, so that one taller than the page is kept and reported.
+        # A float is placed when it fits and what follows it starts beside
+        # it, and the first one of a fresh page always, so that one taller
+        # than the page is kept and reported.
         def float(child, index)
-          return move(@children.drop(index)) unless top? || lands?(@children.drop(index), @placement)
+          rest = @children.drop(index)
+          return [part(@placed), part(rest)] if cut?(child, rest)
+          return move(rest) unless top? || lands?(rest, @placement)
 
-          slot = @placement.float(child)
-          return [part(@placed), part(@children.drop(index))] unless @placed.empty? || fits?(child, slot)
-
+          @placement.float(child)
           @placed << child
           nil
         end
 
+        # Whether the page ends before a float that does not fit it, the
+        # floats above it staying behind. Below other content it does where
+        # the floats written one after the other are cut; those that fit a
+        # page together move on together.
+        def cut?(float, rest)
+          return false if fits?(float, @placement.dup.float(float)) || (top? && @placed.empty?)
+
+          top? || cut_run?(rest)
+        end
+
         def fits?(float, slot) = slot.top + float.measure(slot.width) <= @height + EPSILON
+
+        # Whether the floats placed last and those next in `rest` are taller
+        # than a page together, in a flow that has the height of one.
+        def cut_run?(rest)
+          return false unless @fresh
+
+          placement = Placement.new(@flow, @width)
+          run = @placed.reverse.take_while(&:float?).reverse + rest.take_while(&:float?)
+          !run.all? { |float| fits?(float, placement.float(float)) }
+        end
 
         # A child holding a page break: what comes before the break stays on
         # this page, the rest goes to the next, however much room is left. One
@@ -187,16 +206,17 @@ module Stationery
         end
 
         # With floats: whether the floats next in `rest` fit whole and the
-        # first child after them starts beside them. Tried on a copy of the
+        # first child after them starts beside them, or the first of them
+        # fits and they are cut further down. Tried on a copy of the
         # placement, so nothing is placed.
         def lands?(rest, placement)
           placement = placement.dup
-          rest.each do |node|
+          rest.each_with_index do |node, at|
             break if node.page_break?
 
             slot = node.float? ? placement.float(node) : placement.slot(node)
             return landed?(node, slot) unless node.float?
-            return false unless fits?(node, slot)
+            return at.positive? && cut_run?(rest) unless fits?(node, slot)
           end
           true
         end
