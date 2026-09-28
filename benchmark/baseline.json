@@ -53,9 +53,9 @@
         "bytes": 19481
       },
       "html": {
-        "allocations": 164164,
+        "allocations": 164202,
         "pages": 5,
-        "bytes": 38737
+        "bytes": 38733
       },
       "pdf_ua": {
         "allocations": 291310,
