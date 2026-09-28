@@ -83,6 +83,27 @@ module Stationery
     PLACES = { header: "in the header of", footer: "in the footer of", page_template: "in a page template of",
                artifact: "in an artifact of", canvas: "drawn by canvas.link without a tag: on" }.freeze
 
+    # A monochrome render painting what a one-bit printer cannot print as
+    # it is: `color` is "#RRGGBB", with " at opacity 0.5" when it is
+    # translucent, or names an image it cannot dither ("JPEG 640x480").
+    # `kind` is what painted it: :text, :rule (a rule, an underline or a
+    # strikethrough), :background (any other fill), :border (any stroke),
+    # :gradient or :image.
+    NotMonochrome = Data.define(:color, :kind, :page) do
+      def message = "#{KINDS.fetch(kind)} in #{color} on page #{page} is not black or white"
+    end
+    KINDS = { text: "text", rule: "a rule", background: "a background", border: "a border or line",
+              gradient: "a gradient", image: "an image" }.freeze
+
+    # A line of a monochrome render thinner than one of the printer's dots
+    # (72/dpi points), which prints or not depending on where it lands.
+    ThinLine = Data.define(:width, :kind, :page, :dpi) do
+      def message
+        format("%<kind>s %<width>s pt wide on page %<page>d is thinner than a dot at %<dpi>s dpi (%<dot>.3f pt): " \
+               "widen it, or snap: true", kind: KINDS.fetch(kind), width: width.round(3), page:, dpi:, dot: 72.0 / dpi)
+      end
+    end
+
     MissingLanguage = Data.define do
       def message = "tagged PDF has no language: set metadata lang:"
     end
