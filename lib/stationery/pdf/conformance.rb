@@ -66,7 +66,7 @@ module Stationery
       # does not cover is reported; what breaks the claim outright raises.
       def audit!(pages, resources:, warnings:)
         cmyk(pages, resources).each { |subject| warnings << Warnings::ConformanceIssue.new(level: archival.first, subject:) }
-        issues = fields(pages) + alternatives(warnings) + glyphs(warnings)
+        issues = fields(pages) + structure(warnings) + glyphs(warnings)
         raise ConformanceError.new(@levels, issues) if issues.any?
       end
 
@@ -120,10 +120,13 @@ module Stationery
         names.map { |name| %(form field "#{name}" draws with a font that is not embedded) }
       end
 
-      def alternatives(warnings)
+      # What PDF/UA asks of the structure and PDF/A level B does not: a figure
+      # is described (ISO 14289-1, 7.3) and no heading level is skipped
+      # (7.4.2). Tagging::Tree#audit found them; here they break the claim.
+      def structure(warnings)
         return [] unless pdf_ua?
 
-        warnings.grep(Warnings::MissingAlt).map(&:message)
+        (warnings.grep(Warnings::MissingAlt) + warnings.grep(Warnings::SkippedHeading)).map(&:message)
       end
 
       # A character no font has draws as .notdef, which text may not reference

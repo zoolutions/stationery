@@ -32,7 +32,7 @@ RSpec.describe "stationery in plain Ruby" do
           text "Wrapped around the floats. " * 12
           html "<p><img src='rgb.jpg' align='right' width='30' alt='floated too'>Around it</p>",
                base_path: File.dirname(@photo)
-          html "<h2>Heading</h2><p>A <a href='https://example.test'>link</a></p><ul><li>one</li></ul>"
+          html "<h1>Heading</h1><p>A <a href='https://example.test'>link</a></p><ul><li>one</li></ul>"
           markdown "> quoted\\n\\n1. first\\n2. second"
           table [%w[Item Price], %w[Tea 3.50]], header: true
           columns(count: 2, rule: true) { 4.times { |i| text "Column line \#{i}" } }

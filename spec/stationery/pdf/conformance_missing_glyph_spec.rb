@@ -57,7 +57,7 @@ RSpec.describe "conformance with a character no font has" do # rubocop:disable R
     end
 
     expect { doc.new.to_pdf(conformance: :pdf_ua1) }.to raise_error(Stationery::ConformanceError) do |error|
-      expect(error.issues).to eq(["image on page 1 has no alt: text", issue("☃", "2603")])
+      expect(error.issues).to eq(["image on page 1 has no alt: text (alt: false marks decoration)", issue("☃", "2603")])
     end
   end
 
