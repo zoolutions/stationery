@@ -1,0 +1,43 @@
+docs/app/views/docs/pages/conformance.rb
+  s_f5a1e2cf907cda::t_435728c1b65b5b 66,82-91
+lib/stationery/warnings.rb
+  s_f5a1e2cf907cda::t_d10bba3637069e 76-85
+CHANGELOG.md
+  s_f5a1e2cf907cda::t_435728c1b65b5b 6
+spec/stationery/pdf/conformance_spec.rb
+  s_f5a1e2cf907cda::t_4b47146f6c3eba 223-242
+docs/app/views/docs/pages/warnings.rb
+  s_f5a1e2cf907cda::t_435728c1b65b5b 68-70
+lib/stationery/tagging/tree.rb
+  s_f5a1e2cf907cda::t_8debdf15edeb54 49,51-52
+  s_f5a1e2cf907cda::t_d10bba3637069e 40,45-48,50,53-58
+README.md
+  s_f5a1e2cf907cda::t_435728c1b65b5b 418-419,516-523,571-574
+lib/stationery/canvas.rb
+  s_f5a1e2cf907cda::t_d10bba3637069e 137-138,145
+lib/stationery/canvas/marking.rb
+  s_f5a1e2cf907cda::t_d10bba3637069e 75,79,106-120
+spec/stationery/tagging_audit_spec.rb
+  s_f5a1e2cf907cda::t_8384d0c6e3103e 154-203,207-208,211-222,224-230,232-245
+  s_f5a1e2cf907cda::t_cbcdb50dd7aaf4 209-210
+  s_f5a1e2cf907cda::t_4b47146f6c3eba 231
+  s_f5a1e2cf907cda::t_e803fa1625df50 204-206,223
+lib/stationery/pdf/conformance.rb
+  s_f5a1e2cf907cda::t_d10bba3637069e 124-126,130-131
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "a2198c736162a6aa88be2cf89478f63ec57f5426",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
