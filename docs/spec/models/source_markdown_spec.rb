@@ -27,6 +27,13 @@ RSpec.describe SourceMarkdown do
     expect(described_class.example_summary("report.rb")).to start_with("A multi-page annual report")
   end
 
+  it "reads the whole source of an example" do
+    source = described_class.example_source("letter.rb")
+
+    expect(source).to eq(described_class::ROOT.join("examples/letter.rb").read)
+    expect(source).to start_with("# frozen_string_literal: true").and include("class ExampleLetter")
+  end
+
   it "reads an example's class-level configuration" do
     config = described_class.example_config("packing_slip.rb")
 

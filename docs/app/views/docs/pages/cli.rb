@@ -4,7 +4,7 @@ class Views::Docs::Pages::Cli < DocsUI::Page
   title "CLI"
   eyebrow "Integrations"
 
-  def lead = "The stationery executable: render a document file to PDF, and list or install font packs."
+  def lead = "The stationery executable: render a document file to PDF, list or install font packs, and find the examples."
 
   def content
     DocsUI::Section("stationery render", description: "Render the Document a Ruby file defines.") do
@@ -62,6 +62,23 @@ class Views::Docs::Pages::Cli < DocsUI::Page
         `fonts install` downloads pinned files over HTTPS, checks every SHA-256 before writing anything, and
         writes the license next to the fonts. Files already present are kept unless `--force`. `--from` takes
         a directory or a `.tar.gz` holding the same files (still SHA-checked). See [Fonts](/docs/fonts).
+
+      MD
+    end
+
+    DocsUI::Section("stationery examples", description: "The examples that ship with the gem.") do
+      md <<~'MD'
+        ```shell
+        stationery examples                                      # the examples in the gem, what each shows
+        stationery examples invoice                              # the path of examples/invoice.rb there
+        stationery examples invoice --source                     # its code
+        stationery render "$(stationery examples invoice)" --out invoice.pdf
+        ```
+
+        `examples` lists the documents under `examples/` of the installed gem with the first sentence of
+        their header comment. With a name it prints the path of that file, to read, copy or hand to
+        `stationery render`; `-s, --source` prints the file itself. The [Examples](/docs/examples) page
+        has their previews.
 
         `stationery help` lists the commands.
       MD
