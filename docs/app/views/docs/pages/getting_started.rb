@@ -118,6 +118,29 @@ class Views::Docs::Pages::GettingStarted < DocsUI::Page
       MD
     end
 
+    DocsUI::Section("The docs for an agent", description: "Over MCP, as llms.txt, and every page as Markdown.") do
+      md <<~'MD'
+        A coding agent reads these pages as tools over the
+        [Model Context Protocol](https://modelcontextprotocol.io): `search_docs` finds sections,
+        `get_page` reads a page as Markdown and `list_pages` names them all. In Claude Code:
+
+        ```shell
+        claude mcp add --transport http stationery https://stationery.zoolutions.llc/mcp
+        ```
+
+        Any other MCP client (Claude.ai, Cursor, Codex) takes the same URL as a remote server over HTTP:
+
+        ```json
+        { "mcpServers": { "stationery": { "url": "https://stationery.zoolutions.llc/mcp" } } }
+        ```
+
+        It is read-only and needs no key. Without MCP, [/llms.txt](/llms.txt) is the index of the pages
+        and [/llms-full.txt](/llms-full.txt) all of them in one file, and each page is Markdown at its URL
+        with `.md`, as `/docs/elements.md`. The [Examples](/docs/examples) page carries the source of every
+        example, so an agent gets them there too.
+      MD
+    end
+
     DocsUI::Section("Where next") do
       md <<~'MD'
         - [Examples](/docs/examples) — eight complete documents with previews and live PDFs.

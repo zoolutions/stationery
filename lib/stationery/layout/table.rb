@@ -25,7 +25,7 @@ module Stationery
       # `tag` is the Table element its fragments share; a `continued` fragment
       # repeats header rows already read on an earlier page.
       def initialize(rows, context:, widths: nil, width: :auto, header: false, split_rows: false, cell: {},
-                     tag: Tagging::Element.new(:Table), continued: false)
+                     tag: context.element(:Table), continued: false)
         super()
         @tag = tag
         @continued = continued
@@ -173,7 +173,10 @@ module Stationery
         canvas.structure(cell.row_tag) { canvas.structure(cell.tag, &paint) }
       end
 
+      # A render without a structure tree tags nothing.
       def tag_cells
+        return unless @context.tagged
+
         @cells.each_with_index do |row, index|
           row_tag = Tagging::Element.new(:TR)
           row.each { |cell| cell.tagged(cell_tag(cell, index < @header), row_tag) }

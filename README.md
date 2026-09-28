@@ -7,6 +7,18 @@ TrueType and OpenType fonts, JPEG, PNG and lossless WebP images and SVG drawings
 
 **Documentation: [stationery.zoolutions.llc](https://stationery.zoolutions.llc)**
 
+The same docs for an agent: over MCP (`search_docs`, `get_page`, `list_pages`), as
+[`/llms.txt`](https://stationery.zoolutions.llc/llms.txt) and
+[`/llms-full.txt`](https://stationery.zoolutions.llc/llms-full.txt), and every page
+as Markdown at its URL with `.md`. In Claude Code:
+
+```sh
+claude mcp add --transport http stationery https://stationery.zoolutions.llc/mcp
+```
+
+Any other MCP client takes the same URL, `https://stationery.zoolutions.llc/mcp`,
+as a remote server over HTTP: no key, read-only.
+
 - **No runtime dependencies.** Standard library only.
 - **No native extensions and no other processes.** No Prawn, no headless
   Chrome, nothing to leak or kill.
