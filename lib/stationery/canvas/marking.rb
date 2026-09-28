@@ -4,7 +4,12 @@ module Stationery
   class Canvas
     # Marked content for tagged PDF. Without a Tagging::Tree every method
     # just yields, so an untagged document's content streams stay as they were.
+    #
+    # What a header, a footer or a page template paints is one artifact, but
+    # for its links (Surfacing): a link is what a reader can act on there.
     module Marking
+      include Surfacing
+
       def tagging? = !@tagging.nil?
 
       # Paints the block as one marked-content sequence of `element` (a fresh
@@ -32,6 +37,7 @@ module Stationery
       # inside its paragraph). Without a parent the block is an artifact.
       def tag_runs(parent, &)
         return artifact { yield PASS } unless parent
+        return surface_runs(&) if surfacing?
         return yield PASS unless structure?
 
         parent.attach(open_element)
@@ -51,8 +57,10 @@ module Stationery
 
       # Opens `element` (nil: none) as the parent of the elements painted in
       # the block, without marking any content itself.
-      def structure(element)
-        return yield unless element && structure?
+      def structure(element, &)
+        return yield unless element
+        return surface(element, &) if surfacing? && element.type == :Link
+        return yield unless structure?
 
         element.attach(open_element)
         open_elements << element
@@ -70,13 +78,15 @@ module Stationery
         return yield unless structure?
 
         properties = { Type: type && capital(type), Subtype: subtype && capital(subtype) }.compact
-        emit(properties.empty? ? "/Artifact BMC" : "/Artifact #{PDF::Serializer.dump(properties)} BDC")
+        emit(@artifact = properties.empty? ? "/Artifact BMC" : "/Artifact #{PDF::Serializer.dump(properties)} BDC")
         @marked += 1
+        region = @region
         @region = subtype
         begin
           yield
         ensure
-          @region = nil
+          @region = region
+          @artifact = nil
           close_run
         end
       end

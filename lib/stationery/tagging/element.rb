@@ -51,11 +51,12 @@ module Stationery
 
       def attached? = !@parent.nil?
 
-      def attach(parent)
+      # `at:` is the place among the parent's kids, the last without one.
+      def attach(parent, at: nil)
         return if @parent
 
         @parent = parent
-        parent.kids << self
+        at ? parent.kids.insert(at, self) : parent.kids << self
       end
 
       # A bounding box in PDF space, kept from the first fragment painted.

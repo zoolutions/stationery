@@ -7,12 +7,13 @@ module Stationery
   # Paints a document's headers, footers and page templates on every
   # finished page.
   class PageTemplates
-    def initialize(document, book:, resources:, debug: false, regions: nil, warnings: [], tagging: nil)
+    # `canvases:` makes the canvases (see PDF::Canvases); without them the
+    # pages are painted for a PDF that names what it draws in `resources:`.
+    def initialize(document, book:, resources: nil, canvases: nil, debug: false, regions: nil, warnings: [],
+                   tagging: nil)
       @document = document
-      @tagging = tagging
-      @debug = debug
       @book = book
-      @resources = resources
+      @canvases = canvases || PDF::Canvases.new(resources, debug, tagging, warnings)
       @regions = regions
       @warnings = warnings
       @templates = document.class.config[:templates]
@@ -53,11 +54,9 @@ module Stationery
 
     # Everything a template paints is a pagination artifact in a tagged PDF.
     def paint(page, root, rect, layer = :foreground, subtype: nil)
-      mark = page.content.bytesize
-      canvas = Canvas.new(page, @resources, template: true, debug: @debug, tagging: @tagging,
-                                            warnings: @warnings)
-      canvas.artifact(type: :pagination, subtype:) { root.paint(canvas, rect.x, rect.y, rect.width) }
-      page.lower(mark) if layer == :background
+      @canvases.template(page, layer) do |canvas|
+        canvas.artifact(type: :pagination, subtype:) { root.paint(canvas, rect.x, rect.y, rect.width) }
+      end
     end
   end
 end

@@ -25,6 +25,10 @@ module Stationery
         assert_pdf(Matchers::HavePageLabels.new(labels), subject, msg)
       end
 
+      def assert_print_preference(subject, msg = nil, **)
+        assert_pdf(Matchers::HavePrintPreference.new(**), subject, msg)
+      end
+
       def assert_pdf_attachment(subject, name, msg = nil, **)
         assert_pdf(Matchers::HaveAttachment.new(name, **), subject, msg)
       end

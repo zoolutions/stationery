@@ -226,6 +226,24 @@ RSpec.describe Stationery::Testing::Inspector do
     end
   end
 
+  describe "#print_preferences" do
+    it "reads the print hints of the catalog, the page ranges as Ranges" do
+      doc = Class.new(SpecDocument) do
+        print scaling: :none, copies: 2, pick_tray_by_size: false, duplex: :short_edge, pages: 1..1,
+              dialog: :on_open
+        def view_template = text("x")
+      end.new
+
+      expect(described_class.new(doc).print_preferences)
+        .to eq(scaling: :none, copies: 2, pick_tray_by_size: false, duplex: :short_edge, pages: [1..1],
+               dialog: :on_open)
+    end
+
+    it "is empty without hints" do
+      expect(described_class.new(document).print_preferences).to eq({})
+    end
+  end
+
   it "counts images" do
     path = image_path("rgb.jpg")
     doc = SpecDocument.build { image path, width: 20 }

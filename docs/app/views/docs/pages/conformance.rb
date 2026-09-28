@@ -63,9 +63,9 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         | An image or drawing without `alt:`, or with a blank one (`""`, whitespace alone) | PDF/UA-1 | `ConformanceError` naming the page (ISO 14289-1, 7.3); mark decoration with `alt: false`. Whitespace alone is refused although veraPDF accepts it |
         | In `html`, an `<img>` without an `alt` attribute; in `markdown`, an image without a description (`![](photo.png)`) | PDF/UA-1 | `ConformanceError`, as for `image` without `alt:`. `<img alt="">` is decoration and is written as `alt: false` is; Markdown has no way to mark decoration, so use `html` or `image` for it |
         | A heading level that is skipped: a first heading that is not `heading: 1`, or a heading more than one level below the heading before it | PDF/UA-1 | `ConformanceError` naming the page, the level and the deepest level allowed there (ISO 14289-1, 7.4.2) |
-        | A link annotation outside the structure tree: a `link:` painted by a `header`, a `footer` or a `page_template`, a link in the header row a table repeats on its next pages, `canvas.link` without a `tag:` | PDF/UA-1 | `ConformanceError` with an issue per link and page, naming the target and what painted it (ISO 14289-1, 7.18.5): `link to https://example.com in the footer of page 1 is outside the structure tree (7.18.5)`. Links in the body are tagged and are allowed |
+        | A link annotation outside the structure tree: a link in the header row a table repeats on its next pages, `canvas.link` without a `tag:` | PDF/UA-1 | `ConformanceError` with an issue per link and page, naming the target and what painted it (ISO 14289-1, 7.18.5): `link to https://example.com drawn by canvas.link without a tag: on page 1 is outside the structure tree (7.18.5)`. A `link:` is tagged and is allowed, in the body and in a `header`, a `footer` or a `page_template` |
         | A form field made without a font book (`Forms::Field.new` placed with `canvas.widget`) | every level | `ConformanceError` naming the field: it draws with the standard Helvetica, which is not embedded. Fields from `text_field`, `select`, `checkbox`, `radio` and `signature_field` draw with the document's embedded fonts and are allowed |
-        | A character no font has, in body text, a page template or a form field's value | every level | `ConformanceError` naming the character, its code point and the family: it draws as `.notdef`, which text may not reference (PDF/A 6.2.11.8, PDF/UA 7.21.8). Add a font or `font_fallbacks` that covers it. Whitespace a font lacks draws as a blank and is accepted |
+        | A character no font has, in body text, a page template or a form field's value | every level | `ConformanceError` naming the character, its code point and the family: it draws as `.notdef`, which text may not reference (PDF/A 6.2.11.8, PDF/UA 7.21.8). Add a font or `font_fallbacks` that covers it, or declare the level with `missing_glyphs: :replace` (below). Whitespace a font lacks draws as a blank and is accepted |
 
         ```ruby
         begin
@@ -82,10 +82,12 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         page templates are artifacts and do not count.
 
         Every link annotation has to belong to a `Link` element of the structure tree. The links of the
-        body do. What a header, a footer or a page template paints is an artifact, so a `link:` there
-        has no element to belong to, and the render raises rather than claim the level: keep such links
-        in the body of a PDF/UA-1 document. On a canvas, pass the `Link` element that holds what the link
-        draws: `canvas.link(x, y, w, h, url, tag: element)` after `canvas.tag(element) { … }`.
+        body do, and so does a `link:` painted by a header, a footer or a page template: the region is an
+        artifact but for the link, which is a `Link` read after the content of its page, so a website or
+        an address in the footer of every page keeps the level. A link in the header row a table repeats
+        on its next pages has no element to belong to, and the render raises rather than claim the
+        level. On a canvas, pass the `Link` element that holds what the link draws:
+        `canvas.link(x, y, w, h, url, tag: element)` after `canvas.tag(element) { … }`.
 
         PDF/A alone asks for neither alt texts, heading levels nor tagged links; a
         [tagged](/docs/pages#accessibility-tagged-pdf) render reports all three as
@@ -100,6 +102,46 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         "conformance :pdf_ua1 checks what a machine can check. Whether the alt texts describe the images, " \
           "the headings say what follows them and the reading order makes sense is still yours to review."
       end
+    end
+
+    DocsUI::Section("A character no font has", description: "Raise, or draw a stand-in.") do
+      md <<~'MD'
+        A name in a script the fonts do not cover (a customer in Tokyo on an invoice archived as PDF/A) is
+        where the raise turns up in practice. Applications rescued it and rendered again without the claim:
+
+        ```ruby
+        begin
+          InvoicePdf.new(invoice).to_pdf
+        rescue Stationery::ConformanceError => e
+          logger.warn(e.message)
+          InvoicePdf.new(invoice).to_pdf(conformance: nil)   # mislabelled no more, but no longer PDF/A
+        end
+        ```
+
+        `missing_glyphs: :replace` keeps the claim instead: a character no font has is drawn as the first
+        of U+FFFD (�), U+25A1 (□) and `?` that the font drawing it has, inside the `Span` whose
+        `ActualText` is the character, so the text still extracts, copies and reads aloud as written and
+        nothing references `.notdef`. The stand-in has its own advance, so lines are measured as they are
+        drawn.
+
+        ```ruby
+        class InvoicePdf < Stationery::Document
+          conformance :pdf_a3b, missing_glyphs: :replace   # :raise is the default
+        end
+
+        InvoicePdf.new(invoice).to_pdf(conformance: :pdf_a3b, missing_glyphs: :replace) # per render
+        ```
+
+        | `missing_glyphs:` | What a character no font has does |
+        | --- | --- |
+        | `:raise` (default) | `ConformanceError` naming the character, its code point and the family |
+        | `:replace` | Drawn as the font's stand-in in a `Span` with the character as `ActualText`; reported as a `MissingGlyph` [warning](/docs/warnings) whose `stand_in` is the character drawn, so `strict` still raises. A font that has none of the three, which a symbol font may not, still raises and says so |
+
+        veraPDF passes `2b`, `3b` and `ua1` with each of the three stand-ins, in body text, headers and
+        page templates, form field values and shaped text; the same files drawn with `.notdef` fail
+        rules 6.2.11.8-1 and 7.21.8-1. Any other value raises `ArgumentError`. Without `conformance` the
+        option changes nothing, and with `:raise` neither.
+      MD
     end
 
     DocsUI::Section("Factur-X / ZUGFeRD e-invoices", description: "One PDF for people and for accounting software.") do
@@ -197,7 +239,8 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         `bundle exec rake verify:conformance` renders `examples/invoice.rb` and `examples/e_invoice.rb`
         as PDF/A-3b, and `examples/report.rb`, `examples/form.rb`, `examples/article.rb` (floats) and
         `examples/newsletter.rb` (columns) as PDF/A-3b plus PDF/UA-1, the
-        invoice and the form once more with a signature, and validates them with
+        invoice and the form once more with a signature and the report with a link in its footer, and
+        validates them with
         [veraPDF](https://verapdf.org) in a container (`verapdf/cli`); the gem's CI runs it on every push.
         Validate your own documents the same way:
 
