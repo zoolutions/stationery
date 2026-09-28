@@ -1,0 +1,33 @@
+README.md
+  s_632dbd6e2d0597::t_3dd073a9de492d 500-502
+  s_632dbd6e2d0597::t_28fa244c0072ad 801-803
+lib/stationery/pdf/conformance.rb
+  s_632dbd6e2d0597::t_f04f03f0de8774 69,129-136
+docs/app/views/docs/pages/conformance.rb
+  s_632dbd6e2d0597::t_3dd073a9de492d 65
+docs/app/views/docs/pages/forms.rb
+  s_632dbd6e2d0597::t_812d03c6a86e3e 307
+  s_632dbd6e2d0597::t_3dd073a9de492d 308
+CHANGELOG.md
+  s_632dbd6e2d0597::t_3dd073a9de492d 5
+docs/app/views/docs/pages/warnings.rb
+  s_632dbd6e2d0597::t_3dd073a9de492d 33
+docs/app/views/docs/pages/fonts.rb
+  s_632dbd6e2d0597::t_28fa244c0072ad 135-137
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "0e5fd20a512fff6763f41cd3fb2dec8bfd4a8213",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
