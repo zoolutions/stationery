@@ -43,8 +43,6 @@ module Stationery
         widened { |text| points * text.count(" ") }
       end
 
-      def missing? = glyphs.any? { |glyph| glyph.gid.zero? }
-
       # The characters the shaper found no glyph for.
       def missing
         glyphs.select { |glyph| glyph.gid.zero? }.map(&:cluster).uniq.flat_map { |cluster| texts[cluster].chars }
