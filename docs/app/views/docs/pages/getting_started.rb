@@ -123,6 +123,7 @@ class Views::Docs::Pages::GettingStarted < DocsUI::Page
         - [Examples](/docs/examples) — eight complete documents with previews and live PDFs.
         - [Documents and components](/docs/documents-and-components) — class-level configuration and reusable pieces.
         - [Elements](/docs/elements) — every element and its options.
+        - [Forms](/docs/forms) — fillable fields, their options and how they behave in a viewer.
         - [Layout rules](/docs/layout-rules) — how measuring, splitting and pagination decide where things land.
       MD
     end

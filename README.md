@@ -217,7 +217,8 @@ keeps its title, with no number and no link.
 ### Forms
 
 Form fields are interactive widgets (an AcroForm) that lay out like boxes, or sit at a fixed page
-position with `at: [x, y]`. They work inside boxes, rows and table cells.
+position with `at: [x, y]`. They work inside boxes, rows and table cells. The
+[Forms guide](https://stationery.zoolutions.llc/docs/forms) lists every option of every field.
 
 ```ruby
 text "Name"
