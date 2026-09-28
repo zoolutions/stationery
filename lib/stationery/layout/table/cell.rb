@@ -9,12 +9,15 @@ module Stationery
         SIDES = %i[top right bottom left].freeze
         TEXT_OPTIONS = { size: :size, color: :color, weight: :weight, style: :style, font: :family,
                          letter_spacing: :letter_spacing }.freeze
+        BOXES = {} # rubocop:disable Style/MutableConstant
 
         attr_reader :content, :options, :colspan, :rowspan, :tag, :row_tag
 
+        # `options` is shared with the other cells of a table, which is why a
+        # cell copies it before it changes an option of its own.
         def initialize(content, options, colspan: 1, rowspan: 1)
           @content = content
-          @options = options.dup
+          @options = options
           @colspan = colspan
           @rowspan = rowspan
         end
@@ -27,7 +30,7 @@ module Stationery
         def with_content(node) = Cell.new(node, @options, colspan:, rowspan:).tagged(@tag, @row_tag)
 
         # Its TH or TD and its row's TR in a tagged PDF; set once, by the
-        # table the cell is first laid out in.
+        # table that first paints or cuts its row.
         def tagged(tag, row_tag)
           @tag ||= tag
           @row_tag ||= row_tag
@@ -36,21 +39,43 @@ module Stationery
 
         # Changes an option and forgets the node built from the old ones.
         def []=(name, value)
+          @options = @options.dup unless @own_options
+          @own_options = true
           @options[name] = value
           @node = nil
           @padding = nil
-          @metrics = nil
+          @natural_width = @min_width = @heights = nil
         end
 
-        def padding = @padding ||= Geometry.box(@options[:padding])
+        # A padding of one number is a box every cell with that number shares:
+        # a long table holds one Array of it, not one per cell.
+        def padding
+          @padding ||= if (value = @options[:padding]).is_a?(Numeric)
+                         BOXES[value] ||= Geometry.box(value).freeze
+                       else
+                         Geometry.box(value)
+                       end
+        end
+
         def horizontal = padding[1] + padding[3]
         def vertical = padding[0] + padding[2]
 
         # Heights per width and the natural and minimum widths are remembered:
         # every fragment of a table split across pages measures the same cells.
-        def measure(context, width) = metric(width) { node(context).measure([width - horizontal, 0].max) + vertical }
-        def natural_width(context) = metric(:natural) { node(context).natural_width + horizontal }
-        def min_width(context) = metric(:min) { node(context).min_width + horizontal }
+        def measure(context, width)
+          @heights ||= {}
+          @heights.fetch(width) { @heights[width] = node(context).measure([width - horizontal, 0].max) + vertical }
+        end
+
+        def natural_width(context)
+          measure_widths(context) unless @natural_width
+          @natural_width
+        end
+
+        def min_width(context)
+          measure_widths(context) unless @min_width
+          @min_width
+        end
 
         # Backgrounds overlap the next cell by SEAM so viewers do not show
         # hairline gaps between neighbouring fills.
@@ -68,9 +93,13 @@ module Stationery
 
         private
 
-        def metric(key)
-          @metrics ||= {}
-          @metrics.fetch(key) { @metrics[key] = yield }
+        # Both widths from one node, which the cell lets go of unless it is
+        # the cell's content: a long table resolves its columns from every
+        # cell, and keeps the text node of none until a page reaches its row.
+        def measure_widths(context)
+          content = @node || (@content.is_a?(Node) ? @content : text_node(context))
+          @natural_width = content.natural_width + horizontal
+          @min_width = content.min_width + horizontal
         end
 
         def text_node(context)

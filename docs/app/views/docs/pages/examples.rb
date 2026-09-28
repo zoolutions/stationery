@@ -71,8 +71,9 @@ class Views::Docs::Pages::Examples < DocsUI::Page
         ruby -Ilib examples/flyer.rb              # each file also runs on its own
         ```
 
-        They ship with the gem, with the images and fonts they read, so an application that has only the
-        gem has them too:
+        They ship with the gem, with the images they read, so an application that has only the gem has
+        them too. Inter is the one font the gem ships, so there the invoice examples are set in Inter
+        rather than the Open Sans of the repository:
 
         ```shell
         stationery examples                          # their names and what each shows

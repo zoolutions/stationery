@@ -86,8 +86,9 @@ InvoicePdf.new(invoice).to_pdf("a.pdf") # also writes a path or an IO
 ([previews and live PDFs](https://stationery.zoolutions.llc/docs/examples)); `bundle exec rake examples`
 renders them all, or render one with `stationery render examples/report.rb`.
 
-The examples ship with the gem, with the images and fonts they read, so they are there to read and to
-run in an application that has only the gem:
+The examples ship with the gem, with the images they read, so they are there to read and to run in an
+application that has only the gem. Inter is the one font the gem ships: the invoice examples are set in
+the Open Sans of the test suite in the repository and in Inter elsewhere.
 
 ```sh
 stationery examples                          # their names and what each shows
@@ -1087,13 +1088,18 @@ two runs of the same render peak up to a fifth apart, what is alive repeats):
 | | | alive | 222 MB | 44 MB | 11 MB |
 | | 5,189 | peak | 1,643 MB | 614 MB | 446 MB |
 | | | alive | 1,080 MB | 180 MB | 20 MB |
-| One table of 33,000 rows | 1,000 | peak | 901 MB | 653 MB | 648 MB |
-| | | alive | 494 MB | 28 MB | 25 MB |
-| One table of 165,000 rows | 5,000 | peak | 3,792 MB | 2,952 MB | 2,955 MB |
-| | | alive | 2,437 MB | 65 MB | 49 MB |
+| One table of 33,000 rows | 1,000 | peak | 901 MB | 174 MB | 174 MB |
+| | | alive | 494 MB | 26 MB | 23 MB |
+| One table of 165,000 rows | 5,000 | peak | 3,792 MB | 584 MB | 586 MB |
+| | | alive | 2,437 MB | 40 MB | 25 MB |
 
 What is left is the document as it was built: every node exists before the first page is
-painted, and a table resolves its column widths from every cell.
+painted. A table resolves its column widths from every cell, and keeps the widths, not the
+cell's text: a cell's node is built when a page reaches its row and let go with the page
+(the table of 165,000 rows holds 105 MB when its columns are resolved, its cells and their
+text, where it held 913 MB). In a tagged render the `TR`, `TH` and `TD` of a row are built
+when a page paints it, and the structure tree holds them until the file is written: the
+same table tagged peaks at 2.2 GB.
 
 Controllers gain `render pdf:` and `send_pdf`:
 
