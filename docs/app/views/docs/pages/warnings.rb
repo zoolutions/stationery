@@ -30,7 +30,7 @@ class Views::Docs::Pages::Warnings < DocsUI::Page
             "Content taller than the space a page had for it was placed anyway (an :avoid box, an image, a region).",
             "content 912.0pt tall placed on page 3 with 770.0pt available" ],
           [ [ :code, "MissingGlyph" ], "char, family, count",
-            "No font — the family, its fallbacks or Inter — has the character; it is drawn as .notdef, with the character kept as ActualText so the text still extracts. Whitespace is exempt: it draws as a blank of its width.",
+            "No font — the family, its fallbacks or Inter — has the character; it is drawn as .notdef, with the character kept as ActualText so the text still extracts. Whitespace is exempt: it draws as a blank of its width. Under a conformance level it raises ConformanceError instead: neither PDF/A nor PDF/UA lets text reference .notdef.",
             "missing glyph \"☃\" (U+2603) in Brand, drawn 2 times as .notdef" ],
           [ [ :code, "UnknownFamily" ], "requested, used",
             "A text style named a family that is neither registered, bundled nor an installed pack; it drew with the first registered family (else bundled Inter). Reported once per name.",

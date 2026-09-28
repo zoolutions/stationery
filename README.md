@@ -497,6 +497,9 @@ mislabelled: `ArgumentError` for options that contradict the level, `Stationery:
   field has a `/TU`, and `NeedAppearances` and ZapfDingbats are left out. Only a field made without
   a font book (`Forms::Field.new` placed with `canvas.widget`) raises, since it draws with the
   standard Helvetica.
+- A character no font has raises at every level, naming the character and the family: it draws as
+  `.notdef`, which text may not reference under PDF/A (6.2.11.8) or PDF/UA (7.21.8). Add a font or
+  `font_fallbacks` that covers it. Whitespace a font lacks draws as a blank and is accepted.
 - Without `conformance` nothing changes: the output is byte for byte what it was.
 
 `bundle exec rake verify:conformance` renders `examples/invoice.rb` as PDF/A-3b, and
@@ -795,9 +798,9 @@ a figure space, a narrow no-break space, …) is drawn as a blank of the
 character's conventional width, never as `.notdef`. Any other glyph no font
 has is drawn as the family's `.notdef` and reported as a
 `Warnings::MissingGlyph` counting each drawn occurrence (so `strict` raises
-on it). The characters themselves travel as the `ActualText` of a `Span`
-around the glyphs, so the text still extracts, copies and reads aloud as
-written. Fallback covers every text element,
+on it, and a `conformance` level raises `ConformanceError`). The characters
+themselves travel as the `ActualText` of a `Span` around the glyphs, so the
+text still extracts, copies and reads aloud as written. Fallback covers every text element,
 table cell, list marker, table of contents entry and page template text;
 direct `canvas.text` calls draw with the font they are given.
 
