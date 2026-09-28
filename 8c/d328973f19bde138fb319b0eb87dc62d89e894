@@ -1,0 +1,41 @@
+lib/stationery/layout/node.rb
+  s_f5a1e2cf907cda::t_8310ea5167b778 38-39
+  s_f5a1e2cf907cda::t_c59fabee7bd8e8 54-57
+lib/stationery/layout/flow/splitter.rb
+  s_f5a1e2cf907cda::t_92ad4a306bf1ab 183
+  s_f5a1e2cf907cda::t_293943cba88cc6 177-178,180,182,184
+spec/stationery/layout/flow_floats_blocks_split_spec.rb
+  s_f5a1e2cf907cda::t_e93cf9142b48ba 113-132
+lib/stationery/layout/list_item.rb
+  s_f5a1e2cf907cda::t_5d6a4ae91b3920 75
+lib/stationery/layout/box/wrapping.rb
+  s_f5a1e2cf907cda::t_cbd38588a380da 37
+spec/support/random_flow.rb
+  s_f5a1e2cf907cda::t_334b9378bfc26d 8-9
+  s_f5a1e2cf907cda::t_02e5d66ef6f1dd 70
+lib/stationery/layout/flow/placement.rb
+  s_f5a1e2cf907cda::t_0e8c493ba65635 18,21-23
+  s_f5a1e2cf907cda::t_e2929cfff058df 78
+  s_f5a1e2cf907cda::t_3a1c7e60c2648b 107
+  s_f5a1e2cf907cda::t_ec730449e95df2 105
+  s_f5a1e2cf907cda::t_8d1ebc08067f57 29-31
+  s_f5a1e2cf907cda::t_0b658b9ac6acfd 112
+  s_f5a1e2cf907cda::t_5842f0f0707bf2 101
+  s_f5a1e2cf907cda::t_a69b8ac9c8345c 118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "8cd328973f19bde138fb319b0eb87dc62d89e894",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
