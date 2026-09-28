@@ -70,6 +70,17 @@ module Stationery
         decode(lang) if lang
       end
 
+      # One label per page from the catalog /PageLabels ("i", "A-1", …), nil
+      # for pages before the first labelled range; empty without labels.
+      def page_labels
+        labels = catalog[:PageLabels]
+        return [] unless labels
+
+        nums = objects.deref_array(objects.deref_hash(labels)[:Nums]).map { |value| objects.deref(value) }
+        nums = nums.map { |value| value.is_a?(Hash) ? value.transform_values { |v| decode_value(v) } : value }
+        PDF::PageLabels.labels(nums, page_count)
+      end
+
       # The structure tree of a tagged PDF as nested arrays; see StructureReader.
       def structure = @structure ||= StructureReader.new(reader).tree
 
@@ -108,6 +119,8 @@ module Stationery
 
         [decode(item[:Title]), *titles(item[:First]), *titles(item[:Next])]
       end
+
+      def decode_value(value) = value.is_a?(String) ? decode(value) : value
 
       def decode(title)
         return title.dup.force_encoding(Encoding::UTF_8) unless title.b.start_with?(UTF16_BOM)

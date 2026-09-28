@@ -22,6 +22,7 @@ class Views::Docs::Pages::Testing < DocsUI::Page
           [ [ :code, "have_image_count(n)" ], [ :code, "assert_image_count" ], "n image XObjects are embedded" ],
           [ [ :code, "have_bookmark(title)" ], [ :code, "assert_bookmark" ], "an outline entry has that title" ],
           [ [ :code, "have_pdf_language(lang)" ], [ :code, "assert_pdf_language" ], "the catalog /Lang (from metadata lang:) equals it" ],
+          [ [ :code, "have_page_labels(labels)" ], [ :code, "assert_page_labels" ], "the /PageLabels tree names the pages exactly so (nil for a page before the first range)" ],
           [ [ :code, "have_no_warnings" ], [ :code, "assert_no_pdf_warnings" ], "the render produced no warnings (documents only)" ]
         ]
       )
@@ -46,6 +47,7 @@ class Views::Docs::Pages::Testing < DocsUI::Page
         pdf.bookmarks        # => ["Introduction", "Highlights", …]
         pdf.metadata         # => { Title: "Invoice", … }
         pdf.lang             # => "en", the catalog /Lang, or nil
+        pdf.page_labels      # => ["i", "ii", "1", "2"] from page_labels, [] without
         pdf.warnings         # the document's warnings after rendering it
         ```
 

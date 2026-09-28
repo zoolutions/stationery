@@ -94,6 +94,28 @@ class Views::Docs::Pages::Pages < DocsUI::Page
       MD
     end
 
+    DocsUI::Section("Page labels", description: "How viewers name the pages.") do
+      md <<~'MD'
+        `page_labels` maps a 1-based first page to the range that starts there. Each range takes
+        `style:` (`:decimal`, `:roman`, `:roman_lower`, `:alpha`, `:alpha_lower`, or `nil` for a prefix
+        only), `start:` (the number the range counts from, default 1) and `prefix:`. Pages before the
+        first range keep their physical number in the viewer.
+
+        ```ruby
+        class Report < Stationery::Document
+          page_labels 1 => { style: :roman_lower },                       # i, ii, iii
+                      4 => { style: :decimal },                           # 1, 2, 3, …
+                      12 => { style: :alpha, prefix: "Appendix " }        # Appendix A, Appendix B
+        end
+
+        Report.new.to_pdf(page_labels: nil) # one render without labels
+        ```
+
+        The labels are written as the catalog's `/PageLabels` number tree; `Inspector#page_labels`
+        and `have_page_labels` read them back per page.
+      MD
+    end
+
     DocsUI::Section("Accessibility (tagged PDF)", description: "A structure tree for screen readers.") do
       md SourceMarkdown.readme_section("Accessibility (tagged PDF)")
     end

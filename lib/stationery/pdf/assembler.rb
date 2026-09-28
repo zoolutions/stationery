@@ -5,10 +5,13 @@ module Stationery
     # Writes finished pages, their shared resources and document info as PDF.
     class Assembler
       # `tagging:` (a Tagging::Tree) writes the structure tree of a tagged PDF;
-      # `lang:` is the document's natural language.
-      def initialize(pages:, resources:, info: {}, outline: [], encryption: nil, tagging: nil, lang: nil)
+      # `lang:` is the document's natural language; `page_labels:` is the
+      # /PageLabels number tree from PageLabels.entries.
+      def initialize(pages:, resources:, info: {}, outline: [], encryption: nil, tagging: nil, lang: nil,
+                     page_labels: nil)
         @tagging = tagging
         @lang = lang
+        @page_labels = page_labels
         @pages = pages
         @resources = resources
         @info = info
@@ -34,6 +37,7 @@ module Stationery
 
       def catalog(tree, outlines, form)
         catalog = { Type: :Catalog, Pages: tree }
+        catalog[:PageLabels] = @page_labels if @page_labels
         catalog[:AcroForm] = form if form
         outlines ? catalog.merge(Outlines: outlines, PageMode: :UseOutlines) : catalog
       end

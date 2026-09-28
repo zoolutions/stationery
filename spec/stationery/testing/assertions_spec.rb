@@ -58,6 +58,23 @@ RSpec.describe Stationery::Testing::Assertions do
     expect(host.calls.map(&:first)).to eq([true, true, false])
   end
 
+  it "asserts page labels" do
+    labelled = Class.new(SpecDocument) do
+      page_labels 1 => { style: :roman }
+      def view_template
+        2.times do
+          text("x")
+          page_break
+        end
+      end
+    end.new.to_pdf
+    host.assert_page_labels(labelled, %w[I II])
+    host.assert_page_labels(pdf, %w[I II])
+
+    expect(host.calls.map(&:first)).to eq([true, false])
+    expect(host.calls.last.last).to eq('expected PDF to have page labels ["I", "II"], got none')
+  end
+
   it "asserts the language" do
     german = Class.new(SpecDocument) do
       metadata lang: "de"

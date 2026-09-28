@@ -139,6 +139,25 @@ RSpec.describe Stationery::Testing::Matchers do
       expect(have_pdf_language("en").tap { |m| m.matches?(document) }.failure_message).to end_with("got none")
     end
 
+    it "matches page labels" do
+      labelled = Class.new(SpecDocument) do
+        page_labels 1 => { style: :roman_lower }, 3 => { style: :decimal }
+        def view_template
+          3.times do
+            text("x")
+            page_break
+          end
+        end
+      end.new
+      matcher = have_page_labels(%w[i ii 2])
+
+      expect(labelled).to have_page_labels(%w[i ii 1])
+      expect(matcher.matches?(labelled)).to be(false)
+      expect(matcher.description).to eq('have page labels ["i", "ii", "2"]')
+      expect(matcher.failure_message).to eq('expected PDF to have page labels ["i", "ii", "2"], got ["i", "ii", "1"]')
+      expect(have_page_labels(%w[i]).tap { |m| m.matches?(document) }.failure_message).to end_with("got none")
+    end
+
     it "matches when every text is tagged or an artifact" do
       matcher = have_tagged_content
 
