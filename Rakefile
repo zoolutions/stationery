@@ -78,7 +78,8 @@ namespace :verify do
                 "e_invoice" => { pdf_a3b: "3b" }, "form" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
                 "article" => { pdf_ua1: "ua1", pdf_a3b: "3b" }, "newsletter" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
                 "signed_invoice" => { pdf_a3b: "3b" }, "signed_form" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
-                "linked_report" => { pdf_ua1: "ua1", pdf_a3b: "3b" } }
+                "linked_report" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
+                "accessible_report" => { pdf_ua1: "ua1", pdf_a3b: "3b" } }
     failures = renders.flat_map do |name, levels|
       options = { conformance: levels.keys }
       options[:sign] = identity.call if name.start_with?("signed_")

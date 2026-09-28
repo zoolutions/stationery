@@ -68,7 +68,9 @@ class ExampleMultilingualNotice < Stationery::Document
     rule height: 2, color: ACCENT
     spacer 16
     row(gap: 18) do
-      NOTICES.each { |language, hyphenate, title, paragraphs| column { notice(language, hyphenate, title, paragraphs) } }
+      NOTICES.each do |language, hyphenate, title, paragraphs|
+        column { notice(language, hyphenate, title, paragraphs) }
+      end
     end
     spacer 18
     japanese

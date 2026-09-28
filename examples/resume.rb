@@ -97,7 +97,9 @@ class ExampleResume < Stationery::Document
       spacer 12
       label "SKILLS"
       wrap(gap: 4, row_gap: 4) do
-        @skills.each { |skill| box(width: :auto, background: "#FFFFFF", radius: 8, padding: [2, 7]) { text skill, size: 8 } }
+        @skills.each do |skill|
+          box(width: :auto, background: "#FFFFFF", radius: 8, padding: [2, 7]) { text skill, size: 8 }
+        end
       end
       spacer 12
       label "LANGUAGES"

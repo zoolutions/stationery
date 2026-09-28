@@ -31,7 +31,7 @@ class ExamplePriceList < Stationery::Document
   # instead of being held until then.
   incremental
 
-  header(gap: 12) do |page|
+  header(gap: 12) do
     row(align: :bottom) do
       text "Example Provisions · Price list 2027", size: 11, weight: :bold, color: ACCENT
       text "Prices in SEK excluding VAT", size: 7.5, color: MUTED, align: :right

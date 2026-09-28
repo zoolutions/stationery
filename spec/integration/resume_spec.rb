@@ -20,7 +20,7 @@ RSpec.describe "the example résumé" do
     content = 595.28 - 88
 
     expect(sidebar[:x]).to be < body[:x]
-    expect(body[:x] - 44).to be_within(1).of((content - 24) * 0.3 + 24)
+    expect(body[:x] - 44).to be_within(1).of(((content - 24) * 0.3) + 24)
     expect(body[:y]).to be_within(12).of(sidebar[:y])
   end
 

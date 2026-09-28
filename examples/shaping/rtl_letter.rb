@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 # A letter in Arabic, right to left, shaped by HarfBuzz through the shaper
-# hook: joined letters, marks placed over them, and runs of Latin text and
-# digits kept in reading order inside a right-to-left line. Stationery does not
-# shape text itself, so this one needs what the gem does not ship: the
+# hook: joined letters, and numbers kept in reading order inside right-to-left
+# lines. Stationery does not shape text itself, so this one needs what the
+# gem does not ship: the
 # harfbuzz-ruby gem with the HarfBuzz library (see harfbuzz_shaper.rb beside
 # it) and a font with the Arabic script, named by ARABIC_FONT:
 #

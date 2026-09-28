@@ -16,7 +16,9 @@ RSpec.describe "the example contract" do
     lines = pages.flat_map { |page| page[:text].map { |run| [page[:number], run[:text]] } }
     headings = lines.select { |_, text| text.match?(/\A\d+\. /) }
 
-    expect(headings.map(&:last)).to eq(ExampleContract::CLAUSES.each_with_index.map { |(title, _), i| "#{i + 1}. #{title}" })
+    expected = ExampleContract::CLAUSES.each_with_index.map { |(title, _), i| "#{i + 1}. #{title}" }
+
+    expect(headings.map(&:last)).to eq(expected)
     headings.each do |number, text|
       clause = text[/\A\d+/]
       expect(lines).to include([number, "#{clause}.1"])
