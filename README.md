@@ -1038,8 +1038,8 @@ The limits of a hook:
 - Vertical advances are not read: text runs horizontally.
 - A reader that takes `ActualText` for the text (the gem's `Inspector`) gets it as written. poppler
   (`pdftotext` 26.09) and MuPDF (1.28) run their own reordering over it and return a right-to-left
-  stretch reversed. pdf-reader, and so `Inspector#text`, drops a `Span` whose first glyph has no
-  advance (a mark drawn first); `Inspector#structure` does not.
+  stretch reversed. pdf-reader's own `Page#text` drops a `Span` whose first glyph has no advance (a
+  mark drawn first); the `Inspector` does not.
 
 [`examples/shaping/harfbuzz_shaper.rb`](https://github.com/zoolutions/stationery/blob/main/examples/shaping/harfbuzz_shaper.rb)
 is an adapter for HarfBuzz through the [`harfbuzz-ruby`](https://github.com/ydah/harfbuzz) gem
@@ -1130,6 +1130,10 @@ signed_at:, subfilter:, byte_range:, signer:, valid:, timestamp: }]`, the timest
 read from its marked content: `[type, "text"]`, `[type, [children]]` (its own text
 between the children, as for a `P` holding a `Link`) or `[type]` when empty; a
 `Figure` reads as its alt text.
+
+`text` and `page_texts` are the text of the page content as pdf-reader lays it out, line by line. A
+`Span` with `ActualText` (a stretch a shaper reordered, characters no font has) reads as that text,
+once, whatever glyphs it shows.
 
 ## Why not Prawn, Chrome or Typst?
 

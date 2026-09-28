@@ -41,7 +41,7 @@ module Stationery
       end
 
       def page_count = reader.page_count
-      def page_texts = @page_texts ||= reader.pages.map { |page| page.text.squeeze(" ").strip }
+      def page_texts = @page_texts ||= reader.pages.map { |page| MarkedText.read(page).layout.squeeze(" ").strip }
       def text = page_texts.join("\n")
       def metadata = reader.info
 

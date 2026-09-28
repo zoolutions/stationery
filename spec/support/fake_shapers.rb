@@ -58,6 +58,19 @@ module FakeShapers
     end
   end
 
+  # A combining mark is drawn before its base, over where the base will be:
+  # no advance, moved forward and up, in the cluster of its base. HarfBuzz
+  # answers this for the marks of a right-to-left script.
+  MARK_FIRST = lambda do |text, face, **|
+    clusters = nominal(text, face).slice_when { |_, glyph| !text[glyph.cluster].match?(/\p{M}/) }
+    clusters.flat_map do |base, *marks|
+      marks.map { |mark| mark.with(advance: 0, x_offset: 300, y_offset: 120, cluster: base.cluster) } << base
+    end
+  end
+
+  # Right to left, every glyph drawn over the one before: no advance at all.
+  STACKED = ->(text, face, **) { nominal(text, face).reverse.map { |glyph| glyph.with(advance: 0) } }
+
   DECLINING = ->(*, **) {}
   EMPTY = ->(*, **) { [] }
 end

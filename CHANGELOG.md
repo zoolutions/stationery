@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Testing: `Inspector#text` and `#page_texts`, and so `have_pdf_text`, `have_pdf_text_on_page` and `assert_pdf_text`, read a sequence with `/ActualText` as that text, once, whatever the glyphs inside it advance. A shaped stretch whose first glyph has no advance (a mark drawn before its base, as HarfBuzz answers for Arabic) was missing from the text: pdf-reader gives the `ActualText` to the first glyph shown and drops a glyph without a width. The helpers now read a page through the receiver `Inspector#structure` already read it with: glyphs outside such a sequence are laid out by pdf-reader as before, and the sequence is one run from where its first glyph is shown to where it ends. The text of a page without `ActualText` is what it was. `ActualText` and the structure tree are read with pdf-reader 2.12 and later, where they needed 2.16. For a PDF Stationery did not write, `untagged_text` and `structure` follow a form XObject the page draws, as `text` does. The PDFs written are unchanged.
+
 ## 0.11.0 (2026-09-28)
 
 Text wrap around images, balanced columns, lossless WebP, a shaper hook for complex scripts, and far less memory for long documents.
