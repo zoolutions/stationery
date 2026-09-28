@@ -110,6 +110,26 @@ RSpec.describe Stationery::Layout::Flow do
       expect(pages_of(pdf)[1].map(&:first).uniq).to eq([20.0])
     end
 
+    # Fuzz seed 444 with float widths in points (#168): the list was placed
+    # below the float for the wide float further down in it, and the part of
+    # it cut for the room there was laid out beside the float, and ran over.
+    it "keeps the part cut below a float there, where the whole was placed for what follows in it" do
+      list = flow(boxed(text_node(words)), black(200, 20))
+      pdf, paginator = render_layout(flow(black(150, 100), list))
+
+      expect(pages_of(pdf)[0].map(&:first).uniq).to eq([20.0])
+      expect(pages_of(pdf)[0].first.last).to eq(120.0)
+      expect(pages_of(pdf)[1].first.last).to eq(20.0)
+      expect(text_of(pdf).split).to eq(words.split)
+      expect(paginator.warnings).to be_empty
+    end
+
+    it "measures the part it cut below a float as it was cut" do
+      head, = flow(black(150, 100), flow(boxed(text_node(words)), black(200, 20))).split(260, 160, fresh: true)
+
+      expect(head.measure(260)).to be <= 160
+    end
+
     it "moves on whole when the orphans of its text do not fit beside the float" do
       pdf, = render_layout(flow(spacer(125), black(80, 30), boxed(text_node(words, orphans: 3))))
 
