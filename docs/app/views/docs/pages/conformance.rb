@@ -60,7 +60,8 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         | `encrypt:` | PDF/A | `ArgumentError` (PDF/A forbids encryption; PDF/UA allows it) |
         | `attach_file` / `attachments:` | PDF/A-2b | `ArgumentError`: part 2 only embeds PDF/A files, use `:pdf_a3b` |
         | No `metadata title:` or `lang:` | PDF/UA-1 | `Stationery::ConformanceError` listing what is missing |
-        | An image or drawing without `alt:`, or with a blank one (`""`, whitespace alone) | PDF/UA-1 | `ConformanceError` naming the page (ISO 14289-1, 7.3); mark decoration with `alt: false` |
+        | An image or drawing without `alt:`, or with a blank one (`""`, whitespace alone) | PDF/UA-1 | `ConformanceError` naming the page (ISO 14289-1, 7.3); mark decoration with `alt: false`. Whitespace alone is refused although veraPDF accepts it |
+        | In `html`, an `<img>` without an `alt` attribute; in `markdown`, an image without a description (`![](photo.png)`) | PDF/UA-1 | `ConformanceError`, as for `image` without `alt:`. `<img alt="">` is decoration and is written as `alt: false` is; Markdown has no way to mark decoration, so use `html` or `image` for it |
         | A heading level that is skipped: a first heading that is not `heading: 1`, or a heading more than one level below the heading before it | PDF/UA-1 | `ConformanceError` naming the page, the level and the deepest level allowed there (ISO 14289-1, 7.4.2) |
         | A form field made without a font book (`Forms::Field.new` placed with `canvas.widget`) | every level | `ConformanceError` naming the field: it draws with the standard Helvetica, which is not embedded. Fields from `text_field`, `select`, `checkbox`, `radio` and `signature_field` draw with the document's embedded fonts and are allowed |
         | A character no font has, in body text, a page template or a form field's value | every level | `ConformanceError` naming the character, its code point and the family: it draws as `.notdef`, which text may not reference (PDF/A 6.2.11.8, PDF/UA 7.21.8). Add a font or `font_fallbacks` that covers it. Whitespace a font lacks draws as a blank and is accepted |
@@ -70,7 +71,7 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
           ReportPdf.new(report).to_pdf
         rescue Stationery::ConformanceError => e
           e.levels # => [:pdf_a3b, :pdf_ua1]
-          e.issues # => ["image on page 2 has no alt: text"]
+          e.issues # => ["image on page 2 has no alt: text (alt: false marks decoration)"]
         end
         ```
 
