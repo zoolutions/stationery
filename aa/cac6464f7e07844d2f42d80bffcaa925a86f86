@@ -1,0 +1,29 @@
+docs/spec/requests/mcp_spec.rb
+  s_f5a1e2cf907cda::t_d3f478cb9aaced 1-74
+docs/Gemfile
+  s_f5a1e2cf907cda::t_d3f478cb9aaced 14-16
+docs/app/views/docs/pages/getting_started.rb
+  s_f5a1e2cf907cda::t_d3f478cb9aaced 121-143
+docs/config/routes.rb
+  s_f5a1e2cf907cda::t_d3f478cb9aaced 2-5
+docs/Gemfile.lock
+  ai_agent 124,140-144,158-159,328,378,438,445,452,509
+README.md
+  s_f5a1e2cf907cda::t_d3f478cb9aaced 10-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "aacac6464f7e07844d2f42d80bffcaa925a86f86",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
