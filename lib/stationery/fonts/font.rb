@@ -24,6 +24,7 @@ module Stationery
                           0x3000 => 1.0 }.freeze
       SPACE_LIKE = { 0x2007 => "0", 0x2008 => "." }.freeze
       NO_FEATURES = [].freeze
+      REPLACEMENT = "\uFFFD"
 
       attr_reader :ttf
 
@@ -107,9 +108,11 @@ module Stationery
       end
 
       # { code => text } for every glyph drawn so far; a ligature's text is
-      # every character it stands for.
+      # every character it stands for. Glyph 0, .notdef, stands for every
+      # character the font lacks, so it maps to the replacement character
+      # and the run's ActualText carries the real ones (see GlyphRun).
       def used_codes
-        @used.to_h { |gid, char| [code(gid), char] }
+        @used.to_h { |gid, char| [code(gid), gid.zero? ? REPLACEMENT : char] }
       end
 
       def build(writer)

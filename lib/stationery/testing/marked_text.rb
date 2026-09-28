@@ -16,6 +16,8 @@ module Stationery
                  set_character_spacing set_word_spacing set_text_rise set_horizontal_text_scaling
                  set_text_rendering_mode].freeze
 
+      UTF16_BOM = "\xFE\xFF".b
+
       def_delegators :@state, *STATE
 
       # { MCID => text } and the strings shown outside marked content.
@@ -31,20 +33,30 @@ module Stationery
         @unmarked = []
       end
 
+      # A sequence with ActualText reads as that text, whatever it shows.
       def begin_marked_content_with_pl(_tag, properties)
-        @open << (properties[:MCID] if properties.is_a?(Hash))
+        properties = {} unless properties.is_a?(Hash)
+        @open << properties[:MCID]
+        return unless properties[:ActualText]
+
+        @actual = decode(properties[:ActualText])
+        @actual_depth = @open.size
       end
 
       def begin_marked_content(_tag) = @open << nil
-      def end_marked_content = @open.pop
+
+      def end_marked_content
+        @actual = nil if @actual_depth && @open.size <= @actual_depth
+        @open.pop
+      end
+
       def show_text(string) = append(string)
       def show_text_with_positioning(params) = params.grep(String).each { |string| append(string) }
 
       private
 
       def append(string)
-        font = @state.current_font
-        text = font.unpack(string).map { |code| font.to_utf8(code) }.join
+        text = shown(string)
         return @unmarked << text if @open.empty?
 
         mcid = @open.compact.last
@@ -54,6 +66,24 @@ module Stationery
         separator = @texts.key?(mcid) && @baselines[mcid] != baseline ? " " : ""
         @texts[mcid] = "#{@texts[mcid]}#{separator}#{text}"
         @baselines[mcid] = baseline
+      end
+
+      # The characters a string shows: its ActualText once, when it has one.
+      def shown(string)
+        if @actual
+          text = @actual
+          @actual = ""
+          return text
+        end
+
+        font = @state.current_font
+        font.unpack(string).map { |code| font.to_utf8(code) }.join
+      end
+
+      def decode(text)
+        return text.dup.force_encoding(Encoding::UTF_8) unless text.b.start_with?(UTF16_BOM)
+
+        text.b.byteslice(2..).force_encoding(Encoding::UTF_16BE).encode(Encoding::UTF_8)
       end
     end
   end
