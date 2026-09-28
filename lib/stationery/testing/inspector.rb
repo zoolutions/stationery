@@ -135,6 +135,15 @@ module Stationery
         PDF::PageLabels.labels(nums, page_count)
       end
 
+      # The print hints of the catalog as `print` takes them: `{ scaling:
+      # :none, copies: 2, pick_tray_by_size: true, duplex: :simplex, pages:
+      # [1..3], dialog: :on_open }`, with the hints the file has and no
+      # others. `pages` is always a list; empty without hints.
+      def print_preferences
+        entries = catalog.slice(:ViewerPreferences, :OpenAction).transform_values { |value| objects.deref!(value) }
+        PDF::PrintHints.read(entries)
+      end
+
       # Every embedded file from the catalog's /EmbeddedFiles name tree:
       # `{ name:, mime:, bytes:, description:, relationship: }` (bytes inflated).
       def attachments

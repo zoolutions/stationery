@@ -131,6 +131,25 @@ module Stationery
         def actual = @inspector.page_labels.empty? ? "got none" : "got #{@inspector.page_labels.inspect}"
       end
 
+      # Every hint given is the one the file has; `pages:` is a Range or a
+      # list of them, and a nil says the file has no such hint.
+      class HavePrintPreference < Base
+        def initialize(**hints)
+          raise ArgumentError, "have_print_preference needs a hint: (scaling: :none)" if hints.empty?
+
+          hints[:pages] = [hints[:pages]] if hints[:pages].is_a?(Range)
+          super(hints)
+        end
+
+        def description = "have print preference #{list(@expected)}"
+
+        private
+
+        def list(hints) = hints.map { |key, value| "#{key}: #{value.inspect}" }.join(", ")
+        def match?(pdf) = @expected.all? { |key, value| pdf.print_preferences[key] == value }
+        def actual = @inspector.print_preferences.empty? ? "got none" : "got #{list(@inspector.print_preferences)}"
+      end
+
       class HaveConformance < Base
         def initialize(*levels) = super(levels.flatten.map(&:to_sym))
 
@@ -260,6 +279,7 @@ module Stationery
       def have_bookmark(title) = HaveBookmark.new(title)
       def have_pdf_language(lang) = HaveLanguage.new(lang)
       def have_page_labels(labels) = HavePageLabels.new(labels)
+      def have_print_preference(**) = HavePrintPreference.new(**)
       def have_attachment(name, **) = HaveAttachment.new(name, **)
       def have_conformance(*levels) = HaveConformance.new(*levels)
       def have_factur_x(profile: nil) = HaveFacturX.new(profile:)

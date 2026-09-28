@@ -11,7 +11,9 @@ module Stationery
     # A character no font has is glyph 0, .notdef, which stands for no
     # character in particular: each stretch of them is shown inside a Span
     # whose ActualText is the characters, so the text still extracts, copies
-    # and reads aloud as written.
+    # and reads aloud as written. So is the glyph a font draws in its place
+    # when the render replaces missing glyphs (see Font#stand_in): it is the
+    # glyph of another character, which the map to Unicode gives.
     GlyphRun = Data.define(:font, :gids, :adjust, :chars) do
       def width(size, letter_spacing: 0)
         units = gids.sum { |gid| font.ttf.advance(gid) }
@@ -23,13 +25,13 @@ module Stationery
         with(adjust: adjust.each_with_index.map { |a, i| chars[i] == " " ? a + extra : a })
       end
 
-      def missing? = gids.include?(0)
+      def missing? = gids.include?(0) || (!font.stand_in.nil? && gids.each_index.any? { |index| stand_in?(index) })
 
       def to_operator
         return show unless missing?
 
         last = gids.size - 1
-        gids.each_index.chunk_while { |a, b| gids[a].zero? == gids[b].zero? }.map do |indices|
+        gids.each_index.chunk_while { |a, b| missing_at?(a) == missing_at?(b) }.map do |indices|
           piece = with(gids: gids.values_at(*indices), adjust: adjust.values_at(*indices),
                        chars: chars.values_at(*indices))
           piece.marked(trailing: indices.last < last)
@@ -49,6 +51,9 @@ module Stationery
       end
 
       private
+
+      def missing_at?(index) = gids[index].zero? || (!font.stand_in.nil? && stand_in?(index))
+      def stand_in?(index) = font.stands_in?(gids[index], chars[index])
 
       def show(trailing: false)
         return "<#{hex(gids)}> Tj" unless adjusted?(trailing)

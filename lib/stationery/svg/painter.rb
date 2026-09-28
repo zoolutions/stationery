@@ -65,7 +65,7 @@ module Stationery
         box = Bounds.new.tap { |bounds| Shapes.trace(bounds, element) }.box
         return if gradient.bounding_box? && box.nil?
 
-        shading = Shading.dictionary(gradient, gradient.coords(@viewport), style.color)
+        shading = Gradient::Fill.new(gradient, gradient.coords(@viewport), style.color)
         matrix = Transform.multiply(style.matrix, gradient.matrix(box))
         @canvas.shade(shading, matrix:, transform: style.matrix, even_odd: style.even_odd?, opacity:) do |path|
           Shapes.trace(path, element)

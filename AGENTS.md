@@ -14,6 +14,10 @@ Stationery writes PDFs from Ruby classes: a document is a class, `view_template`
 | `benchmark/` | Benchmarks, the profiler, the memory report and the metrics gate |
 | `docs/` | The docs site, a Rails application of its own with its own bundle |
 
+## The canvas
+
+A layout node, the SVG renderer and a `canvas { |c| … }` block call only what `Stationery::Canvas::Interface` names, in top-left coordinates and points: never `canvas.page`, `canvas.num`, a path's `to_s`, an operator or the resources, which are the PDF canvas's own. The paginator, the page templates and `Structure` ask the render's canvases (`PDF::Canvases`) for the canvas of a page, and `Document#paint_on` is what every output runs. `spec/stationery/document_paint_on_spec.rb` paints every example on a canvas that is not the PDF canvas, so a node that reaches for PDF fails there.
+
 ## How a change is made
 
 1. **A branch off fresh `main`**, one pull request per issue or per part of one. Nothing is pushed to `main`.
