@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- `AGENTS.md` at the root of the repository: what a contributor, human or not, has to know and cannot read off the code. A spec first and the suite by its exit status, what the metrics gate holds and when its baseline is recorded, which validator checks which claim, how the changelog is written, that releases are cut with `bin/release`, and what is out of scope by design. The gem is unchanged.
+
 ## 0.11.1 (2026-09-28)
 
 What putting 0.11.0 to work found: PDF/UA claims that hold, boxes that stay on their page, columns that fill evenly, and lists that widen below a float.
