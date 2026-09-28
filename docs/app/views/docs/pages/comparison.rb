@@ -51,7 +51,7 @@ class Views::Docs::Pages::Comparison < DocsUI::Page
         | Justification | Yes, widens spaces | Yes | Yes |
         | Fallback fonts | Per character, then bundled Inter | `fallback_fonts` per box | Font stack per element |
         | CJK line breaking | Between ideographs, kana and Hangul with kinsoku for closing and opening marks; zero-width space and `<wbr>` | Partial: zero-width spaces | Yes, UAX #14, `word-break` |
-        | Right-to-left, Arabic, Indic | No: drawn glyph by glyph, left to right | `direction: :rtl` reverses runs; no shaping | Shaping yes; `direction: rtl` and vertical writing no |
+        | Right-to-left, Arabic, Indic | Not built in: drawn glyph by glyph, left to right. A `shaper` hook draws what the application's HarfBuzz places, within a stretch of one font and style; no reordering across stretches or lines | `direction: :rtl` reverses runs; no shaping | Shaping yes; `direction: rtl` and vertical writing no |
         | Colour emoji | No, draws `.notdef` | No | CBDT, sbix, COLR v0 |
         | Font formats | TTF, OTF/CFF, TTC, WOFF | TTF, OTF/CFF, TTC, DFont | TTF, OTF |
         | WOFF2, variable fonts | No | No | No |
