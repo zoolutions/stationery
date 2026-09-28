@@ -1,0 +1,25 @@
+CHANGELOG.md
+  s_632dbd6e2d0597::t_81f6981661ca41 11
+spec/stationery/fonts/shaping_spec.rb
+  s_632dbd6e2d0597::t_296253efb46a4f 18,24-25
+  s_632dbd6e2d0597::t_e522780a66fea1 1-17,19-23,26-36
+lib/stationery/fonts/shaping.rb
+  s_632dbd6e2d0597::t_8517ba6da3d20e 8-9,18,25-28
+  s_632dbd6e2d0597::t_40ba0ce849ca28 44-48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "9f99bd720b07aba25e661dd30e5fc663187be4ec",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
