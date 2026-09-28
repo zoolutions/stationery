@@ -149,6 +149,50 @@ class Views::Docs::Pages::Elements < DocsUI::Page
       MD
     end
 
+    DocsUI::Section("columns", description: "One flow through several columns.") do
+      md <<~'MD'
+        `columns(count: 2, gap: 12, balance: true, rule: nil, align: nil) { … }`
+
+        The block's content is one flow, poured through `count` columns newspaper style: column 1 top to
+        bottom, then column 2. (A `row` is the other thing: columns side by side, each with content of its
+        own.) Every column is `(width - gap * (count - 1)) / count` wide, and a column ends where a page
+        would: between children, between the lines of a paragraph (honouring `orphans:` and `widows:`),
+        inside boxes and tables by their own rules, never inside `break_inside: :avoid`. A heading with
+        `keep_with_next: true` stays in the column of what follows it.
+
+        ```ruby
+        text "The sea wall is whole again", size: 30, weight: :bold
+        columns(count: 2, gap: 22, rule: { color: "#D1D5DB" }) do
+          text "What it cost", weight: :bold, keep_with_next: true
+          text body, align: :justify, orphans: 2, widows: 2
+          image "bay.png", width: 1.0
+        end
+        text "A note across the page, below the tallest column."
+        ```
+
+        - **`balance: true`** ends the columns at nearly the same height wherever the content ends: on the
+          last page of the block and before a `page_break` inside it. The height is the shortest at which
+          everything fits, and the columns are filled in order, so ten lines in three columns are 4, 4
+          and 2. **`balance: false`** fills each column to the height available before the next starts.
+        - **Across pages.** A block that does not fit fills the height left on the page, every column
+          full, and continues on the next page; the last page is balanced. Below other content it starts
+          only when every column takes something in the height left, and otherwise moves to the next
+          page. A `page_break` inside ends the page. What follows the block starts below its tallest column.
+        - **`rule:`** `true` or `{ color:, width: }` draws a line in the middle of each gap, an artifact in
+          a tagged PDF.
+        - **`count: 1`** lays out like a `group`. `count:` must be an Integer of at least 1 and `gap:` a
+          number of at least 0, or `ArgumentError` is raised.
+        - **Nesting.** `columns` works inside a `box`, a `column` and another `columns`.
+        - **Tagged PDF.** Reading order is column 1, then column 2; a paragraph split across columns is
+          one `P`, as it is across pages. Links, anchors, bookmarks and `table_of_contents` page numbers
+          work inside.
+        - A child too tall for a column at the top of a page is kept and reported as an overflow warning.
+
+        `examples/newsletter.rb` is a complete page. In `html`, `column-count`, `columns: <n>` and
+        `column-gap` map to it.
+      MD
+    end
+
     DocsUI::Section("group", description: "Keep a block together.") do
       md <<~'MD'
         `group(gap: 0, align: nil, keep_together: false, keep_with_next: nil, anchor: nil, bookmark: nil) { … }`
