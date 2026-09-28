@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Shaped right-to-left text: what extractors read is measured, and what the gem writes stays. Seven texts in Arabic and Hebrew were written three ways (the stretch in a `Span` with its text in logical order as `ActualText`, which is what ships; a `Span` per cluster in visual order; no `Span` where the ToUnicode map is enough) and read with the `Inspector`, PDFium, PDFKit, pdf.js, poppler and MuPDF. None is read as written by all: PDFium and the `Inspector` take `ActualText` as it is, poppler and MuPDF reverse it, and without it PDFium returned the words of a line in reverse order. pdf.js and PDFKit read the ToUnicode map, which cannot give the text of a font that draws a letter as several glyphs (Noto Sans, Naskh and Kufi Arabic). veraPDF passes all three as PDF/UA-1. The table is in the README under "Complex scripts: the shaper hook", and `examples/shaping/extraction_matrix.rb` makes it again (HarfBuzz, the extractors and the fonts are installed apart from the gem). The gem and the PDFs it writes are unchanged.
 - `AGENTS.md` at the root of the repository: what a contributor, human or not, has to know and cannot read off the code. A spec first and the suite by its exit status, what the metrics gate holds and when its baseline is recorded, which validator checks which claim, how the changelog is written, that releases are cut with `bin/release`, and what is out of scope by design. The gem is unchanged.
 
 ## 0.11.1 (2026-09-28)
