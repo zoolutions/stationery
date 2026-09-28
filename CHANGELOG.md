@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- The metrics gate holds what 0.11 added: `bundle exec rake metrics` renders seven more documents (`article` for floats, `newsletter` for `columns`, `webp` for a lossless WebP decoded in the render that is measured, `html` with a stylesheet, `pdf_ua` under `conformance :pdf_ua1`, `text_incremental` with a footer and `incremental`, `text_shaped` through a shaper written in Ruby), fourteen in all, so a change that makes any of them allocate more than 3%, write more than 1% more bytes or paginate differently fails CI. The seven documents it held are recorded as they were; the gate takes 6 s where it took 4.
+- The metrics gate holds what 0.11 added: `bundle exec rake metrics` renders seven more documents (`article` for floats, `newsletter` for `columns`, `webp` for a lossless WebP decoded in the render that is measured, `html` with a stylesheet, `pdf_ua` under `conformance :pdf_ua1`, `text_incremental` with a footer and `incremental`, `text_shaped` through a shaper written in Ruby), fourteen in all, so a change that makes any of them allocate more than 3%, write more than 1% more bytes or paginate differently fails CI. The seven documents it held are recorded as they were; the gate takes 4.2 s where it took 3.0.
 
 ## 0.11.1 (2026-09-28)
 
