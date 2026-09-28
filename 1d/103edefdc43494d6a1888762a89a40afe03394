@@ -1,0 +1,108 @@
+spec/stationery/raster/scanner_spec.rb
+  s_f5a1e2cf907cda::t_7de5870cce5558 1-17,19-62,64-70
+  s_f5a1e2cf907cda::t_769f611047da89 18,63
+lib/stationery/raster.rb
+  s_f5a1e2cf907cda::t_dd48973908b87e 1-44
+lib/stationery/raster/surface.rb
+  s_f5a1e2cf907cda::t_4eab785eec783d 1-70
+docs/app/views/docs/pages/testing.rb
+  s_f5a1e2cf907cda::t_b266c2e49f2c2c 42-45
+lib/stationery.rb
+  s_f5a1e2cf907cda::t_ef68453abe996c 84-89,91-93,95-98
+  s_f5a1e2cf907cda::t_3fde2f99f6508d 94
+  s_f5a1e2cf907cda::t_57c926dafc7a7b 90
+lib/stationery/document.rb
+  s_f5a1e2cf907cda::t_f0c209f4f4e569 242-255
+lib/stationery/raster/shading.rb
+  s_f5a1e2cf907cda::t_79739bd8bda805 1-77
+spec/stationery/document_to_png_spec.rb
+  s_f5a1e2cf907cda::t_8a69788a3662a9 1-108,117-125
+  s_f5a1e2cf907cda::t_2fe921e96514a4 109-116
+lib/stationery/raster/canvases.rb
+  s_f5a1e2cf907cda::t_10656b905ab70e 23-25
+  s_f5a1e2cf907cda::t_d75bf998630f05 1-22,26-49
+lib/stationery/raster/adjust.rb
+  s_f5a1e2cf907cda::t_e71538810425df 1-22,38-60
+  s_f5a1e2cf907cda::t_f064de20316c57 23-37
+lib/stationery/raster/painter.rb
+  s_f5a1e2cf907cda::t_a51b5c6a6aa39c 117-118
+  s_f5a1e2cf907cda::t_129e7360e5acb3 78-79,81-82,86,88-89
+  s_f5a1e2cf907cda::t_b1506146dd9eb1 1-41,43-53,55,57-77,80,83-85,90-116,119-166,168-171,174-178
+  s_f5a1e2cf907cda::t_3f64ed1078e640 172-173
+  s_f5a1e2cf907cda::t_3359ceb2cf8f80 87
+  s_f5a1e2cf907cda::t_20ad050ddb9a12 42,54
+  s_f5a1e2cf907cda::t_44bb1135be9100 167
+  s_f5a1e2cf907cda::t_8c9d3512d95fe5 56
+.rubocop.yml
+  s_f5a1e2cf907cda::t_0c28e8c5ba88f2 36-38
+  s_f5a1e2cf907cda::t_2324f36ed6ee44 63
+  s_f5a1e2cf907cda::t_346046d2c63baa 45-47,51
+lib/stationery/raster/png.rb
+  s_f5a1e2cf907cda::t_0c3b2055b9a111 9-11,14,21-22
+  s_f5a1e2cf907cda::t_9630b87bfa3996 1-8,12-13,15-20,23-32
+spec/stationery/raster/png_spec.rb
+  s_f5a1e2cf907cda::t_31fa1c83ea5afc 1-42
+lib/stationery/raster/render.rb
+  s_f5a1e2cf907cda::t_df28fd68e36e6b 25-27,29
+  s_f5a1e2cf907cda::t_3f14f2b79e15ff 1-24,28,30-107
+lib/stationery/raster/stroker.rb
+  s_f5a1e2cf907cda::t_49bf3accbb6efd 1-30,32-113,116-117,119-120,122-136,140-145,147-208
+  s_f5a1e2cf907cda::t_91dce81cd33645 31,114-115,118,121,137-139,146
+spec/integration/raster_references_spec.rb
+  s_f5a1e2cf907cda::t_b1e18b7afe17cd 1-14
+lib/stationery/raster/scanner.rb
+  s_f5a1e2cf907cda::t_2500daecdad17b 95-98,100-101,104
+  s_f5a1e2cf907cda::t_0b8864faa930df 105
+  s_f5a1e2cf907cda::t_c03a8c18540a81 118
+  s_f5a1e2cf907cda::t_3463595cc87a15 141-144
+  s_f5a1e2cf907cda::t_5cbbd5db49a6c8 1-94,99,102-103,106-117,119-140,145-164
+CHANGELOG.md
+  s_f5a1e2cf907cda::t_21d35c66022a82 5
+lib/stationery/raster/flattener.rb
+  s_f5a1e2cf907cda::t_18c72dde3eafce 1-75
+lib/stationery/raster/spans.rb
+  s_f5a1e2cf907cda::t_fdd028670de679 1-55,59-66
+  s_f5a1e2cf907cda::t_43e41f56443d0d 56-58
+lib/stationery/raster/picture.rb
+  s_f5a1e2cf907cda::t_7abd4a103aa0ba 7-11,13,18,26-27,30,34-53
+  s_f5a1e2cf907cda::t_ac621bc95f3271 1-6,12,14-17,19-25,28-29,31-33,54-69
+spec/support/raster_references.rb
+  s_f5a1e2cf907cda::t_2030df8d85fee3 1-71,83,86-89,92-110
+  s_f5a1e2cf907cda::t_949e9e61eca2fe 72-74,77-82,84-85
+  s_f5a1e2cf907cda::t_20ad050ddb9a12 75
+  s_f5a1e2cf907cda::t_f4015cef016351 90-91
+  s_f5a1e2cf907cda::t_3285fb291eedff 76
+lib/stationery/raster/glyphs.rb
+  s_f5a1e2cf907cda::t_720445a43e11b7 1-11,26,38-39,42,48,51-53,57,61,78-81
+  s_f5a1e2cf907cda::t_4db7a09fb5cece 12-25,27-37,40-41,43-47,49-50,54-56,58-60,62-77
+spec/stationery/raster/stroker_spec.rb
+  s_f5a1e2cf907cda::t_d0cbcea4152abc 1-4,6,9-32,34-35,37-57
+  s_f5a1e2cf907cda::t_20ad050ddb9a12 5,7-8
+  s_f5a1e2cf907cda::t_efeeb26982267b 33,36
+README.md
+  s_f5a1e2cf907cda::t_b64fa99c8c59cb 567-612
+lib/stationery/monochrome/bitmap.rb
+  s_f5a1e2cf907cda::t_1c658aac8da3da 24-33
+lib/stationery/raster/canvas.rb
+  s_f5a1e2cf907cda::t_2d28636711f000 1-95
+spec/stationery/raster/canvases_spec.rb
+  s_f5a1e2cf907cda::t_e9a8aa558e367a 43
+  s_f5a1e2cf907cda::t_3ae28a580edd33 48
+  s_f5a1e2cf907cda::t_fe9debcab3cbfa 1-42,44-47,49-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "1d103edefdc43494d6a1888762a89a40afe03394",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
