@@ -104,6 +104,22 @@ module Stationery
         def actual = "got #{@inspector.image_count}"
       end
 
+      # The colours are the ones Inspector#colors lists, no more and no
+      # fewer, in any order: `have_pdf_colors("#000000")` for a monochrome file.
+      class HaveColors < Base
+        def initialize(*colors)
+          super(colors.flatten.map { |color| color.start_with?("#") ? color.upcase : color }.uniq.sort)
+        end
+
+        def description = "paint with colors #{list(@expected)}"
+
+        private
+
+        def list(colors) = colors.map(&:inspect).join(", ")
+        def match?(pdf) = pdf.colors == @expected
+        def actual = @inspector.colors.empty? ? "got none" : "got #{list(@inspector.colors)}"
+      end
+
       class HaveBookmark < Base
         def description = "have a bookmark #{show(@expected)}"
 
@@ -276,6 +292,7 @@ module Stationery
       def have_page_count(expected) = HavePageCount.new(expected)
       def have_pdf_link(expected) = HaveLink.new(expected)
       def have_image_count(expected) = HaveImageCount.new(expected)
+      def have_pdf_colors(*colors) = HaveColors.new(*colors)
       def have_bookmark(title) = HaveBookmark.new(title)
       def have_pdf_language(lang) = HaveLanguage.new(lang)
       def have_page_labels(labels) = HavePageLabels.new(labels)
