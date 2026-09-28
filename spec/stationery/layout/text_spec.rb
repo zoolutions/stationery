@@ -10,6 +10,23 @@ RSpec.describe Stationery::Layout::Text do
     expect(node.min_width).to be_within(0.01).of(widest)
   end
 
+  it "measures one line of one run without wrapping it, to the same width a wrap gives" do
+    sources = ["Customer 12", "AVAWAY Tomato", "item-4 a-b", "one", "12.50", "  lead", "trail ", "tab\there",
+               "two  spaces", "line\nbreak", "soft­hyphen", "zw​sp", "日本語", " ", "x\r"]
+    wrapped = sources.map do |source|
+      runs = open_sans_book.fallback([Stationery::Text::Run.new(source, base_style)])
+      Stationery::Text::Paragraph.new(runs, book: open_sans_book, width: Float::INFINITY).lines.map(&:width).max || 0
+    end
+    allow(Stationery::Text::Wrapper).to receive(:new).and_call_original
+
+    expect(text_node("Customer 12").natural_width).to be > 0
+    expect(Stationery::Text::Wrapper).not_to have_received(:new)
+    natural = sources.map do |source|
+      described_class.new([Stationery::Text::Run.new(source, base_style)], context: ctx).natural_width
+    end
+    expect(natural).to eq(wrapped)
+  end
+
   it "measures a fallback glyph with the fallback font" do
     inter = open_sans_book.resolve(base_style(family: "Inter")).first
 
