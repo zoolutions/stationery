@@ -18,6 +18,12 @@ module Stationery
       ROLES.fetch(role) { raise ArgumentError, "unknown role #{role.inspect} (use #{ROLES.keys.join(", ")})" }
     end
 
+    # What an alt text has when it describes anything: a character that is not whitespace.
+    DESCRIPTION = /[^[:space:]]/
+
+    # Whether `alt` describes nothing: nil, "" or whitespace alone.
+    def self.blank?(alt) = !alt.to_s.match?(DESCRIPTION)
+
     def self.heading(level)
       return :P unless level
       raise ArgumentError, "heading: takes 1 to 6, got #{level.inspect}" unless (1..6).cover?(level)

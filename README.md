@@ -487,7 +487,9 @@ and across page breaks: a paragraph continued on the next page stays one `P`.
 - `table_of_contents` is `TOC` > `TOCI` > `Link` (the title and its annotation) and `Reference` (the
   page number).
 - `html`/`markdown` tag headings `H1`–`H6` (with or without `bookmarks: true`) and block quotes
-  `BlockQuote`, and give images their `alt`.
+  `BlockQuote`, and give images their `alt`. In `html`, `<img alt="">` is decoration as `alt: false`
+  is (an `<img>` without the attribute is a description missing). Markdown has no way to say so:
+  `![](photo.png)` is a description missing, and decoration goes through `html` or `image`.
 - Headers, footers and page templates are pagination artifacts; backgrounds, borders and rules drawn
   outside any element are layout artifacts.
 - `metadata lang:` writes the catalog's `/Lang`; the title is shown instead of the file name.
@@ -495,8 +497,15 @@ and across page breaks: a paragraph continued on the next page stays one `P`.
   `dc:title`, `dc:creator`, `dc:description`, `dc:subject`, `dc:language`, the `xmp:` dates and
   `pdf:Producer`. PDF/A and PDF/UA identification lives there (see
   [PDF/A and PDF/UA](#pdfa-and-pdfua)); `metadata xmp: false` or `to_pdf(xmp: false)` leaves it out.
-- An image or drawing without `alt:` (`Warnings::MissingAlt`) and a missing `lang`
-  (`Warnings::MissingLanguage`) are warnings, so `strict` catches them.
+- An image or drawing without `alt:`, or with a blank one (`alt: ""`, whitespace alone, which
+  veraPDF would accept), is a `Warnings::MissingAlt`; `alt: false` is how decoration is marked.
+- A heading level that is skipped is a `Warnings::SkippedHeading` (`level`, `allowed`, `page`): the
+  first heading is `heading: 1` and a heading is at most one level below the heading before it
+  (`1`, then `3` skips `2`). Going back up is free (`3`, then `1`). Headings are read in the order of
+  the structure tree, inside sections, lists, table cells, columns and floats; those of headers,
+  footers and page templates are artifacts and do not count.
+- A missing `lang` is a `Warnings::MissingLanguage`. All three are warnings, so `strict` catches them,
+  and `conformance :pdf_ua1` raises on the first two.
 - Untagged documents (the default) are written exactly as before.
 
 Check the tree in tests with `have_structure` and `have_tagged_content` (see [Testing](#testing)):
@@ -542,7 +551,10 @@ mislabelled: `ArgumentError` for options that contradict the level, `Stationery:
 - **PDF/UA-1** (ISO 14289): turns `tagged` on, needs `metadata title:` and `lang:`, writes
   `pdfuaid:part`, shows the title in the viewer, orders tabs by structure (`/Tabs /S`) and gives
   every link annotation a description (`/Contents`: the URL, or the target page). A figure without
-  `alt:` raises; mark decoration with `alt: false`. Encryption is allowed.
+  `alt:` or with a blank one raises (7.3); mark decoration with `alt: false`, or `<img alt="">` in
+  `html`. A heading level that is skipped raises (7.4.2): the first heading is `heading: 1`, and a
+  heading is at most one level below the heading before it. PDF/A alone asks for neither.
+  Encryption is allowed.
 - Combined, the XMP packet also describes the `pdfuaid` schema to PDF/A (`pdfaExtension:schemas`).
 - Interactive form fields are allowed: their appearances draw with embedded fonts and paths, every
   field has a `/TU`, and `NeedAppearances` and ZapfDingbats are left out. Only a field made without

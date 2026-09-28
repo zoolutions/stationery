@@ -117,8 +117,8 @@ RSpec.describe "Tagged PDF" do # rubocop:disable RSpec/DescribeClass
     doc.to_pdf
 
     expect(doc.warnings.map(&:message)).to eq(["tagged PDF has no language: set metadata lang:",
-                                               "image on page 1 has no alt: text",
-                                               "svg on page 1 has no alt: text"])
+                                               "image on page 1 has no alt: text (alt: false marks decoration)",
+                                               "svg on page 1 has no alt: text (alt: false marks decoration)"])
     expect { doc.to_pdf(strict: true) }.to raise_error(Stationery::WarningsError)
   end
 
