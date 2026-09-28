@@ -1,0 +1,21 @@
+spec/stationery/floats_spec.rb
+  ai_agent 147-176
+spec/stationery/text/wrapper_rest_spec.rb
+  s_632dbd6e2d0597::t_0fd2f4dd6d8c9b 41-45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "fe5facde40f352538a13938a82fe1058265e89a6",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": null
+    }
+  }
+}
