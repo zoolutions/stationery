@@ -29,6 +29,12 @@ module Stationery
       def message = %(image "#{source}" skipped: #{reason})
     end
 
+    OversizedImage = Data.define(:source, :pixels, :ppi, :limit) do
+      def message
+        %(image "#{source}" #{pixels}px wide is drawn at #{ppi} ppi (limit #{limit}); resize it before embedding)
+      end
+    end
+
     UnresolvedLink = Data.define(:name, :page) do
       def message = %(link to "#{name}" on page #{page} has no matching anchor)
     end

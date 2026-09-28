@@ -9,14 +9,25 @@ module Stationery
     # `radius:` clips to rounded corners and `rotate:` (degrees, clockwise)
     # turns the painted image around the centre of its rectangle; neither
     # changes the space the image takes up.
+    #
+    # A bitmap keeps its pixels: drawn at more than twice `max_ppi:` (300;
+    # nil disables) it is reported as a Warnings::OversizedImage, and with
+    # `downscale: true` a PNG is resampled to `max_ppi` at its drawn size
+    # instead (a JPEG is never re-encoded; resize it before embedding).
     class Image < Node
+      DEFAULT_MAX_PPI = 300
+
       # `alt:` describes the image in a tagged PDF; `alt: false` marks it decorative.
-      def initialize(source, width: nil, height: nil, fit: nil, opacity: nil, alt: nil, radius: 0, rotate: 0)
+      def initialize(source, width: nil, height: nil, fit: nil, opacity: nil, alt: nil, radius: 0, rotate: 0,
+                     max_ppi: DEFAULT_MAX_PPI, downscale: false)
         raise ArgumentError, "fit: :cover needs width: and height:" if fit == :cover && !(width && height)
 
         super()
         @tag = alt == false ? nil : Tagging::Element.new(:Figure, alt:, kind: :image)
         @image = source.respond_to?(:build) ? source : Images.load(source)
+        @name = source.is_a?(String) || source.is_a?(Pathname) ? File.basename(source.to_s) : "inline image"
+        @max_ppi = max_ppi
+        @downscale = downscale
         @width = width
         @height = height
         @fit = fit
@@ -63,7 +74,22 @@ module Stationery
           w = cw
           h = ch
         end
-        canvas.image(@image, x:, y:, width: w, height: h, opacity: @opacity)
+        canvas.image(bitmap(canvas, w), x:, y:, width: w, height: h, opacity: @opacity)
+      end
+
+      # The image to embed for a drawn width: resampled to the ppi limit when
+      # asked and possible, else the source, reported when it is oversized.
+      def bitmap(canvas, drawn_width)
+        return @image unless @max_ppi
+
+        wanted = (drawn_width / 72.0 * @max_ppi).ceil
+        return @image.resample(wanted) if @downscale && @image.width > wanted && @image.respond_to?(:resample)
+
+        ppi = (@image.width * 72.0 / drawn_width).round
+        if ppi > 2 * @max_ppi && canvas.warnings
+          canvas.warnings << Warnings::OversizedImage.new(source: @name, pixels: @image.width, ppi:, limit: @max_ppi)
+        end
+        @image
       end
 
       def requested

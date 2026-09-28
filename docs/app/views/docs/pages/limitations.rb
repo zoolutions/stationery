@@ -21,7 +21,7 @@ class Views::Docs::Pages::Limitations < DocsUI::Page
         | Text | Hyphenation, small caps and other OpenType features, text wrapping around images | Lines break at spaces and after hyphens; `justify` widens spaces only |
         | SVG | `use`, `image`, `clipPath`, `mask`, `pattern`, `filter`, `textPath`, `symbol`; stylesheet selectors with combinators (`g path`, `a > b`) | Skipped and listed in an `UnsupportedSvg` warning |
         | SVG (approximated) | Gradient `reflect`/`repeat` spreads (drawn as `pad`), per-stop opacity (the first stop's), gradient strokes (the middle colour), rotated or skewed text (upright, uniformly scaled), `dominant-baseline` | Reported in `UnsupportedSvg` where it changes the drawing |
-        | Images | GIF, WebP, TIFF, BMP, interlaced PNG; remote URLs; resampling (an image is embedded at its source resolution) | `UnsupportedImage` naming the format; `html`/`markdown` skip a remote or unreadable image with a `SkippedImage` warning |
+        | Images | GIF, WebP, TIFF, BMP, interlaced PNG; remote URLs; JPEG resampling (a JPEG is embedded at its source resolution, only a PNG can be downscaled) | `UnsupportedImage` naming the format; an image drawn at more than twice `max_ppi` is reported as `OversizedImage`; `html`/`markdown` skip a remote or unreadable image with a `SkippedImage` warning |
         | HTML / Markdown | CSS beyond `text-align` and inline `font-weight`/`font-style` (no colours, sizes, classes), `script`/`style`/`iframe`/`video`, task lists, footnotes, math; raw HTML inside Markdown | Unknown elements render their text; raw HTML in Markdown stays literal |
         | Layout | A fixed `height:` box, a rotated box and a `stack` never split; a row splits only when every column can; no balanced columns | The node moves to the next page whole; taller than a page it is placed anyway and reported as an `Overflow` warning |
         | Transforms | Annotations inside `rotate`/`transform` | Link and form-widget rectangles stay in untransformed page space |
@@ -34,14 +34,13 @@ class Views::Docs::Pages::Limitations < DocsUI::Page
       MD
     end
 
-    DocsUI::Section("Sizing images", description: "Embedded at source resolution.") do
+    DocsUI::Section("Sizing images", description: "JPEGs are embedded as they are.") do
       md <<~'MD'
-        A JPEG is embedded byte for byte and a PNG is re-encoded losslessly, so a 1600 px photo
-        drawn 160 pt wide ships all 1600 px at 720 ppi. Size images before you embed them: for print,
+        A JPEG is embedded byte for byte, so size it before you embed it: for print,
         `width_in_points / 72 * 300` pixels is plenty (a 160 pt photo needs about 670 px), and screen
-        PDFs need half that. With ActiveStorage, make a variant per drawn size (`resize_to_limit`,
-        JPEG, quality 75) and preprocess it, so a render only downloads. A 10-page flyer with 18
-        photos went from 3.3 MB to under 1 MB that way with no visible difference.
+        PDFs need half that. An image drawn at more than twice `max_ppi` is reported as an
+        `OversizedImage`, and a PNG can be resampled with `downscale: true` — see
+        [Resolution](/docs/images-and-svg#resolution).
       MD
     end
   end

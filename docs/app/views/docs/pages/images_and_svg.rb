@@ -18,7 +18,7 @@ class Views::Docs::Pages::ImagesAndSvg < DocsUI::Page
 
     DocsUI::Section("Sizing and fit") do
       md <<~'MD'
-        `image(source, width: nil, height: nil, fit: nil, align: nil, opacity: nil, radius: 0, rotate: 0)`
+        `image(source, width: nil, height: nil, fit: nil, align: nil, opacity: nil, radius: 0, rotate: 0, max_ppi: 300, downscale: false)`
 
         | Given | Result |
         | --- | --- |
@@ -42,6 +42,34 @@ class Views::Docs::Pages::ImagesAndSvg < DocsUI::Page
 
         A rotated image paints outside its rectangle at the corners, so leave room around it (a
         `box(padding:)`).
+      MD
+    end
+
+    DocsUI::Section("Resolution", description: "Bitmaps keep their pixels.") do
+      md <<~'MD'
+        A JPEG is embedded byte for byte and a PNG re-encoded losslessly, so a 1600 px photo drawn
+        160 pt wide ships all 1600 px at 720 ppi. Print needs about 300 ppi (`width_in_points / 72 * 300`
+        pixels: a 160 pt photo wants about 670 px) and screen PDFs half that.
+
+        Every image is checked when it is painted: drawn at more than twice `max_ppi:` it is reported
+        as a [`Warnings::OversizedImage`](/docs/warnings) naming the file, its pixel width and the
+        resolution it lands at, so `strict` catches it.
+
+        ```ruby
+        class Flyer < Stationery::Document
+          images max_ppi: 300, downscale: true   # document defaults; nil switches the check off
+        end
+
+        image "photo.png", width: 160                 # a 1600 px PNG is resampled to 667 px
+        image "photo.jpg", width: 160, max_ppi: nil   # this one is fine as it is
+        ```
+
+        `downscale: true` resamples a **PNG** to `max_ppi` at its drawn size with a box filter (alpha
+        and palette transparency included) and embeds that; the layout, the tagged `Figure` and the
+        text around it do not change. A **JPEG** is never re-encoded, so it only warns: size JPEGs
+        before you embed them. With ActiveStorage, make a JPEG variant per drawn size
+        (`resize_to_limit`, quality 75) and preprocess it, so a render only downloads. A 10-page flyer
+        with 18 photos went from 3.3 MB to under 1 MB that way with no visible difference.
       MD
     end
 
