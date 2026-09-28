@@ -69,7 +69,7 @@ module Stationery
         if attachment.modified_at
           params[:ModDate] = TextString.new(attachment.modified_at.utc.strftime("D:%Y%m%d%H%M%SZ"))
         end
-        Stream.new(attachment.data, Type: :EmbeddedFile, Subtype: attachment.mime.to_sym, Params: params)
+        Stream.new(attachment.data, { Type: :EmbeddedFile, Subtype: attachment.mime.to_sym, Params: params })
       end
     end
   end
