@@ -55,6 +55,25 @@ RSpec.describe Stationery::Document do
     expect(page_contents(unkerned).first).not_to include("TJ")
   end
 
+  it "writes page labels from the class or the render, and none by default" do
+    labelled = Class.new(SpecDocument) do
+      page_labels 1 => { style: :roman_lower }, 3 => { style: :decimal, start: 1, prefix: "A-" }
+      def view_template
+        4.times do
+          text("x")
+          page_break
+        end
+      end
+    end
+    plain = SpecDocument.build { text "x" }
+
+    catalog = catalog_of(labelled.new.to_pdf)
+    expect(catalog[:PageLabels]).to eq(Nums: [0, { S: :r }, 2, { S: :D, St: 1, P: "A-" }])
+    expect(catalog_of(plain.to_pdf)).not_to have_key(:PageLabels)
+    expect(catalog_of(plain.to_pdf(page_labels: { 1 => { style: :alpha } }))[:PageLabels]).to eq(Nums: [0, { S: :A }])
+    expect(catalog_of(labelled.new.to_pdf(page_labels: nil))).not_to have_key(:PageLabels)
+  end
+
   it "writes metadata from the class and from the instance" do
     doc = Class.new(SpecDocument) do
       metadata title: "Invoice 42", author: "Acme"

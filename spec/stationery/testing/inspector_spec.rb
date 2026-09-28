@@ -81,6 +81,26 @@ RSpec.describe Stationery::Testing::Inspector do
     end
   end
 
+  describe "#page_labels" do
+    it "computes one label per page from the /PageLabels tree, nil before the first range" do
+      doc = Class.new(SpecDocument) do
+        page_labels 2 => { style: :roman_lower }, 4 => { style: :decimal, prefix: "A-" }
+        def view_template
+          5.times do
+            text("x")
+            page_break
+          end
+        end
+      end.new
+
+      expect(described_class.new(doc).page_labels).to eq([nil, "i", "ii", "A-1", "A-2"])
+    end
+
+    it "is empty without labels" do
+      expect(described_class.new(document).page_labels).to eq([])
+    end
+  end
+
   it "counts images" do
     path = image_path("rgb.jpg")
     doc = SpecDocument.build { image path, width: 20 }

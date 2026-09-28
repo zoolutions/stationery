@@ -50,6 +50,14 @@ module Stationery
         config[:metadata] = config[:metadata].merge(info)
       end
 
+      # How viewers name the pages: a 1-based first page mapped to the range
+      # starting there, `page_labels 1 => { style: :roman_lower }, 3 =>
+      # { style: :decimal, start: 1, prefix: "A-" }`; see PDF::PageLabels.
+      def page_labels(spec)
+        PDF::PageLabels.entries(spec)
+        config[:page_labels] = spec
+      end
+
       # Raise WarningsError instead of writing a PDF that produced warnings.
       def strict(value = true) # rubocop:disable Style/OptionalBooleanParameter
         config[:strict] = value
@@ -94,9 +102,9 @@ module Stationery
     def metadata = self.class.config[:metadata]
 
     def to_pdf(target = nil, strict: self.class.config[:strict], debug: false, encrypt: self.class.config[:encrypt],
-               tagged: self.class.config[:tagged])
+               tagged: self.class.config[:tagged], page_labels: self.class.config[:page_labels])
       Stationery.instrument("render.stationery", document: self.class.name) do |event|
-        write(render_pdf(event, strict:, debug:, encrypt:, tagged:), target)
+        write(render_pdf(event, strict:, debug:, encrypt:, tagged:, page_labels:), target)
       end
     end
 
@@ -119,7 +127,7 @@ module Stationery
     private
 
     # The PDF bytes; `event` is the render.stationery payload it fills in.
-    def render_pdf(event, strict:, debug:, encrypt:, tagged:)
+    def render_pdf(event, strict:, debug:, encrypt:, tagged:, page_labels:)
       tagging = Tagging::Tree.new if tagged
       warnings = Warnings.new
       book = Fonts::FontBook.new(self.class.config[:families], fallbacks: self.class.config[:fallbacks], warnings:)
@@ -135,13 +143,13 @@ module Stationery
       event[:warnings] = warnings.size
       raise WarningsError, warnings if strict && warnings.any?
 
-      assemble(pages, resources, outline, encrypt:, tagging:).tap { |pdf| event[:bytes] = pdf.bytesize }
+      assemble(pages, resources, outline, encrypt:, tagging:, page_labels:).tap { |pdf| event[:bytes] = pdf.bytesize }
     end
 
-    def assemble(pages, resources, outline, encrypt:, tagging:)
+    def assemble(pages, resources, outline, encrypt:, tagging:, page_labels:)
       encryption = encrypt && PDF::Encryption::StandardSecurity.new(**encrypt)
       assembler = PDF::Assembler.new(pages:, resources:, info:, outline:, encryption:, tagging:,
-                                     lang: metadata[:lang])
+                                     lang: metadata[:lang], page_labels: PDF::PageLabels.entries(page_labels))
       Stationery.instrument("write.stationery", document: self.class.name) do |event|
         assembler.render.tap { |pdf| event[:bytes] = pdf.bytesize }
       end

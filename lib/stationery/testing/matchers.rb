@@ -110,6 +110,15 @@ module Stationery
         def actual = @inspector.lang ? "got #{@inspector.lang.inspect}" : "got none"
       end
 
+      class HavePageLabels < Base
+        def description = "have page labels #{@expected.inspect}"
+
+        private
+
+        def match?(pdf) = pdf.page_labels == @expected
+        def actual = @inspector.page_labels.empty? ? "got none" : "got #{@inspector.page_labels.inspect}"
+      end
+
       class HaveNoWarnings < Base
         def description = "have no warnings"
 
@@ -150,6 +159,7 @@ module Stationery
       def have_image_count(expected) = HaveImageCount.new(expected)
       def have_bookmark(title) = HaveBookmark.new(title)
       def have_pdf_language(lang) = HaveLanguage.new(lang)
+      def have_page_labels(labels) = HavePageLabels.new(labels)
       def have_no_warnings = HaveNoWarnings.new
       def have_structure(expected) = HaveStructure.new(expected)
       def have_tagged_content = HaveTaggedContent.new

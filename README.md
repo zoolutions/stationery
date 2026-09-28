@@ -260,6 +260,10 @@ render Callout.new(color: "#F3F4F6") { text "Amount due" }
   fits a normal page but not the last one continues onto an extra page.
 - With a header or footer, a `page_template`'s `page.content_box` excludes their space (it is the
   body's area).
+- `page_labels 1 => { style: :roman_lower }, 3 => { style: :decimal, start: 1, prefix: "A-" }` names
+  the pages the way viewers show them ("i", "ii", "A-1", …): a 1-based first page mapped to the range
+  that starts there, with `style:` `:decimal`, `:roman`, `:roman_lower`, `:alpha`, `:alpha_lower` or
+  `nil` (prefix only), `start:` and `prefix:`. `to_pdf(page_labels:)` overrides it for one render.
 - Content taller than a page is placed anyway; `document.warnings` lists every overflow.
 - After `to_pdf`, `document.warnings` is an Enumerable of everything the render noticed but did not
   raise on, each with a `#message`: overflows, SVG elements that were skipped (`UnsupportedSvg`), and
@@ -561,6 +565,7 @@ RSpec.describe InvoicePdf do
   it { is_expected.to have_image_count(1) }
   it { is_expected.to have_no_warnings }
   it { is_expected.to have_pdf_language("en") } # the catalog /Lang from `metadata lang:`
+  it { is_expected.to have_page_labels(%w[i ii 1 2]) } # from `page_labels`
   it { is_expected.to have_tagged_content } # a tagged PDF with every text tagged or an artifact
   it { is_expected.to have_structure([[:Document, [[:H1, "Invoice"], [:P, "INV-7"]]]]) }
 end
@@ -582,6 +587,7 @@ class InvoicePdfTest < Minitest::Test
     assert_pdf_link pdf, /acme\.test/
     assert_no_pdf_warnings pdf
     assert_pdf_language pdf, "en"
+    assert_page_labels pdf, %w[i ii 1 2]
     assert_tagged_content pdf
     assert_pdf_structure pdf, [[:Document, [[:H1, "Invoice"], [:P, "INV-7"]]]]
   end
@@ -593,7 +599,7 @@ The matcher names carry a `pdf_` prefix so they never clash with Capybara's
 titles. The RSpec matchers compose like the built-ins: `.and` / `.or`, and inside
 `all`, `include` or `match`. For anything else, `Stationery::Testing::Inspector.new(subject)`
 exposes `text`, `page_texts`, `page_count`, `links`, `internal_links`,
-`image_count`, `bookmarks`, `metadata`, `lang`, `warnings`, `tagged?`, `untagged_text` and
+`image_count`, `bookmarks`, `metadata`, `lang`, `page_labels`, `warnings`, `tagged?`, `untagged_text` and
 `structure` — a tagged PDF's structure tree as nested arrays, each element's text
 read from its marked content: `[type, "text"]`, `[type, [children]]` (its own text
 between the children, as for a `P` holding a `Link`) or `[type]` when empty; a
@@ -680,7 +686,7 @@ does not wrap around images. Link and form-widget rectangles stay in page space 
 and `transform`, and `shadow:` is stacked rectangles, not a blur.
 
 PDF: tagged output is not labelled PDF/UA (no XMP), and there is no PDF/A or PDF/X, no digital
-signing (`signature_field` is an empty field), no embedded files, JavaScript or page labels.
+signing (`signature_field` is an empty field), no embedded files or JavaScript.
 Form-field appearances use Helvetica (Windows-1252), not the document's fonts.
 
 ## License
