@@ -83,10 +83,8 @@ module Stationery
       end
 
       def report(font, run)
-        run.text.each_char do |char|
-          next if Fonts::Fallback.carried?(char) || font.glyph?(char)
-
-          @book.warnings.missing_glyph(char, run.style.family)
+        Fonts::Fallback.each_missing(run.text, font) do |char|
+          @book.warnings.missing_glyph(char, run.style.family, font.stand_in&.char)
         end
       end
     end

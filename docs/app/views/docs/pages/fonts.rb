@@ -171,7 +171,8 @@ class Views::Docs::Pages::Fonts < DocsUI::Page
         not a character maps to them. Where the ToUnicode map cannot give the text (glyphs out of logical
         order, several glyphs for one cluster, a glyph that already stands for another text, glyph 0) the
         glyphs are shown in a `Span` whose `ActualText` is the characters in logical order. Glyph 0 is
-        reported as a `Warnings::MissingGlyph`, like any other.
+        reported as a `Warnings::MissingGlyph`, like any other, and under a [conformance](/docs/conformance)
+        level with `missing_glyphs: :replace` it is drawn as the font's stand-in at the stand-in's advance.
 
         The limits of a hook:
 
@@ -262,8 +263,9 @@ class Views::Docs::Pages::Fonts < DocsUI::Page
         drawn as a blank of the character's conventional width, never as `.notdef`. Any other glyph no font
         has is drawn as the family's `.notdef` and reported as a `Warnings::MissingGlyph` counting each
         drawn occurrence (so `strict` raises on it, and a [conformance](/docs/conformance) level raises
-        `ConformanceError`). The characters themselves travel as the `ActualText` of a `Span` around the
-        glyphs, so the text still extracts, copies and reads aloud as written.
+        `ConformanceError` unless it is declared with `missing_glyphs: :replace`, which draws the first of
+        U+FFFD, U+25A1 and `?` the font has instead). The characters themselves travel as the `ActualText`
+        of a `Span` around the glyphs, so the text still extracts, copies and reads aloud as written.
         Fallback covers every text element, table cell, list
         marker, table of contents entry and page template text; direct `canvas.text` calls draw with the font
         they are given.

@@ -25,7 +25,7 @@ module Stationery
                     else
                       { page: { size: :letter, margin: 36 }, families: {}, fallbacks: [], text: {}, metadata: {},
                         templates: [], regions: [], strict: false, tagged: false, incremental: false, images: {},
-                        attachments: [], shaping: {}, print: {} }
+                        attachments: [], shaping: {}, print: {}, missing_glyphs: :raise }
                     end
       end
 
@@ -116,10 +116,13 @@ module Stationery
 
       # Claims PDF/A-2b, PDF/A-3b and/or PDF/UA-1 (`conformance :pdf_a3b,
       # :pdf_ua1`) and writes what the level asks for; a render that cannot
-      # keep the claim raises. See PDF::Conformance.
-      def conformance(*levels)
-        PDF::Conformance.for(levels)
+      # keep the claim raises. See PDF::Conformance. `missing_glyphs:` is what
+      # a character no font has does: :raise (the default), or :replace to
+      # draw it as the first of U+FFFD, U+25A1 and "?" its font has.
+      def conformance(*levels, missing_glyphs: :raise)
+        PDF::Conformance.for(levels, missing_glyphs:)
         config[:conformance] = levels.flatten
+        config[:missing_glyphs] = missing_glyphs
       end
 
       # Makes every render a Factur-X / ZUGFeRD e-invoice: PDF/A-3b with the
@@ -204,10 +207,10 @@ module Stationery
                xmp: metadata[:xmp] != false, conformance: self.class.config[:conformance],
                factur_x: self.class.config[:factur_x], sign: self.class.config[:sign],
                shaper: self.class.config[:shaping][:shaper], incremental: self.class.config[:incremental],
-               print: PDF::PrintHints::NONE, &block)
+               print: PDF::PrintHints::NONE, missing_glyphs: self.class.config[:missing_glyphs], &block)
       invoice = PDF::FacturX.for(factur_x, self)
       attachments = PDF::Attachments.merge(self.class.config[:attachments], attachments, invoice&.attachment)
-      conformance = PDF::Conformance.for(invoice ? invoice.conformance(conformance) : conformance)
+      conformance = PDF::Conformance.for(invoice ? invoice.conformance(conformance) : conformance, missing_glyphs:)
       print = PDF::PrintHints.merge(self.class.config[:print], print)
       conformance&.validate!(encrypt:, metadata:, attachments:, print:)
       signature = PDF::Signature.for(sign, self)
@@ -228,9 +231,9 @@ module Stationery
     # render does before its output is written, whatever the output is.
     # Answers the pages, hands each to `each_page` as soon as its content is
     # painted, and yields the bookmarks whose anchors were painted.
-    def paint_on(canvases, warnings: Warnings.new, shaper: self.class.config[:shaping][:shaper], each_page: nil)
-      book = Fonts::FontBook.new(self.class.config[:families], fallbacks: self.class.config[:fallbacks], warnings:,
-                                                               shaper:, language: metadata[:lang])
+    def paint_on(canvases, warnings: Warnings.new, shaper: self.class.config[:shaping][:shaper], each_page: nil,
+                 stand_ins: false)
+      book = book_for(warnings, shaper, stand_ins)
       builder = builder_for(book)
       Stationery.instrument("build.stationery", document: self.class.name) { call(builder) }
       pages = paginate(builder, canvases, each_page, book:, warnings:)
@@ -260,6 +263,11 @@ module Stationery
 
     def builder_for(book) = Builder.new(book:, text: self.class.config[:text], images: self.class.config[:images])
 
+    def book_for(warnings, shaper, stand_ins)
+      Fonts::FontBook.new(self.class.config[:families], fallbacks: self.class.config[:fallbacks], warnings:,
+                                                        shaper:, language: metadata[:lang], stand_ins:)
+    end
+
     # The PDF bytes; `event` is the render.stationery payload it fills in.
     def render_pdf(event, strict:, debug:, tagged:, conformance:, shaper:, incremental:, **assembly)
       tagging = Tagging::Tree.new if tagged
@@ -268,7 +276,8 @@ module Stationery
       sealer = sealer_for(incremental, conformance, **assembly)
       outline = nil
       canvases = PDF::Canvases.new(resources, debug, tagging, warnings)
-      pages = paint_on(canvases, warnings:, shaper:, each_page: sealer) { |bookmarks| outline = bookmarks }
+      stand_ins = conformance&.replace_missing_glyphs? || false
+      pages = paint_on(canvases, warnings:, shaper:, each_page: sealer, stand_ins:) { |bookmarks| outline = bookmarks }
       tagging&.audit(pages, warnings, lang: metadata[:lang])
       conformance&.audit!(pages, resources:, warnings:)
       @fields = Forms::AcroForm.values(pages)

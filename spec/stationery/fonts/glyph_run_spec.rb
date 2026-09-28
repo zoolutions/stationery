@@ -55,6 +55,67 @@ RSpec.describe Stationery::Fonts::GlyphRun do
     expect(run.width(10)).to be_within(1e-9).of(font.width_of("a b c", 10) + 4)
   end
 
+  describe "the operator, written in one pass" do
+    # What the operator was: the run sliced after each adjustment, a part per
+    # slice and per adjustment, joined.
+    def reference(run, trailing)
+      gids = run.gids
+      adjust = run.adjust
+      return "<#{hex_of(gids)}> Tj" unless (trailing ? adjust : adjust[0...-1]).any? { |a| !a.zero? }
+
+      parts = gids.each_index.slice_after { |i| !adjust[i].zero? }.flat_map do |indices|
+        last = indices.last
+        chunk = ["<#{hex_of(indices.map { |i| gids[i] })}>"]
+        (last == gids.size - 1 && !trailing) || adjust[last].zero? ? chunk : chunk << format_number(-adjust[last])
+      end
+      "[#{parts.join(" ")}] TJ"
+    end
+
+    def hex_of(ids) = ids.map { |gid| font.code(gid) }.pack("n*").unpack1("H*").upcase
+    def format_number(value) = Stationery::PDF::Serializer.number(value)
+
+    def allocations
+      GC.disable
+      before = GC.stat(:total_allocated_objects)
+      yield
+      GC.stat(:total_allocated_objects) - before
+    ensure
+      GC.enable
+    end
+
+    it "is what the parts joined were, for every pattern of adjustments, trailing or not" do
+      random = Random.new(156)
+      values = [0, 0, 0, -50, 12.345678, 200, -0.00001, 1e-5].freeze
+      both = [true, false].freeze
+      texts = ["a", "ab", "Hello, world", "AVATAR To you", "fi ffi office", "x y z"]
+      texts.each do |text|
+        base = font.glyph_run(text)
+        200.times do
+          run = base.with(adjust: Array.new(base.gids.size) { values[random.rand(values.size)] })
+          both.each do |trailing|
+            expect(run.send(:show, trailing:)).to eq(reference(run, trailing)), "#{text.inspect} #{run.adjust.inspect}"
+          end
+        end
+      end
+    end
+
+    it "keeps the pieces of a run with .notdef glyphs as they were" do
+      run = font.glyph_run("a☃b☃☃c").with(adjust: [0, -50, 0, 0, 30, 0])
+
+      expect(run.to_operator).to eq(
+        "<#{hex("a")}> Tj\n/Span <</ActualText <FEFF2603>>> BDC\n[<0000> 50] TJ\nEMC\n<#{hex("b")}> Tj\n" \
+        "/Span <</ActualText <FEFF26032603>>> BDC\n[<00000000> -30] TJ\nEMC\n<#{hex("c")}> Tj"
+      )
+    end
+
+    it "makes a TJ array of a kerned run with a handful of objects" do
+      run = font.glyph_run("AVATAR To you", kerning: true)
+      run.to_operator
+
+      expect(allocations { 10.times { run.to_operator } }).to be <= 10 * (10 + (3 * run.adjust.count { |a| !a.zero? }))
+    end
+  end
+
   it "measures kerned runs exactly like Font#width_of with kerning" do
     ["AVATAR", "To you", "Wave", "x"].each do |text|
       expect(font.glyph_run(text, kerning: true).width(11, letter_spacing: 0.2))
