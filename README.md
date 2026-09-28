@@ -548,7 +548,8 @@ mislabelled: `ArgumentError` for options that contradict the level, `Stationery:
 - Without `conformance` nothing changes: the output is byte for byte what it was.
 
 `bundle exec rake verify:conformance` renders `examples/invoice.rb` as PDF/A-3b, and
-`examples/report.rb` and `examples/form.rb` as PDF/A-3b plus PDF/UA-1, and validates them with
+`examples/report.rb`, `examples/form.rb`, `examples/article.rb` (floats) and `examples/newsletter.rb`
+(columns) as PDF/A-3b plus PDF/UA-1, and validates them with
 [veraPDF](https://verapdf.org) through Docker (`verapdf/cli`); CI runs it on every push. Validate
 your own documents the same way:
 
