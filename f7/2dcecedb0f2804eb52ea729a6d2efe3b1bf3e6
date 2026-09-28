@@ -1,0 +1,29 @@
+README.md
+  s_f5a1e2cf907cda::t_91e93b9e4df4ab 89-91
+spec/fixtures/fonts/README.md
+  s_f5a1e2cf907cda::t_91e93b9e4df4ab 17-20
+spec/stationery/gemspec_spec.rb
+  s_f5a1e2cf907cda::t_91e93b9e4df4ab 3-5,28-29,36,38,43-55
+docs/app/views/docs/pages/examples.rb
+  s_f5a1e2cf907cda::t_91e93b9e4df4ab 70-72
+stationery.gemspec
+  s_f5a1e2cf907cda::t_91e93b9e4df4ab 39,44-45,48
+examples/invoice.rb
+  s_f5a1e2cf907cda::t_91e93b9e4df4ab 22-25,27-33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "f72dcecedb0f2804eb52ea729a6d2efe3b1bf3e6",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
