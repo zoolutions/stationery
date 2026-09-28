@@ -219,4 +219,23 @@ RSpec.describe Stationery::Fonts::Font do
         .to equal(font.send(:shape, "Invoice", Stationery::Fonts::Gsub::LIGA))
     end
   end
+
+  describe "#outline" do
+    let(:gids) { %w[a b c].map { |char| font.ttf.glyph_id(char.ord) } }
+
+    it "remembers a glyph's outline, frozen, and keeps nothing until one is asked for" do
+      expect(font.instance_variable_get(:@outlines)).to be_nil
+      expect(font.outline(gids.first)).to be_frozen.and equal(font.outline(gids.first))
+      expect(font.outline(gids.first).each_segment.to_a).to eq(font.ttf.outline(gids.first).each_segment.to_a)
+    end
+
+    it "starts over once it holds OUTLINE_MEMO numbers" do
+      stub_const("#{described_class}::OUTLINE_MEMO", font.ttf.outline(gids[0]).size + 1)
+      first = font.outline(gids[0])
+      gids.drop(1).each { |gid| font.outline(gid) }
+
+      expect(font.instance_variable_get(:@outlines).keys).to eq([gids.last])
+      expect(font.outline(gids[0])).not_to equal(first)
+    end
+  end
 end
