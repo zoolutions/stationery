@@ -81,6 +81,16 @@ module Stationery
         PDF::PageLabels.labels(nums, page_count)
       end
 
+      # Every embedded file from the catalog's /EmbeddedFiles name tree:
+      # `{ name:, mime:, bytes:, description:, relationship: }` (bytes inflated).
+      def attachments
+        names = catalog.dig(:Names, :EmbeddedFiles)
+        return [] unless names
+
+        entries = objects.deref_array(objects.deref_hash(names)[:Names])
+        entries.each_slice(2).map { |_name, ref| attachment(objects.deref_hash(ref)) }
+      end
+
       # The structure tree of a tagged PDF as nested arrays; see StructureReader.
       def structure = @structure ||= StructureReader.new(reader).tree
 
@@ -106,6 +116,13 @@ module Stationery
             annot.merge(A: objects.deref_hash(annot[:A]))
           end
         end
+      end
+
+      def attachment(spec)
+        stream = objects.deref(objects.deref_hash(spec[:EF])[:F])
+        relationship = PDF::Attachments::RELATIONSHIPS.key(spec[:AFRelationship]) || spec[:AFRelationship]
+        { name: decode(spec[:UF] || spec[:F]), mime: stream.hash[:Subtype].to_s, bytes: stream.unfiltered_data,
+          description: spec[:Desc] && decode(spec[:Desc]), relationship: }
       end
 
       def destination(dest)

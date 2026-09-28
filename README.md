@@ -294,6 +294,25 @@ InvoicePdf.new(invoice).to_pdf(encrypt: nil) # plain
   `:aes_128` for older viewers; `:rc4_128` only for legacy readers that need it.
 - Every string and stream is encrypted, the document info included.
 
+### Embedded files
+
+```ruby
+class InvoicePdf < Stationery::Document
+  attach_file "factur-x.xml", invoice_xml, mime: "text/xml", description: "Factur-X",
+              relationship: :alternative # every render
+end
+
+InvoicePdf.new(invoice).to_pdf(attachments: [{ name: "terms.pdf", data: terms, mime: "application/pdf" }])
+```
+
+- Each file becomes a `/Filespec` with an `/EmbeddedFile` stream (`/Subtype` from `mime:`, `/Params`
+  with size, MD5 checksum and `modified_at:`), listed in the catalog's `/EmbeddedFiles` name tree
+  and its `/AF` array; `description:` is the `/Desc` viewers show.
+- `relationship:` writes `/AFRelationship`: `:alternative` (a machine-readable twin, as Factur-X
+  and ZUGFeRD require), `:source`, `:data`, `:supplement` or `:unspecified` (default).
+- Per-render `attachments:` are added to the class-level ones; the same name twice raises
+  `ArgumentError`. An encrypted document encrypts the embedded streams too.
+
 ### Accessibility (tagged PDF)
 
 ```ruby
@@ -598,6 +617,7 @@ RSpec.describe InvoicePdf do
   it { is_expected.to have_no_warnings }
   it { is_expected.to have_pdf_language("en") } # the catalog /Lang from `metadata lang:`
   it { is_expected.to have_page_labels(%w[i ii 1 2]) } # from `page_labels`
+  it { is_expected.to have_attachment("factur-x.xml", mime: "text/xml", relationship: :alternative) }
   it { is_expected.to have_tagged_content } # a tagged PDF with every text tagged or an artifact
   it { is_expected.to have_structure([[:Document, [[:H1, "Invoice"], [:P, "INV-7"]]]]) }
 end
@@ -620,6 +640,7 @@ class InvoicePdfTest < Minitest::Test
     assert_no_pdf_warnings pdf
     assert_pdf_language pdf, "en"
     assert_page_labels pdf, %w[i ii 1 2]
+    assert_pdf_attachment pdf, "factur-x.xml", mime: "text/xml"
     assert_tagged_content pdf
     assert_pdf_structure pdf, [[:Document, [[:H1, "Invoice"], [:P, "INV-7"]]]]
   end
@@ -631,7 +652,7 @@ The matcher names carry a `pdf_` prefix so they never clash with Capybara's
 titles. The RSpec matchers compose like the built-ins: `.and` / `.or`, and inside
 `all`, `include` or `match`. For anything else, `Stationery::Testing::Inspector.new(subject)`
 exposes `text`, `page_texts`, `page_count`, `links`, `internal_links`,
-`image_count`, `bookmarks`, `metadata`, `lang`, `page_labels`, `warnings`, `tagged?`, `untagged_text` and
+`image_count`, `bookmarks`, `metadata`, `lang`, `page_labels`, `attachments`, `warnings`, `tagged?`, `untagged_text` and
 `structure` — a tagged PDF's structure tree as nested arrays, each element's text
 read from its marked content: `[type, "text"]`, `[type, [children]]` (its own text
 between the children, as for a `P` holding a `Link`) or `[type]` when empty; a
@@ -720,7 +741,7 @@ does not wrap around images. Link and form-widget rectangles stay in page space 
 and `transform`, and `shadow:` is stacked rectangles, not a blur.
 
 PDF: tagged output is not labelled PDF/UA (no XMP), and there is no PDF/A or PDF/X, no digital
-signing (`signature_field` is an empty field), no embedded files or JavaScript.
+signing (`signature_field` is an empty field) and no JavaScript.
 Form-field appearances use Helvetica (Windows-1252), not the document's fonts.
 
 ## License
