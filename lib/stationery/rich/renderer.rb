@@ -2,6 +2,7 @@
 
 require_relative "nodes"
 require_relative "styles"
+require_relative "renderer/indents"
 require_relative "renderer/inlines"
 require_relative "renderer/links"
 
@@ -9,8 +10,12 @@ module Stationery
   module Rich
     # Draws rich-text blocks with a component's element DSL. Images come from
     # `images:` (a callable given the src, returning a path, an IO or nil) or
-    # from files under `base_path:`; remote URLs are never fetched.
+    # from files under `base_path:`; remote URLs are never fetched. Block
+    # quotes and lists nested deeper than Indents::LIMIT stop indenting, which
+    # is reported as a NestingLimit warning.
     class Renderer
+      include Indents
+
       REMOTE = /\A[a-z][a-z0-9+.-]*:/i
       LINK_SCHEMES = %w[http https mailto tel].freeze
 
@@ -23,18 +28,25 @@ module Stationery
         @base_path = base_path && File.expand_path(base_path.to_s)
         @bookmarks = bookmarks
         @links = Links.new(links || LINK_SCHEMES, builder.warnings)
+        @indents = 0
       end
 
-      def render(blocks) = @component.group(gap: @gap) { blocks.each { |block| block(block) } }
+      def render(blocks)
+        depth = indents_of(blocks)
+        @builder.warnings << Warnings::NestingLimit.new(depth:, limit: Indents::LIMIT) if depth > Indents::LIMIT
+        group(blocks)
+      end
 
       private
+
+      def group(blocks) = @component.group(gap: @gap) { blocks.each { |block| block(block) } }
 
       def block(block)
         case block
         when Paragraph then paragraph(block.inlines, **@styles[:p])
         when Heading then heading(block)
-        when List then list(block)
-        when Blockquote then @component.box(role: :blockquote, **@styles[:blockquote]) { render(block.blocks) }
+        when List then indented(block) { list(block) }
+        when Blockquote then indented(block) { blockquote(block) }
         when CodeBlock then code(block)
         when Rule then @component.rule(**@styles[:hr])
         when Table then table(block)
@@ -59,11 +71,15 @@ module Stationery
         { title: heading.inlines.grep(Inline).map(&:text).join, level: heading.level }
       end
 
+      def blockquote(quote)
+        @component.box(role: :blockquote, **@styles[:blockquote]) { group(quote.blocks) }
+      end
+
       def list(list)
         options = list.ordered ? { **@styles[:ol], start: list.start || 1 } : @styles[:ul]
         @component.public_send(list.ordered ? :ol : :ul, **options) do
           list.items.each do |blocks|
-            @component.li { @component.text_style(**@styles[:li]) { render(blocks) } }
+            @component.li { @component.text_style(**@styles[:li]) { group(blocks) } }
           end
         end
       end
@@ -81,7 +97,7 @@ module Stationery
 
       def cell_content(cell)
         style = cell.header ? @styles[:table][:header] : {}
-        -> { @component.text_style(**style, align: cell.align) { render(cell.blocks) } }
+        -> { @component.text_style(**style, align: cell.align) { group(cell.blocks) } }
       end
 
       def image(node)

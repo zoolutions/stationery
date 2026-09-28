@@ -16,16 +16,20 @@ module Stationery
                            tspan use symbol clipPath]).freeze
 
       def self.parse(source)
-        root = Parser.parse(source)
+        nesting = nil
+        root = Parser.parse(source) { |depth| nesting = depth }
         raise Error, "not an svg document" unless root&.name == "svg"
 
-        new(root)
+        new(root, nesting:)
       end
 
-      attr_reader :view_box, :unsupported
+      # `nesting` is how deep the source nested when that was deeper than
+      # Parser::MAX_DEPTH (and was flattened there), else nil.
+      attr_reader :view_box, :unsupported, :nesting
 
-      def initialize(root)
+      def initialize(root, nesting: nil)
         @root = root
+        @nesting = nesting
         @view_box = read_view_box
         @sheet = Stylesheet.parse(style_text)
         @gradients = Gradient.collect(root, @sheet)

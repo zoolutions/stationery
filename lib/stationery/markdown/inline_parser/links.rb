@@ -3,9 +3,14 @@
 module Stationery
   module Markdown
     class InlineParser
-      # Brackets, inline and reference links, images and autolinks.
+      # Brackets, inline and reference links, images and autolinks. At most OPEN brackets wait for
+      # their `]` at once (the oldest gives way), and a link label is at most LABEL characters as
+      # CommonMark has it, so neither nesting nor the work per `]` grows with the input. A bracket's
+      # `position` is in bytes, which the scanner knows without counting characters.
       module Links
         Bracket = Struct.new(:index, :image, :active, :position)
+        OPEN = 64
+        LABEL = 999
 
         INLINE = /
           \(\s*
@@ -23,7 +28,8 @@ module Stationery
         private
 
         def open_bracket(image: false)
-          @brackets << Bracket.new(@nodes.size, image, true, @scanner.charpos)
+          @brackets.shift if @brackets.size >= OPEN
+          @brackets << Bracket.new(@nodes.size, image, true, @scanner.pos)
           add(image ? "![" : "[")
         end
 
@@ -31,7 +37,7 @@ module Stationery
           bracket = @brackets.pop
           return add("]") unless bracket&.active
 
-          href = inline_destination || reference(@source[bracket.position...(@scanner.charpos - 1)])
+          href = inline_destination || reference(bracket.position...(@scanner.pos - 1))
           return add("]") unless href
 
           children = @nodes.slice!(bracket.index..).drop(1)
@@ -48,17 +54,16 @@ module Stationery
           InlineParser.destination(@scanner[1] || @scanner[2])
         end
 
-        def reference(label)
+        # The target of `[text][label]`, `[text][]` or `[text]`, `span` being where the text lies.
+        def reference(span)
           position = @scanner.pos
-          if @scanner.scan(REFERENCE)
-            label = @scanner[1] unless @scanner[1].empty?
-            href = @refs[InlineParser.label(label)]
-            @scanner.pos = position unless href
-            href
-          else
-            @refs[InlineParser.label(label)]
-          end
+          label = @scanner[1] if @scanner.scan(REFERENCE) && !@scanner[1].empty?
+          href = defined_as(label || (@source.byteslice(span) if span.size <= LABEL * 4))
+          @scanner.pos = position unless href
+          href
         end
+
+        def defined_as(label) = label && label.length <= LABEL && @refs[InlineParser.label(label)]
 
         def autolink
           url = @scanner[1] || "mailto:#{@scanner[2]}"

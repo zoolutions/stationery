@@ -79,10 +79,16 @@ module Stationery
       end
 
       def delimiter
-        position = @scanner.charpos
+        before = previous_character
         run = @scanner.scan(/\*+|_+|~+/)
-        before = position.zero? ? " " : @source[position - 1]
-        @nodes << Emphasis.delimiter(run, before, @source[@scanner.charpos] || " ")
+        @nodes << Emphasis.delimiter(run, before, @scanner.check(/./m) || " ")
+      end
+
+      # The character before the scanner, read from the few bytes before it: a character position
+      # is counted from the start of the source, which a long paragraph would pay for at every run.
+      def previous_character
+        position = @scanner.pos
+        @source.byteslice([position - 4, 0].max...position).scrub("")[-1] || " "
       end
     end
   end

@@ -102,8 +102,8 @@ renders them all, or render one with `stationery render examples/report.rb`.
 | `radio(name, value, checked:, size:, label:, at:)` | One choice of a radio group: radios sharing `name` form one field whose value is the checked `value`. |
 | `select(name, options:, value:, width:, height:, editable:, at:)` | A drop-down (combo box); `editable: true` also accepts typed values. |
 | `signature_field(name, width:, height:, label:, at:)` | An empty signature field for the signer to fill, drawn as a rule over the label. |
-| `html(source, styles:, gap:, images:, base_path:, bookmarks:, links:)` | Rich text from HTML (ActionText/Trix, CMS output): paragraphs, headings, lists, quotes, code, rules, tables, images, inline marks and links. See [HTML and Markdown](#html-and-markdown). |
-| `markdown(source, styles:, gap:, images:, base_path:, bookmarks:, links:)` | The same from CommonMark (plus GFM tables and strikethrough). |
+| `html(source, styles:, gap:, images:, base_path:, bookmarks:, links:, max_depth:)` | Rich text from HTML (ActionText/Trix, CMS output): paragraphs, headings, lists, quotes, code, rules, tables, images, inline marks and links. See [HTML and Markdown](#html-and-markdown). |
+| `markdown(source, styles:, gap:, images:, base_path:, bookmarks:, links:, max_depth:)` | The same from CommonMark (plus GFM tables and strikethrough). |
 
 Text style options: `font`, `size`, `weight` (`:regular`, `:bold`), `style` (`:italic`), `color`,
 `letter_spacing`, `underline`, `strikethrough`, `link`, `opacity`, `kerning` (default `true`), `ligatures` (default `true`), `features` (OpenType feature tags, e.g. `%i[smcp onum]`), `hyphenate` (`true` for English, or `"de"`, `"sv"`; default off), `align` (`:left`, `:center`, `:right`, `:justify`), `leading`.
@@ -138,6 +138,33 @@ end
   `DroppedLink` warning. `links: %w[http https]` changes the list, `links: :all` keeps every href
   from a trusted source.
 - `gap:` spaces the blocks (default 6); `bookmarks: true` adds h1–h3 to the PDF outline.
+- `max_depth:` (default 64) is how deep the source may nest: HTML elements inside one another,
+  or Markdown block quotes and lists. What lies deeper is flattened into the deepest element
+  kept, so its text stays and its structure goes, and a `NestingLimit` warning says how deep the
+  source went. Block quotes and lists also stop indenting after twelve levels, where they would
+  leave their text no width; that is reported the same way.
+
+#### Untrusted input
+
+`html` and `markdown` are meant for content you did not write (a CMS body, a comment, an
+ActionText field), and nothing in that content can reach outside the document or take the
+process down:
+
+- **No requests.** Remote images are never fetched; an image is read only from `images:` or from
+  under `base_path:`, and a path that climbs out of it is skipped (`SkippedImage`).
+- **No surprising links.** Only `http`, `https`, `mailto` and `tel` hrefs (and `#anchor`) become
+  links (`DroppedLink` for the rest), so a `javascript:` or `file:` href is plain text.
+- **No scripts or styles.** `script`, `style`, `template` and `title` content is dropped, raw HTML
+  inside Markdown stays literal text, and no CSS is evaluated beyond `text-align` and inline
+  bold and italic.
+- **Bounded nesting.** Five thousand nested `<div>`s, block quotes or lists render flattened,
+  with a `NestingLimit` warning, instead of exhausting the stack (the `svg` element guards its
+  own nesting the same way, at 128 levels). Emphasis nests without recursion, at most 64
+  brackets wait for their `]`, and a link label is at most 999 characters, so parsing takes time
+  in proportion to the input.
+- **Size is yours to bound.** There is no limit on how much text is rendered: a megabyte of
+  input is a few hundred pages. Cap the length of what you accept before you render it, and use
+  `strict` (or read `document.warnings`) when a warning should stop the document.
 
 ### Links, bookmarks and table of contents
 
