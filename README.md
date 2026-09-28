@@ -82,9 +82,15 @@ InvoicePdf.new(invoice).to_pdf          # => "%PDF-1.7…" (binary String)
 InvoicePdf.new(invoice).to_pdf("a.pdf") # also writes a path or an IO
 ```
 
-`examples/` has a complete, runnable invoice, annual report, letter, packing slip, fillable form, postcard collage, magazine article, event flyer, two-column newsletter and Factur-X e-invoice
+`examples/` has a complete, runnable invoice, annual report, letter, packing slip, shipping label, fillable form, postcard collage, magazine article, event flyer, two-column newsletter and Factur-X e-invoice,
+and one per thing people build: a 2,000-row price list written `incremental`, a contract with initials
+on every page and signature fields, a landscape certificate, a two-column résumé with its body in HTML,
+a restaurant menu in `columns` with floats, a PDF/UA-1 accessible report and a notice in English, German
+and Swedish, each hyphenated in its language
 ([previews and live PDFs](https://stationery.zoolutions.llc/docs/examples)); `bundle exec rake examples`
 renders them all, or render one with `stationery render examples/report.rb`.
+`examples/shaping/rtl_letter.rb`, a letter in Arabic, needs HarfBuzz and an Arabic font, which the gem
+does not ship (see [Complex scripts](#complex-scripts-the-shaper-hook)).
 
 The examples ship with the gem, with the images they read, so they are there to read and to run in an
 application that has only the gem. Inter is the one font the gem ships: the invoice examples are set in
@@ -916,8 +922,9 @@ three stand-ins, in body text, headers and page templates, form field values and
 Without `conformance` the option changes nothing, and with `:raise` neither.
 
 `bundle exec rake verify:conformance` renders `examples/invoice.rb` as PDF/A-3b, and
-`examples/report.rb`, `examples/form.rb`, `examples/article.rb` (floats) and `examples/newsletter.rb`
-(columns) as PDF/A-3b plus PDF/UA-1, the report once more with a link in its footer, and validates
+`examples/report.rb`, `examples/form.rb`, `examples/article.rb` (floats), `examples/newsletter.rb`
+(columns) and `examples/accessible_report.rb` (figures, a table with header cells) as PDF/A-3b plus
+PDF/UA-1, the report once more with a link in its footer, and validates
 them with
 [veraPDF](https://verapdf.org) through Docker (`verapdf/cli`); CI runs it on every push. Validate
 your own documents the same way:
@@ -1479,6 +1486,12 @@ was run with harfbuzz-ruby 1.1.0 and HarfBuzz 14.5.0 against Noto Sans Arabic, A
 Hebrew and draws joined, right-to-left Arabic with its marks and with left-to-right digits inside it.
 It cuts a stretch into runs of one direction by its letters alone, not by the Unicode bidirectional
 algorithm.
+The base direction of a stretch is its first letter's, so a line of an Arabic paragraph that starts
+with a number stays right to left.
+[`examples/shaping/rtl_letter.rb`](https://github.com/zoolutions/stationery/blob/main/examples/shaping/rtl_letter.rb)
+is a letter in Arabic set with it (`ARABIC_FONT=NotoNaskhArabic-Regular.ttf ruby -Ilib
+examples/shaping/rtl_letter.rb`); its booking number, in Latin letters from Inter, sits in a `row`
+beside its Arabic label, since stretches of two fonts on one line are placed left to right.
 
 What comes out of a shaped PDF depends on who reads it, and no way of writing right-to-left text
 is read as written by every extractor. Seven texts (Arabic, Hebrew, Arabic with digits in it,

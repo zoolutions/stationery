@@ -200,6 +200,12 @@ class Views::Docs::Pages::Fonts < DocsUI::Page
         Hebrew and draws joined, right-to-left Arabic with its marks and with left-to-right digits inside it.
         It cuts a stretch into runs of one direction by its letters alone, not by the Unicode bidirectional
         algorithm.
+        The base direction of a stretch is its first letter's, so a line of an Arabic paragraph that starts
+        with a number stays right to left.
+        [`examples/shaping/rtl_letter.rb`](https://github.com/zoolutions/stationery/blob/main/examples/shaping/rtl_letter.rb)
+        is a letter in Arabic set with it (`ARABIC_FONT=NotoNaskhArabic-Regular.ttf ruby -Ilib
+        examples/shaping/rtl_letter.rb`); its booking number, in Latin letters from Inter, sits in a `row`
+        beside its Arabic label, since stretches of two fonts on one line are placed left to right.
 
         What comes out of a shaped PDF depends on who reads it, and no way of writing right-to-left text
         is read as written by every extractor. Seven texts (Arabic, Hebrew, Arabic with digits in it,
