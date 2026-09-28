@@ -3,20 +3,23 @@
 module Stationery
   module Text
     # Wrapped lines of runs at a width, ready to measure, split across pages
-    # and draw.
+    # and draw. Beside floats (`exclusions:`) every line has its own width
+    # and offset; the lines a split carries over are wrapped again without
+    # the floats, which stay on the page the first lines are on.
     class Paragraph
       MIN_SHRINK_SIZE = 4
 
-      attr_reader :runs, :lines, :width, :align, :leading
+      attr_reader :runs, :lines, :width, :align, :leading, :exclusions
 
-      def initialize(runs, book:, width:, align: :left, leading: 0, lines: nil, fallback_style: nil)
+      def initialize(runs, book:, width:, align: :left, leading: 0, lines: nil, fallback_style: nil, exclusions: nil)
         @runs = lines ? runs : book.fallback(runs)
         @book = book
         @width = width
         @align = align
         @leading = leading
         @fallback_style = fallback_style || runs.first&.style
-        @lines = lines || Wrapper.new(book).wrap(@runs, width, fallback_style: @fallback_style)
+        @exclusions = exclusions unless lines
+        @lines = lines || wrap
       end
 
       def height
@@ -31,7 +34,7 @@ module Stationery
         return [self, nil] if count == @lines.size
         return [nil, self] if count.zero?
 
-        [with_lines(@lines.first(count)), with_lines(@lines.drop(count))]
+        [with_lines(@lines.first(count)), rest_from(count)]
       end
 
       # [first `count` lines, the rest]; nil for an empty side.
@@ -39,7 +42,7 @@ module Stationery
         return [nil, self] if count <= 0
         return [self, nil] if count >= @lines.size
 
-        [with_lines(@lines.first(count)), with_lines(@lines.drop(count))]
+        [with_lines(@lines.first(count)), rest_from(count)]
       end
 
       # A paragraph that fits `max_height`: truncated to whole lines, shrunk
@@ -58,7 +61,7 @@ module Stationery
         canvas.tag_runs(tag) do |mark|
           top = y
           @lines.each do |line|
-            offset = x + Geometry.align_offset(@align, @width, line.width)
+            offset = x + line.offset + Geometry.align_offset(@align, line.available || @width, line.width)
             extra = word_spacing(line)
             spaces = 0
             line.fragments.each do |fragment|
@@ -90,6 +93,19 @@ module Stationery
         end.size
       end
 
+      def wrap(free_from: nil)
+        Wrapper.new(@book).wrap(@runs, @width, fallback_style: @fallback_style, exclusions: @exclusions,
+                                               leading: @leading, free_from:)
+      end
+
+      # The lines after the first `count`, wrapped again when a float is
+      # beside any of them.
+      def rest_from(count)
+        rest = @lines.drop(count)
+        rest = wrap(free_from: count).drop(count) if rest.any? { |line| line.available && line.available < @width }
+        with_lines(rest)
+      end
+
       def with_lines(lines)
         self.class.new(@runs, book: @book, width: @width, align: @align, leading: @leading, lines:,
                               fallback_style: @fallback_style)
@@ -114,7 +130,7 @@ module Stationery
       def word_spacing(line)
         return 0 unless @align == :justify && line.justifiable? && line.space_count.positive?
 
-        [(@width - line.width) / line.space_count, 0].max
+        [((line.available || @width) - line.width) / line.space_count, 0].max
       end
 
       def draw_fragment(canvas, fragment, offset, top, line, word_spacing, link: nil)

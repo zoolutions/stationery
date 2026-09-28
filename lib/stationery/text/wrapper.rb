@@ -10,6 +10,13 @@ module Stationery
     # is broken between characters. A word that changes style midway
     # ("<b>Tot</b>al") is still one word. Soft hyphens are never measured or
     # drawn: a broken word draws "-" at the break and nothing otherwise.
+    #
+    # Beside floats (`exclusions:`) every line has the width left at its own
+    # top, found from the heights of the lines above it and the `leading`
+    # between them; how tall the line will be is not known before it is
+    # filled, so it is taken to be as tall as a line of the base style. The
+    # lines from `free_from` on are wrapped as if the floats were gone: what
+    # is left of a paragraph after a page break.
     class Wrapper
       TOKEN = /\n|[ \t]+|[^ \t\n-]*-+|[^ \t\n-]+/
       SOFT_HYPHEN = "­"
@@ -22,13 +29,14 @@ module Stationery
         @book = book
       end
 
-      def wrap(runs, max_width, fallback_style: runs.first&.style)
+      def wrap(runs, max_width, fallback_style: runs.first&.style, exclusions: nil, leading: 0, free_from: nil)
         @max = max_width
         @lines = []
         @current = []
         @pending_space = []
         @fallback = fallback_style
         @widths = {}.compare_by_identity
+        beside(exclusions, max_width, leading, free_from) if exclusions
         items(runs).each { |item| place(item) }
         finish unless @current.empty? && @lines.any? && !@ended_with_newline
         @lines
@@ -202,9 +210,39 @@ module Stationery
 
       def finish(wrapped: false)
         segments = wrapped ? @current : @current + @pending_space
-        @lines << Line.new(fragments(trim_trailing(segments)), fallback_metrics, justifiable: wrapped)
+        @lines << line(fragments(trim_trailing(segments)), wrapped)
         @current = []
         @pending_space = []
+        next_line if @exclusions
+      end
+
+      def line(fragments, wrapped)
+        return Line.new(fragments, fallback_metrics, justifiable: wrapped) unless @exclusions
+
+        Line.new(fragments, fallback_metrics, justifiable: wrapped, offset: @offset, available: @max)
+      end
+
+      def beside(exclusions, width, leading, free_from)
+        @exclusions = exclusions
+        @full = width
+        @leading = leading
+        @free_from = free_from
+        @top = 0
+        font, size = fallback_metrics
+        @probe = font.line_height(size)
+        start_line
+      end
+
+      def next_line
+        @top += @lines.last.height + @leading
+        start_line
+      end
+
+      # The width and the offset of the line about to be filled.
+      def start_line
+        left, right = @free_from && @lines.size >= @free_from ? [0, 0] : @exclusions.insets(@top, @probe)
+        @offset = left
+        @max = [@full - left - right, 0].max
       end
 
       def trim_trailing(segments)
