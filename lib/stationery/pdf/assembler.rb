@@ -7,13 +7,16 @@ module Stationery
       # `tagging:` (a Tagging::Tree) writes the structure tree of a tagged PDF;
       # `lang:` is the document's natural language; `page_labels:` is the
       # /PageLabels number tree from PageLabels.entries; `attachments:` are
-      # PDF::Attachment files to embed.
+      # PDF::Attachment files to embed; `xmp:` (true) writes the XMP packet,
+      # with `xmp_extensions:` as further schemas (see XMP).
       def initialize(pages:, resources:, info: {}, outline: [], encryption: nil, tagging: nil, lang: nil,
-                     page_labels: nil, attachments: [])
+                     page_labels: nil, attachments: [], xmp: true, xmp_extensions: {})
         @tagging = tagging
         @lang = lang
         @page_labels = page_labels
         @attachments = attachments
+        @xmp = xmp
+        @xmp_extensions = xmp_extensions
         @pages = pages
         @resources = resources
         @info = info
@@ -31,9 +34,11 @@ module Stationery
         @pages.each_with_index { |page, index| write_page(writer, page, kids[index], tree, refs) }
         writer.set(tree, { Type: :Pages, Kids: kids, Count: kids.size })
         outlines = OutlineWriter.new(writer, @outline, kids).write
-        catalog = catalog(tree, outlines, @form.write).merge(accessibility(writer))
-        root = writer.add(catalog.merge(Attachments.write(writer, @attachments)))
-        writer.render(root:, info: writer.add(info_dictionary))
+        now = Time.now
+        info = info_dictionary(now)
+        entries = catalog(tree, outlines, @form.write)
+                  .merge(accessibility(writer), metadata(writer, info, now), Attachments.write(writer, @attachments))
+        writer.render(root: writer.add(entries), info: writer.add(info))
       end
 
       private
@@ -93,11 +98,22 @@ module Stationery
         { Type: :Annot, Subtype: :Link, Rect: link[:rect], Border: [0, 0, 0], **target }
       end
 
-      def info_dictionary
+      def info_dictionary(now)
         info = { Producer: "Stationery #{VERSION}" }.merge(@info.compact)
         info = info.transform_values { |value| TextString.new(value.to_s) }
-        info[:CreationDate] = TextString.new(Time.now.utc.strftime("D:%Y%m%d%H%M%SZ"))
+        info[:CreationDate] = TextString.new(now.utc.strftime("D:%Y%m%d%H%M%SZ"))
         info
+      end
+
+      # The XMP packet as an uncompressed /Metadata stream, mirroring the Info
+      # dictionary at the same instant. An encrypted document encrypts it like
+      # every other stream (/EncryptMetadata defaults to true).
+      def metadata(writer, info, now)
+        return {} unless @xmp
+
+        values = info.except(:CreationDate).transform_values(&:value)
+        packet = XMP.packet(info: values, lang: @lang, time: now, extensions: @xmp_extensions)
+        { Metadata: writer.add(Stream.new(packet, { Type: :Metadata, Subtype: :XML }, compress: false)) }
       end
     end
   end

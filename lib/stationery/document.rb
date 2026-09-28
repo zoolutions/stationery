@@ -117,10 +117,11 @@ module Stationery
     def metadata = self.class.config[:metadata]
 
     def to_pdf(target = nil, strict: self.class.config[:strict], debug: false, encrypt: self.class.config[:encrypt],
-               tagged: self.class.config[:tagged], page_labels: self.class.config[:page_labels], attachments: [])
+               tagged: self.class.config[:tagged], page_labels: self.class.config[:page_labels], attachments: [],
+               xmp: metadata[:xmp] != false)
       attachments = PDF::Attachments.merge(self.class.config[:attachments], attachments)
       Stationery.instrument("render.stationery", document: self.class.name) do |event|
-        write(render_pdf(event, strict:, debug:, encrypt:, tagged:, page_labels:, attachments:), target)
+        write(render_pdf(event, strict:, debug:, encrypt:, tagged:, page_labels:, attachments:, xmp:), target)
       end
     end
 
@@ -145,7 +146,7 @@ module Stationery
     def builder_for(book) = Builder.new(book:, text: self.class.config[:text], images: self.class.config[:images])
 
     # The PDF bytes; `event` is the render.stationery payload it fills in.
-    def render_pdf(event, strict:, debug:, encrypt:, tagged:, page_labels:, attachments:)
+    def render_pdf(event, strict:, debug:, encrypt:, tagged:, page_labels:, attachments:, xmp:)
       tagging = Tagging::Tree.new if tagged
       warnings = Warnings.new
       book = Fonts::FontBook.new(self.class.config[:families], fallbacks: self.class.config[:fallbacks], warnings:)
@@ -161,13 +162,14 @@ module Stationery
       event[:warnings] = warnings.size
       raise WarningsError, warnings if strict && warnings.any?
 
-      assemble(pages, resources, outline, encrypt:, tagging:, page_labels:, attachments:)
-        .tap { |pdf| event[:bytes] = pdf.bytesize }
+      pdf = assemble(pages, resources, outline, encrypt:, tagging:, page_labels:, attachments:, xmp:)
+      event[:bytes] = pdf.bytesize
+      pdf
     end
 
-    def assemble(pages, resources, outline, encrypt:, tagging:, page_labels:, attachments:)
+    def assemble(pages, resources, outline, encrypt:, tagging:, page_labels:, attachments:, xmp:)
       encryption = encrypt && PDF::Encryption::StandardSecurity.new(**encrypt)
-      assembler = PDF::Assembler.new(pages:, resources:, info:, outline:, encryption:, tagging:,
+      assembler = PDF::Assembler.new(pages:, resources:, info:, outline:, encryption:, tagging:, xmp:,
                                      lang: metadata[:lang], page_labels: PDF::PageLabels.entries(page_labels),
                                      attachments:)
       Stationery.instrument("write.stationery", document: self.class.name) do |event|
@@ -195,7 +197,7 @@ module Stationery
     end
 
     def info
-      metadata.except(:lang).to_h do |key, value|
+      metadata.except(:lang, :xmp).to_h do |key, value|
         [INFO_KEYS.fetch(key.to_sym) { key.to_sym }, value.is_a?(Array) ? value.join(", ") : value]
       end
     end

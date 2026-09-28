@@ -12,6 +12,9 @@ module Stationery
     # Needs the pdf-reader gem, loaded on first use.
     class Inspector
       UTF16_BOM = "\xFE\xFF".b
+      XMP_PROPERTY = %r{^\s*<((?!rdf:)[\w.-]+:[\w.-]+)>(.*?)</\1>$}
+      XMP_ITEM = %r{<rdf:li[^>]*>(.*?)</rdf:li>}
+      XMP_ENTITIES = { "&amp;" => "&", "&lt;" => "<", "&gt;" => ">", "&quot;" => '"' }.freeze
 
       def initialize(subject)
         @subject = subject
@@ -39,6 +42,24 @@ module Stationery
       def page_texts = @page_texts ||= reader.pages.map { |page| page.text.squeeze(" ").strip }
       def text = page_texts.join("\n")
       def metadata = reader.info
+
+      # The XMP packet (the catalog's /Metadata stream) as a String, or nil.
+      def xmp
+        return unless catalog[:Metadata]
+
+        objects.deref!(catalog[:Metadata]).unfiltered_data.dup.force_encoding(Encoding::UTF_8)
+      end
+
+      # The packet's properties by prefixed name (`"dc:title"`): a plain value
+      # as a String, an rdf:Alt as its default String, an rdf:Seq or rdf:Bag as
+      # an Array. Reads the packets Stationery writes (one property per line).
+      def xmp_values
+        packet = xmp
+        return {} unless packet
+
+        packet.scan(XMP_PROPERTY).to_h { |name, body| [name, xmp_value(body)] }
+      end
+
       def image_count = pdf.scan(%r{/Subtype\s*/Image\b}).size
 
       def warnings
@@ -124,6 +145,15 @@ module Stationery
         { name: decode(spec[:UF] || spec[:F]), mime: stream.hash[:Subtype].to_s, bytes: stream.unfiltered_data,
           description: spec[:Desc] && decode(spec[:Desc]), relationship: }
       end
+
+      def xmp_value(body)
+        items = body.scan(XMP_ITEM).flatten.map { |item| xmp_text(item) }
+        return xmp_text(body) if items.empty?
+
+        body.start_with?("<rdf:Alt>") ? items.first : items
+      end
+
+      def xmp_text(value) = value.gsub(/&(amp|lt|gt|quot);/, XMP_ENTITIES)
 
       def destination(dest)
         return dest.to_s unless dest.is_a?(Array)
