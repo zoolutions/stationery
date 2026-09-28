@@ -1,0 +1,79 @@
+lib/stationery/raster/stroker.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-208
+lib/stationery/raster/canvas.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-95
+lib/stationery/raster/glyphs.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-81
+spec/stationery/raster/glyphs_spec.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-39
+.rubocop.yml
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 36-38,45-47,51,63
+lib/stationery/raster/render.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-107
+lib/stationery/raster.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-44
+README.md
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 595-640
+lib/stationery/monochrome/bitmap.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 24-33
+lib/stationery/raster/flattener.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-75
+spec/stationery/raster/png_spec.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-42
+spec/stationery/raster/scanner_spec.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-70
+spec/stationery/raster/stroker_spec.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-57
+lib/stationery/raster/painter.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-178
+lib/stationery/raster/canvases.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-49
+spec/stationery/images/png_spec.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 85-92
+lib/stationery/raster/png.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-32
+docs/app/views/docs/pages/testing.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 42-45
+lib/stationery/raster/scanner.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-164
+lib/stationery/raster/spans.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-66
+lib/stationery/document.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 242-255
+spec/integration/raster_references_spec.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-14
+spec/stationery/raster/canvases_spec.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-60
+lib/stationery/raster/picture.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-69
+spec/stationery/document_to_png_spec.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-125
+lib/stationery/raster/surface.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-70
+lib/stationery/raster/shading.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-77
+lib/stationery/raster/adjust.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-60
+lib/stationery/images/png.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 14-15,81,167
+lib/stationery.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 84-98
+spec/support/raster_references.rb
+  s_f5a1e2cf907cda::t_2cc15553e50a0d 1-110
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "818e0c25f0b272c556141313aa00cc62b3478f2e",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
