@@ -70,7 +70,8 @@ InvoicePdf.new(invoice).to_pdf          # => "%PDF-1.7…" (binary String)
 InvoicePdf.new(invoice).to_pdf("a.pdf") # also writes a path or an IO
 ```
 
-`examples/` has a complete, runnable invoice, annual report, letter, packing slip, fillable form and postcard collage; `bundle exec rake examples`
+`examples/` has a complete, runnable invoice, annual report, letter, packing slip, fillable form, postcard collage and event flyer
+([previews and live PDFs](https://stationery.zoolutions.llc/docs/examples)); `bundle exec rake examples`
 renders them all, or render one with `stationery render examples/report.rb`.
 
 ## Elements
