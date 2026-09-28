@@ -1,0 +1,19 @@
+benchmark/baseline.json
+  s_f5a1e2cf907cda::t_deb33f90d9e385 56,58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "e8e3bf0eefad13b759d38b226f6a565be634bdec",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
