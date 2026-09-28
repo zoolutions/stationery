@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.9.0 (2026-09-28)
+
+Forms in the document's fonts, digital signatures, a much faster text and table pipeline, and hardening for untrusted input.
+
+- Digital signatures: `sign certificate:, key:, chain:, passphrase:, reason:, location:, contact:, name:, field:, at:` at class level (values may be callables or method names, resolved per render) or `to_pdf(sign:)`. Fills a named `signature_field` or adds an invisible one, writes `/ETSI.CAdES.detached` CMS with the ESS signing-certificate-v2 attribute (PAdES baseline B-B shape) over the whole file, RSA or ECDSA with SHA-256, built on the stdlib `openssl` (required only when signing). Works with encryption and under PDF/A-3b and PDF/UA-1; `/SigFlags 3` on the form. Verified with `openssl cms -verify`, `pdfsig` and veraPDF; `rake verify:signature`. `Inspector#signatures` (validates the digest and the CMS), `have_signature`, `assert_pdf_signature`. No timestamps, LTV or multiple signatures yet.
+- Forms: field appearances use the document's fonts, embedded and Identity-H encoded with per-character fallback, so values in any script the fonts cover render; check marks and radio dots are vector paths, so no standard-14 font is referenced. An editable field keeps printable ASCII and Latin-1 (plus a select's options) in its font, a `read_only:` field only its value. Every field gets `/TU` from `tooltip:`, `label:` or its name; `NeedAppearances` is dropped under a conformance level. Forms are now allowed under PDF/A-3b and PDF/UA-1 (veraPDF passes `examples/form.rb` as both). Documents without fields are byte-identical.
+- Performance: the wrapper measures each segment once and `Font#width_of` memoises advance and kerning together, keyed by feature-tag identity, undoing the 0.7.0 regression (an 8-page text document 163 → 45 ms, byte-identical); tables carry column widths and row heights across page breaks (also fixing column widths drifting between pages), stroke each cell border as one path (the 1,500-row table's PDF 236 → 134 KB) and place rows on a grid only when a page paints them: 913 → 399 ms. A deterministic metrics gate (`rake metrics`, `benchmark/baseline.json`: allocations, pages, bytes) runs in CI; README performance figures now reproduce.
+- Untrusted input: `html` and `markdown` take `max_depth:` (64); deeper elements, block quotes and lists are flattened into the deepest kept with a `Warnings::NestingLimit`, never a `SystemStackError`. Markdown inline parsing is bounded (brackets, labels, emphasis), so pathological input finishes in milliseconds instead of minutes. SVG keeps 128 levels and caps `use` chains at 32.
+- `image` with an IO source no longer raises `NameError` for `Pathname` in plain Ruby; a spec now renders every feature in a fresh interpreter without the test bundle so a missing stdlib require cannot hide again.
+- SVG: `use`, `symbol`, nested `svg` and `clipPath` shipped in 0.8.0; the docs Forms page and the docs image now include the example fonts, so every `/examples/<name>.pdf` renders on the site.
+
 ## 0.8.0 (2026-09-28)
 
 Compliance: PDF/A-3b, PDF/UA-1 and Factur-X e-invoices, verified with veraPDF and Mustang in CI.
