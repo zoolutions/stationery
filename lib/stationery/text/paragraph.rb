@@ -132,12 +132,28 @@ module Stationery
       end
 
       def count_missing(fragment)
+        return count_shaped(fragment) if @book.shaper
+
         fragment.text.each_char do |char|
           next if Fonts::Fallback.carried?(char) || fragment.font.glyph?(char)
 
           @book.warnings.missing_glyph(char, fragment.style.family)
         end
       end
+
+      # With a shaper a missing glyph is one the shaper answered glyph 0 for;
+      # text it declined is drawn, and so counted, without it.
+      def count_shaped(fragment)
+        style = fragment.style
+        run = fragment.font.shaped(fragment.text, style.render_size, letter_spacing: style.letter_spacing,
+                                                                     kerning: style.kerning,
+                                                                     ligatures: style.ligatures,
+                                                                     features: style.features)
+        chars = run ? run.missing : fragment.text.each_char.reject { |char| covered?(fragment.font, char) }
+        chars.each { |char| @book.warnings.missing_glyph(char, style.family) }
+      end
+
+      def covered?(font, char) = Fonts::Fallback.carried?(char) || font.glyph?(char)
     end
   end
 end

@@ -9,6 +9,10 @@ module Stationery
   # An image format stationery cannot embed (GIF, lossy WebP, interlaced PNG, …).
   class UnsupportedImage < Error; end
 
+  # An answer of a shaper (see Shaper) that cannot be drawn: not glyphs, a
+  # glyph the font does not have, a cluster outside the text.
+  class ShaperError < Error; end
+
   # Raised by a strict render (`to_pdf(strict: true)`) that produced warnings.
   class WarningsError < Error
     attr_reader :warnings

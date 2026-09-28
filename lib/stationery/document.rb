@@ -24,7 +24,8 @@ module Stationery
                       superclass.config.transform_values(&:dup)
                     else
                       { page: { size: :letter, margin: 36 }, families: {}, fallbacks: [], text: {}, metadata: {},
-                        templates: [], regions: [], strict: false, tagged: false, images: {}, attachments: [] }
+                        templates: [], regions: [], strict: false, tagged: false, images: {}, attachments: [],
+                        shaping: {} }
                     end
       end
 
@@ -40,6 +41,14 @@ module Stationery
       # glyph for; bundled Inter is tried last.
       def font_fallbacks(*names)
         config[:fallbacks] = names.map(&:to_s)
+      end
+
+      # Hands every text to `shaper` to place its glyphs: the hook for
+      # complex scripts (Arabic, Indic, Thai, …) and right-to-left text, which
+      # stationery does not shape itself. Anything answering `call(text, font,
+      # **options)`; see Shaper. `shaper nil` takes an inherited one away.
+      def shaper(shaper)
+        config[:shaping] = { shaper: Shaper.check(shaper) }
       end
 
       def default_text(**options)
@@ -162,7 +171,8 @@ module Stationery
     def to_pdf(target = nil, strict: self.class.config[:strict], debug: false, encrypt: self.class.config[:encrypt],
                tagged: self.class.config[:tagged], page_labels: self.class.config[:page_labels], attachments: [],
                xmp: metadata[:xmp] != false, conformance: self.class.config[:conformance],
-               factur_x: self.class.config[:factur_x], sign: self.class.config[:sign], &block)
+               factur_x: self.class.config[:factur_x], sign: self.class.config[:sign],
+               shaper: self.class.config[:shaping][:shaper], &block)
       invoice = PDF::FacturX.for(factur_x, self)
       attachments = PDF::Attachments.merge(self.class.config[:attachments], attachments, invoice&.attachment)
       conformance = PDF::Conformance.for(invoice ? invoice.conformance(conformance) : conformance)
@@ -173,7 +183,7 @@ module Stationery
       raise ArgumentError, "pass a target or a block, not both" if target && block
 
       options = { strict:, debug:, encrypt:, tagged: tagged || conformance&.pdf_ua?, page_labels:, attachments:,
-                  xmp: xmp || !conformance.nil?, conformance:, invoice:, signature:, sink: block }
+                  xmp: xmp || !conformance.nil?, conformance:, invoice:, signature:, sink: block, shaper: }
       Stationery.instrument("render.stationery", document: self.class.name) do |event|
         block ? render_pdf(event, **options) : write(render_pdf(event, **options), target)
       end
@@ -200,10 +210,11 @@ module Stationery
     def builder_for(book) = Builder.new(book:, text: self.class.config[:text], images: self.class.config[:images])
 
     # The PDF bytes; `event` is the render.stationery payload it fills in.
-    def render_pdf(event, strict:, debug:, tagged:, conformance:, **assembly)
+    def render_pdf(event, strict:, debug:, tagged:, conformance:, shaper:, **assembly)
       tagging = Tagging::Tree.new if tagged
       warnings = Warnings.new
-      book = Fonts::FontBook.new(self.class.config[:families], fallbacks: self.class.config[:fallbacks], warnings:)
+      book = Fonts::FontBook.new(self.class.config[:families], fallbacks: self.class.config[:fallbacks], warnings:,
+                                                               shaper:, language: metadata[:lang])
       builder = builder_for(book)
       Stationery.instrument("build.stationery", document: self.class.name) { call(builder) }
       resources = Resources.new

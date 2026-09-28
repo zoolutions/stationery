@@ -6,11 +6,14 @@ module Stationery
     # document gets its own book so glyph usage (and so subsetting) is per
     # document, while the parsed TrueType data is shared through the Registry.
     class FontBook
-      attr_reader :families, :fallbacks, :warnings
+      attr_reader :families, :fallbacks, :warnings, :shaper
 
       # `fallbacks:` names the families tried, in order, for a character the
-      # run's own family has no glyph for.
-      def initialize(families = {}, fallbacks: [], warnings: Warnings.new)
+      # run's own family has no glyph for. `shaper:` places the glyphs of
+      # every font of the book (see Shaper), told the text is in `language:`.
+      def initialize(families = {}, fallbacks: [], warnings: Warnings.new, shaper: nil, language: nil)
+        @shaper = Shaper.check(shaper)
+        @language = language
         @families = families.dup
         @fallbacks = fallbacks.map(&:to_s).freeze
         @warnings = warnings
@@ -35,7 +38,7 @@ module Stationery
         styles = (weights[style.weight] ||= {})
         styles[style.style] ||= begin
           face = family(style.family).face(weight: style.weight, style: style.style)
-          [@fonts[face.path] ||= Font.new(Registry.load(face.path)), face].freeze
+          [@fonts[face.path] ||= font(face.path), face].freeze
         end
       end
 
@@ -51,6 +54,12 @@ module Stationery
       end
 
       private
+
+      def font(path)
+        return Font.new(Registry.load(path)) unless @shaper
+
+        Font.new(Registry.load(path), shaper: @shaper, path:, language: @language)
+      end
 
       # Registered by name, bundled by name, an installed pack by name, then
       # the first registered family, then the bundled default.

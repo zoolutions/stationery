@@ -38,8 +38,16 @@ RSpec.describe "stationery in plain Ruby" do
         end
       end
 
+      right_to_left = lambda do |text, font, **|
+        ttf = Stationery::Fonts::Registry.load(font.path)
+        text.each_char.with_index.map do |char, index|
+          gid = ttf.glyph_id(char.ord)
+          Stationery::Shaper::Glyph.new(gid:, advance: ttf.advance(gid), cluster: index)
+        end.reverse
+      end
       options = { "encrypted" => { encrypt: { owner_password: "o", user_password: "u" } },
-                  "archival" => { conformance: %i[pdf_a3b pdf_ua1] } }.fetch(ARGV[1].to_s, {})
+                  "archival" => { conformance: %i[pdf_a3b pdf_ua1] },
+                  "shaped" => { shaper: right_to_left } }.fetch(ARGV[1].to_s, {})
       document = Everything.new(ARGV.fetch(0))
       pdf = document.to_pdf(attachments: [{ name: "note.txt", data: "hello", mime: "text/plain" }], **options)
       abort "warnings: \#{document.warnings.map(&:message).inspect}" if document.warnings.any?
@@ -60,8 +68,8 @@ RSpec.describe "stationery in plain Ruby" do
     expect(output.bytesize).to be > 5_000
   end
 
-  it "encrypts, and writes PDF/A with PDF/UA, the same way" do
-    %w[encrypted archival].each do |mode|
+  it "encrypts, writes PDF/A with PDF/UA and draws what a shaper placed the same way" do
+    %w[encrypted archival shaped].each do |mode|
       output, errors, status = run(photo, mode)
 
       expect(status).to be_success, "#{mode}: exit #{status.exitstatus}: #{errors}"

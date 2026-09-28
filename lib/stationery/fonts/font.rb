@@ -28,8 +28,13 @@ module Stationery
 
       attr_reader :ttf
 
-      def initialize(ttf)
+      # `shaper:` places this font's glyphs instead of the font itself (see
+      # Shaper); `path:` is the file the font was read from and `language:`
+      # the document's, both for the shaper.
+      def initialize(ttf, shaper: nil, path: nil, language: nil)
         @ttf = ttf
+        @shaping = shaper && Shaping.new(self, shaper, path:, language:)
+        @loose = nil
         @used = {}
         @pairs = {}
         @glyphs = {}
@@ -48,7 +53,14 @@ module Stationery
       # Letter spacing is added per glyph, so a ligature counts once; any
       # letter spacing turns ligatures off, as it does when drawing.
       # `features:` are OpenType feature tags applied on top of `liga`.
-      def width_of(text, size, letter_spacing: 0, kerning: false, ligatures: true, features: NO_FEATURES)
+      # With a shaper the width is its glyphs'; `shape: false` measures what
+      # #glyph_run draws.
+      def width_of(text, size, letter_spacing: 0, kerning: false, ligatures: true, features: NO_FEATURES,
+                   shape: true)
+        if @shaping && shape && (run = shaped(text, size, letter_spacing:, kerning:, ligatures:, features:))
+          return run.width
+        end
+
         ligatures &&= letter_spacing.zero?
         key = shape_key(ligatures, features)
         advance, kern = metrics(text, key)
@@ -84,12 +96,35 @@ module Stationery
       # with pair kerning between the glyphs.
       def glyph_run(text, kerning: false, ligatures: true, features: NO_FEATURES)
         gids, chars, blanks = shape(text, shape_key(ligatures, features))
+        gids.each { |gid| @used.delete(gid) if @loose.delete(gid) } if @loose
         gids.each_with_index { |gid, i| @used[gid] ||= blanks[i] ? " " : chars[i] }
         adjust = gids.each_with_index.map do |gid, i|
           kern = kerning && i + 1 < gids.size ? pair(gid, gids[i + 1]) : 0
           blanks[i] ? kern + (blanks[i] * 1000.0 / @ttf.units_per_em) : kern
         end
         GlyphRun.new(font: self, gids:, adjust:, chars:)
+      end
+
+      # The text as the document's shaper placed it, a ShapedRun with its
+      # letter spacing; nil without a shaper and when the shaper declines.
+      def shaped(text, size, letter_spacing: 0, kerning: false, ligatures: true, features: NO_FEATURES)
+        return unless @shaping
+
+        @shaping.run(text, size, kerning:, ligatures: ligatures && letter_spacing.zero?, features:)
+                &.with_letter_spacing(letter_spacing)
+      end
+
+      # Remembers a glyph a shaper placed and the text it stands for, and
+      # answers the text the ToUnicode map gives it: the first it stood for.
+      # `loosely:` is for a glyph that shares its text with others (it is
+      # shown inside a Span): the next text the glyph stands for replaces it.
+      def use(gid, text, loosely: false)
+        if @used.key?(gid)
+          return @used[gid] if loosely || !@loose&.delete(gid)
+        elsif loosely
+          (@loose ||= {})[gid] = true
+        end
+        @used[gid] = text
       end
 
       # Whether a character the font lacks is drawn as a blank (see WHITESPACE).
