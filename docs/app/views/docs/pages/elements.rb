@@ -174,8 +174,12 @@ class Views::Docs::Pages::Elements < DocsUI::Page
 
         - **`balance: true`** ends the columns at nearly the same height wherever the content ends: on the
           last page of the block and before a `page_break` inside it. The height is the shortest at which
-          everything fits, and the columns are filled in order, so ten lines in three columns are 4, 4
-          and 2. **`balance: false`** fills each column to the height available before the next starts.
+          everything fits, and the columns are filled evenly in it: the first takes what fits, and what
+          it leaves is balanced through the columns after it in the same way. Ten lines in three columns
+          are 4, 3 and 3, what cannot be shared going to the earlier columns. The break rules hold, so
+          a heading, a box or `orphans:` and `widows:` can keep the columns further apart than a line,
+          and a column that ends above a block that cannot split may stay shorter than the one after it.
+          **`balance: false`** fills each column to the height available before the next starts.
         - **Across pages.** A block that does not fit fills the height left on the page, every column
           full, and continues on the next page; the last page is balanced. Below other content it starts
           only when every column takes something in the height left, and otherwise moves to the next

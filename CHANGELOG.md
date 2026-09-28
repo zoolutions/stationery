@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Balanced `columns` fill evenly: ten lines in three columns are 4, 3 and 3 (they were 4, 4 and 2, the last column taking what was left over), thirteen in four are 4, 3, 3 and 3. At the balanced height the first column takes what fits, and what it leaves is balanced through the columns after it in the same way, down to the last two, so what cannot be shared goes to the earlier columns. Every column is still cut where a page would cut it, so `orphans:`/`widows:`, `keep_with_next`, `break_inside: :avoid` and blocks that cannot split hold as they did; the columns filled in order are kept where the levelled ones would not place everything, would change the height of the block, or would have a later column taller than an earlier one where there was none. The block is exactly as tall as it was, so what follows it stays where it is, and a block of two columns, `balance: false`, the full pages of a block that continues and documents without `columns` are byte for byte what they were. A block is levelled once, when it is placed, with at most `(count - 2) * 41` pours more than its balancing: 700 paragraphs in two and three columns render in the time they did. `Layout::Columns::Leveller`, `Layout::Columns::Pour#first`.
+
 ## 0.11.0 (2026-09-28)
 
 Text wrap around images, balanced columns, lossless WebP, a shaper hook for complex scripts, and far less memory for long documents.
