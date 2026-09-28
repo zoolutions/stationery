@@ -98,50 +98,50 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         `strict` the file is written and a validator will flag it.
       MD
 
-      DocsUI::Section("A character no font has", description: "Raise, or draw a stand-in.") do
-        md <<~'MD'
-          A name in a script the fonts do not cover (a customer in Tokyo on an invoice archived as PDF/A) is
-          where the raise turns up in practice. Applications rescued it and rendered again without the claim:
-
-          ```ruby
-          begin
-            InvoicePdf.new(invoice).to_pdf
-          rescue Stationery::ConformanceError => e
-            logger.warn(e.message)
-            InvoicePdf.new(invoice).to_pdf(conformance: nil)   # mislabelled no more, but no longer PDF/A
-          end
-          ```
-
-          `missing_glyphs: :replace` keeps the claim instead: a character no font has is drawn as the first
-          of U+FFFD (�), U+25A1 (□) and `?` that the font drawing it has, inside the `Span` whose
-          `ActualText` is the character, so the text still extracts, copies and reads aloud as written and
-          nothing references `.notdef`. The stand-in has its own advance, so lines are measured as they are
-          drawn.
-
-          ```ruby
-          class InvoicePdf < Stationery::Document
-            conformance :pdf_a3b, missing_glyphs: :replace   # :raise is the default
-          end
-
-          InvoicePdf.new(invoice).to_pdf(conformance: :pdf_a3b, missing_glyphs: :replace) # per render
-          ```
-
-          | `missing_glyphs:` | What a character no font has does |
-          | --- | --- |
-          | `:raise` (default) | `ConformanceError` naming the character, its code point and the family |
-          | `:replace` | Drawn as the font's stand-in in a `Span` with the character as `ActualText`; reported as a `MissingGlyph` [warning](/docs/warnings) whose `stand_in` is the character drawn, so `strict` still raises. A font that has none of the three, which a symbol font may not, still raises and says so |
-
-          veraPDF passes `2b`, `3b` and `ua1` with each of the three stand-ins, in body text, headers and
-          page templates, form field values and shaped text; the same files drawn with `.notdef` fail
-          rules 6.2.11.8-1 and 7.21.8-1. Any other value raises `ArgumentError`. Without `conformance` the
-          option changes nothing, and with `:raise` neither.
-        MD
-      end
-
       DocsUI::Callout(:note, title: "What a machine can check") do
         "conformance :pdf_ua1 checks what a machine can check. Whether the alt texts describe the images, " \
           "the headings say what follows them and the reading order makes sense is still yours to review."
       end
+    end
+
+    DocsUI::Section("A character no font has", description: "Raise, or draw a stand-in.") do
+      md <<~'MD'
+        A name in a script the fonts do not cover (a customer in Tokyo on an invoice archived as PDF/A) is
+        where the raise turns up in practice. Applications rescued it and rendered again without the claim:
+
+        ```ruby
+        begin
+          InvoicePdf.new(invoice).to_pdf
+        rescue Stationery::ConformanceError => e
+          logger.warn(e.message)
+          InvoicePdf.new(invoice).to_pdf(conformance: nil)   # mislabelled no more, but no longer PDF/A
+        end
+        ```
+
+        `missing_glyphs: :replace` keeps the claim instead: a character no font has is drawn as the first
+        of U+FFFD (�), U+25A1 (□) and `?` that the font drawing it has, inside the `Span` whose
+        `ActualText` is the character, so the text still extracts, copies and reads aloud as written and
+        nothing references `.notdef`. The stand-in has its own advance, so lines are measured as they are
+        drawn.
+
+        ```ruby
+        class InvoicePdf < Stationery::Document
+          conformance :pdf_a3b, missing_glyphs: :replace   # :raise is the default
+        end
+
+        InvoicePdf.new(invoice).to_pdf(conformance: :pdf_a3b, missing_glyphs: :replace) # per render
+        ```
+
+        | `missing_glyphs:` | What a character no font has does |
+        | --- | --- |
+        | `:raise` (default) | `ConformanceError` naming the character, its code point and the family |
+        | `:replace` | Drawn as the font's stand-in in a `Span` with the character as `ActualText`; reported as a `MissingGlyph` [warning](/docs/warnings) whose `stand_in` is the character drawn, so `strict` still raises. A font that has none of the three, which a symbol font may not, still raises and says so |
+
+        veraPDF passes `2b`, `3b` and `ua1` with each of the three stand-ins, in body text, headers and
+        page templates, form field values and shaped text; the same files drawn with `.notdef` fail
+        rules 6.2.11.8-1 and 7.21.8-1. Any other value raises `ArgumentError`. Without `conformance` the
+        option changes nothing, and with `:raise` neither.
+      MD
     end
 
     DocsUI::Section("Factur-X / ZUGFeRD e-invoices", description: "One PDF for people and for accounting software.") do
