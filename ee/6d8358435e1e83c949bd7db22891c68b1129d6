@@ -1,0 +1,25 @@
+docs/app/views/docs/pages/elements.rb
+  s_632dbd6e2d0597::t_3b1530fc0b1118 329
+docs/app/views/docs/pages/examples.rb
+  s_632dbd6e2d0597::t_3b1530fc0b1118 54
+spec/stationery/floats_spec.rb
+  s_632dbd6e2d0597::t_354ff8048f8584 147-176
+README.md
+  s_632dbd6e2d0597::t_3b1530fc0b1118 139
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "ee6d8358435e1e83c949bd7db22891c68b1129d6",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
