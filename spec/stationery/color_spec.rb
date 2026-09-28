@@ -44,6 +44,7 @@ RSpec.describe Stationery::Color do
   end
 
   it "is not fooled by a String changed after it was parsed" do
+    described_class.instance_variable_get(:@parsed).clear # a full memo would start over on the next miss
     value = +"#000000"
     black = described_class.parse(value)
     value.replace("#FFFFFF")
