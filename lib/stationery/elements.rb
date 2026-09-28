@@ -28,12 +28,16 @@ module Stationery
     # :blockquote, :note, :caption, …) groups its content in a tagged PDF.
     # `break_inside: :auto` splits it at any page break, `:avoid` never; by
     # default it splits only when it does not fit on a page of its own.
+    # `float: :left` or `:right` takes it to that side of the flow it is in,
+    # `margin:` away from the text that wraps beside it; it needs a `width:`.
     def box(at: nil, align: nil, gap: 0, width: nil, keep_with_next: nil, break_inside: nil, anchor: nil, bookmark: nil,
-            **, &)
+            float: nil, margin: nil, **, &)
       node = Layout::Box.new(container(align:, gap:, &), width:, **)
       node.keep_with_next = keep_with_next
       node.break_inside = break_inside
       node = mark(node, anchor, bookmark)
+      return @_builder.add(floated(node, float, margin, at:, width:)) if float || margin
+
       @_builder.add(at ? Layout::Positioned.new(node, x: at[0], y: at[1], width:) : node)
     end
 
@@ -132,9 +136,13 @@ module Stationery
     end
 
     # `alt:` describes the image in a tagged PDF (false: decorative). Sizing,
-    # `fit: :cover`, `radius:` and `rotate:` as for Layout::Image.
-    def image(source, align: nil, **)
+    # `fit: :cover`, `radius:` and `rotate:` as for Layout::Image. `float:
+    # :left` or `:right` takes it to that side of the flow it is in, `margin:`
+    # away from the text that wraps beside it (`align:` is then not read).
+    def image(source, align: nil, float: nil, margin: nil, **)
       node = Layout::Image.new(source, **@_builder.images, **)
+      return @_builder.add(floated(node, float, margin)) if float || margin
+
       @_builder.add(align ? Layout::Flow.new([node], align:) : node)
     end
 
@@ -164,6 +172,16 @@ module Stationery
     end
 
     private
+
+    # `margin:` is a number (kept on the sides that face the text) or names
+    # the sides as `padding:` does.
+    def floated(node, side, margin, at: nil, width: true)
+      raise ArgumentError, "margin: is the space around a float: pass float: :left or :right" unless side
+      raise ArgumentError, "a box is placed by float: or by at:, not both" if at
+      raise ArgumentError, "a floated box needs a width: points, a fraction or :auto" unless width
+
+      Layout::Floated.new(node, side:, margin: margin || 0)
+    end
 
     # What the drawing uses that is not drawn, and nesting that was flattened.
     def svg_warnings(document, name)
