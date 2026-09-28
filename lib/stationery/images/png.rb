@@ -45,11 +45,10 @@ module Stationery
         writer.add(PDF::Stream.new(@idat, dictionary))
       end
 
-      private
-
-      # Every sample as 8 bits, colour rows apart from alpha rows: palette and
-      # sub-byte greys expanded, 16-bit samples dropped to their high byte, a
-      # colour-key or palette transparency turned into an alpha row set.
+      # Every sample as 8 bits (a Pixels), colour rows apart from alpha rows:
+      # palette and sub-byte greys expanded, 16-bit samples dropped to their
+      # high byte, a colour-key or palette transparency turned into an alpha
+      # row set. Decoded on every call.
       def pixels
         channels = CHANNELS[@color_type]
         color = []
@@ -66,6 +65,8 @@ module Stationery
         Pixels.new(width: @width, height: @height, channels: COLOR_CHANNELS[@color_type],
                    color:, alpha: alpha.empty? ? nil : alpha)
       end
+
+      private
 
       # A row's samples at 8 bits.
       def samples_of(row)

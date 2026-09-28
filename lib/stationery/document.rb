@@ -80,6 +80,14 @@ module Stationery
         config[:print] = config[:print].merge(PDF::PrintHints.options(hints)).compact
       end
 
+      # Makes every render safe for a printer that prints black or nothing:
+      # `monochrome dpi: 203, snap: false, threshold: 0.5, dither:
+      # :floyd_steinberg`, over the inherited settings; `monochrome false`
+      # takes it away. See Monochrome.
+      def monochrome(enabled = true, **) # rubocop:disable Style/OptionalBooleanParameter
+        config[:monochrome] = enabled ? Monochrome.settings(**config[:monochrome].to_h, **) : nil
+      end
+
       # Embeds a file in every render: `attach_file "invoice.xml", xml,
       # mime: "text/xml", description: "Factur-X", relationship: :alternative`.
       # `relationship:` is :alternative, :source, :data, :supplement or
@@ -202,12 +210,16 @@ module Stationery
     #
     # `print:` are print hints laid over those of the class (see .print): a
     # nil takes one away, and `print: nil` or `false` all of them.
+    #
+    # `monochrome:` is true, false or options laid over those of the class
+    # (see .monochrome).
     def to_pdf(target = nil, strict: self.class.config[:strict], debug: false, encrypt: self.class.config[:encrypt],
                tagged: self.class.config[:tagged], page_labels: self.class.config[:page_labels], attachments: [],
                xmp: metadata[:xmp] != false, conformance: self.class.config[:conformance],
                factur_x: self.class.config[:factur_x], sign: self.class.config[:sign],
                shaper: self.class.config[:shaping][:shaper], incremental: self.class.config[:incremental],
-               print: PDF::PrintHints::NONE, missing_glyphs: self.class.config[:missing_glyphs], &block)
+               print: PDF::PrintHints::NONE, missing_glyphs: self.class.config[:missing_glyphs],
+               monochrome: self.class.config[:monochrome], &block)
       invoice = PDF::FacturX.for(factur_x, self)
       attachments = PDF::Attachments.merge(self.class.config[:attachments], attachments, invoice&.attachment)
       conformance = PDF::Conformance.for(invoice ? invoice.conformance(conformance) : conformance, missing_glyphs:)
@@ -220,7 +232,8 @@ module Stationery
 
       options = { strict:, debug:, encrypt:, tagged: tagged || conformance&.pdf_ua?, page_labels:, attachments:,
                   xmp: xmp || !conformance.nil?, conformance:, invoice:, signature:, sink: block, shaper:, print:,
-                  incremental: incremental && !conformance && !signature && !(strict && block) }
+                  incremental: incremental && !conformance && !signature && !(strict && block),
+                  monochrome: Monochrome.for(self.class.config[:monochrome], monochrome) }
       Stationery.instrument("render.stationery", document: self.class.name) do |event|
         block ? render_pdf(event, **options) : write(render_pdf(event, **options), target)
       end
@@ -269,13 +282,14 @@ module Stationery
     end
 
     # The PDF bytes; `event` is the render.stationery payload it fills in.
-    def render_pdf(event, strict:, debug:, tagged:, conformance:, shaper:, incremental:, **assembly)
+    def render_pdf(event, strict:, debug:, tagged:, conformance:, shaper:, incremental:, monochrome:, **assembly)
       tagging = Tagging::Tree.new if tagged
       warnings = Warnings.new
       resources = Resources.new
       sealer = sealer_for(incremental, conformance, **assembly)
       outline = nil
-      canvases = PDF::Canvases.new(resources, debug, tagging, warnings)
+      rules = Monochrome::Rules.new(monochrome, warnings) if monochrome
+      canvases = PDF::Canvases.new(resources, debug, tagging, warnings, monochrome: rules)
       stand_ins = conformance&.replace_missing_glyphs? || false
       pages = paint_on(canvases, warnings:, shaper:, each_page: sealer, stand_ins:) { |bookmarks| outline = bookmarks }
       tagging&.audit(pages, warnings, lang: metadata[:lang])
