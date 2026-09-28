@@ -42,12 +42,16 @@ module Stationery
       markers = items.nodes.each_index.map(&marker)
       indent ||= [markers.map(&:natural_width).max || 0, marker_style.size].max + marker_gap
       entries = items.nodes.zip(markers).map do |node, mark|
-        Layout::ListItem.new(mark, node.is_a?(Layout::Flow) ? node : Layout::Flow.new([node]), indent:, marker_gap:)
+        body = node.is_a?(Layout::Flow) ? node : Layout::Flow.new([node])
+        Layout::ListItem.new(mark, body, indent:, marker_gap:,
+                                         tag: @_builder.element(:LI), body_tag: @_builder.element(:LBody))
       end
       @_builder.add(Layout::Flow.new(entries, gap:, tag: list_tag(numbering)))
     end
 
     def list_tag(numbering)
+      return unless @_builder.tagged?
+
       numbering = NUMBERING[numbering] if numbering.is_a?(Symbol)
       Tagging::Element.new(:L, attributes: numbering ? { List: { ListNumbering: numbering } } : {})
     end
@@ -62,7 +66,7 @@ module Stationery
 
     def list_label(label, style)
       Layout::Text.new([Text::Run.new(label, style)], context: @_builder.context(style), align: :right,
-                                                      tag: Tagging::Element.new(:Lbl))
+                                                      tag: @_builder.element(:Lbl))
     end
   end
 end

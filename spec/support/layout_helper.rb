@@ -4,7 +4,7 @@ module LayoutHelper
   L = Stationery::Layout
 
   def ctx
-    @ctx ||= L::Context.new(book: open_sans_book, style: base_style)
+    @ctx ||= L::Context.new(book: open_sans_book, style: base_style, tagged: true)
   end
 
   def text_node(source, **)

@@ -14,7 +14,7 @@ module Stationery
       attr_reader :runs
 
       def initialize(runs, context:, align: :left, leading: 0, orphans: 1, widows: 1, paragraph: nil,
-                     tag: Tagging::Element.new(:P))
+                     tag: context.element(:P))
         super()
         @tag = tag
         @runs = context.book.fallback(runs)

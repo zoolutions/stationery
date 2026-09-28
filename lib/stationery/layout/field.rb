@@ -9,13 +9,14 @@ module Stationery
     class Field < Node
       LABEL_GAP = 6
 
-      def initialize(field, height:, width: :full, label: nil)
+      # `tag` is the widget's Form element in a tagged PDF; nil for a render without a tree.
+      def initialize(field, height:, width: :full, label: nil, tag: Tagging::Element.new(:Form, kind: :field))
         super()
         @field = field
         @height = height
         @width = width
         @label = label
-        @tag = Tagging::Element.new(:Form, kind: :field)
+        @tag = tag
       end
 
       def measure(width)
