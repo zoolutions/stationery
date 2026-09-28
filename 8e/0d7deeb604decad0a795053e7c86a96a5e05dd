@@ -1,0 +1,19 @@
+benchmark/baseline.json
+  s_f5a1e2cf907cda::t_58e47a1b6e9bc8 6,11,16,21,26,31,36,41,46,51,56,61,66,71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "8e0d7deeb604decad0a795053e7c86a96a5e05dd",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
