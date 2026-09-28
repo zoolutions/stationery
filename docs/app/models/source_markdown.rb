@@ -32,6 +32,9 @@ module SourceMarkdown
                             .map { |line| line.delete_prefix("#").strip }.join(" ").sub(/\s*Run it.*\z/, "")
   end
 
+  # An example as it is written, from its first line to its last.
+  def example_source(name) = read("examples/#{name}")
+
   # The class-level configuration of an example: from its `page` line up to
   # the first `def`, dedented, so the excerpt follows the file as it changes.
   def example_config(name)

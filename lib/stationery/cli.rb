@@ -72,3 +72,4 @@ end
 
 require_relative "cli/render"
 require_relative "cli/fonts"
+require_relative "cli/examples"

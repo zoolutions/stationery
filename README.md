@@ -86,6 +86,16 @@ InvoicePdf.new(invoice).to_pdf("a.pdf") # also writes a path or an IO
 ([previews and live PDFs](https://stationery.zoolutions.llc/docs/examples)); `bundle exec rake examples`
 renders them all, or render one with `stationery render examples/report.rb`.
 
+The examples ship with the gem, with the images and fonts they read, so they are there to read and to
+run in an application that has only the gem:
+
+```sh
+stationery examples                          # their names and what each shows
+stationery examples invoice                  # the path of one; --source prints its code
+stationery render "$(stationery examples invoice)" --out invoice.pdf
+ls "$(bundle show stationery)/examples"      # or: gem contents stationery
+```
+
 ## Elements
 
 | Element | What it does |
@@ -1069,6 +1079,16 @@ before writing anything, and writes the license next to the fonts. Files
 already present are kept unless `--force`. `--from` takes a directory or a
 `.tar.gz` holding the same files (still SHA-checked). In Rails,
 `bin/rails generate stationery:fonts noto_sans` does the same.
+
+```sh
+stationery examples                                      # the examples in the gem, what each shows
+stationery examples invoice                              # the path of examples/invoice.rb there
+stationery examples invoice --source                     # its code
+```
+
+`examples` lists the documents under `examples/` of the installed gem with the
+first sentence of their header comment. With a name it prints the path of that
+file, to read, copy or hand to `stationery render`.
 
 ## Fonts and images
 
