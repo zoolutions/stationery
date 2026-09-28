@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- PDF/UA-1 refuses heading levels that are skipped (ISO 14289-1, 7.4.2; veraPDF rule 7.4.2-1): the first heading of a document is `heading: 1` and a heading is at most one level below the heading before it, so `heading: 1` followed by `heading: 3`, or a document that starts at `heading: 2`, raises `Stationery::ConformanceError` with an issue per heading (`heading 3 on page 2 skips a level: heading 2 is the deepest that may follow heading 1`) instead of writing a file that claims a level it does not keep. Going back up is free (`3`, then `1`), and a heading that skipped is what the next one is measured against. Headings are read in the order of the structure tree, which is what a validator follows, inside sections, lists, table cells, columns and floats, from `text(heading:)`, `html` and `markdown` alike; the headings of headers, footers and page templates are artifacts and a heading without text is not written, so neither counts. In a tagged render without the claim it is a `Warnings::SkippedHeading` (`level`, `allowed`, `page`), so `strict` catches it.
+- A blank `alt:` is a missing one: `image(source, alt: "")`, `svg(source, alt: " ")` and an `html` or `markdown` image with an empty `alt` are reported as `Warnings::MissingAlt` in a tagged render and raise `ConformanceError` under PDF/UA-1 (ISO 14289-1, 7.3; veraPDF rule 7.3-1 fails an empty `/Alt`), where only a missing `alt:` was caught. `alt: false` still marks decoration, which is an artifact and needs no description.
+- **Behaviour changes:** a render with `conformance :pdf_ua1` whose heading levels skip, or with a figure whose `alt:` is blank, now raises `ConformanceError` (it wrote a file veraPDF rejected); a tagged render reports both as warnings, so with `strict` it raises `WarningsError`. PDF/A alone asks for neither (level B does not ask for structure) and raises for neither. Documents that are not tagged, and tagged documents that keep both rules, are byte for byte what they were.
+
 ## 0.11.0 (2026-09-28)
 
 Text wrap around images, balanced columns, lossless WebP, a shaper hook for complex scripts, and far less memory for long documents.

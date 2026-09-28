@@ -60,7 +60,8 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         | `encrypt:` | PDF/A | `ArgumentError` (PDF/A forbids encryption; PDF/UA allows it) |
         | `attach_file` / `attachments:` | PDF/A-2b | `ArgumentError`: part 2 only embeds PDF/A files, use `:pdf_a3b` |
         | No `metadata title:` or `lang:` | PDF/UA-1 | `Stationery::ConformanceError` listing what is missing |
-        | An image or drawing without `alt:` | PDF/UA-1 | `ConformanceError`; mark decoration with `alt: false` |
+        | An image or drawing without `alt:`, or with a blank one (`""`, whitespace alone) | PDF/UA-1 | `ConformanceError` naming the page (ISO 14289-1, 7.3); mark decoration with `alt: false` |
+        | A heading level that is skipped: a first heading that is not `heading: 1`, or a heading more than one level below the heading before it | PDF/UA-1 | `ConformanceError` naming the page, the level and the deepest level allowed there (ISO 14289-1, 7.4.2) |
         | A form field made without a font book (`Forms::Field.new` placed with `canvas.widget`) | every level | `ConformanceError` naming the field: it draws with the standard Helvetica, which is not embedded. Fields from `text_field`, `select`, `checkbox`, `radio` and `signature_field` draw with the document's embedded fonts and are allowed |
         | A character no font has, in body text, a page template or a form field's value | every level | `ConformanceError` naming the character, its code point and the family: it draws as `.notdef`, which text may not reference (PDF/A 6.2.11.8, PDF/UA 7.21.8). Add a font or `font_fallbacks` that covers it. Whitespace a font lacks draws as a blank and is accepted |
 
@@ -73,6 +74,13 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         end
         ```
 
+        Heading levels are read in the order of the structure tree, as a validator reads them: through
+        sections, lists, table cells, columns and floats, from `text(heading:)`, `html` and `markdown`
+        alike. Going back up is free (`heading: 3`, then `heading: 1`). The headings of headers, footers and
+        page templates are artifacts and do not count. PDF/A alone asks for neither alt texts nor heading
+        levels; a [tagged](/docs/pages#accessibility-tagged-pdf) render reports both as
+        [warnings](/docs/warnings).
+
         CMYK colours (`[c, m, y, k]`) and CMYK JPEGs are not covered by the sRGB output intent. They are
         reported as a `ConformanceIssue` [warning](/docs/warnings), so `strict` refuses them; without
         `strict` the file is written and a validator will flag it.
@@ -80,7 +88,7 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
 
       DocsUI::Callout(:note, title: "What a machine can check") do
         "conformance :pdf_ua1 checks what a machine can check. Whether the alt texts describe the images, " \
-          "the headings nest sensibly and the reading order makes sense is still yours to review."
+          "the headings say what follows them and the reading order makes sense is still yours to review."
       end
     end
 
