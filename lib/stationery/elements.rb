@@ -95,9 +95,7 @@ module Stationery
       name = source.to_s.lstrip.start_with?("<") ? "inline" : File.basename(source.to_s)
       source = File.read(source.to_s) unless name == "inline"
       document = SVG::Document.parse(source)
-      if document.unsupported.any?
-        @_builder.warnings << Warnings::UnsupportedSvg.new(elements: document.unsupported, source: name)
-      end
+      svg_warnings(document, name)
       node = Layout::Svg.new(document, width:, height:, color:, context: @_builder.context, alt:)
       @_builder.add(align ? Layout::Flow.new([node], align:) : node)
     end
@@ -153,6 +151,16 @@ module Stationery
     end
 
     private
+
+    # What the drawing uses that is not drawn, and nesting that was flattened.
+    def svg_warnings(document, name)
+      if document.unsupported.any?
+        @_builder.warnings << Warnings::UnsupportedSvg.new(elements: document.unsupported, source: name)
+      end
+      return unless document.nesting
+
+      @_builder.warnings << Warnings::NestingLimit.new(depth: document.nesting, limit: SVG::Parser::MAX_DEPTH)
+    end
 
     # `bookmark:` is a title, or { title:, level:, open: }.
     def mark(node, anchor, bookmark)

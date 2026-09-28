@@ -426,8 +426,14 @@ class Views::Docs::Pages::Elements < DocsUI::Page
   end
 
   def rich_text
+    rich, untrusted = SourceMarkdown.readme_section("HTML and Markdown").split("#### Untrusted input\n", 2)
+
     DocsUI::Section("html and markdown", description: "User content rendered with the elements above.") do
-      md SourceMarkdown.readme_section("HTML and Markdown")
+      md rich
+    end
+
+    DocsUI::Section("Untrusted input", description: "What html and markdown do with content you did not write.") do
+      md untrusted
     end
   end
 end

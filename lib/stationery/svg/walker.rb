@@ -11,6 +11,7 @@ module Stationery
     class Walker
       RENDERED = (Shapes::NAMES + %w[text g use svg]).freeze
       VIEWPORTS = %w[symbol svg].freeze
+      MAX_USES = 32 # a use of a use of a use …
 
       attr_reader :issues
 
@@ -69,6 +70,7 @@ module Stationery
         target, id = target_of(element)
         return unless target
         return issue("use: circular reference ##{id}") if chain.include?(id)
+        return issue("use: nested deeper than #{MAX_USES}") if chain.size >= MAX_USES
 
         attributes = element.attributes
         placed = style.transformed([1, 0, 0, 1, Shapes.f(attributes, "x"), Shapes.f(attributes, "y")])

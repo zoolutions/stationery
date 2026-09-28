@@ -43,6 +43,10 @@ module Stationery
       def message = %(link "#{href}" dropped: scheme not allowed)
     end
 
+    NestingLimit = Data.define(:depth, :limit) do
+      def message = "content nested #{depth} levels deep was flattened below level #{limit}"
+    end
+
     DuplicateAnchor = Data.define(:name, :page) do
       def message = %(anchor "#{name}" on page #{page} is already defined)
     end

@@ -9,8 +9,29 @@ module Stationery
       module Containers
         QUOTE = /\A {0,3}> ?/
         LIST = /\A(?<indent> {0,3})(?<marker>[-+*]|(?<number>\d{1,9})[.)])(?<space> *)(?<rest>.*)\z/
+        MARKER = /\G[ \t]*(?:>|(?:[-+*]|\d{1,9}[.)])(?=[ \t]|\z))/
 
         private
+
+        def container?(line) = QUOTE.match?(line) || !list_marker(line).nil?
+
+        # Block quotes and lists nested past the limit: their lines, up to a blank one, as one
+        # paragraph with the markers dropped.
+        def flattened
+          lines = []
+          while (line = @lines[@index]) && !blank?(line)
+            lines << unmarked(line)
+            @index += 1
+          end
+          lines.reject!(&:empty?)
+          Rich::Paragraph.new(inlines: text(lines)) if lines.any?
+        end
+
+        def unmarked(line)
+          markers = line.scan(MARKER).size
+          @nesting.record(@depth + markers)
+          line.sub(/\A(?:#{MARKER.source.delete_prefix("\\G")})*[ \t]*/, "")
+        end
 
         def blockquote
           lines = []

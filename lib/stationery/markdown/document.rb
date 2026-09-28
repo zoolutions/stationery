@@ -1,15 +1,21 @@
 # frozen_string_literal: true
 
+require_relative "../rich/nesting"
 require_relative "block_parser"
 require_relative "inline_parser"
 
 module Stationery
   # A CommonMark subset (plus GFM tables and strikethrough) to rich-text blocks (see Stationery::Rich).
   module Markdown
-    def self.parse(source)
+    # Block quotes and lists nested deeper than `max_depth` are flattened into
+    # a paragraph; the block is then given how deep the source went.
+    def self.parse(source, max_depth: Rich::Nesting::DEFAULT)
+      nesting = Rich::Nesting.new(max_depth)
       Stationery.instrument("parse.stationery", format: :markdown, bytes: source.bytesize) do
         refs = {}
-        Resolver.new(refs).blocks(BlockParser.parse(source, refs))
+        Resolver.new(refs).blocks(BlockParser.parse(source, refs, nesting)).tap do
+          yield nesting.deepest if nesting.exceeded? && block_given?
+        end
       end
     end
 

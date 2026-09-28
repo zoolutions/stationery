@@ -10,6 +10,8 @@ module Stationery
     # Splits CommonMark source into blocks, line by line. Paragraph, heading and table cell text is left
     # raw (a String in place of inlines) for Markdown.parse to run through the inline parser once every
     # link reference definition, which this parser collects into `refs`, is known. Raw HTML stays text.
+    # Every block quote and list is parsed by a parser of its own, one level deeper; at the
+    # Rich::Nesting limit a further one becomes a paragraph of its text instead.
     class BlockParser
       include Containers
       include Tables
@@ -24,7 +26,7 @@ module Stationery
         (?:[ \t]+(?:"[^"]*"|'[^']*'|\([^)]*\)))?[ \t]*\z
       /x
 
-      def self.parse(source, refs) = new(lines(source), refs).blocks
+      def self.parse(source, refs, nesting = Rich::Nesting.new) = new(lines(source), refs, nesting).blocks
 
       def self.lines(source) = source.to_s.split(/\r\n?|\n/).map { |line| expand_tabs(line) }
 
@@ -39,9 +41,12 @@ module Stationery
         expanded + line[prefix.length..]
       end
 
-      def initialize(lines, refs)
+      # `depth` counts the block quotes and lists this parser is inside.
+      def initialize(lines, refs, nesting = Rich::Nesting.new, depth = 0)
         @lines = lines
         @refs = refs
+        @nesting = nesting
+        @depth = depth
         @index = 0
       end
 
@@ -62,6 +67,7 @@ module Stationery
         elsif (match = FENCE.match(line)) then fenced_code(match)
         elsif (match = ATX.match(line)) then atx(match)
         elsif THEMATIC.match?(line) then skip(Rich::Rule.new)
+        elsif container?(line) && @depth >= @nesting.limit then flattened
         elsif QUOTE.match?(line) then blockquote
         elsif (match = list_marker(line)) then list(match)
         elsif table_start? then table
@@ -135,7 +141,7 @@ module Stationery
 
       def blank?(line) = line.strip.empty?
       def indent(line) = line[/\A */].length
-      def nested(lines) = BlockParser.new(lines, @refs).blocks
+      def nested(lines) = BlockParser.new(lines, @refs, @nesting, @depth + 1).blocks
     end
   end
 end
