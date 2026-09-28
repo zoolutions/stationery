@@ -1,0 +1,20 @@
+spec/stationery/layout/table_memory_spec.rb
+  s_f5a1e2cf907cda::t_37a3fdd147aa00 48
+  s_f5a1e2cf907cda::t_b1a8d7cb241e0b 47,49-59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "0e97bc7e8dab9981ded07f4b33afd3946fbcca9f",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
