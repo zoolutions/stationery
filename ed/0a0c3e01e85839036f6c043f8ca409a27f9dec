@@ -1,0 +1,23 @@
+lib/stationery/fonts/shaped_run.rb
+  s_632dbd6e2d0597::t_00d41df77d0b38 1-112,114-116,118-123,125-128,131-132,134-160
+  s_632dbd6e2d0597::t_217d794794ddd1 113,117
+  s_632dbd6e2d0597::t_ea42dc850e6b9d 124,129-130,133
+docs/app/views/docs/pages/documents_and_components.rb
+  s_632dbd6e2d0597::t_7e096197f2e94b 39-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "ed0a0c3e01e85839036f6c043f8ca409a27f9dec",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
