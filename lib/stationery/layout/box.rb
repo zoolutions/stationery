@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "box/wrapping"
+
 module Stationery
   module Layout
     # A container with padding, background, border and corner radius. A box
@@ -15,6 +17,8 @@ module Stationery
     # never splits); `shadow:` paints a soft drop shadow under it, taking no
     # space; `overflow: :hidden` clips the content to the rounded outline.
     class Box < Node
+      include Wrapping
+
       BORDER = { width: 1, color: "#000000", sides: %i[top right bottom left] }.freeze
       SHADOW = { offset: [0, 4], blur: 8, color: "#000000", opacity: 0.15 }.freeze
       SHADOW_LAYERS = 8
@@ -68,16 +72,16 @@ module Stationery
 
       def prefer_whole? = break_inside.nil? && splittable?
 
-      def split(width, height, fresh: false)
-        return [self, nil] if measure(width) <= height + EPSILON
+      def split(width, height, fresh: false, exclusions: nil)
+        return [self, nil] if measure(width, exclusions:) <= height + EPSILON
 
         cut = @open | [:bottom]
         available = height - vertical(cut)
-        head, tail = @content.split(inner_width(width), available, fresh:)
+        head, tail = split_content(width, available, fresh, exclusions)
         return [nil, self] unless head
         return [with_content(head), nil] unless tail || @min_height.to_f > height + EPSILON
 
-        fragments(width, height, head, tail || Flow.new, cut)
+        fragments(width, height, head, tail || Flow.new, cut, exclusions)
       end
 
       # An empty continuation: open at the top, without a floor.
@@ -87,19 +91,24 @@ module Stationery
       def with_content(content, open = @open) = dup.reopen(content, open)
       def with_open(*sides) = with_content(@content, @open | sides)
 
-      def measure(width)
-        @height || memoize_by_width(width) { [@content.measure(inner_width(width)) + vertical, @min_height || 0].max }
+      def measure(width, exclusions: nil)
+        return @height if @height
+
+        memoize_by_width(exclusions ? [width, exclusions] : width) do
+          [content_height(width, exclusions) + vertical, @min_height || 0].max
+        end
       end
 
-      def paint(canvas, x, y, width, height = nil, valign: nil, debug_kind: :box, **)
-        height ||= measure(width)
+      def paint(canvas, x, y, width, height = nil, valign: nil, debug_kind: :box, exclusions: nil, **)
+        height ||= measure(width, exclusions:)
+        slot = beside(width, exclusions)
         canvas.rotate(@rotate, around: [x + (width / 2.0), y + (height / 2.0)]) do
           canvas.structure(@tag) do
             canvas.structure(@link_tag) do
               paint_shadow(canvas, x, y, width, height)
               paint_background(canvas, x, y, width, height)
               paint_border(canvas, x, y, width, height)
-              paint_content(canvas, x, y, width, height, valign || @valign)
+              slot ? slot.paint(@content, canvas, x, y) : paint_content(canvas, x, y, width, height, valign || @valign)
             end
           end
           paint_debug(canvas, Rect.new(x, y, width, height), debug_kind) if canvas.debug?
@@ -120,9 +129,9 @@ module Stationery
 
       def fragment(content, open, min_height) = dup.reopen(content, open, min_height)
 
-      def fragments(width, height, head, tail, cut)
+      def fragments(width, height, head, tail, cut, exclusions)
         first = fragment(head, cut, @min_height && [@min_height, height].min).tap { |part| part.keep_with_next = nil }
-        rest = @min_height.to_f - first.measure(width)
+        rest = @min_height.to_f - first.measure(width, exclusions:)
         [first, fragment(tail, @open | [:top], rest.positive? ? rest : nil)]
       end
 

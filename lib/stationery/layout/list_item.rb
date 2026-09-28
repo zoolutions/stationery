@@ -5,7 +5,9 @@ module Stationery
     # One list entry: a marker right-aligned in the column before `indent`
     # (`marker_gap` short of it) and a body flow beside it. Splits inside the
     # body; the marker stays with the first fragment and never leaves its
-    # first line behind.
+    # first line behind. Beside floats (`exclusions:`) the body wraps: its
+    # lines keep the indent from the float beside them, the marker goes
+    # beside the first, and below the floats they take the full width.
     class ListItem < Node
       attr_reader :marker, :body, :indent, :marker_gap
 
@@ -22,6 +24,7 @@ module Stationery
       end
 
       def splittable? = @body.splittable?
+      def wraps? = @body.wraps?
       def natural_width = @indent + @body.natural_width
       def min_width = @indent + @body.min_width
       def break_inside = @body.break_inside
@@ -30,24 +33,31 @@ module Stationery
         @body.break_inside = value
       end
 
-      def measure(width)
-        memoize_by_width(width) { [@marker ? @marker.measure(column) : 0, @body.measure(body_width(width))].max }
-      end
-
-      def paint(canvas, x, y, width, _height = nil, **)
-        canvas.structure(@tag) do
-          if @marker
-            own = @marker.width_in(column)
-            @marker.paint(canvas, x + column - own, y, own)
-          end
-          canvas.structure(@body_tag) { @body.paint(canvas, x + @indent, y, body_width(width)) }
+      def measure(width, exclusions: nil)
+        memoize_by_width(exclusions ? [width, exclusions] : width) do
+          slot = beside(width, exclusions)
+          [@marker ? @marker.measure(column) : 0, slot ? slot.measure(@body) : @body.measure(body_width(width))].max
         end
       end
 
-      def split(width, height, fresh: false)
-        return [self, nil] if measure(width) <= height + EPSILON
+      def paint(canvas, x, y, width, _height = nil, exclusions: nil)
+        slot = beside(width, exclusions)
+        canvas.structure(@tag) do
+          if @marker
+            own = @marker.width_in(column)
+            @marker.paint(canvas, x + taken(exclusions) + column - own, y, own)
+          end
+          canvas.structure(@body_tag) do
+            slot ? slot.paint(@body, canvas, x, y) : @body.paint(canvas, x + @indent, y, body_width(width))
+          end
+        end
+      end
 
-        head, tail = @body.split(body_width(width), height, fresh:)
+      def split(width, height, fresh: false, exclusions: nil)
+        return [self, nil] if measure(width, exclusions:) <= height + EPSILON
+
+        slot = beside(width, exclusions)
+        head, tail = slot ? slot.split(@body, height, fresh:) : @body.split(body_width(width), height, fresh:)
         return [nil, self] unless head
 
         [with(@marker, head), tail && with(nil, tail).tap { |rest| rest.keep_with_next = keep_with_next }]
@@ -56,6 +66,17 @@ module Stationery
       private
 
       def column = [@indent - @marker_gap, 0].max
+
+      # Where the body goes beside floats: measure, split and paint place it
+      # by this one slot. It meets the floats as the item does, so its lines
+      # are as far from a float at their left as they are from the marker.
+      # nil without floats.
+      def beside(width, exclusions)
+        exclusions && Flow::Placement::Slot.new(top: 0, left: @indent, width: body_width(width), exclusions:)
+      end
+
+      # What the floats take from the left of the marker's line.
+      def taken(exclusions) = exclusions ? exclusions.insets(0, @marker.measure(column)).first : 0
       def body_width(width) = [width - @indent, 0].max
 
       def with(marker, body)

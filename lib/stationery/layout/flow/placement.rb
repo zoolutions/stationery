@@ -12,9 +12,10 @@ module Stationery
       # above a float placed before it. It takes no height of its own; the
       # flow is as tall as its lowest float.
       #
-      # A child that wraps (text, a nested flow) keeps the full width and is
-      # given the floats beside it as exclusions. It moves below the floats
-      # that leave less than its `min_width`. Any other child is a block
+      # A child that wraps (text, a nested flow, a list item, a box that
+      # paints nothing of its own) keeps the full width and is given the
+      # floats beside it as exclusions. It moves below the floats that
+      # leave less than its `min_width`. Any other child is a block
       # beside the floats: it gets the width left between every float still
       # beside or below its top, all the way down, when its own width (or its
       # `min_width`) fits there, else it moves below them.
