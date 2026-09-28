@@ -1,0 +1,34 @@
+docs/app/views/docs/pages/forms.rb
+  s_f5a1e2cf907cda::t_93f3ecbef230f1 308-309
+CHANGELOG.md
+  s_f5a1e2cf907cda::t_0e55b20df18648 5
+README.md
+  s_f5a1e2cf907cda::t_57c02de1a5be42 343-344
+  s_f5a1e2cf907cda::t_d5c62f4c63fb37 990-992
+  s_f5a1e2cf907cda::t_6ae47a013ff603 603-604,607-636
+  s_f5a1e2cf907cda::t_090f9ac57aba54 1114-1115
+docs/app/views/docs/pages/warnings.rb
+  s_f5a1e2cf907cda::t_e0b1dcc86f0b3e 32-33
+docs/app/views/docs/pages/conformance.rb
+  s_f5a1e2cf907cda::t_196eab5f6f600d 68
+  s_f5a1e2cf907cda::t_c2eb5defbae026 101-140
+docs/app/views/docs/pages/fonts.rb
+  s_f5a1e2cf907cda::t_1f072f2e5c6c09 266-268
+  s_f5a1e2cf907cda::t_bb8fd8a2fa1726 174-175
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "fdaf0a12f8399e37b7c9c7864f4bbacb9439e920",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
