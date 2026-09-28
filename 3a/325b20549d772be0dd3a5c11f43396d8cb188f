@@ -1,0 +1,23 @@
+lib/stationery/images/png.rb
+  s_f5a1e2cf907cda::t_f52c91454e6b93 14-15
+  s_f5a1e2cf907cda::t_fcc36d3995d31e 167
+  s_f5a1e2cf907cda::t_0e53be89e758c6 81
+spec/stationery/images/png_spec.rb
+  s_f5a1e2cf907cda::t_8dff0c8aee5f36 85-92
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "3a325b20549d772be0dd3a5c11f43396d8cb188f",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
