@@ -85,6 +85,14 @@ module Stationery
         config[:tagged] = value
       end
 
+      # Claims PDF/A-2b, PDF/A-3b and/or PDF/UA-1 (`conformance :pdf_a3b,
+      # :pdf_ua1`) and writes what the level asks for; a render that cannot
+      # keep the claim raises. See PDF::Conformance.
+      def conformance(*levels)
+        PDF::Conformance.for(levels)
+        config[:conformance] = levels.flatten
+      end
+
       # Encrypts every render with the standard security handler; see
       # PDF::Encryption::StandardSecurity for the options.
       def encrypt(**)
@@ -118,10 +126,14 @@ module Stationery
 
     def to_pdf(target = nil, strict: self.class.config[:strict], debug: false, encrypt: self.class.config[:encrypt],
                tagged: self.class.config[:tagged], page_labels: self.class.config[:page_labels], attachments: [],
-               xmp: metadata[:xmp] != false)
+               xmp: metadata[:xmp] != false, conformance: self.class.config[:conformance])
       attachments = PDF::Attachments.merge(self.class.config[:attachments], attachments)
+      conformance = PDF::Conformance.for(conformance)
+      conformance&.validate!(encrypt:, metadata:, attachments:)
+      options = { strict:, debug:, encrypt:, tagged: tagged || conformance&.pdf_ua?, page_labels:, attachments:,
+                  xmp: xmp || !conformance.nil?, conformance: }
       Stationery.instrument("render.stationery", document: self.class.name) do |event|
-        write(render_pdf(event, strict:, debug:, encrypt:, tagged:, page_labels:, attachments:, xmp:), target)
+        write(render_pdf(event, **options), target)
       end
     end
 
@@ -146,7 +158,7 @@ module Stationery
     def builder_for(book) = Builder.new(book:, text: self.class.config[:text], images: self.class.config[:images])
 
     # The PDF bytes; `event` is the render.stationery payload it fills in.
-    def render_pdf(event, strict:, debug:, encrypt:, tagged:, page_labels:, attachments:, xmp:)
+    def render_pdf(event, strict:, debug:, tagged:, conformance:, **assembly)
       tagging = Tagging::Tree.new if tagged
       warnings = Warnings.new
       book = Fonts::FontBook.new(self.class.config[:families], fallbacks: self.class.config[:fallbacks], warnings:)
@@ -157,21 +169,22 @@ module Stationery
       outline = builder.outline.resolve(Structure.resolve(pages, warnings:, resources:, book:, tagging:))
       tagging&.audit(pages, warnings, lang: metadata[:lang])
       @warnings = warnings
+      conformance&.audit!(pages, resources:, warnings:)
       @fields = Forms::AcroForm.values(pages)
       event[:pages] = pages.size
       event[:warnings] = warnings.size
       raise WarningsError, warnings if strict && warnings.any?
 
-      pdf = assemble(pages, resources, outline, encrypt:, tagging:, page_labels:, attachments:, xmp:)
+      pdf = assemble(pages, resources, outline, tagging:, conformance:, **assembly)
       event[:bytes] = pdf.bytesize
       pdf
     end
 
-    def assemble(pages, resources, outline, encrypt:, tagging:, page_labels:, attachments:, xmp:)
+    def assemble(pages, resources, outline, encrypt:, tagging:, page_labels:, attachments:, xmp:, conformance:)
       encryption = encrypt && PDF::Encryption::StandardSecurity.new(**encrypt)
       assembler = PDF::Assembler.new(pages:, resources:, info:, outline:, encryption:, tagging:, xmp:,
                                      lang: metadata[:lang], page_labels: PDF::PageLabels.entries(page_labels),
-                                     attachments:)
+                                     attachments:, conformance:)
       Stationery.instrument("write.stationery", document: self.class.name) do |event|
         assembler.render.tap { |pdf| event[:bytes] = pdf.bytesize }
       end

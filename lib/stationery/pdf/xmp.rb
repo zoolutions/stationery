@@ -16,6 +16,9 @@ module Stationery
       XMP_NS = "http://ns.adobe.com/xap/1.0/"
       PDF_NS = "http://ns.adobe.com/pdf/1.3/"
       RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      PDFA_EXTENSION = { "pdfaExtension" => "http://www.aiim.org/pdfa/ns/extension/",
+                         "pdfaSchema" => "http://www.aiim.org/pdfa/ns/schema#",
+                         "pdfaProperty" => "http://www.aiim.org/pdfa/ns/property#" }.freeze
 
       module_function
 
@@ -24,8 +27,11 @@ module Stationery
       # `time` the creation instant, and `extensions` further schemas as
       # `{ namespace_uri => { prefix: "pdfaid", "part" => 3, "conformance" => "B" } }`:
       # each becomes one `rdf:Description`; Array values become an `rdf:Bag`.
-      def packet(info: {}, lang: nil, time: Time.now, extensions: {})
+      # `schemas` describes extension schemas PDF/A does not know by itself:
+      # `[{ name:, uri:, prefix:, properties: [{ name:, type:, category:, description: }] }]`.
+      def packet(info: {}, lang: nil, time: Time.now, extensions: {}, schemas: [])
         descriptions = [dublin_core(info, lang), xmp_schema(info, time), pdf_schema(info)]
+        descriptions << extension_schemas(schemas)
         descriptions.concat(extensions.map { |uri, values| extension(uri, values) })
         body = <<~XML.gsub(/^ *\n/, "")
           <?xpacket begin="﻿" id="#{PACKET_ID}"?>
@@ -73,6 +79,37 @@ module Stationery
           value.is_a?(Array) ? bag("#{prefix}:#{name}", value) : element("#{prefix}:#{name}", value)
         end
         description(uri, prefix, elements)
+      end
+
+      # The PDF/A extension schema container describing each of `schemas`.
+      def extension_schemas(schemas)
+        return if schemas.empty?
+
+        namespaces = PDFA_EXTENSION.map { |prefix, uri| %(xmlns:#{prefix}="#{uri}") }.join(" ")
+        items = schemas.map { |schema| "  #{schema_item(schema)}\n" }.join
+        <<~XML.chomp.gsub(/^/, "  ")
+          <rdf:Description rdf:about="" #{namespaces}>
+           <pdfaExtension:schemas><rdf:Bag>
+          #{items.chomp}
+           </rdf:Bag></pdfaExtension:schemas>
+          </rdf:Description>
+        XML
+      end
+
+      def schema_item(schema)
+        properties = schema.fetch(:properties).map do |property|
+          resource("pdfaProperty", name: property.fetch(:name), valueType: property.fetch(:type),
+                                   category: property.fetch(:category), description: property.fetch(:description))
+        end
+        head = { schema: schema.fetch(:name), namespaceURI: schema.fetch(:uri), prefix: schema.fetch(:prefix) }
+        resource("pdfaSchema", **head) do
+          "<pdfaSchema:property><rdf:Seq>#{properties.join}</rdf:Seq></pdfaSchema:property>"
+        end
+      end
+
+      def resource(prefix, **values)
+        elements = values.map { |name, value| element("#{prefix}:#{name}", value) }.join
+        %(<rdf:li rdf:parseType="Resource">#{elements}#{yield if block_given?}</rdf:li>)
       end
 
       def description(uri, prefix, elements)

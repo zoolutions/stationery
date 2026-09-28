@@ -155,6 +155,21 @@ RSpec.describe Stationery::Testing::Matchers do
       expect(have_attachment("x").tap { |m| m.matches?(document) }.failure_message).to end_with("got none")
     end
 
+    it "matches the claimed conformance levels" do
+      titled = Class.new(tagged.class) { metadata title: "Title" }.new
+      pdf = titled.to_pdf(conformance: %i[pdf_a3b pdf_ua1])
+
+      expect(pdf).to have_conformance(:pdf_a3b)
+      expect(pdf).to have_conformance(:pdf_a3b, :pdf_ua1)
+      expect(pdf).not_to have_conformance(:pdf_a2b)
+      matcher = have_conformance(:pdf_a2b, :pdf_ua1)
+      expect(matcher.matches?(pdf)).to be(false)
+      expect(matcher.description).to eq("conform to PDF/A-2b and PDF/UA-1")
+      expect(matcher.failure_message)
+        .to eq("expected PDF to conform to PDF/A-2b and PDF/UA-1, got PDF/A-3b and PDF/UA-1")
+      expect(have_conformance(:pdf_ua1).tap { |m| m.matches?(document) }.failure_message).to end_with("got no claim")
+    end
+
     it "matches page labels" do
       labelled = Class.new(SpecDocument) do
         page_labels 1 => { style: :roman_lower }, 3 => { style: :decimal }

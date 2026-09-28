@@ -36,6 +36,29 @@ namespace :docs do
   end
 end
 
+namespace :verify do
+  desc "Validate PDF/A-3b and PDF/UA-1 renders of the examples with veraPDF (needs Docker)"
+  task :conformance do
+    $LOAD_PATH.unshift(File.expand_path("lib", __dir__))
+    require "stationery"
+    out = File.expand_path("tmp/conformance", __dir__)
+    mkdir_p out
+    image = ENV.fetch("VERAPDF_IMAGE", "verapdf/cli:latest")
+    renders = { "invoice" => { pdf_a3b: "3b" }, "report" => { pdf_ua1: "ua1", pdf_a3b: "3b" } }
+    failures = renders.flat_map do |name, levels|
+      load File.expand_path("examples/#{name}.rb", __dir__)
+      document = Object.const_get("Example#{name.capitalize}").preview
+      document.to_pdf(File.join(out, "#{name}.pdf"), conformance: levels.keys)
+      failed = levels.values.reject do |flavour|
+        sh("docker", "run", "--rm", "--platform", "linux/amd64", "-v", "#{out}:/data:ro", image,
+           "--format", "text", "-v", "--flavour", flavour, "/data/#{name}.pdf") { |ok, _| ok }
+      end
+      failed.map { |flavour| "#{name}.pdf is not #{flavour}" }
+    end
+    abort failures.join("\n") if failures.any?
+  end
+end
+
 task default: %i[spec rubocop]
 
 desc "Benchmark against Prawn (bundle exec rake bench)"

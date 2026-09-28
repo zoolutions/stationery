@@ -93,6 +93,20 @@ RSpec.describe Stationery::Testing::Inspector do
     end
   end
 
+  describe "#conformance" do
+    it "reads the claimed levels from the XMP packet" do
+      doc = Class.new(SpecDocument) do
+        metadata title: "Report", lang: "en"
+        def view_template = text("x")
+      end.new
+
+      expect(described_class.new(doc.to_pdf(conformance: %i[pdf_a3b pdf_ua1])).conformance).to eq(%i[pdf_a3b pdf_ua1])
+      expect(described_class.new(doc.to_pdf(conformance: :pdf_a2b)).conformance).to eq([:pdf_a2b])
+      expect(described_class.new(doc).conformance).to eq([])
+      expect(described_class.new(doc.to_pdf(xmp: false)).conformance).to eq([])
+    end
+  end
+
   describe "#xmp and #xmp_values" do
     it "reads the packet and its properties, or nil and {} without one" do
       doc = Class.new(SpecDocument) do

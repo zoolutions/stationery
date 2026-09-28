@@ -1,0 +1,112 @@
+# frozen_string_literal: true
+
+class Views::Docs::Pages::Conformance < DocsUI::Page
+  title "PDF/A and PDF/UA"
+  eyebrow "Guide"
+
+  def lead = "Archival (PDF/A-2b, PDF/A-3b) and accessible (PDF/UA-1) output, claimed only when the file keeps it."
+
+  def content
+    DocsUI::Section("Claiming a level", description: "At class level or per render.") do
+      md <<~'MD'
+        ```ruby
+        class InvoicePdf < Stationery::Document
+          conformance :pdf_a3b            # archival: :pdf_a2b or :pdf_a3b
+        end
+
+        class ReportPdf < Stationery::Document
+          conformance :pdf_a3b, :pdf_ua1  # archival and accessible
+          metadata title: "Annual report 2026", lang: "en"
+        end
+
+        InvoicePdf.new(invoice).to_pdf(conformance: nil)      # one render without the claim
+        InvoicePdf.new(invoice).to_pdf(conformance: :pdf_a2b) # or with another level
+        ```
+
+        One PDF/A level and PDF/UA-1 combine; two PDF/A levels or an unknown name raise `ArgumentError`
+        where they are declared. Subclasses inherit the levels. Without `conformance` a render is byte for
+        byte what it was before.
+      MD
+    end
+
+    DocsUI::Section("What each level guarantees") do
+      md <<~'MD'
+        | Level | Standard | What is written |
+        | --- | --- | --- |
+        | `:pdf_a2b` | ISO 19005-2, level B | An sRGB `OutputIntent` with the embedded ICC profile, `pdfaid:part 2` / `pdfaid:conformance B` in XMP, the print flag (`/F 4`) on every annotation |
+        | `:pdf_a3b` | ISO 19005-3, level B | The same with `pdfaid:part 3`; [embedded files](/docs/pages#embedded-files) of any type are allowed, each with its `/AFRelationship` |
+        | `:pdf_ua1` | ISO 14289-1 | A tagged PDF, `pdfuaid:part 1` in XMP, the title shown by the viewer, tab order by structure (`/Tabs /S`), a description (`/Contents`) on every link annotation |
+
+        Level B means the visual appearance is reproducible: every font is embedded (they always are, as
+        subsets with a ToUnicode map) and colour is defined through the output intent. The bundled profile
+        is the ICC's `sRGB2014.icc`. Transparency (`opacity:`, shadows, PNG alpha) is allowed from PDF/A-2 on.
+
+        With both a PDF/A level and PDF/UA-1, the XMP packet also describes the `pdfuaid` schema to PDF/A
+        (`pdfaExtension:schemas`), which PDF/A requires of every schema it does not know.
+
+        A link's description is its URL, or `Page 3` for a link inside the document.
+      MD
+    end
+
+    DocsUI::Section("What raises", description: "A file is never mislabelled.") do
+      md <<~'MD'
+        | Situation | Level | Raises |
+        | --- | --- | --- |
+        | `encrypt:` | PDF/A | `ArgumentError` (PDF/A forbids encryption; PDF/UA allows it) |
+        | `attach_file` / `attachments:` | PDF/A-2b | `ArgumentError`: part 2 only embeds PDF/A files, use `:pdf_a3b` |
+        | No `metadata title:` or `lang:` | PDF/UA-1 | `Stationery::ConformanceError` listing what is missing |
+        | An image or drawing without `alt:` | PDF/UA-1 | `ConformanceError`; mark decoration with `alt: false` |
+        | Interactive form fields | every level | `ConformanceError` naming each field: their appearances draw with the standard Helvetica and ZapfDingbats, which are not embedded |
+
+        ```ruby
+        begin
+          ReportPdf.new(report).to_pdf
+        rescue Stationery::ConformanceError => e
+          e.levels # => [:pdf_a3b, :pdf_ua1]
+          e.issues # => ["image on page 2 has no alt: text"]
+        end
+        ```
+
+        CMYK colours (`[c, m, y, k]`) and CMYK JPEGs are not covered by the sRGB output intent. They are
+        reported as a `ConformanceIssue` [warning](/docs/warnings), so `strict` refuses them; without
+        `strict` the file is written and a validator will flag it.
+      MD
+
+      DocsUI::Callout(:note, title: "What a machine can check") do
+        "conformance :pdf_ua1 checks what a machine can check. Whether the alt texts describe the images, " \
+          "the headings nest sensibly and the reading order makes sense is still yours to review."
+      end
+    end
+
+    DocsUI::Section("Validating with veraPDF", description: "The reference validator, through Docker.") do
+      md <<~'MD'
+        `bundle exec rake verify:conformance` renders `examples/invoice.rb` as PDF/A-3b and
+        `examples/report.rb` as PDF/A-3b plus PDF/UA-1, and validates them with
+        [veraPDF](https://verapdf.org) in a container (`verapdf/cli`); the gem's CI runs it on every push.
+        Validate your own documents the same way:
+
+        ```sh
+        docker run --rm -v "$PWD:/data:ro" verapdf/cli --format text -v --flavour 3b /data/invoice.pdf
+        # PASS /data/invoice.pdf 3b
+        docker run --rm -v "$PWD:/data:ro" verapdf/cli --format text -v --flavour ua1 /data/report.pdf
+        ```
+
+        Flavours are `2b`, `3b` and `ua1`; `-v` lists the failed rules by clause.
+      MD
+    end
+
+    DocsUI::Section("In tests") do
+      md <<~'MD'
+        ```ruby
+        it { is_expected.to have_conformance(:pdf_a3b) }
+        it { is_expected.to have_conformance(:pdf_a3b, :pdf_ua1) }
+
+        assert_pdf_conformance pdf, :pdf_a3b
+        Stationery::Testing::Inspector.new(pdf).conformance # => [:pdf_a3b, :pdf_ua1]
+        ```
+
+        These read the claim from the XMP packet. They do not validate the file: that is veraPDF's job.
+      MD
+    end
+  end
+end

@@ -20,4 +20,17 @@ module Stationery
       super("#{lines.size} #{noun}:\n#{lines.join("\n")}")
     end
   end
+
+  # Raised when a render cannot keep the conformance it claims (PDF/A,
+  # PDF/UA): `levels` are the claimed levels, `issues` what breaks them.
+  class ConformanceError < Error
+    attr_reader :levels, :issues
+
+    def initialize(levels, issues)
+      @levels = levels
+      @issues = issues
+      super("not #{levels.map { |level| Stationery::PDF::Conformance.label(level) }.join(" + ")}:\n" \
+            "#{issues.map { |issue| "  #{issue}" }.join("\n")}")
+    end
+  end
 end

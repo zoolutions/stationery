@@ -55,6 +55,10 @@ module Stationery
       def message = "tagged PDF has no language: set metadata lang:"
     end
 
+    ConformanceIssue = Data.define(:level, :subject) do
+      def message = "#{PDF::Conformance.label(level)}: #{subject} is not covered by the sRGB output intent"
+    end
+
     def initialize
       @items = []
       @glyphs = Hash.new(0)

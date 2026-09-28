@@ -48,6 +48,20 @@ jobs:
       - name: Examples render
         run: bundle exec rake examples
 
+  conformance:
+    runs-on: ubuntu-latest
+    name: PDF/A and PDF/UA (veraPDF)
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+      - name: veraPDF validates the conforming examples
+        run: bundle exec rake verify:conformance
+
   rails:
     runs-on: ubuntu-latest
     name: Rails
