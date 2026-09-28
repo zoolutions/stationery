@@ -1,0 +1,19 @@
+spec/stationery/text/wrapper_one_word_spec.rb
+  s_f5a1e2cf907cda::t_4ac932c2485d23 82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "90873ec103b6d406e77b4d9282fc22799397cca3",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
