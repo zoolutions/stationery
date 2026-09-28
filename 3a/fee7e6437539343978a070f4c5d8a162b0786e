@@ -1,0 +1,20 @@
+spec/stationery/raster/glyphs_spec.rb
+  s_f5a1e2cf907cda::t_91c817deca6aa8 1-6,8-9,11-39
+  ai_agent 7,10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "3afee7e6437539343978a070f4c5d8a162b0786e",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
