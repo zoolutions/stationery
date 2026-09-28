@@ -54,10 +54,14 @@ module Stationery
         from(paragraph(width).fit(height, overflow:))
       end
 
+      # Words between spaces, with nothing a line breaks at or trims: one run
+      # of it sets as one line of its whole text at any width.
+      ONE_LINE = /\A[^\s\0­​]+(?: +[^\s\0­​]+)*\z/
+
       # Kept as a number: the lines of a paragraph set at no width are of no
       # use to a page.
       def natural_width
-        @natural_width ||= (@paragraph || wrap(Float::INFINITY)).lines.map(&:width).max || 0
+        @natural_width ||= one_line_width || (@paragraph || wrap(Float::INFINITY)).lines.map(&:width).max || 0
       end
 
       # The widest piece that cannot be broken: a word, or one break unit of a
@@ -94,6 +98,17 @@ module Stationery
       # width and may come out fewer than the widows.
       def widowed?(paragraph, kept)
         paragraph.exclusions && paragraph.split_at(kept).last.lines.size < @widows
+      end
+
+      # The width of text that sets as one line, measured as the line's one
+      # fragment is, without wrapping it: what most table cells hold.
+      def one_line_width
+        return if @paragraph || @runs.size != 1
+
+        run = @runs.first
+        return unless run.text.match?(ONE_LINE) && !::Stationery::Text::Breaks.cjk?(run.text)
+
+        piece_width(@context.book.resolve(run.style).first, run.style, run.text)
       end
 
       def piece_width(font, style, text)
