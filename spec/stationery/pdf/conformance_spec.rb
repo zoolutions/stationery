@@ -220,6 +220,45 @@ RSpec.describe Stationery::PDF::Conformance do
       expect(kept.new.to_pdf(conformance: :pdf_ua1)).to have_conformance(:pdf_ua1)
     end
 
+    it "raises on a link that is in no Link element, one issue each" do
+      linked = Class.new(document) do
+        footer { canvas(height: 10) { |canvas, rect| canvas.link(rect.x, rect.y, 50, 10, "https://example.com") } }
+        define_method(:view_template) do
+          text "Report", heading: 1
+          canvas(height: 20) { |canvas, rect| canvas.link(rect.x, rect.y, 50, 20, "#top") }
+          anchor "top"
+        end
+      end
+
+      expect { linked.new.to_pdf(conformance: %i[pdf_a3b pdf_ua1]) }
+        .to raise_error(Stationery::ConformanceError) do |error|
+          expect(error.issues)
+            .to eq(["link to #top drawn by canvas.link without a tag: on page 1 is outside the structure tree (7.18.5)",
+                    "link to https://example.com in the footer of page 1 is outside the structure tree (7.18.5)"])
+        end
+      expect(linked.new.to_pdf(conformance: :pdf_a3b)).to have_conformance(:pdf_a3b)
+      expect(linked.new.tap { it.to_pdf(conformance: :pdf_a3b, tagged: true) }.warnings.size).to eq(2)
+    end
+
+    it "keeps the claim with a link in a header, a footer or a page template" do
+      linked = Class.new(document) do
+        header { text "Home", link: "https://example.com/head" }
+        footer { text %(See <link href="https://example.com">example.com</link>), markup: true }
+        page_template { |page| box(at: [36, page.height - 20], link: "#top") { text "Top" } }
+        define_method(:view_template) do
+          anchor "top"
+          text "Report", heading: 1
+        end
+      end
+      pdf = linked.new.to_pdf(conformance: %i[pdf_a3b pdf_ua1])
+
+      expect(pdf).to have_conformance(:pdf_ua1).and have_conformance(:pdf_a3b)
+      expect(pdf).to have_structure([[:Document, [[:H1, "Report"], [:Link, "Home"], [:Link, "example.com"],
+                                                  [:Link, [[:P, "Top"]]]]]])
+      expect(pdf.scan("/StructParent ").size).to eq(3)
+      expect(pdf.scan(%r{/Contents \((?:https://example.com|Page 1)}).size).to eq(3)
+    end
+
     it "may be encrypted" do
       expect(document.new.to_pdf(conformance: :pdf_ua1, encrypt: { owner_password: "o" })).to include("/Encrypt")
     end

@@ -63,6 +63,7 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         | An image or drawing without `alt:`, or with a blank one (`""`, whitespace alone) | PDF/UA-1 | `ConformanceError` naming the page (ISO 14289-1, 7.3); mark decoration with `alt: false`. Whitespace alone is refused although veraPDF accepts it |
         | In `html`, an `<img>` without an `alt` attribute; in `markdown`, an image without a description (`![](photo.png)`) | PDF/UA-1 | `ConformanceError`, as for `image` without `alt:`. `<img alt="">` is decoration and is written as `alt: false` is; Markdown has no way to mark decoration, so use `html` or `image` for it |
         | A heading level that is skipped: a first heading that is not `heading: 1`, or a heading more than one level below the heading before it | PDF/UA-1 | `ConformanceError` naming the page, the level and the deepest level allowed there (ISO 14289-1, 7.4.2) |
+        | A link annotation outside the structure tree: a link in the header row a table repeats on its next pages, `canvas.link` without a `tag:` | PDF/UA-1 | `ConformanceError` with an issue per link and page, naming the target and what painted it (ISO 14289-1, 7.18.5): `link to https://example.com drawn by canvas.link without a tag: on page 1 is outside the structure tree (7.18.5)`. A `link:` is tagged and is allowed, in the body and in a `header`, a `footer` or a `page_template` |
         | A form field made without a font book (`Forms::Field.new` placed with `canvas.widget`) | every level | `ConformanceError` naming the field: it draws with the standard Helvetica, which is not embedded. Fields from `text_field`, `select`, `checkbox`, `radio` and `signature_field` draw with the document's embedded fonts and are allowed |
         | A character no font has, in body text, a page template or a form field's value | every level | `ConformanceError` naming the character, its code point and the family: it draws as `.notdef`, which text may not reference (PDF/A 6.2.11.8, PDF/UA 7.21.8). Add a font or `font_fallbacks` that covers it. Whitespace a font lacks draws as a blank and is accepted |
 
@@ -78,8 +79,18 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         Heading levels are read in the order of the structure tree, as a validator reads them: through
         sections, lists, table cells, columns and floats, from `text(heading:)`, `html` and `markdown`
         alike. Going back up is free (`heading: 3`, then `heading: 1`). The headings of headers, footers and
-        page templates are artifacts and do not count. PDF/A alone asks for neither alt texts nor heading
-        levels; a [tagged](/docs/pages#accessibility-tagged-pdf) render reports both as
+        page templates are artifacts and do not count.
+
+        Every link annotation has to belong to a `Link` element of the structure tree. The links of the
+        body do, and so does a `link:` painted by a header, a footer or a page template: the region is an
+        artifact but for the link, which is a `Link` read after the content of its page, so a website or
+        an address in the footer of every page keeps the level. A link in the header row a table repeats
+        on its next pages has no element to belong to, and the render raises rather than claim the
+        level. On a canvas, pass the `Link` element that holds what the link draws:
+        `canvas.link(x, y, w, h, url, tag: element)` after `canvas.tag(element) { … }`.
+
+        PDF/A alone asks for neither alt texts, heading levels nor tagged links; a
+        [tagged](/docs/pages#accessibility-tagged-pdf) render reports all three as
         [warnings](/docs/warnings).
 
         CMYK colours (`[c, m, y, k]`) and CMYK JPEGs are not covered by the sRGB output intent. They are
@@ -188,7 +199,8 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         `bundle exec rake verify:conformance` renders `examples/invoice.rb` and `examples/e_invoice.rb`
         as PDF/A-3b, and `examples/report.rb`, `examples/form.rb`, `examples/article.rb` (floats) and
         `examples/newsletter.rb` (columns) as PDF/A-3b plus PDF/UA-1, the
-        invoice and the form once more with a signature, and validates them with
+        invoice and the form once more with a signature and the report with a link in its footer, and
+        validates them with
         [veraPDF](https://verapdf.org) in a container (`verapdf/cli`); the gem's CI runs it on every push.
         Validate your own documents the same way:
 

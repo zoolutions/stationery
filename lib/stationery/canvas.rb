@@ -26,6 +26,7 @@ module Stationery
       @tagging = tagging
       @warnings = warnings
       @marked = 0
+      @artifact = @surfaced = nil
     end
 
     def save
@@ -134,13 +135,15 @@ module Stationery
     # A clickable area opening `target`: a URL, or `#name` for an anchor in
     # this document. Annotation rectangles live in absolute, untransformed
     # page space, so they ignore clips and path transforms. `tag:` is the
-    # Link element the annotation belongs to in a tagged PDF.
+    # Link element the annotation belongs to in a tagged PDF; an annotation
+    # that joins none is remembered as outside the tree (Tagging::Tree#audit).
     def link(x, y, w, h, target, tag: nil)
       target = target.to_s
       rect = [x, @page.height - y - h, x + w, @page.height - y].map { |v| num_value(v) }
       annotation = target.start_with?("#") ? { rect:, dest: target[1..] } : { rect:, url: target }
       @page.annotations << annotation
       own(annotation, tag) if tag
+      disown(annotation, target, tag) if @tagging && !annotation.key?(:tag)
     end
 
     # An interactive form field's widget (a Forms::Field) over the rectangle.

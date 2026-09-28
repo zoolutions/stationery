@@ -151,4 +151,104 @@ RSpec.describe "Tagged PDF audit" do # rubocop:disable RSpec/DescribeClass
       expect(warnings_of(SpecDocument.build { image logo, width: 20, alt: "" })).to be_empty
     end
   end
+
+  describe "links" do
+    def untagged(target, place, page) = Stationery::Warnings::UntaggedLink.new(target:, place:, page:)
+
+    it "warns about a link drawn on the canvas of a header, a footer or a page template, on every page" do
+      draw = ->(target) { proc { |canvas, rect| canvas.link(rect.x, rect.y, 50, 10, target) } }
+      klass = Class.new(tagged) do
+        header { canvas(height: 10, &draw.call("https://example.com/head")) }
+        footer { canvas(height: 10, &draw.call("#top")) }
+        page_template { box(at: [36, 20]) { canvas(height: 10, &draw.call("https://example.com/stamp")) } }
+      end
+      doc = build(klass) do
+        anchor "top"
+        text "Report", heading: 1
+        page_break
+        text "More"
+      end
+
+      expect(warnings_of(doc))
+        .to eq(["link to https://example.com/head in the header of page 1 is outside the structure tree",
+                "link to #top in the footer of page 1 is outside the structure tree",
+                "link to https://example.com/stamp in a page template of page 1 is outside the structure tree",
+                "link to https://example.com/head in the header of page 2 is outside the structure tree",
+                "link to #top in the footer of page 2 is outside the structure tree",
+                "link to https://example.com/stamp in a page template of page 2 is outside the structure tree"])
+      expect(doc.warnings.first).to eq(untagged("https://example.com/head", :header, 1))
+      expect { doc.to_pdf(strict: true) }.to raise_error(Stationery::WarningsError)
+      expect { doc.to_pdf(conformance: :pdf_ua1) }.to raise_error(Stationery::ConformanceError, /\(7\.18\.5\)/)
+    end
+
+    it "accepts the links a header, a footer and a page template paint as text and boxes" do
+      klass = Class.new(tagged) do
+        header { text "Home", link: "https://example.com/head" }
+        footer { text %(See <link href="#top">the top</link>), markup: true }
+        page_template { |page| box(at: [36, page.height - 20], link: "https://example.com/stamp") { text "Stamp" } }
+      end
+      doc = build(klass) do
+        anchor "top"
+        text "Report", heading: 1
+      end
+
+      expect(warnings_of(doc)).to be_empty
+      expect { doc.to_pdf(conformance: :pdf_ua1, strict: true) }.not_to raise_error
+    end
+
+    it "warns about a link drawn on the canvas without a Link element" do
+      doc = build do
+        text "Report", heading: 1
+        canvas(height: 20) { |canvas, rect| canvas.link(rect.x, rect.y, 50, 20, "https://example.com") }
+      end
+
+      expect(warnings_of(doc))
+        .to eq(["link to https://example.com drawn by canvas.link without a tag: on page 1 " \
+                "is outside the structure tree"])
+      expect(doc.warnings.to_a).to eq([untagged("https://example.com", :canvas, 1)])
+    end
+
+    it "warns about a link in any other artifact, such as the header row a table repeats" do
+      doc = build do
+        table([[-> { text "Name", link: "https://example.com/names" }]] + Array.new(12) { ["Row #{it}"] }, header: 1)
+      end
+
+      expect(warnings_of(doc))
+        .to eq(["link to https://example.com/names in an artifact of page 2 is outside the structure tree",
+                "link to https://example.com/names in an artifact of page 3 is outside the structure tree"])
+    end
+
+    it "accepts the links of the body: text, markup, boxes, html, markdown and a tagged canvas link" do
+      element = Stationery::Tagging::Element.new(:Link)
+      doc = build do
+        anchor "top"
+        text "Report", heading: 1, link: "#top"
+        text %(Read the <link href="https://example.com">terms</link>), markup: true
+        box(link: "https://example.com/box") { text "Boxed" }
+        html %(<p><a href="https://example.com/html">html</a></p>)
+        markdown "[markdown](https://example.com/markdown)"
+        canvas(height: 20) do |canvas, rect|
+          canvas.tag(element) { canvas.rounded_rect(rect.x, rect.y, 50, 20, radius: 0, fill: "#000000") }
+          canvas.link(rect.x, rect.y, 50, 20, "https://example.com/canvas", tag: element)
+        end
+      end
+      pdf = doc.to_pdf
+
+      expect(doc.warnings).to be_empty
+      expect(inspect_pdf(pdf).links.size).to eq(5)
+      expect(pdf.scan("/StructParent ").size).to eq(6)
+    end
+
+    it "leaves a document that is not tagged alone, byte for byte" do
+      view = proc do
+        text "Body"
+        canvas(height: 20) { |canvas, rect| canvas.link(rect.x, rect.y, 50, 20, "https://example.com") }
+      end
+      doc = Class.new(SpecDocument) { footer { text "example.com", link: "https://example.com" } }
+      doc = Class.new(doc) { define_method(:view_template, &view) }.new
+
+      expect(warnings_of(doc)).to be_empty
+      expect(doc.to_pdf).not_to include("place")
+    end
+  end
 end

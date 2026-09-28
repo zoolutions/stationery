@@ -389,6 +389,22 @@ render Callout.new(color: "#F3F4F6") { text "Amount due" }
 ## Pages
 
 - `page size: :a4 | :a3 | :a5 | :letter | :legal | :tabloid | [w, h], margin:, layout: :landscape`
+- Sizes are points. `mm(102)`, `cm(2)`, `inch(4)` and `pt(12)` convert to them in every component and
+  document (`include Stationery::Units` anywhere else), and `page` reads lengths with their unit:
+
+  ```ruby
+  class Label < Stationery::Document
+    page size: ["102mm", "74mm"], margin: "3mm"     # or "102 x 74 mm", "4in x 6in", [mm(102), mm(74)]
+
+    def view_template = box(at: [mm(20), mm(45)], width: mm(60)) { text "Fragile" }
+  end
+  ```
+
+  Units are `mm`, `cm`, `in` and `pt`; decimals take a point (`"101.6mm"`). Beside the office sizes there
+  are `:a6`, `:a7`, `:b5`, the envelopes `:dl`, `:c5` and `:c6` (short edge first: `layout: :landscape`
+  is the address side) and the label stock `:label_4x6`, `:label_4x3`, `:label_4x2`, `:label_100x150`
+  and `:label_100x50`. A size or margin that cannot be read raises `ArgumentError` when the class is
+  defined.
 - `page_template { |page| … }` runs on every page after pagination with `page.number`, `page.count`,
   `page.width`, `page.height`, `page.margin` and `page.content_box`. `page_template(layer: :background)`
   paints under the content (full-bleed backgrounds).
@@ -423,7 +439,8 @@ render Callout.new(color: "#F3F4F6") { text "Amount due" }
 - After `to_pdf`, `document.warnings` is an Enumerable of everything the render noticed but did not
   raise on, each with a `#message`: overflows, SVG elements that were skipped (`UnsupportedSvg`), and
   the other `Stationery::Warnings::*` kinds (missing glyphs, unknown font families, skipped images,
-  unresolved links, duplicate anchors). Equal warnings are listed once; warnings from page templates
+  unresolved links, duplicate anchors, and in a tagged render what is missing for accessibility).
+  Equal warnings are listed once; warnings from page templates
   are included. `to_pdf(strict: true)`, or `strict` at class level, raises `Stationery::WarningsError`
   (with `#warnings`) instead of writing a PDF that produced any; `to_pdf(strict: false)` opts one
   render out again.
@@ -506,8 +523,11 @@ and across page breaks: a paragraph continued on the next page stays one `P`.
   `BlockQuote`, and give images their `alt`. In `html`, `<img alt="">` is decoration as `alt: false`
   is (an `<img>` without the attribute is a description missing). Markdown has no way to say so:
   `![](photo.png)` is a description missing, and decoration goes through `html` or `image`.
-- Headers, footers and page templates are pagination artifacts; backgrounds, borders and rules drawn
-  outside any element are layout artifacts.
+- Headers, footers and page templates are pagination artifacts, but for their links: a `link:` one
+  paints (`text(link:)`, markup, `html`, `markdown`, `box(link:)`) is a `Link` of the `Document`
+  holding its text and its annotation, read after the content of its page, in the order header,
+  footer, page templates. The rest of the region stays an artifact. Backgrounds, borders and rules
+  drawn outside any element are layout artifacts.
 - `metadata lang:` writes the catalog's `/Lang`; the title is shown instead of the file name.
 - Every document carries an XMP packet (`/Metadata`, uncompressed) mirroring the Info dictionary:
   `dc:title`, `dc:creator`, `dc:description`, `dc:subject`, `dc:language`, the `xmp:` dates and
@@ -520,8 +540,15 @@ and across page breaks: a paragraph continued on the next page stays one `P`.
   (`1`, then `3` skips `2`). Going back up is free (`3`, then `1`). Headings are read in the order of
   the structure tree, inside sections, lists, table cells, columns and floats; those of headers,
   footers and page templates are artifacts and do not count.
-- A missing `lang` is a `Warnings::MissingLanguage`. All three are warnings, so `strict` catches them,
-  and `conformance :pdf_ua1` raises on the first two.
+- A link annotation that belongs to no `Link` element is a `Warnings::UntaggedLink` (`target`,
+  `place`, `page`): a link in the header row a table repeats on its next pages, which is an artifact
+  (`place` is `:artifact`), and `canvas.link` without a `tag:` (`:canvas` in the body, `:header`,
+  `:footer` or `:page_template` on the canvas of one). Every `link:` is tagged, in the body and in
+  headers, footers and page templates; on a canvas of the body, pass the `Link` element that holds
+  what the link draws: `canvas.link(x, y, w, h, url, tag: element)` after
+  `canvas.tag(element) { … }`.
+- A missing `lang` is a `Warnings::MissingLanguage`. All four are warnings, so `strict` catches them,
+  and `conformance :pdf_ua1` raises on the first three.
 - Untagged documents (the default) are written exactly as before.
 
 Check the tree in tests with `have_structure` and `have_tagged_content` (see [Testing](#testing)):
@@ -569,8 +596,10 @@ mislabelled: `ArgumentError` for options that contradict the level, `Stationery:
   every link annotation a description (`/Contents`: the URL, or the target page). A figure without
   `alt:` or with a blank one raises (7.3); mark decoration with `alt: false`, or `<img alt="">` in
   `html`. A heading level that is skipped raises (7.4.2): the first heading is `heading: 1`, and a
-  heading is at most one level below the heading before it. PDF/A alone asks for neither.
-  Encryption is allowed.
+  heading is at most one level below the heading before it. A link annotation outside the structure
+  tree raises (7.18.5): a link in the header row a table repeats, or `canvas.link` without a `tag:`.
+  Every other link is tagged, those of headers, footers and page templates too.
+  PDF/A alone asks for none of the three. Encryption is allowed.
 - Combined, the XMP packet also describes the `pdfuaid` schema to PDF/A (`pdfaExtension:schemas`).
 - Interactive form fields are allowed: their appearances draw with embedded fonts and paths, every
   field has a `/TU`, and `NeedAppearances` and ZapfDingbats are left out. Only a field made without
@@ -583,7 +612,8 @@ mislabelled: `ArgumentError` for options that contradict the level, `Stationery:
 
 `bundle exec rake verify:conformance` renders `examples/invoice.rb` as PDF/A-3b, and
 `examples/report.rb`, `examples/form.rb`, `examples/article.rb` (floats) and `examples/newsletter.rb`
-(columns) as PDF/A-3b plus PDF/UA-1, and validates them with
+(columns) as PDF/A-3b plus PDF/UA-1, the report once more with a link in its footer, and validates
+them with
 [veraPDF](https://verapdf.org) through Docker (`verapdf/cli`); CI runs it on every push. Validate
 your own documents the same way:
 
@@ -1070,18 +1100,57 @@ The limits of a hook:
 - Hyphenation and the breaking of a word wider than the line cut the text as written; the pieces are
   shaped as separate words.
 - Vertical advances are not read: text runs horizontally.
-- A reader that takes `ActualText` for the text (the gem's `Inspector`) gets it as written. poppler
-  (`pdftotext` 26.09) and MuPDF (1.28) run their own reordering over it and return a right-to-left
-  stretch reversed. pdf-reader's own `Page#text` drops a `Span` whose first glyph has no advance (a
-  mark drawn first); the `Inspector` does not.
+- Extracted text depends on the reader: the gem's `Inspector` and PDFium get a right-to-left stretch
+  as written, poppler and MuPDF reversed (see the table below). pdf-reader's own `Page#text` drops a
+  `Span` whose first glyph has no advance (a mark drawn first); the `Inspector` does not.
 
 [`examples/shaping/harfbuzz_shaper.rb`](https://github.com/zoolutions/stationery/blob/main/examples/shaping/harfbuzz_shaper.rb)
 is an adapter for HarfBuzz through the [`harfbuzz-ruby`](https://github.com/ydah/harfbuzz) gem
 (`gem "harfbuzz-ruby"`, `require "harfbuzz"`; not the older `harfbuzz` gem, which answers to the same
 `require`), about a hundred lines to copy into an application; stationery does not depend on it. It
-was run with harfbuzz-ruby 1.1.0 and HarfBuzz 14.5.0 against Noto Sans Arabic and draws joined,
-right-to-left Arabic with its marks and with left-to-right digits inside it. It cuts a stretch into
-runs of one direction by its letters alone, not by the Unicode bidirectional algorithm.
+was run with harfbuzz-ruby 1.1.0 and HarfBuzz 14.5.0 against Noto Sans Arabic, Amiri and Noto Sans
+Hebrew and draws joined, right-to-left Arabic with its marks and with left-to-right digits inside it.
+It cuts a stretch into runs of one direction by its letters alone, not by the Unicode bidirectional
+algorithm.
+
+What comes out of a shaped PDF depends on who reads it, and no way of writing right-to-left text
+is read as written by every extractor. Seven texts (Arabic, Hebrew, Arabic with digits in it,
+Arabic with its marks, an Arabic word in a Latin sentence, a justified paragraph, a line that wraps)
+were rendered three ways and read back: **A**, what the gem writes, a `Span` around the stretch
+with its text in logical order as `ActualText` (ISO 32000-1, 14.9.4); **B**, a `Span` for every
+cluster, in visual order; **C**, no `Span` for a glyph the ToUnicode map gives its text, in visual
+order, and one per cluster for the others. The cells count the texts that came back as written:
+
+| Arabic font | | `Inspector` | PDFium | PDFKit | pdf.js | poppler | MuPDF |
+|---|---|---|---|---|---|---|---|
+| Amiri (a glyph per letter) | **A** | 7 of 7 | 7 of 7 | 6 of 7 | 4 of 7 | 0 of 7 | 0 of 7 |
+| | B | 0 of 7 | 0 of 7 | 0 of 7 | 0 of 7 | 4 of 7 | 5 of 7 |
+| | C | 0 of 7 | 1 of 7 | 6 of 7 | 4 of 7 | 4 of 7 | 5 of 7 |
+| Noto Sans Arabic (a letter is its shape and its dots) | **A** | 7 of 7 | 6 of 7 | 1 of 7 | 1 of 7 | 0 of 7 | 0 of 7 |
+| | B | 0 of 7 | 0 of 7 | 0 of 7 | 0 of 7 | 1 of 7 | 1 of 7 |
+| | C | 0 of 7 | 0 of 7 | 1 of 7 | 1 of 7 | 1 of 7 | 1 of 7 |
+
+- PDFium (153.0.7999, what Chrome reads with, through pypdfium2 5.13) and the gem's `Inspector`
+  return `ActualText` as it is: A reads as written. Without it (C) PDFium returned the words of a
+  right-to-left line in reverse order.
+- poppler (`pdftotext` 26.09) and MuPDF (`mutool` 1.28.5) reorder what they read, `ActualText`
+  included: A comes back reversed, B and C in Amiri as written, but for Arabic with digits or
+  marks and, in poppler, a justified paragraph.
+- pdf.js (pdfjs-dist 6.3.289) and PDFKit (macOS 27, what Preview reads with) returned the same for
+  A and C, which differ in nothing but `ActualText`: they read the glyphs through the ToUnicode
+  map and reorder them. A cluster of several glyphs comes back with its text once per glyph, so a
+  letter with a mark is doubled, and so is every dotted letter of the Noto Arabic families (Sans,
+  Naskh and Kufi draw a letter as two glyphs). Only `ActualText` carries the text of such a font.
+- The Hebrew text (Noto Sans Hebrew) is the same in both halves of the table.
+- veraPDF 1.30.2 passes all 42 renders as PDF/UA-1, so the rules of the standard do not choose.
+- Acrobat, Preview itself and screen readers were not tested.
+
+The gem keeps A: it is what the specification describes, the one PDFium reads as written, and
+the only one that holds with a font whose glyphs are not letters. None of the three is read as
+written by poppler or MuPDF and by PDFium.
+[`examples/shaping/extraction_matrix.rb`](https://github.com/zoolutions/stationery/blob/main/examples/shaping/extraction_matrix.rb)
+renders the texts, holds B and C as experiments and writes the table again, with what to install
+at its head.
 
 ## Testing
 
@@ -1272,10 +1341,23 @@ A lossless WebP is decoded in Ruby when it is first loaded, which a JPEG or an o
 above, by what is in it, and the image cache keeps it for the renders that follow.
 
 Time depends on the machine, so CI holds what does not: `bundle exec rake metrics`
-renders six fixed documents and compares the objects each render allocates, its
+renders fourteen fixed documents and compares the objects each render allocates, its
 page count and its bytes with `benchmark/baseline.json` (allocations may grow 3%,
 bytes 1%, pages not at all). A change that moves them on purpose records a new
 baseline with `bundle exec rake metrics:update` and says why in the commit.
+
+| Document | What it holds |
+|---|---|
+| `invoice`, `flyer`, `form` | The examples of those names: a table with a footer, images and drawings, form fields |
+| `table` | 1,500 rows × 5 columns with a repeating header, 46 pages |
+| `text`, `text_hyphenated`, `text_streamed` | Ten pages of headings and paragraphs: as they are, justified and hyphenated, and written to a block |
+| `article` | Floats: `examples/article.rb` |
+| `newsletter` | `columns`: `examples/newsletter.rb` |
+| `webp` | A lossless WebP of 320 × 240 px, decoded in the render that is measured |
+| `html` | `html` with a stylesheet, inline styles, a floated image, a table, lists and two columns, five pages |
+| `pdf_ua` | A tagged report under `conformance :pdf_ua1`, six pages |
+| `text_incremental` | The text document with a footer, rendered with `incremental` to a block |
+| `text_shaped` | The text document through a `shaper` written in Ruby, which answers the font's own glyphs |
 
 `bundle exec rake memory` reports what long documents hold while they render
 (`PAGES=5000` for more than its 1,000 pages): the peak resident set size of a render in

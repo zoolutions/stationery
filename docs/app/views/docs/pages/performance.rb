@@ -27,7 +27,7 @@ class Views::Docs::Pages::Performance < DocsUI::Page
         `SGHTMLTOPDF=0` does the same on purpose. None of them is a dependency of the gem.
 
         Time depends on the machine, so `rake bench` is not part of CI. `rake metrics` is: it renders
-        six fixed documents and fails when the objects a render allocates grow more than 3%, its bytes
+        fourteen fixed documents (the table above) and fails when the objects a render allocates grow more than 3%, its bytes
         more than 1%, or its page count changes, against `benchmark/baseline.json`. A change that moves
         them on purpose records a new baseline with `rake metrics:update`. The feature-by-feature
         picture is on the [Comparison](/docs/comparison) page.
