@@ -18,7 +18,8 @@ module RenderDigests
   FIXTURE = File.expand_path("../fixtures/renders/main.json", __dir__)
   ROOT = File.expand_path("../..", __dir__)
   FROZEN = Time.utc(2026, 1, 1, 12)
-  EXAMPLES = %w[article e_invoice flyer form invoice letter newsletter packing_slip postcard report].freeze
+  EXAMPLES = %w[article e_invoice flyer form invoice letter newsletter packing_slip postcard report
+                shipping_label].freeze
   BENCHMARKS = { "table" => :StationeryTable, "text" => :StationeryText, "text_hyphenated" => :StationeryHyphenated,
                  "photos" => :StationeryPhotos }.freeze
   OBJECT = /^\d+ 0 obj\n.*?\nendobj\n/m

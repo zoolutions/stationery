@@ -6,6 +6,7 @@ module Stationery
     # pure Ruby) beside the PDF, named after it with the number of the page:
     # invoice.pdf, invoice-1.png, invoice-2.png. `--png-only` writes the
     # pictures without the PDF. One line per file says where it went.
+    # `--dpi` is the option Render declares for --zpl as well.
     module Pictures
       PAGES = /\A\d+(-\d+)?(,\d+(-\d+)?)*\z/
 
@@ -14,9 +15,6 @@ module Stationery
       def picture_options(opts)
         opts.on("--png", "Also write a PNG of each page beside the PDF (FILE-1.png, …)") { @options[:png] = true }
         opts.on("--png-only", "Write the PNGs and no PDF") { @options[:png] = @options[:png_only] = true }
-        opts.on("--dpi DPI", Float, "Pixels per inch of the PNGs (default: #{Raster::Render::DPI})") do |dpi|
-          @options[:dpi] = dpi
-        end
         opts.on("--pages LIST", "The pages to picture, as 1,3-4 (default: all)") do |list|
           raise OptionParser::InvalidArgument, list unless list.match?(PAGES)
 

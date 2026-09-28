@@ -3,8 +3,9 @@
 module Stationery
   class CLI
     # `stationery render FILE`: loads a Ruby file, finds the Document it
-    # defines and writes its PDF. A document whose constructor needs
-    # arguments renders from `def self.preview` returning an instance.
+    # defines and writes its PDF, or with `--zpl` its labels in ZPL at
+    # `--dpi`. A document whose constructor needs arguments renders from
+    # `def self.preview` returning an instance.
     class Render
       include Pictures
 
@@ -38,6 +39,11 @@ module Stationery
           opts.on("-c", "--class NAME", "The document class to render when FILE defines several") do |name|
             @options[:class] = name
           end
+          opts.on("--zpl", "Write ZPL for a label printer (default: FILE.zpl) instead") { @options[:zpl] = true }
+          opts.on("--dpi DPI", Integer, "Dots per inch: the label printer's for --zpl (152, 203, 300 or 600),",
+                  "the PNGs' for --png (default: #{Raster::Render::DPI})") do |dpi|
+            @options[:dpi] = dpi
+          end
           opts.on("--strict", "Fail without writing when layout reports warnings") { @options[:strict] = true }
           opts.on("--debug", "Render with debug: true when the document supports it") { @options[:debug] = true }
           picture_options(opts)
@@ -53,14 +59,15 @@ module Stationery
         raise Error, "no such file: #{file}" unless File.file?(path)
 
         document = instantiate(pick(load_documents(path), path))
-        target = @options[:out] || File.join(File.dirname(path), "#{File.basename(path, ".*")}.pdf")
+        extension = @options[:zpl] ? "zpl" : "pdf"
+        target = @options[:out] || File.join(File.dirname(path), "#{File.basename(path, ".*")}.#{extension}")
         refuse_stdout(target) if @options[:png]
         return pictures(document, target) ? OK : FAILURE if @options[:png_only]
 
-        pdf = to_pdf(document)
+        output = @options[:zpl] ? to_zpl(document) : to_pdf(document)
         return FAILURE unless warnings_ok?(document)
 
-        write(pdf, target)
+        write(output, target)
         pictures(document, target) if @options[:png]
         OK
       end
@@ -127,6 +134,12 @@ module Stationery
         document.to_pdf
       end
 
+      def to_zpl(document)
+        document.to_zpl(dpi: @options[:dpi], debug: @options.fetch(:debug, false))
+      rescue ArgumentError => e
+        raise Error, e.message
+      end
+
       def warnings_ok?(document)
         warnings = Array(document.warnings)
         warnings.each { |warning| @err.puts "warning: #{warning.message}" }
@@ -142,9 +155,15 @@ module Stationery
           @out.write(pdf)
         else
           File.binwrite(target, pdf)
-          pages = pdf.scan(%r{/Type /Page\b}).size
-          @out.puts "wrote #{target} (#{pages} #{pages == 1 ? "page" : "pages"}, #{pdf.bytesize} bytes)"
+          @out.puts "wrote #{target} (#{count(pdf)}, #{pdf.bytesize} bytes)"
         end
+      end
+
+      # "1 page", "3 labels": what the file holds.
+      def count(output)
+        name = @options[:zpl] ? "label" : "page"
+        count = output.scan(@options[:zpl] ? "^XA" : %r{/Type /Page\b}).size
+        "#{count} #{name}#{"s" unless count == 1}"
       end
 
       def descendants(klass) = klass.subclasses.flat_map { |sub| [sub, *descendants(sub)] }

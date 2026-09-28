@@ -32,6 +32,10 @@ class Views::Docs::Pages::Examples < DocsUI::Page
     [ "Packing slip", "packing_slip",
      "Landscape A4, page numbers in the header, a 120-row table with `split_rows: true` and a repeating " \
      "header, and a barcode drawn on a `canvas`." ],
+    [ "Shipping label", "shipping_label",
+     "A 4 × 6 in label in black and white only, sized with `page size: \"4in x 6in\"` and `mm()`, declared " \
+     "`monochrome dpi: 203`, and written both as a PDF and, with `to_zpl`, as ZPL for a thermal label " \
+     "printer: `stationery render examples/shipping_label.rb --zpl`. See [Label printers](/docs/pages)." ],
     [ "Application form", "form",
      "An interactive AcroForm: labelled text fields, a comb postcode, a select box, a radio group, check " \
      "boxes with labels, a multiline note and a signature field. Fill it in any viewer; every field and " \
@@ -52,7 +56,7 @@ class Views::Docs::Pages::Examples < DocsUI::Page
   title "Examples"
   eyebrow "Getting started"
 
-  def lead = "Ten complete documents from the gem's examples/ directory, rendered live by this site."
+  def lead = "Eleven complete documents from the gem's examples/ directory, rendered live by this site."
 
   def content
     DocsUI::Section("Running them yourself") do

@@ -16,21 +16,23 @@ class Views::Docs::Pages::Cli < DocsUI::Page
         stationery render examples/report.rb --debug             # layout outlines
         stationery render invoice.rb --png                       # also invoice-1.png, … beside the PDF
         stationery render report.rb --png-only --pages 1,3-4 --dpi 144
+        stationery render examples/shipping_label.rb --zpl       # writes shipping_label.zpl, 203 dpi
         ```
 
         | Option | Meaning |
         | --- | --- |
         | `-o, --out PATH` | Where to write the PDF (default: the file's name with `.pdf`); `-` writes to stdout. |
         | `-c, --class NAME` | The document class to render when the file defines several. |
+        | `--zpl` | Write ZPL for a label printer instead of a PDF (default: the file's name with `.zpl`); see [Label printers](/docs/pages). |
+        | `--dpi DPI` | The label printer's resolution for `--zpl`: 152, 203 (default), 300 or 600. For `--png`, pixels per inch of the pictures (default 96: an A4 page is 794 × 1123 px). |
         | `--strict` | Exit 1 without writing when layout reports warnings. |
         | `--debug` | Render with `debug: true` when the document supports it. |
         | `--png` | Also write a PNG of each page beside the PDF: `invoice-1.png`, `invoice-2.png`, … |
         | `--png-only` | Write the PNGs and no PDF. |
-        | `--dpi DPI` | Pixels per inch of the PNGs (default 96: an A4 page is 794 × 1123 px). |
         | `--pages LIST` | The pages to picture, as `2` or `1,3-4` (default: all). |
         | `-h, --help` | Show help. |
 
-        `render` loads the file and renders the `Stationery::Document` it defines, then reports pages and
+        `render` loads the file and renders the `Stationery::Document` it defines, then reports pages (or labels) and
         bytes. Layout warnings print to stderr.
 
         The pictures are drawn by `to_png` (see [Pictures of a render](/docs/testing)), in Ruby with nothing

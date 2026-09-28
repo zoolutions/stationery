@@ -170,6 +170,32 @@ RSpec.describe Stationery::CLI::Render do
     end
   end
 
+  describe "--zpl" do
+    it "writes ZPL next to the source, at --dpi" do
+      FileUtils.mkdir(File.join(dir, "cli"))
+      FileUtils.cp(fixture("one.rb"), File.join(dir, "cli"))
+      FileUtils.ln_s(File.expand_path("../../fixtures/fonts", __dir__), File.join(dir, "fonts"))
+      target = File.join(dir, "cli/one.zpl")
+
+      expect(render(File.join(dir, "cli/one.rb"), "--zpl", "--dpi", "300")).to eq(0)
+      zpl = File.binread(target)
+      expect(zpl).to start_with("^XA^PW834^LL500^").and(end_with("^XZ\n"))
+      expect(out.string).to eq("wrote #{target} (1 label, #{zpl.bytesize} bytes)\n")
+    end
+
+    it "writes it to --out, and at 203 dpi by default" do
+      target = File.join(dir, "one.zpl")
+
+      expect(render(fixture("one.rb"), "--zpl", "--out", target)).to eq(0)
+      expect(File.binread(target)).to start_with("^XA^PW564^LL339^")
+    end
+
+    it "reports a resolution a ZPL printer does not have" do
+      expect(render(fixture("one.rb"), "--zpl", "--dpi", "200", "--out", File.join(dir, "x.zpl"))).to eq(1)
+      expect(err.string).to include("152, 203, 300 or 600")
+    end
+  end
+
   it "prints usage and exits 2 without a FILE" do
     expect(render).to eq(2)
     expect(err.string).to include("Usage: stationery render FILE")
@@ -182,6 +208,7 @@ RSpec.describe Stationery::CLI::Render do
 
   it "prints its own help" do
     expect(render("--help")).to eq(0)
-    expect(out.string).to include("Usage: stationery render FILE", "--out", "--class", "--strict", "--debug")
+    expect(out.string).to include("Usage: stationery render FILE", "--out", "--class", "--zpl", "--dpi", "--strict",
+                                  "--debug")
   end
 end
