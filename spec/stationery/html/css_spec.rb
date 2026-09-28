@@ -74,6 +74,32 @@ RSpec.describe Stationery::HTML::Css do
     end
   end
 
+  describe "float" do
+    it "reads left and right on an image, and none takes it back" do
+      expect(inline("float: left", "img")).to eq([{}, { float: :left }])
+      expect(inline("float: RIGHT", "img")).to eq([{}, { float: :right }])
+      expect(inline("float: left; float: none", "img")).to eq([{}, {}])
+      expect(css("img { float: right }").resolve(element("img"))).to eq([{}, { float: :right }])
+    end
+
+    it "reads the legacy align attribute of an image, under its styles" do
+      expect(css.resolve(element("img", "align" => "left"))).to eq([{}, { float: :left }])
+      expect(css.resolve(element("img", "align" => " Right "))).to eq([{}, { float: :right }])
+      expect(css.resolve(element("img", "align" => "right", "style" => "float: left"))).to eq([{}, { float: :left }])
+      expect(css.resolve(element("img", "align" => "middle"))).to eq([{}, {}])
+      expect(css.resolve(element("p", "align" => "left"))).to eq([{}, {}])
+    end
+
+    it "reports it on anything but an image, and a value it does not take" do
+      sheet = css("div { float: left }")
+      sheet.resolve(element("div"))
+      sheet.resolve(element("img", "style" => "float: inline-start"))
+      sheet.resolve(element("img", "style" => "float: left"))
+
+      expect(sheet.report.properties).to eq(["float", "float: inline-start"])
+    end
+  end
+
   describe "what is not read" do
     it "reports unknown properties once and values a property does not take" do
       sheet = css

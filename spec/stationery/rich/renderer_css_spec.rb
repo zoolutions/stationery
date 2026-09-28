@@ -200,6 +200,60 @@ RSpec.describe "Stationery::Rich::Renderer" do
     end
   end
 
+  describe "floated images" do
+    let(:photo) { image_path("rgb.jpg") }
+    let(:words) { Array.new(40) { |i| "word#{i}" }.join(" ") }
+
+    def drawn(pdf) = ops(pdf)[/^([\d.]+) 0 0 ([\d.]+) ([\d.]+) [\d.]+ cm$/].split.values_at(0, 3, 4).map(&:to_f)
+
+    it "wraps the text that follows beside an image floated left" do
+      source = photo
+      text = words
+      document = document do
+        html %(<p><img src="p" style="float: left; width: 80pt; margin: 0 10pt 0 0">#{text}</p><p>Next</p>),
+             images: ->(_) { source }
+      end
+      pdf = document.to_pdf
+
+      expect(drawn(pdf)).to eq([80.0, 60.0, 20.0])
+      expect(origins(pdf).map(&:first).first(5)).to eq([110.0, 110.0, 110.0, 110.0, 110.0])
+      expect(origins(pdf).map(&:first).last(2)).to eq([20.0, 20.0])
+      expect(document.warnings).to be_empty
+    end
+
+    it "floats an image with the align attribute to the right, a default margin away from the text" do
+      source = photo
+      text = words
+      pdf = render { html %(<img src="p" align="right" width="80">#{text}), images: ->(_) { source } }
+      custom = render do
+        html %(<img src="p" align="right" width="80">#{text}),
+             images: ->(_) { source }, styles: { img: { float_margin: 60 } }
+      end
+
+      expect(drawn(pdf)).to eq([80.0, 60.0, 200.0])
+      expect(origins(pdf).map(&:first).uniq).to eq([20.0])
+      expect(strings_of(custom).first.split.size).to be < strings_of(pdf).first.split.size
+    end
+
+    it "takes margin-top and margin-bottom over the margin" do
+      source = photo
+      pdf = render do
+        html %(<img src="p" style="float: left; width: 80pt; margin: 5pt; margin-top: 0; margin-bottom: 30pt">word),
+             images: ->(_) { source }
+      end
+
+      expect(drawn(pdf)).to eq([80.0, 60.0, 25.0])
+      expect(origins(pdf).first.first).to eq(110.0)
+    end
+
+    it "keeps reporting float where it is not read" do
+      document = document { html %(<div style="float: left">Text</div>) }
+      document.to_pdf
+
+      expect(document.warnings.map(&:message)).to eq(["html styles not read: properties float"])
+    end
+  end
+
   describe "page breaks" do
     it "starts a new page before or after a block" do
       pdf = render do
