@@ -3,8 +3,9 @@
 # Every document under the gem's examples/: a preview of its first page
 # (docs/public/examples/<name>.png, regenerated with `rake docs:examples`), a
 # link to the live PDF this site renders on request (/examples/<name>.pdf) and
-# the source on GitHub. Descriptions are hand-written; the summary line under
-# each heading is read from the example's own header comment.
+# its whole source, read from the file at render time and folded under the
+# preview. Descriptions are hand-written; the summary line under each heading
+# is read from the example's own header comment.
 class Views::Docs::Pages::Examples < DocsUI::Page
   REPO = "https://github.com/zoolutions/stationery/blob/main/examples"
 
@@ -66,7 +67,17 @@ class Views::Docs::Pages::Examples < DocsUI::Page
         ruby -Ilib examples/flyer.rb              # each file also runs on its own
         ```
 
-        The [Cookbook](/docs/cookbook) walks through the code of five of them, method by method.
+        They ship with the gem, with the images and fonts they read, so an application that has only the
+        gem has them too:
+
+        ```shell
+        stationery examples                          # their names and what each shows
+        stationery examples invoice                  # the path of one; --source prints its code
+        ls "$(bundle show stationery)/examples"      # or: gem contents stationery
+        ```
+
+        The source of each is under its preview, and in the Markdown of this page. The
+        [Cookbook](/docs/cookbook) walks through the code of five of them, method by method.
       MD
     end
 
@@ -84,6 +95,16 @@ class Views::Docs::Pages::Examples < DocsUI::Page
               loading: "lazy", class: "rounded-box border border-base-300 shadow-sm max-w-md w-full")
         end
       end
+      source("#{file}.rb")
+    end
+  end
+
+  # Folded, so ten sources leave the page as long as it was. A <details> opens
+  # without JavaScript, and the Markdown twin has the code either way.
+  def source(file)
+    details do
+      summary(class: "cursor-pointer font-medium") { "The source: examples/#{file}" }
+      DocsUI::Code(SourceMarkdown.example_source(file), filename: "examples/#{file}")
     end
   end
 end

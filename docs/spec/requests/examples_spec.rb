@@ -42,4 +42,37 @@ RSpec.describe "Live example PDFs" do
       expect(response.body).to include("examples/#{name}.rb")
     end
   end
+
+  it "shows the whole source of every example on the docs page, folded" do
+    get "/docs/examples"
+
+    page = Nokogiri::HTML5(response.body)
+    sources = page.css("#docs-content details").to_h { |fold| [ fold.at_css("summary").text, fold.at_css("pre").text ] }
+
+    expect(sources.keys).to match_array(ExamplesController.names.map { |name| "The source: examples/#{name}.rb" })
+    ExamplesController.names.each do |name|
+      expect(sources.fetch("The source: examples/#{name}.rb").strip).to eq(SourceMarkdown.example_source("#{name}.rb").strip)
+    end
+    expect(page.css("#docs-content details[open]")).to be_empty
+  end
+
+  it "carries the sources in the Markdown twin of the page" do
+    get "/docs/examples.md"
+
+    expect(response).to have_http_status(:ok)
+    ExamplesController.names.each do |name|
+      source = SourceMarkdown.example_source("#{name}.rb").strip
+      expect(response.body).to include("The source: examples/#{name}.rb\n\n```ruby\n#{source}\n```")
+    end
+  end
+
+  it "carries the sources in /llms-full.txt, once" do
+    get "/llms-full.txt"
+
+    expect(response).to have_http_status(:ok)
+    ExamplesController.names.each do |name|
+      source = SourceMarkdown.example_source("#{name}.rb").strip
+      expect(response.body.scan("```ruby\n#{source}\n```").size).to eq(1), "expected the source of #{name} once"
+    end
+  end
 end
