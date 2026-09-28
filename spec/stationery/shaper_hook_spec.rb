@@ -6,6 +6,10 @@
 RSpec.describe "the shaper hook" do # rubocop:disable RSpec/DescribeClass
   let(:ttf) { Stationery::Fonts::Registry.load(font_path("OpenSans-Regular.ttf")) }
 
+  # Renders are compared byte for byte here, and two a second apart differ by
+  # their dates and their file identifier.
+  before { allow(Time).to receive(:now).and_return(Time.utc(2026, 9, 28, 12)) }
+
   def hex(text) = text.each_char.map { |char| format("%04X", ttf.glyph_id(char.ord)) }.join
   def document(shaper = nil, &) = Class.new(SpecDocument) { shaper(shaper) if shaper }.build(&)
   def to_unicode(pdf) = PDF::Reader::CMap.new(font_of(pdf, :ToUnicode).unfiltered_data).map

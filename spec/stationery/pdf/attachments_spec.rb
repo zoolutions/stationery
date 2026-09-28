@@ -82,6 +82,8 @@ RSpec.describe Stationery::PDF::Attachments do
   end
 
   it "leaves a document without attachments byte-identical" do
+    # Two renders a second apart differ by their dates and their file identifier.
+    allow(Time).to receive(:now).and_return(Time.utc(2026, 9, 28, 12))
     plain = document.to_pdf
     expect(document.to_pdf(attachments: [])).to eq(plain)
     expect(plain).not_to include("EmbeddedFiles")
