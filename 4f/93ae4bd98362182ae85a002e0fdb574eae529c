@@ -1,0 +1,34 @@
+lib/stationery/css/stylesheet.rb
+  s_632dbd6e2d0597::t_b3371501da9701 55-63
+lib/stationery/html/css.rb
+  s_632dbd6e2d0597::t_065b3f5379a90b 40-46,86-88,90-96,164,166,260-269
+lib/stationery/rich/nodes.rb
+  s_632dbd6e2d0597::t_aeb9f05b29e99c 18-21
+spec/stationery/html/css_spec.rb
+  s_632dbd6e2d0597::t_11d98190515e96 118-119,122-123,125,129-130
+  s_632dbd6e2d0597::t_c09e74f953e9bb 120-121,124,126-128
+  s_632dbd6e2d0597::t_2d8a6547a53ad4 52-55
+  s_632dbd6e2d0597::t_e28622b9b9e9c1 168-194
+lib/stationery/html/tree_builder/blocks.rb
+  s_632dbd6e2d0597::t_c4f76666262255 30,36
+spec/stationery/css/stylesheet_spec.rb
+  s_632dbd6e2d0597::t_985ade6623abcd 27-34
+spec/stationery/html/tree_builder/blocks_spec.rb
+  s_632dbd6e2d0597::t_feaa6d7847af2c 80-95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "4f93ae4bd98362182ae85a002e0fdb574eae529c",
+  "prompts": {},
+  "sessions": {
+    "s_632dbd6e2d0597": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04a890fd-a48e-4bbf-9b58-a82d2658dd8e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
