@@ -14,6 +14,22 @@ RSpec.describe "the example price list" do
     expect(first.map(&:number).uniq.size).to eq(50)
   end
 
+  it "reads its articles as pages reach them, none when the document is built" do
+    read = 0
+    articles = ExamplePriceList.articles(400).lazy.map { |article| (read += 1) && article }
+    built = nil
+    probe = Object.new
+    probe.define_singleton_method(:instrument) do |name, payload = {}, &block|
+      block.call(payload).tap { built = read if name == "build.stationery" }
+    end
+    previous = Stationery.instrumenter
+    Stationery.instrumenter = probe
+    ExamplePriceList.new(articles).to_pdf
+    Stationery.instrumenter = previous
+
+    expect([built, read]).to eq([0, 400])
+  end
+
   it "lists every article once, over as many pages as it takes, without warnings" do
     numbers = text_of(pdf).scan(/\bEP-\d{5}\b/)
 
