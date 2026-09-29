@@ -182,6 +182,16 @@
         "objects": "a952d15678a9565b3e94a9f927be916ed537472a8d9c402b142fc6155a9cb9a1"
       }
     },
+    "receipt": {
+      "string": {
+        "bytes": "882abe973a207268e0cbeaccd149f5452487177ede9506f265665c26e11f7b32",
+        "objects": "5c8dd17fe7082de5d40d3f1294f08196f9130a8d81d02d2861638a1c6d530b6a"
+      },
+      "block": {
+        "bytes": "f71e26b0d9e76cce3beb4309e276e275e4d4c7f556823e2b52f72318631a26d4",
+        "objects": "e04a547cd0ddb7f5e239f62400010c974d0f1cb04f10837cb0086139b3205ddc"
+      }
+    },
     "table": {
       "string": {
         "bytes": "b6cf5820bf90dbc1358c367d82d2f7ece3d4fd27a2d210049e7151073d94dcfa",
