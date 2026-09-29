@@ -1,0 +1,48 @@
+lib/stationery/skill/SKILL.md.erb
+  s_f5a1e2cf907cda::t_a44d3448bd6d74 104
+  s_f5a1e2cf907cda::t_d094e4ccb66eff 107-111
+  s_f5a1e2cf907cda::t_3a21fbaca6ef5b 180-181
+  s_f5a1e2cf907cda::t_90ce061979c97b 26-27
+  s_f5a1e2cf907cda::t_811658617b9d06 100
+  s_f5a1e2cf907cda::t_1f7f9fd21d2b0c 91-99
+  s_f5a1e2cf907cda::t_0f4a1888fbd2ce 58-63
+lib/stationery/skill/recipes/label.md.erb
+  s_f5a1e2cf907cda::t_ef073f2753beeb 55-80
+lib/stationery/skill/recipes/receipt.md.erb
+  s_f5a1e2cf907cda::t_0f7c6b439cd9b4 74-76
+lib/stationery/cli/skill.rb
+  s_f5a1e2cf907cda::t_0e2efee16ed893 98-99,101,105-110
+lib/stationery/skill/recipes/invoice.md.erb
+  s_f5a1e2cf907cda::t_bb99a38a696ab9 18-23
+  s_f5a1e2cf907cda::t_b642714c166a4b 48
+  s_f5a1e2cf907cda::t_e56e14d51310d9 123-124
+spec/stationery/cli/skill_spec.rb
+  s_f5a1e2cf907cda::t_dc55edd7ae7bd7 108-120
+CHANGELOG.md
+  s_f5a1e2cf907cda::t_f0573d44a6c189 5
+lib/stationery/skill/reference/printing.md.erb
+  s_f5a1e2cf907cda::t_41b5b9f19639cd 1,6-16,18-20,30,32
+lib/stationery/skill/reference/testing.md.erb
+  s_f5a1e2cf907cda::t_4cdd35fa979348 5-16
+spec/support/skill_checks.rb
+  s_f5a1e2cf907cda::t_14a50580143034 19-20
+  s_f5a1e2cf907cda::t_9fdfe03b68c93e 43
+lib/stationery/skill/reference/conformance.md.erb
+  s_f5a1e2cf907cda::t_3650ec72b61061 6,9-10,13-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "df3bbf82e6bf11865249d2fb7b3487921977bda4",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
