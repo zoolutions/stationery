@@ -126,7 +126,9 @@ RSpec.describe Stationery::Barcode do
   describe ".build" do
     it "makes the symbol of a type, and refuses others" do
       expect(described_class.build(:qr, "x", level: :h).level).to eq(:h)
-      expect { described_class.build(:pdf417, "x") }.to raise_error(ArgumentError, /:code128, :ean13 or :qr/)
+      expect do
+        described_class.build(:pdf417, "x")
+      end.to raise_error(ArgumentError, /:code128, :ean13, :qr or :datamatrix/)
       expect { described_class.build(:code128, "x", level: :h) }.to raise_error(ArgumentError, /level: is for a QR/)
     end
   end

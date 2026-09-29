@@ -3,14 +3,16 @@
 module Stationery
   module ZPL
     # Which barcodes a label printer draws itself, and the fields that tell
-    # it to (`^FOx,y` then ^BC, ^BE or ^BQ): the printer puts the bars on its
-    # own dot grid, which scanners read more reliably than a picture of them.
+    # it to (`^FOx,y` then ^BC, ^BE, ^BQ or ^BX): the printer puts the bars
+    # on its own dot grid, which scanners read more reliably than a picture
+    # of them.
     #
     # A barcode (Raster::Canvas::Native) is drawn natively when its own
     # `native:` says so, or the render's `default` when it says nothing, and
     # when the printer can draw it as it is: upright and unclipped, dark, a
-    # module of 1 to 10 dots, and data ^BQ takes (a QR code of UTF-8 text is
-    # not). Anything else stays part of the picture.
+    # module of 1 to 10 dots, and data its command takes (not a QR code of
+    # UTF-8 text, nor a Data Matrix holding ^BX's escape character "_").
+    # Anything else stays part of the picture.
     class Native
       DOTS = 1..10
 

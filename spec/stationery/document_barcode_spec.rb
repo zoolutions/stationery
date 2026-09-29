@@ -15,7 +15,7 @@ RSpec.describe Stationery::Document, "#barcode" do
     end.new
   end
 
-  def fields(zpl) = zpl.scan(/\^FO\d+,\d+\^B[YQ].*?\^FS/)
+  def fields(zpl) = zpl.scan(/\^FO\d+,\d+\^B[YQX].*?\^FS/)
 
   it "draws each barcode as one filled path of vector bars in the PDF" do
     content = page_contents(SpecDocument.build { barcode "12345678", height: 20 }.to_pdf).first
@@ -55,6 +55,19 @@ RSpec.describe Stationery::Document, "#barcode" do
                                "^FO65,197^BY3^BEN,113,N,N^FD400638133393^FS",
                                "^FO56,345^BQN,2,6^FDMM,B0024https://example.com/p/42^FS"])
     expect(ZPLReader.labels(zpl).first.dots.join.count("1")).to be < 200
+  end
+
+  it "draws a Data Matrix as square modules, and has the printer draw it with ^BX at its size" do
+    document = Class.new(SpecDocument) do
+      page size: "4in x 3in", margin: 12
+
+      define_method(:view_template) { barcode "SX0042771903", type: :datamatrix, module_size: 3 }
+    end.new
+    zpl = document.to_zpl(native: true)
+
+    expect(fields(zpl)).to eq(["^FO42,42^BXN,8,200,14,14,6,_,1^FDSX0042771903^FS"])
+    expect(ZPLReader.labels(zpl).first.dots.join.count("1")).to eq(0)
+    expect(ZPLReader.labels(document.to_zpl).first.dots.join.count("1")).to be > 3000
   end
 
   it "takes native: per barcode, over the render's" do
