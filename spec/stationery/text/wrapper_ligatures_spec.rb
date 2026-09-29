@@ -6,6 +6,8 @@ require "timeout"
 module LigatureSamples
   WORDS = %w[ff fi fl ffi ffl office waffle affix fluffy baffling afflict fjord].freeze
   OFFSETS = [-0.05, -0.01, -0.002, 0, 0.002, 0.01, 0.05].freeze
+  HYPHENATED = %w[suffixes officers affliction Schifffahrt difficult sufficient afflicted Stofffetzen officiella
+                  effektiv traffiken].freeze
 end
 
 # A word is measured whole, ligatures and kerning included, to find that it
@@ -44,7 +46,7 @@ RSpec.describe Stationery::Text::Wrapper do
 
   # Nothing lost, and no line wider than its width but a line of one letter.
   def expect_wrapped(lines, text, width)
-    expect(lines.map(&:text).join(" ").delete(" ")).to eq(text.delete(" "))
+    expect(lines.map { |line| line.text.delete_suffix("-") }.join(" ").delete(" ")).to eq(text.delete(" "))
     lines.each do |line|
       next if line.text.length == 1
 
@@ -84,6 +86,54 @@ RSpec.describe Stationery::Text::Wrapper do
           expect_wrapped(wrap(text, width, sentence_style), text, width)
         end
       end
+    end
+  end
+
+  # A hyphenated line is drawn with the ligatures and kerning of its head:
+  # "suffi-" in Open Sans Italic is 0.03 pt wider than its letters.
+  describe "a hyphenated word" do
+    # Every width between and around the two measures of every head the
+    # language's patterns offer, hyphen included, after `lead`.
+    def hyphen_widths(word, style, lead = "")
+      Stationery::Hyphenation.points(word, style.hyphenate).flat_map do |point|
+        head = "#{lead}#{word[0, point]}-"
+        [whole(head, style), letters(head, style), (whole(head, style) + letters(head, style)) / 2]
+          .flat_map { |width| LigatureSamples::OFFSETS.map { |offset| width + offset } }
+      end.uniq
+    end
+
+    def hyphenated_fonts
+      book.register("Inter fixture", regular: font_path("Inter-Regular.ttf"))
+      [{ family: "Open Sans", style: :italic }, { family: "Open Sans" }, { family: "Inter fixture" }]
+    end
+
+    def expect_hyphenated_within(lead)
+      hyphenated_fonts.product(%w[en de sv]).each do |options, language|
+        word_style = style(**options, hyphenate: language)
+        LigatureSamples::HYPHENATED.each do |word|
+          text = "#{lead}#{word}"
+          hyphen_widths(word, word_style, lead).each do |width|
+            expect_wrapped(wrap(text, width, word_style), text, width)
+          end
+        end
+      end
+    end
+
+    it "hyphenates earlier when the head fits by its letters but not as drawn" do
+      italic = style(family: "Open Sans", style: :italic, hyphenate: "de")
+      width = (whole("suffi-", italic) + letters("suffi-", italic)) / 2
+      lines = wrap("suffixes", width, italic)
+
+      expect(lines.map(&:text).first).to eq("suf-")
+      expect_wrapped(lines, "suffixes", width)
+    end
+
+    it "ends and keeps every line within its width at widths around each hyphenation point" do
+      expect_hyphenated_within("")
+    end
+
+    it "ends and keeps every line within its width after a word on the line" do
+      expect_hyphenated_within("the ")
     end
   end
 end
