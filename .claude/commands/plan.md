@@ -1,0 +1,68 @@
+---
+description: "Investigates the codebase, designs a solution, and produces a durable plan: a GitHub issue or a plan markdown under docs/plans/. Read-only: never edits the gem. Use before /lfg for anything non-trivial."
+model: fable
+argument-hint: "issue <feature or problem> | md <feature or problem> | <feature or problem>"
+allowed-tools: Bash(gh issue create:*), Bash(gh issue list:*), Bash(gh issue view:*), Bash(gh search:*), Bash(gh label list:*), Bash(git log:*), Bash(git diff:*), Bash(git branch:*), Bash(date:*), Read, Grep, Glob, Write, Agent, AskUserQuestion
+---
+
+# Plan: design expensive, execute cheap
+
+The thinking happens here, on Fable; the execution happens later (`/lfg` on Opus, specialists on Sonnet). That only works if the plan is **self-contained**: an executor without this session must be able to carry it out without guessing.
+
+## Output from $ARGUMENTS
+
+| Starts with | Artifact |
+|---|---|
+| `md` or `file` | `docs/plans/YYYY-MM-DD-<slug>.md` (date from `date +%F`), left uncommitted |
+| anything else | A GitHub issue (feeds `/lfg <number>`) |
+
+## Constraints
+
+- Read-only for the gem: no edits, commits or branches. The only file you may write is a new plan under `docs/plans/`.
+- Never copy a secret into a plan.
+- Dedupe first: `gh issue list --search "<keywords>"`.
+
+## Phase 1: Investigate
+
+1. Fan out Explore agents with `model: haiku` for file discovery and naming sweeps, and `model: sonnet` agents when a subsystem needs reading and summarising. Independent ones in parallel.
+2. Read the load-bearing files yourself; do not design from summaries.
+3. Read `AGENTS.md` (the canvas rule, the metrics gate, the validators, what is out of scope) and `git log` for related work.
+
+## Phase 2: Unknowns
+
+1. List what the request leaves open: the DSL name and options, defaults, what a document that does not use the feature does (it must be byte for byte unchanged), tagging and PDF/A/UA, what the README and docs say today, anything without precedent here.
+2. Ask the user with AskUserQuestion, one question at a time, most consequential first, each with options and a recommended default. Skip what the code or `AGENTS.md` already answers; none is fine when nothing is open.
+3. Record the answers as `Settled in interview:` bullets.
+
+## Phase 3: Design
+
+Two or three approaches with real trade-offs; pick one and say why the others lost. It keeps the gem pure Ruby with no runtime dependency, draws only through `Stationery::Canvas::Interface`, costs nothing where unused, and stays out of what `AGENTS.md` puts out of scope (a CSS layout engine, shaping and bidi in the gem, native code, lossy WebP). Name the specs, the example, the metrics expectation and the validator that settles each standards claim.
+
+## Phase 4: The plan
+
+```markdown
+# <Title>
+
+## Problem / Goal
+## Context (read these first)
+<`path` — why it matters. No "as discussed".>
+## Decision
+<Chosen approach, the alternatives and why they lost, then `Settled in interview:` bullets.>
+## Implementation steps
+<Ordered and small; specs before the code they cover; exact files, the example, the README/docs pages, the `## Unreleased` bullet.>
+## Verification gates
+- `bundle exec rspec` exits 0
+- `bundle exec rubocop lib spec examples Rakefile` clean
+- `bundle exec rake metrics` passes (or: the baseline is recorded again, and why)
+- `bundle exec rake verify:conformance` (when tagging or PDF/A/UA is touched)
+- Rendered with `bundle exec stationery render <file>.rb --png` and looked at: what should be seen
+## Out of scope
+## Execution
+`/lfg <issue-number>` (or `/lfg docs/plans/<file>.md`)
+```
+
+Create an issue with `gh issue create --title "..." --body-file <tmpfile>`.
+
+## Phase 5: Handoff
+
+The issue link or file path, the approach in two or three sentences, the execute command. Then stop.
