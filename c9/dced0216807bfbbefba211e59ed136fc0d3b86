@@ -1,0 +1,29 @@
+spec/fixtures/renders/main.json
+  s_f5a1e2cf907cda::t_951548501a6e03 167-168,171-172
+examples/price_list.rb
+  s_f5a1e2cf907cda::t_2d3b51e5f3c36f 4-6
+  s_f5a1e2cf907cda::t_e9204797431ec2 91
+  s_f5a1e2cf907cda::t_c2f58d4e56848e 82
+  s_f5a1e2cf907cda::t_3201b94db55f67 92-95
+  s_f5a1e2cf907cda::t_14a9a9e960fdba 76-79,81,83
+spec/integration/price_list_spec.rb
+  s_f5a1e2cf907cda::t_499a4d39533125 17-32
+docs/app/views/docs/pages/examples.rb
+  s_f5a1e2cf907cda::t_0ae551ef9c04d1 61-63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "c9dced0216807bfbbefba211e59ed136fc0d3b86",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
