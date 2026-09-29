@@ -124,7 +124,7 @@ ls "$(bundle show stationery)/examples"      # or: gem contents stationery
 | `box(padding:, background:, border:, radius:, width:, height:, min_height:, overflow:, at:, link:, outset:, break_inside:, decoration:, rotate:, shadow:, float:, margin:) { }` | A container. Moves to the next page whole when it fits there and continues across pages when it does not; `break_inside: :auto` splits it at any page break, `:avoid` never splits it. At a cut, `decoration: :slice` (default) drops the padding and border, `:clone` keeps the padding. `overflow: :truncate` or `:shrink_to_fit` for fixed heights; a fixed `height:` never splits. `min_height:` is a floor that still splits: the first fragment keeps as much of it as the page holds, the next carries the rest (not combinable with `height:`). `at: [x, y]` pins it to a page position. `link:` makes the whole box clickable. `outset:` bleeds the background past the box (e.g. into the page margins). `rotate: -3` turns the painted box around its centre (layout box unchanged, never splits; a `link:` keeps its unrotated rectangle). `shadow: true` or `{ offset: [0, 4], blur: 8, color:, opacity: 0.15 }` paints a soft drop shadow under it, taking no space. `overflow: :hidden` clips the content to the rounded outline. `float: :left` or `:right` with a `width:` takes it to that side, `margin:` away from the text that wraps beside it: see [Floats](#floats). |
 | `row(gap:, align:, break_inside:) { column(width:) { } }` | Columns side by side. `width:` is points, a fraction (`0.5`), `:auto` or `nil` (equal share). Splits across pages like a box, every column at once; a row with a fixed-height column never splits; columns with `min_height:` do. |
 | `columns(count:, gap:, balance:, rule:) { }` | One flow poured through `count` columns, newspaper style: column 1 top to bottom, then column 2. Breaks where a page would (between lines with `orphans:`/`widows:`, never inside `break_inside: :avoid`, `keep_with_next` honoured). `balance: true` (default) ends the columns at nearly the same height where the content ends and fills them evenly, what cannot be shared going to the earlier columns (ten lines in three columns are 4, 3 and 3); `false` fills each before the next. Continues across pages; `page_break` inside ends the page; `rule: true \| { color:, width: }` draws a line between columns. |
-| `table(rows, widths:, width:, header:, split_rows:, cell:) { \|t\| }` | Tables. Cells are strings, layout nodes, procs built with the DSL (`-> { image logo }`) or components. Style with `t.row(0)`, `t.rows(-1)`, `t.column(1)`, `t.columns(1..)`, chained, plus `t.zebra`. Header rows repeat after a page break. A cell may be `{ content:, colspan:, rowspan: }` plus any cell option; rows list only the cells they start, as in HTML, and pages never break through a rowspan. Spans are set in the rows, not through selections. A row taller than the page continues on the next page, cut through its cells, with the header repeated; `split_rows: true` cuts any row that reaches the page bottom instead of moving it whole. |
+| `table(rows, widths:, width:, header:, split_rows:, cell:) { \|t\| }` | Tables. Cells are strings, layout nodes, procs built with the DSL (`-> { image logo }`) or components. Style with `t.row(0)`, `t.rows(-1)`, `t.column(1)`, `t.columns(1..)`, chained, plus `t.zebra`. Header rows repeat after a page break. A cell may be `{ content:, colspan:, rowspan: }` plus any cell option; rows list only the cells they start, as in HTML, and pages never break through a rowspan. Spans are set in the rows, not through selections. A row taller than the page continues on the next page, cut through its cells, with the header repeated; `split_rows: true` cuts any row that reaches the page bottom instead of moving it whole. `rows` is an Array or any Enumerable; an Enumerator (lazy or not) given a width for every column is read as pages reach it, selected from its start only: see [Large documents](#large-documents). |
 | `image(path_or_io, width:, height:, fit:, align:, radius:, rotate:, max_ppi:, downscale:, float:, margin:)` | JPEG, PNG or lossless WebP, aspect preserved. `fit: [w, h]` scales to fit inside; `fit: :cover` fills `width:` × `height:` and crops around the centre. `radius:` rounds the corners; `rotate:` turns it (degrees, clockwise) without changing the space it takes. Drawn at more than twice `max_ppi:` (300) it is reported as oversized; `downscale: true` resamples a PNG or WebP to that resolution instead. |
 | `svg(source_or_path, width:, height:, color:, align:)` | Vector icons and drawings; `currentColor` takes `color:` (or the `color` an element sets). Linear and radial gradients (`fill="url(#id)"`, `href` chains, both gradient units); `text`/`tspan` in the document's fonts; `<style>` stylesheets (element, class, id and `*` selectors); `use`, `symbol` sprites and nested `svg` viewports (`viewBox`, `preserveAspectRatio`); `clipPath` (both `clipPathUnits`). |
 | `barcode(data, type:, level:, module_size:, width:, height:, color:, quiet_zone:, native:, align:, alt:)` | A barcode drawn as vector bars, encoded in Ruby: `type: :code128` (the default; printable ASCII, digit runs in code set C), `:ean13` (12 digits and the check digit, or 13 checked), `:qr` (byte mode, `level: :l, :m, :q, :h`, versions 1 to 40, UTF-8 marked with an ECI) or `:datamatrix` (ECC 200 in ASCII encodation, digit pairs in one codeword, squares from 10 × 10 to 144 × 144). `module_size:` points a module (1, or 2 for a square one) or as many as fit `width:`; a linear one is `height:` (36) tall. The quiet zone is part of its size unless `quiet_zone: false`, and it shrinks to fit the space. Monochrome renders put it on the dot grid, a whole number of dots a module. `native: true` has `to_zpl` write the printer's own command for it: see [Label printers](#label-printers-to_zpl). A figure in a tagged PDF, its `alt:` by default the kind and the data. |
@@ -1151,6 +1151,51 @@ cell's text: a cell's node is built when a page reaches its row and let go with 
 text, where it held 913 MB). In a tagged render the `TR`, `TH` and `TD` of a row are built
 when a page paints it, and the structure tree holds them until the file is written: the
 same table tagged peaks at 2.2 GB.
+
+A table whose every column has a width (`widths:` in points or fractions) measures no cell for
+its columns. Given its rows as an Enumerator, lazy or not, such a table reads them as pages
+reach them, and holds the rows of the page being filled and the one after them, none before
+its first page:
+
+```ruby
+rows = [%w[Order Customer Total]].each + Order.find_each.lazy.map { |o| [o.number, o.customer, o.total] }
+table(rows, header: true, widths: [80, 0.5, 90]) do |t|
+  t.row(0).weight = :bold
+  t.columns(2).align = :right
+  t.zebra(from: 1, color: "#F4F4F4")
+end
+```
+
+- The header rows, `zebra`, `split_rows`, cells spanning columns and selections by index from
+  the start (`t.row(0)`, `t.rows(1..)`, `t.columns(…)`) work as they do for an Array, applied to
+  each row as it is read. A proc or component cell is built then, in the text style the table
+  was given in.
+- What needs the end of the table raises `ArgumentError`: a row counted from the end
+  (`t.row(-1)`, `t.rows(1..-2)`) when it is selected, and a cell spanning rows or a row with more
+  columns than widths when it is read.
+- Anything that needs every row reads them all first: a table in a `row`, in a box with
+  `break_inside: :avoid`, or beside a float is measured whole, as an Array is.
+- An Enumerator with a column without a width is read when the table is built, as before: a
+  flexible column needs every row's width first. An Array is read as it always was.
+
+A price list with every width given, a header row and zebra stripes, `incremental: true`
+(`PAGES=3031 DOCUMENTS=streamed,listed FORMS=incremental bundle exec rake memory`, then
+`PAGES=30303`, same machine; and the objects the render allocates):
+
+| Rows | Pages | Rows given as | Peak | Alive when built | Alive when paginated | Objects |
+|---:|---:|---|---:|---:|---:|---:|
+| 100,000 | 3,031 | an Enumerator | 81 MB | 9 MB | 18 MB | 70.0 million |
+| | | an Array | 485 MB | 155 MB | 20 MB | 69.3 million |
+| 1,000,000 | 30,303 | an Enumerator | 130 MB | 9 MB | 47 MB | 710 million |
+| | | an Array | 2,758 MB | 1,474 MB | 64 MB | 702 million |
+
+Streamed, the rows cost the same at any length; what grows is what the file still needs of
+every page until it is written (47 MB alive after 30,303 pages), and the peak with it. A
+streamed table allocates a little more (reading an Enumerator one row at a time costs a few
+objects a row). A tagged render keeps the `TR`,
+`TH` and `TD` of every painted row in the structure tree until the file is written, streamed or
+not: streaming leaves out only the rows no page has reached, so the same 100,000 rows tagged
+peak at 989 MB streamed and 1,230 MB as an Array.
 
 Controllers gain `render pdf:` and `send_pdf`:
 

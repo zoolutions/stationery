@@ -72,6 +72,22 @@ class Views::Docs::Pages::Performance < DocsUI::Page
         paints it, and the structure tree holds them until the file is written, so the table of
         165,000 rows tagged peaks at 2.2 GB. When `incremental:` takes the usual path instead is under
         [Rendering](/docs/documents-and-components#rendering).
+
+        A table whose every column has a width measures no cell for its columns, and given its rows
+        as an Enumerator, lazy or not, it reads them as pages reach them
+        ([Elements](/docs/elements)): nothing of the table exists before its first page. A price
+        list with a header row and zebra stripes, `incremental: true`:
+
+        | Rows | Pages | Rows given as | Peak | Alive when built | Alive when paginated |
+        |---:|---:|---|---:|---:|---:|
+        | 100,000 | 3,031 | an Enumerator | 81 MB | 9 MB | 18 MB |
+        | | | an Array | 485 MB | 155 MB | 20 MB |
+        | 1,000,000 | 30,303 | an Enumerator | 130 MB | 9 MB | 47 MB |
+        | | | an Array | 2,758 MB | 1,474 MB | 64 MB |
+
+        What still grows with a streamed table is what the file needs of every page until it is
+        written. Tagged, the structure tree holds the `TR`, `TH` and `TD` of every painted row until
+        then, streamed or not: the 100,000 rows tagged peak at 989 MB streamed, 1,230 MB as an Array.
       MD
     end
 
