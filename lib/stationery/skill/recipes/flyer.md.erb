@@ -1,0 +1,76 @@
+# Recipe: a flyer or brochure with photographs
+
+A cover photo bled to the page edges, a title, text wrapped around a photo, a grid of pictures and a
+call to action with a link. The examples in the gem: `stationery examples flyer --source` (a cover
+bled to the edges, a tilted collage with `stack` and `layer`, cards, a gallery),
+`stationery examples article --source` (text around floated photos) and
+`stationery examples postcard --source` (an overlapping collage).
+
+```ruby
+class FlyerPdf < Stationery::Document
+  MARGIN = 40
+  COVER = 260
+  PHOTOS = File.expand_path("photos", __dir__)         # in Rails: Rails.root.join("app/assets/images").to_s
+
+  page size: :a4, margin: MARGIN
+  default_text size: 10.5, leading: 3
+  metadata title: "Harbourside open day", lang: "en"
+
+  def self.preview = new
+
+  def view_template
+    box(at: [0, 0], width: page_width) do               # placed on the page: it takes no room in the flow
+      image photo("sea"), width: page_width, height: COVER, fit: :cover, alt: "The harbour at first light"
+    end
+    spacer COVER - MARGIN + 20                          # so the flow starts below the photo
+    text "Harbourside open day", size: 30, weight: :bold, align: :center, heading: 1
+    text "Saturday 14 June, 10:00 to 16:00", size: 13, align: :center, color: "#0F766E"
+    spacer 18
+
+    box do                                              # what follows the box starts below the float
+      image photo("hills"), float: :left, width: 0.4, height: 140, fit: :cover, radius: 8, margin: 12,
+                            alt: "Hills above the harbour"
+      text "Come and see the new workshops by the water. " * 8, align: :justify
+    end
+    spacer 16
+    wrap(gap: 8) do
+      %w[stone bay ridge].each do |name|
+        image photo(name), width: 164, height: 110, fit: :cover, radius: 6, alt: name.capitalize
+      end
+    end
+    spacer 16
+    box(background: "#0F766E", radius: 8, padding: 14, link: "https://harbourside.example") do
+      text "Book a free place at harbourside.example", size: 14, weight: :bold, color: "#FFFFFF", align: :center
+    end
+  end
+
+  private
+
+  def page_width = Stationery::Page.new(size: :a4).width
+  def photo(name) = File.join(PHOTOS, "#{name}.png")
+end
+```
+
+## What matters here
+
+- **Photos are files or IOs** (JPEG, PNG, lossless WebP), never URLs: download first. A String is
+  a path; bytes go in an IO: `image StringIO.new(blob.download)` for an ActiveStorage blob (a
+  variant sized for print keeps the file small).
+- **`fit: :cover`** fills `width:` × `height:` and crops around the centre; `fit: [w, h]` fits
+  inside; with only one of `width:` and `height:` the aspect is kept. `radius:` rounds the corners.
+- **Bleed to the edge**: a box placed with `at: [0, 0]` and the page's width ignores the margins
+  but takes no room in the flow, so a `spacer` keeps the text below it. A band across the page
+  inside the flow is `box(background:, outset: [0, MARGIN, 0, MARGIN])`.
+- **Text around a photo**: `float: :left` or `:right` with a `width:` (a Float up to 1 is a share),
+  and `margin:` towards the text. **Everything after a float in the same flow wraps beside it**
+  until the float ends, not only the paragraph after it: a grid of pictures written next went
+  beside the photo here, in the narrow space left. Put the float and its text in a `box` (a flow
+  is at least as tall as its floats), and what follows the box starts below the float. A float
+  never splits and moves to the next page with the text that wraps beside it.
+- **A grid**: `wrap(gap:) { }` places children side by side at their own widths and wraps; for
+  equal columns use `row(gap:) { column { } … }`. A collage of overlapping pictures is a `stack`
+  with `layer(top:, left:, rotate:)` children.
+- A page colour or a watermark goes in `page_template(layer: :background) { |page| … }`.
+- A flyer is judged by eye: `stationery render flyer_pdf.rb --png`, open the picture, and look at
+  the crops, the gaps and where the page breaks. `image` warns (`OversizedImage`) when a photo has
+  far more pixels than it is drawn at; `images downscale: true` resamples PNGs and WebPs.

@@ -25,6 +25,13 @@ RSpec.describe "stationery.gemspec" do # rubocop:disable RSpec/DescribeClass
     expect(files).not_to include(a_string_ending_with(".pdf"))
   end
 
+  it "ships the skill's templates and the README they embed" do
+    templates = Dir.glob("lib/stationery/skill/**/*.md.erb", base: root)
+
+    expect(templates).to include("lib/stationery/skill/SKILL.md.erb", "lib/stationery/skill/recipes/invoice.md.erb")
+    expect(files).to include(*templates, "lib/stationery/skill.rb", "README.md")
+  end
+
   it "ships nothing of the test suite: Inter is the one font in the gem" do
     expect(files.grep(%r{\Aspec/})).to be_empty
   end

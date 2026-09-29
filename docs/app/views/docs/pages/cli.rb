@@ -4,7 +4,7 @@ class Views::Docs::Pages::Cli < DocsUI::Page
   title "CLI"
   eyebrow "Integrations"
 
-  def lead = "The stationery executable: render a document file to PDF and pictures, print what is on its pages, list or install font packs, and find the examples."
+  def lead = "The stationery executable: render a document file to PDF and pictures, print what is on its pages, list or install font packs, find the examples, and install the skill for coding agents."
 
   def content
     DocsUI::Section("stationery render", description: "Render the Document a Ruby file defines.") do
@@ -133,6 +133,33 @@ class Views::Docs::Pages::Cli < DocsUI::Page
         has their previews.
 
         `stationery help` lists the commands.
+      MD
+    end
+
+    DocsUI::Section("stationery skill", description: "The skill for coding agents that ships with the gem.") do
+      md <<~'MD'
+        ```shell
+        stationery skill install                                 # for the agents it finds, else Claude Code
+        stationery skill install --target claude --project       # into ./.claude/skills/stationery
+        stationery skill install --dir ~/agent-skills            # into any skills directory
+        stationery skill status                                  # current, outdated or missing, per agent
+        stationery skill print                                   # SKILL.md and its files, as one document
+        ```
+
+        | Option | Meaning |
+        | --- | --- |
+        | `--target NAME` | `claude` (`~/.claude/skills`), `codex` (`~/.codex/skills`), `agents` (`~/.agents/skills`, read by OpenCode and others) or `all`. Without it, `install` writes to each whose directory exists, and to Claude Code when none does; `status` reports all three. |
+        | `--project` | The skills directory under the current directory (`./.claude/skills`, …) instead of the home directory. |
+        | `--dir DIR` | This skills directory instead; the skill goes to `DIR/stationery`. |
+        | `--force` | Replace a skill named `stationery` that the gem did not write. |
+        | `-h, --help` | Show help. |
+
+        `install` writes `SKILL.md` and the files beside it (`reference/*.md`, from the README;
+        `recipes/*.md`, an invoice, a report, a form, a flyer, a label and a receipt that each render and
+        name their example). The front matter names the gem's version, which is what `status` compares:
+        `current`, `outdated` (written for an older version: run `install` again), `missing`, or not
+        written by stationery. `print` writes the same files to stdout as one Markdown document, for an
+        agent that takes one file. See [Getting started](/docs/getting-started) for the docs over MCP.
       MD
     end
   end
