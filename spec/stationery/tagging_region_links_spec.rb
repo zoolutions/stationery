@@ -42,7 +42,7 @@ RSpec.describe "Tagged PDF links of headers, footers and page templates" do # ru
   it "gives every annotation the /StructParent of its Link" do
     pdf = two_pages.to_pdf
 
-    expect(pdf.scan("/StructParent ").size).to eq(6)
+    expect(unpacked(pdf).scan("/StructParent ").size).to eq(6)
     expect(parent_tree(pdf).values.grep(Symbol)).to eq(%i[Link] * 6)
     expect(inspect_pdf(pdf).links).to eq(%w[https://example.com/head https://example.com
                                             https://example.com/stamp] * 2)
@@ -130,7 +130,8 @@ RSpec.describe "Tagged PDF links of headers, footers and page templates" do # ru
     doc = two_pages
 
     expect(doc.to_pdf(conformance: :pdf_ua1)).to have_structure(inspect_pdf(two_pages.to_pdf).structure)
-    expect(doc.to_pdf(conformance: %i[pdf_ua1 pdf_a3b]).scan(%r{/Contents \(https://example.com}).size).to eq(6)
+    both = unpacked(doc.to_pdf(conformance: %i[pdf_ua1 pdf_a3b]))
+    expect(both.scan(%r{/Contents \(https://example.com}).size).to eq(6)
   end
 
   it "leaves the regions of a tagged document without a link as they were" do

@@ -9,6 +9,9 @@ RSpec.describe Stationery::Document, "#to_pdf" do
   let(:document) do
     Class.new(SpecDocument) do
       tagged
+      # A block is handed an object stream a flush, the String one for every
+      # 200 objects: the classic table keeps the two the same size.
+      object_streams false
       metadata title: "Streamed", lang: "en"
       attach_file "notes.txt", "hello", mime: "text/plain"
       def view_template

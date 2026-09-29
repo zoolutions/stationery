@@ -17,7 +17,7 @@ RSpec.describe Stationery::Document, "#paint_on" do
     it "paints examples/#{name}.rb on canvases of another output, as many pages as the PDF has" do
       pages = RenderDigests.example(name).paint_on(canvases)
 
-      expect(pages.size).to eq(RenderDigests.example(name).to_pdf.scan(%r{/Type\s*/Page(?![s\w])}).size)
+      expect(pages.size).to eq(page_count(RenderDigests.example(name).to_pdf))
       expect(canvases.calls.keys).to eq(pages)
       expect(canvases.all.map(&:first)).to include(:glyphs)
       expect(untouched(pages)).to be(true)

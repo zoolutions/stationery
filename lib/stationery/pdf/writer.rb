@@ -5,7 +5,8 @@ require "digest/md5"
 module Stationery
   module PDF
     # Collects numbered objects and writes them as a PDF file with a classic
-    # cross-reference table. `render` returns the file as a String with the
+    # cross-reference table, or with `object_streams: true` packed into
+    # object streams with a cross-reference stream (see ObjectStreams). `render` returns the file as a String with the
     # objects in numbered order. With a `sink:` (anything answering
     # `call(bytes)`) the file goes there in pieces instead: `flush` writes every
     # object set so far and drops it, so objects leave in the order they were
@@ -16,8 +17,14 @@ module Stationery
 
       # `encryption` (an Encryption::StandardSecurity) encrypts every string
       # and stream except those of its own /Encrypt dictionary.
-      def initialize(encryption: nil, sink: nil)
+      #
+      # With `object_streams: true` every object that is not a stream goes
+      # into a deflated object stream, but for the Encrypt dictionary and an
+      # object added with #add_unpacked (a signature dictionary, which is
+      # filled in once the file is written and found by its bytes).
+      def initialize(encryption: nil, sink: nil, object_streams: false)
         @objects = []
+        @loose = [] if object_streams
         @offsets = []
         @encryption = encryption
         @sink = sink
@@ -45,6 +52,13 @@ module Stationery
         set(reserve, value)
       end
 
+      # Adds an object that stays out of the object streams.
+      def add_unpacked(value)
+        ref = add(value)
+        @loose << ref.id if @loose
+        ref
+      end
+
       # With a sink: writes every object set and not yet written, lowest number
       # first, and drops it. References to objects still unset stay valid, as
       # the cross-reference table is written last. Without a sink it does
@@ -66,9 +80,10 @@ module Stationery
         end
 
         write_pending
-        xref = @size
         id = HexString.new(file_id)
+        return write_xref_stream(root, info, id) if @loose
 
+        xref = @size
         emit("xref\n0 #{@objects.size + 1}\n0000000000 65535 f \n")
         @offsets.each { |offset| emit(format("%010d 00000 n \n", offset)) }
         emit("trailer\n#{Serializer.dump(trailer(root, info, id))}")
@@ -79,6 +94,8 @@ module Stationery
       private
 
       def write_pending
+        return pack_pending if @loose
+
         @objects.each_with_index do |object, index|
           next if object.nil? || object.equal?(WRITTEN)
 
@@ -87,14 +104,51 @@ module Stationery
         end
       end
 
+      # Streams, the Encrypt dictionary and what was added with #add_unpacked
+      # are written as they are, the rest into object streams of at most
+      # ObjectStreams::CAPACITY objects; the last one is closed with the flush.
+      def pack_pending
+        batch = []
+        @objects.each_with_index do |object, index|
+          next if object.nil? || object.equal?(WRITTEN)
+
+          number = index + 1
+          if object.is_a?(Stream) || @loose.include?(number) || number == @encrypt&.id
+            write_object(number, object)
+          else
+            batch << [number, object]
+            batch = write_object_stream(batch) if batch.size == ObjectStreams::CAPACITY
+          end
+          @objects[index] = WRITTEN
+        end
+        write_object_stream(batch) if batch.any?
+      end
+
+      def write_object_stream(batch)
+        @objects << WRITTEN
+        number = @objects.size
+        batch.each_with_index { |(packed, _), index| @offsets[packed - 1] = [number, index] }
+        write_object(number, ObjectStreams.pack(batch))
+        []
+      end
+
+      # The cross-reference stream, its own entry among them, never encrypted.
+      def write_xref_stream(root, info, id)
+        @objects << WRITTEN
+        number = @objects.size
+        xref = @offsets[number - 1] = @size
+        write_object(number, ObjectStreams.xref(@offsets, trailer(root, info, id)), nil)
+        emit("startxref\n#{xref}\n%%EOF\n")
+        @buffer || @size
+      end
+
       def trailer(root, info, id)
         trailer = { Size: @objects.size + 1, Root: root, Info: info, ID: [id, id] }
         @encrypt ? trailer.merge(Encrypt: @encrypt) : trailer
       end
 
-      def write_object(number, object)
+      def write_object(number, object, crypt = crypt_for(number))
         @offsets[number - 1] = @size
-        crypt = crypt_for(number)
         emit("#{number} 0 obj\n")
         if object.is_a?(Stream)
           data = crypt ? crypt.call(object.data) : object.data

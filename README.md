@@ -672,7 +672,7 @@ ShelfLabel.new.to_png(monochrome: { dpi: 203, snap: true }) # one bit to a dot, 
 - **Options.** `dpi:` (96, or the monochrome dpi), `pages:`, `monochrome:`, `debug:` (the layout
   rectangles), `strict:`, `shaper:` and `max_pages:` as `to_pdf` has them. What only a PDF has (`sign:`, `encrypt:`,
   `conformance:`, `attachments:`, `print:`, `tagged:`, `page_labels:`, `xmp:`, `factur_x:`,
-  `incremental:`, `missing_glyphs:`) raises `ArgumentError` when it is passed, and is left alone when
+  `incremental:`, `missing_glyphs:`, `object_streams:`) raises `ArgumentError` when it is passed, and is left alone when
   the class declares it, so a signed or encrypted document still has pictures.
 - **Speed.** A 100 × 150 mm label at 203 dpi (800 × 1200 dots) takes about 30 ms, a one-page invoice
   at 96 dpi about 0.1 s, a page of dithered photographs at 203 dpi about 0.7 s, a label with a
@@ -875,6 +875,13 @@ and across page breaks: a paragraph continued on the next page stays one `P`.
   `canvas.tag(element) { … }`.
 - A missing `lang` is a `Warnings::MissingLanguage`. All four are warnings, so `strict` catches them,
   and `conformance :pdf_ua1` raises on the first three.
+- A tagged render packs its structure elements, and every other object that is not a stream, into
+  deflated object streams (`/Type /ObjStm`, 200 objects each) with a cross-reference stream in place
+  of the table and trailer (ISO 32000-1, 7.5.7 and 7.5.8). A table of 300 rows is 115 KB instead of
+  501 KB. Streams, the `/Encrypt` dictionary and a signature dictionary stay out; PDF/A-2, PDF/A-3 and
+  PDF/UA-1 allow them. `object_streams false` at class level, or `to_pdf(object_streams: false)`,
+  writes the classic table for a reader that cannot read them; `to_pdf(object_streams: true)` packs
+  an untagged render too.
 - Untagged documents (the default) are written exactly as before.
 
 Check the tree in tests with `have_structure` and `have_tagged_content` (see [Testing](#testing)):

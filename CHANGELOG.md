@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- A tagged render is written with object streams (#206): its structure elements, and every other object that is not a stream, are packed 200 to a deflated `/Type /ObjStm`, with a cross-reference stream in place of the table and trailer (ISO 32000-1, 7.5.7 and 7.5.8). A table of 300 rows, 8 pages, is 115 KB tagged where it was 501 KB, 36 objects where it was 4,544; the tagged examples are 9 to 65% smaller. It is on by default for a render that is tagged (`tagged`, `to_pdf(tagged: true)`, `conformance :pdf_ua1`), and `object_streams false` at class level or `to_pdf(object_streams: false)` writes the classic table for a reader that cannot read object streams; `to_pdf(object_streams: true)` packs an untagged render too. Streams, the `/Encrypt` dictionary and a signature's dictionary stay out, so an encrypted, a signed and an incremental render are packed too, and PDF/A-2b, PDF/A-3b and PDF/UA-1 pass veraPDF packed. `to_png` and `to_zpl` refuse `object_streams:` as a PDF option. In `PDF::Writer` (`object_streams:`, `add_unpacked`) and `PDF::ObjectStreams`.
+- **Behaviour changes:** a tagged render is packed: its catalog, pages, annotations and structure elements are inside deflated object streams, so a test or tool that searches the file's bytes for them (`/StructParent`, `/Type /Page`) finds nothing, and the file ends in a cross-reference stream, not `xref` and `trailer`. A reader of PDF 1.4 and earlier cannot open it; `object_streams: false` writes it as 0.12.0 did, byte for byte. A tagged render streamed to a block is a few bytes longer than the String, as each flush closes an object stream. Untagged documents are byte for byte what they were in 0.12.0.
+
 ## 0.12.0 (2026-09-29)
 
 Links that conform; labels and printing (page sizes in units, print hints, monochrome, page limits, `to_png`, JPEG pixels, `to_zpl` and barcodes); floats that keep to their page; speed and memory, with tables read as pages reach them; and AI first: a skill that ships with the gem, examples with their code, the docs over MCP, and `stationery inspect`.

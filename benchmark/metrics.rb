@@ -12,6 +12,7 @@
 # platforms); pages must not change. Baselines are kept per Ruby minor version,
 # because a new Ruby allocates differently.
 require "json"
+require "zlib"
 require_relative "features"
 
 module Bench
@@ -20,6 +21,7 @@ module Bench
     LIMITS = { "allocations" => 0.03, "bytes" => 0.01, "pages" => 0.0 }.freeze
     FROZEN = Time.utc(2026, 1, 1).freeze
     PAGE = %r{/Type\s*/Page(?![s\w])}
+    OBJECT_STREAM = %r{/Type /ObjStm .*?>>\nstream\n(.*?)\nendstream}m
     Row = Data.define(:document, :metric, :baseline, :current, :limit) do
       def change = baseline.zero? ? 0.0 : (current - baseline).fdiv(baseline)
       def moved? = current != baseline
@@ -74,8 +76,14 @@ module Bench
       DOCUMENTS.keys.to_h do |name|
         2.times { render(name) }
         pdf, allocations = allocations_of { render(name) }
-        [name, { "allocations" => allocations, "pages" => pdf.b.scan(PAGE).size, "bytes" => pdf.bytesize }]
+        [name, { "allocations" => allocations, "pages" => pages(pdf.b), "bytes" => pdf.bytesize }]
       end
+    end
+
+    # Page objects, those packed into object streams too.
+    def pages(pdf)
+      packed = pdf.scan(OBJECT_STREAM).flatten.map { |data| Zlib::Inflate.inflate(data) }
+      [pdf, *packed].sum { |bytes| bytes.scan(PAGE).size }
     end
 
     def render(name)

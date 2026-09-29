@@ -106,7 +106,7 @@ RSpec.describe Stationery::Layout::Image do
       path = image_path("rgb.jpg")
       pdf = doc.build { image path, width: 40, rotate: 45, alt: "photo" }.to_pdf
 
-      expect(pdf).to include("/BBox [20 150 60 180]")
+      expect(unpacked(pdf)).to include("/BBox [20 150 60 180]")
     end
   end
 end

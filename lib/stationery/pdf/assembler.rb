@@ -17,13 +17,15 @@ module Stationery
       # finished file, so it cannot be streamed. `writer:` is the Writer that
       # already holds the bodies of pages sealed as they were painted; it
       # brings its own encryption and sink. `print:` are the hints of
-      # PrintHints for the catalog.
+      # PrintHints for the catalog. `object_streams:` (true) packs what is not
+      # a stream into object streams (see Writer).
       def initialize(pages:, resources:, info: {}, outline: [], encryption: nil, tagging: nil, lang: nil,
                      page_labels: nil, attachments: [], xmp: true, xmp_extensions: {}, xmp_schemas: [],
-                     conformance: nil, signature: nil, sink: nil, writer: nil, print: nil)
+                     conformance: nil, signature: nil, sink: nil, writer: nil, print: nil, object_streams: false)
         raise ArgumentError, "a signed document cannot be streamed: sign needs the whole file" if signature && sink
 
         @writer = writer
+        @object_streams = object_streams
         @print = print
         @sink = sink
         @xmp_schemas = xmp_schemas
@@ -44,7 +46,7 @@ module Stationery
 
       # The file as a String, or the number of bytes streamed to the sink.
       def render
-        writer = @writer || Writer.new(encryption: @encryption, sink: @sink)
+        writer = @writer || Writer.new(encryption: @encryption, sink: @sink, object_streams: @object_streams)
         tree = writer.reserve
         refs = @resources.build(writer)
         @form = Forms::AcroForm.new(writer, fonts: refs.fetch(:Font), signature: @signature,

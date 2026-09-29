@@ -46,6 +46,11 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
 
         A link's description is its URL, or `Page 3` for a link inside the document.
 
+        A PDF/UA-1 render is tagged, so its objects are packed into object streams with a
+        cross-reference stream (PDF 1.5), which PDF/A-2, PDF/A-3 and PDF/UA-1 allow: see
+        [Accessibility](/docs/pages#accessibility-tagged-pdf). `to_pdf(object_streams: false)` writes the
+        classic cross-reference table.
+
         Form fields conform as they are: their appearances draw with the document's embedded fonts and
         with paths, and every field carries an accessible name (`/TU`, from `tooltip:`, its label or its
         name). Under a level the form leaves out `NeedAppearances` and the ZapfDingbats entry it
