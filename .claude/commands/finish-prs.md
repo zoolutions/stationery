@@ -40,7 +40,7 @@ Any other conflicted file: `git merge --abort`, report it, ask.
 
 ### 2b. Checks, then push
 
-`bundle exec rspec`, `bundle exec rubocop lib spec examples Rakefile`, `bundle exec rake metrics`. All pass: commit the merge and `git push` (a merge never needs force). A check that fails after merging `main` is fixed before the push, through 2c's `/github-review-pr` (which runs `/github-review-failures`); if it cannot be fixed, the pull request is marked `needs-user` and nothing is pushed.
+`bundle exec rspec`, `bundle exec rubocop lib spec examples Rakefile`, `bundle exec rake metrics`. All pass: commit the merge and `git push` (a merge never needs force). A check that fails after merging `main` is fixed here, in this worktree, before the push (CI has not seen this commit, so `/github-review-pr` cannot); if it cannot be fixed, the pull request is marked `needs-user` and nothing is pushed.
 
 ### 2c. Review pass
 
@@ -57,7 +57,7 @@ Invoke `/github-review-pr <n>` (Skill tool): CI failures, then review comments. 
 
 Run the `fable-validator` agent on the combined diff first. On BLOCK do not open or merge: mark it `needs-user` and report the blockers instead of calling it ready.
 
-- automerge: only once 2d holds, a plain `gh pr merge <n> --merge` (never `--auto`: GitHub would merge on the four required checks alone, whatever the others do). No human reviews it. Then Phase 3.
+- automerge: only once 2d holds, asked again right before the merge (a push while the validator ran leaves checks pending: then wait, as in 2d), a plain `gh pr merge <n> --merge` (never `--auto`: GitHub would merge on the four required checks alone, whatever the others do). No human reviews it. Then Phase 3.
 - Otherwise: report it merge-ready with its URL and one line of what is in it, and wait.
 
 ## Phase 3: Wait, then advance
