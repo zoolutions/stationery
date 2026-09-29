@@ -51,7 +51,7 @@ pdf = InvoicePdf.new(invoice).to_pdf                 # a binary String; to_pdf("
   is for tabular data, `columns(count: 2)` pours text newspaper style, `float: :left` wraps text
   around an image or a box.
 - Class-level declarations (`page`, `font_family`, `default_text`, `metadata`, `header`, `footer`,
-  `page_template`, `conformance`, `tagged`, `print`, `monochrome`, `strict`) apply to every
+  `page_template`, `conformance`, `tagged`, `print`, `monochrome`, `strict`, `max_pages`) apply to every
   render; most have a `to_pdf(...)` option of the same name for one render.
 - Header, footer and page template blocks are written at class level but run on the document
   instance, with `page.number` and `page.count` known: instance variables and private methods
@@ -91,10 +91,11 @@ looking at it. After every change:
    any render (`to_pdf`, `to_png`, `to_zpl`) lists overflows, missing glyphs, skipped images,
    unresolved links and the rest, each with a `message`. Fix every one: a warning is a document
    that is not what was written.
-4. **Count the pages.** Content that does not fit moves to a next page without a warning, and
-   `strict` does not catch it: a page that should be one (a label, a receipt, a one-page invoice)
-   is checked by its page count (`--png` writes `-1.png`, `-2.png`; `have_page_count(1)` in a spec;
-   `doc.to_zpl.scan("^XA").size` for labels).
+4. **Count the pages.** Content that does not fit moves to a next page without a warning. A
+   document that must be one page (a label, a receipt, a card) says so with `max_pages 1` in the
+   class body: a render that needs a second page then warns (`warning: the document may have 1 page
+   and needs 2: page 2 starts with …`), `strict` raises, and `to_zpl` writes no label. Anything else is checked
+   by its page count (`--png` writes `-1.png`, `-2.png`; `have_page_count(1)` in a spec).
 5. **Decode every barcode** from the picture: `zbarimg -q invoice_pdf-1.png` (`brew install zbar`)
    prints each code it reads with its data; a code it cannot read will not scan at the till either.
 6. When you cannot look at a picture, or to compare two renders, print the page as text:

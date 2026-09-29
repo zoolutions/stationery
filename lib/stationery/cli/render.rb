@@ -136,7 +136,7 @@ module Stationery
 
       def to_zpl(document)
         document.to_zpl(dpi: @options[:dpi], debug: @options.fetch(:debug, false))
-      rescue ArgumentError => e
+      rescue ArgumentError, WarningsError => e
         raise Error, e.message
       end
 

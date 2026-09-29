@@ -13,10 +13,14 @@ module Stationery
       HEIGHT = 36
       NAMES = { code128: "Code 128", ean13: "EAN-13", qr: "QR code", datamatrix: "Data Matrix" }.freeze
 
+      # The kind of barcode, a key of NAMES.
+      attr_reader :type
+
       def initialize(symbol, type:, module_size: nil, width: nil, height: nil, color: "#000000", quiet_zone: true,
                      native: nil, context: nil, alt: nil)
         super()
         @symbol = symbol
+        @type = type
         @tag = figure(type, context, alt)
         @module_size = module_size
         @width = width

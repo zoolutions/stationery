@@ -165,7 +165,10 @@ module Stationery
 
       # [head, tail] with the longest hyphenation of `word` whose head (and
       # its hyphen) fits `available`; nil when the word offers no break that
-      # fits. Soft hyphens name the breaks and suppress the patterns.
+      # fits. Soft hyphens name the breaks and suppress the patterns. The
+      # head fits by its letters, as it always had to, and as it is drawn,
+      # ligatures and kerning included: "suffi-" in Open Sans Italic is
+      # 0.06 pt wider drawn than by its letters.
       def hyphenated(word, available)
         return unless @explicit || word.first&.style&.hyphenate
 
@@ -173,9 +176,13 @@ module Stationery
         break_points(chars).reverse_each do |index|
           head = chars.first(index).reject { |segment| segment.text == SOFT_HYPHEN }
           head << Segment.new(hyphen_for(chars[index - 1].style), chars[index - 1].style)
-          return [head, chars.drop(index)] if width(head) <= available + EPSILON
+          return [head, chars.drop(index)] if fits?(head, available)
         end
         nil
+      end
+
+      def fits?(head, available)
+        width(head) <= available + EPSILON && width(joined(head)) <= available + EPSILON
       end
 
       # Indexes into the word's characters before which it may break: after
