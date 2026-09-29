@@ -73,6 +73,18 @@ Releases are cut by the maintainer with `bin/release` (`bin/release --dry-run` s
 - Native code, and any runtime dependency.
 - Lossy WebP.
 
+## Models and agents
+
+**Models.** Sessions run on `opus` (Opus 5.5) with `fable` (Fable 5.1) as the advisor (`.claude/settings.json`). Fable is spent where judgment matters most: `/plan` runs on Fable, the advisor is consulted at decision points (before choosing an approach, a schema or public API, a migration, a dependency, anything irreversible, and when a failure repeats), and the `fable-validator` agent checks every finished implementation before its pull request opens (`/lfg`, Phase 6.5). Commands pin their tier by alias, never by full model ID: `opus` for orchestration, security, full PR review, payments and production debugging; `sonnet` for the implementation specialists and TDD; `haiku` for mechanical scans. Every spawned agent names its `model:`; one that does not runs on `sonnet` (`CLAUDE_CODE_SUBAGENT_MODEL`), never on the session's model. Plan mode cannot take a model of its own: it runs on Opus and asks the advisor.
+
+| Command | Tier | For |
+|---|---|---|
+| `/plan` | `fable` | A plan as an issue or `plans/*.md`, before `/lfg` |
+| `/lfg`, `/architect`, `/finish-prs`, `/github-review-pr`, `/review-pr`, `/security` | `opus` | An issue end to end; work across layers; a queue of pull requests; a full review pass; a review; a security audit |
+| `/tdd`, `/perf`, `/github-review-failures`, `/github-review-comments` | `sonnet` | Red, green, refactor; `rake bench` and `rake metrics` against `main`; red CI; review threads |
+
+The commands are in `.claude/commands/`, their shared rules in `.claude/rules/`. The docs site keeps its own: `docs/AGENTS.md` and the `write-docs-page` skill in `docs/.claude/skills/`.
+
 ## What has gone wrong before
 
 - Rubocop run on `docs/` from the repository root fails on a missing plugin. Lint `lib spec examples Rakefile` and leave `docs/` to CI.
