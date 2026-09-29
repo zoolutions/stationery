@@ -1,0 +1,27 @@
+AGENTS.md
+  s_f5a1e2cf907cda::t_ce256856aa9f32 48
+CHANGELOG.md
+  s_f5a1e2cf907cda::t_46c0133debe73b 5
+Rakefile
+  s_f5a1e2cf907cda::t_b57aefffd7279a 156-158,160
+  s_f5a1e2cf907cda::t_8c7510ec05933d 103
+  s_f5a1e2cf907cda::t_b63791509f79fe 70-84
+README.md
+  s_f5a1e2cf907cda::t_ce256856aa9f32 937-939,942
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "ccef3b3e96aa3566f05fa04c512ed3b6837c6619",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
