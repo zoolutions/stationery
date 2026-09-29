@@ -1,0 +1,29 @@
+spec/stationery/text/wrapper_ligatures_spec.rb
+  s_f5a1e2cf907cda::t_688697bb6e1f8f 132,136
+  s_f5a1e2cf907cda::t_aa6c89cae2d34e 9-10
+  s_f5a1e2cf907cda::t_4b8fd9f755afdc 110,115-117
+  s_f5a1e2cf907cda::t_b6d8f754d82cbf 122-123,127
+  s_f5a1e2cf907cda::t_0f30fc38867b24 91-109,111-114,118-121,124-126,128-131,133-135,137-138
+  s_f5a1e2cf907cda::t_1aadc94bd293fc 49
+lib/stationery/text/wrapper.rb
+  s_f5a1e2cf907cda::t_d56f45670ebc87 168-171,179,184-185
+CHANGELOG.md
+  s_f5a1e2cf907cda::t_03cb7160f9d9ab 5
+  s_f5a1e2cf907cda::t_a23cff6a5a01e8 40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "18214b52601d641e7cee241461ab7896adaaaba2",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
