@@ -67,6 +67,7 @@ class Views::Docs::Pages::DocumentsAndComponents < DocsUI::Page
         document = InvoicePdf.new(invoice)
         document.to_pdf("invoice.pdf")
         document.warnings.each { |warning| Rails.logger.warn(warning.message) }
+        document.page_count # => 2, the pages the last render laid out
         ```
 
         With a block, `to_pdf { |chunk| … }` streams the file in pieces as it is written and answers the

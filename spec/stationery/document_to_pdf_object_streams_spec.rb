@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "stringio"
+
 # `object_streams:` packs a tagged render's structure elements, and every
 # other object that is not a stream, into deflated object streams.
 RSpec.describe Stationery::Document, "#to_pdf" do
@@ -56,6 +58,24 @@ RSpec.describe Stationery::Document, "#to_pdf" do
 
     expect(packed?(pdf)).to be(true)
     expect(struct_tree(pdf)).to eq(struct_tree(ledger.new.to_pdf(tagged: true, object_streams: false)))
+  end
+
+  it "packs an encrypted tagged render streamed to a block, which opens with its password" do
+    chunks = []
+    ledger.new.to_pdf(tagged: true, encrypt: { user_password: "u", owner_password: "o" }) { |chunk| chunks << chunk }
+    reader = PDF::Reader.new(StringIO.new(chunks.join), password: "u")
+
+    expect(packed?(chunks.join)).to be(true)
+    expect(reader.page_count).to eq(ledger.new.tap(&:to_pdf).page_count)
+    expect(reader.objects.deref(reader.objects.trailer[:Root])).to include(:StructTreeRoot)
+  end
+
+  it "counts the pages it laid out, which a packed file does not show in its bytes" do
+    document = ledger.new
+    pdf = document.to_pdf(tagged: true)
+
+    expect(document.page_count).to eq(page_count(pdf)).and be > 1
+    expect(ledger.new.tap(&:to_png).page_count).to eq(document.page_count)
   end
 
   it "keeps a signature dictionary out, so the signature covers the packed file" do

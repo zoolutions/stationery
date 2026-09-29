@@ -206,8 +206,9 @@ module Stationery
       end
     end
 
-    # `fields` is every form field's name and value from the last render.
-    attr_reader :warnings, :fields
+    # `fields` is every form field's name and value from the last render;
+    # `page_count` is how many pages it laid out.
+    attr_reader :warnings, :fields, :page_count
 
     def page_options = self.class.config[:page]
     def metadata = self.class.config[:metadata]
@@ -311,6 +312,7 @@ module Stationery
       destinations = Structure.resolve(pages, warnings:, book:, canvases:)
       yield builder.outline.resolve(destinations) if block_given?
       @warnings = warnings
+      @page_count = pages.size
       pages
     end
 

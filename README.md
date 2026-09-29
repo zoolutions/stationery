@@ -514,6 +514,8 @@ render Callout.new(color: "#F3F4F6") { text "Amount due" }
   are included. `to_pdf(strict: true)`, or `strict` at class level, raises `Stationery::WarningsError`
   (with `#warnings`) instead of writing a PDF that produced any; `to_pdf(strict: false)` opts one
   render out again.
+- After a render, `document.page_count` is how many pages it laid out: a tagged file's page
+  dictionaries are packed into object streams, where a search of its bytes does not find them.
 
 ### Printing
 
