@@ -67,13 +67,26 @@ namespace :verify do
     { certificate:, key:, reason: "rake verify" }
   end
 
-  desc "Validate PDF/A-3b and PDF/UA-1 renders of the examples, plain and signed, with veraPDF (needs Docker)"
+  # Runs veraPDF on `file` in `dir` for `flavour` and answers whether it
+  # passed: a `verapdf` on the PATH when there is one (Homebrew's, say), else
+  # the Docker image, which is what CI runs. VERAPDF_IMAGE forces the image.
+  verapdf = lambda do |dir, file, flavour|
+    arguments = ["--format", "text", "-v", "--flavour", flavour]
+    if !ENV["VERAPDF_IMAGE"] && system("which verapdf > #{File::NULL} 2>&1")
+      sh("verapdf", *arguments, File.join(dir, file)) { |ok, _| ok }
+    else
+      sh("docker", "run", "--rm", "--platform", "linux/amd64", "-v", "#{dir}:/data:ro",
+         ENV.fetch("VERAPDF_IMAGE", "verapdf/cli:latest"), *arguments, "/data/#{file}") { |ok, _| ok }
+    end
+  end
+
+  desc "Validate PDF/A-3b and PDF/UA-1 renders of the examples, plain and signed, with veraPDF " \
+       "(a local verapdf, else Docker)"
   task :conformance do
     $LOAD_PATH.unshift(File.expand_path("lib", __dir__))
     require "stationery"
     out = File.expand_path("tmp/conformance", __dir__)
     mkdir_p out
-    image = ENV.fetch("VERAPDF_IMAGE", "verapdf/cli:latest")
     renders = { "invoice" => { pdf_a3b: "3b" }, "report" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
                 "e_invoice" => { pdf_a3b: "3b" }, "form" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
                 "article" => { pdf_ua1: "ua1", pdf_a3b: "3b" }, "newsletter" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
@@ -87,10 +100,7 @@ namespace :verify do
       source = name.delete_prefix("signed_")
       document = source.start_with?("linked_") ? linked.call(source.delete_prefix("linked_")) : example.call(source)
       document.to_pdf(File.join(out, "#{name}.pdf"), **options)
-      failed = levels.values.reject do |flavour|
-        sh("docker", "run", "--rm", "--platform", "linux/amd64", "-v", "#{out}:/data:ro", image,
-           "--format", "text", "-v", "--flavour", flavour, "/data/#{name}.pdf") { |ok, _| ok }
-      end
+      failed = levels.values.reject { |flavour| verapdf.call(out, "#{name}.pdf", flavour) }
       failed.map { |flavour| "#{name}.pdf is not #{flavour}" }
     end
     abort failures.join("\n") if failures.any?
@@ -143,11 +153,11 @@ namespace :verify do
       puts report
       abort "pdfsig does not call the timestamped signature valid" unless report.include?("Signature is Valid")
     end
-    next puts("docker is not installed: veraPDF skipped") unless system("which docker > #{File::NULL} 2>&1")
+    unless system("which verapdf > #{File::NULL} 2>&1") || system("which docker > #{File::NULL} 2>&1")
+      next puts("neither verapdf nor docker is installed: veraPDF skipped")
+    end
 
-    sh "docker", "run", "--rm", "--platform", "linux/amd64", "-v", "#{out}:/data:ro",
-       ENV.fetch("VERAPDF_IMAGE", "verapdf/cli:latest"), "--format", "text", "-v", "--flavour", "3b",
-       "/data/timestamped_invoice.pdf"
+    abort "timestamped_invoice.pdf is not 3b" unless verapdf.call(out, "timestamped_invoice.pdf", "3b")
   end
 
   desc "Validate the Factur-X example (PDF/A-3 and its EN 16931 XML) with Mustang (needs Docker)"

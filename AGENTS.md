@@ -45,7 +45,7 @@ A layout node, the SVG renderer and a `canvas { |c| … }` block call only what 
 
 | Claim | Validator | Task |
 |---|---|---|
-| PDF/A, PDF/UA | veraPDF, through Docker | `bundle exec rake verify:conformance` |
+| PDF/A, PDF/UA | veraPDF: a local `verapdf` (`brew install verapdf`), else Docker | `bundle exec rake verify:conformance` |
 | Factur-X | Mustang, through Docker | `bundle exec rake verify:factur_x` |
 | Signatures | `openssl`, and `pdfsig` when installed | `bundle exec rake verify:signature` |
 | File structure | `qpdf --check` | by hand |
