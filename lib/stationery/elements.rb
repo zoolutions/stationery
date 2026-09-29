@@ -134,10 +134,15 @@ module Stationery
     end
 
     # Cells are strings, layout nodes, procs built with the DSL (`-> { image … }`)
-    # or components.
+    # or components. Rows given as an Enumerator to a table whose every
+    # column has a width are read as pages reach them (Layout::Table.streams?).
     def table(rows, widths: nil, width: :auto, header: false, split_rows: false, cell: {}, anchor: nil, bookmark: nil,
               &)
-      rows = rows.map { |row| row.map { |content| cell_content(content) } }
+      rows = if Layout::Table.streams?(rows, widths)
+               streamed_rows(rows)
+             else
+               rows.map { |row| row.map { |content| cell_content(content) } }
+             end
       node = Layout::Table.new(rows, context: @_builder.context, widths:, width:, header:, split_rows:, cell:, &)
       @_builder.add(mark(node, anchor, bookmark))
     end
@@ -237,6 +242,21 @@ module Stationery
       when Component then container { render content }
       when Hash then content.merge(content: cell_content(content[:content]))
       else content
+      end
+    end
+
+    # The rows of a streamed table, their cells built when a page reaches
+    # them: a proc or a component in the builder and the text style the
+    # table was given in, which the document has left by then.
+    def streamed_rows(rows)
+      builder = @_builder
+      text = builder.text_defaults
+      rows.lazy.map do |row|
+        previous = @_builder
+        @_builder = builder
+        builder.with_text(**text) { row.map { |content| cell_content(content) } }
+      ensure
+        @_builder = previous
       end
     end
 

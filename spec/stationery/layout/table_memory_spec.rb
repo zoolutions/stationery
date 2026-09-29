@@ -57,6 +57,16 @@ RSpec.describe "what a long table holds before its pages" do # rubocop:disable R
     expect(node.cell(2, 1)).to be(grid.at(2, 1))
   end
 
+  it "measures no cell's natural or minimum width when every column has a width" do
+    [[40, 120, 80], [0.2, 0.5, 0.3]].each do |widths|
+      node = table(rows, header: true, widths:)
+      node.split(400, 200)
+      node.fixed_width(400)
+
+      expect(node.cells.cells.filter_map { it.instance_variable_get(:@natural_width) }).to be_empty
+    end
+  end
+
   it "places no cell on a grid to resolve the columns of a table without rowspans" do
     node = table(rows, header: true) { |t| t.row(0).weight = :bold }
     allow(Stationery::Layout::Table::Grid).to receive(:new).and_call_original
