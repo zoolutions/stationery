@@ -8,6 +8,7 @@
 #   bundle exec rake memory              # 1,000 pages
 #   PAGES=5000 bundle exec rake memory
 #   DOCUMENTS=text,table FORMS=string,incremental bundle exec rake memory
+#   PAGES=30303 DOCUMENTS=streamed,listed FORMS=incremental bundle exec rake memory   # a million rows
 #
 # The peak is what the operating system saw and moves with the machine, the
 # allocator and the garbage collector's timing; the retained figures come
@@ -72,7 +73,34 @@ module Bench
       end
     end
 
-    DOCUMENTS = { "text" => Text, "report" => Report, "table" => Table }.freeze
+    # A price list of as many rows, every column with a width, read from an
+    # Enumerator as pages reach them (`streamed`), and the same rows given as
+    # an Array, which holds every row from the start (`listed`).
+    class Streamed < StationeryTable
+      WIDTHS = [50, 223, 90, 70, 90].freeze
+
+      def view_template = table(source, header: true, widths: WIDTHS) { |t| style(t) }
+
+      def source
+        Enumerator.new do |rows|
+          rows << TABLE_HEADER
+          (PAGES * ROWS_PER_PAGE).times { |index| rows << [(index + 1).to_s, *TABLE_ROWS[index % 1_500].drop(1)] }
+        end
+      end
+
+      def style(table)
+        table.row(0).weight = :bold
+        table.columns(3..).align = :right
+        table.zebra(from: 1, color: "#F4F4F4")
+      end
+    end
+
+    class Listed < Streamed
+      def view_template = table(source.to_a, header: true, widths: WIDTHS) { |t| style(t) }
+    end
+
+    DOCUMENTS = { "text" => Text, "report" => Report, "table" => Table, "streamed" => Streamed,
+                  "listed" => Listed }.freeze
     FORMS = {
       "string" => ->(document) { document.to_pdf.bytesize },
       "block" => ->(document) { document.to_pdf { |chunk| chunk } },
