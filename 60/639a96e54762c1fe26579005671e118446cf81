@@ -1,0 +1,28 @@
+.claude/commands/finish-prs.md
+  s_f5a1e2cf907cda::t_5d2d6d3dcd462c 82
+  s_f5a1e2cf907cda::t_43501a2abd7c2d 2
+  s_f5a1e2cf907cda::t_eed447c7d19af0 36
+  s_f5a1e2cf907cda::t_58b31456bc01a6 60
+  s_f5a1e2cf907cda::t_652973b76ea588 51-54
+  s_f5a1e2cf907cda::t_b98a1518bc9f6a 43
+  s_f5a1e2cf907cda::t_f1ded61fa2f9b7 14
+  s_f5a1e2cf907cda::t_1411e7daa57ba3 65
+.claude/commands/github-review-pr.md
+  s_f5a1e2cf907cda::t_8ea25cb0c7043b 33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "60639a96e54762c1fe26579005671e118446cf81",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
