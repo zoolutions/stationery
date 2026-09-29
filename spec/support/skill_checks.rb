@@ -3,7 +3,6 @@
 require "tmpdir"
 require "fileutils"
 require "stationery/minitest"
-require "stationery/rails"
 
 # What spec/stationery/skill_spec.rb holds the skill's hand-written parts
 # (SKILL.md and the recipes) to: the methods they name exist, and the
@@ -34,7 +33,10 @@ module SkillChecks
       end.uniq
     end
 
+    # stationery/rails is required here, not when the suite loads: spec/rails
+    # requires it after Rails, for the Railtie.
     def known
+      require "stationery/rails"
       [Stationery::Document, Stationery::Canvas, Stationery::Layout::Table, Stationery::Layout::Table::Selection,
        Stationery::Testing::Inspector, Stationery::PageInfo, Stationery::Rails,
        Stationery::Warnings::MissingGlyph].flat_map do |klass|
