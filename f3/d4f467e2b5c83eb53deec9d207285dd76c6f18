@@ -1,0 +1,67 @@
+lib/stationery/layout/barcode.rb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 16-18,23
+spec/stationery/text/wrapper_ligatures_spec.rb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 9-10,49,91-136
+lib/stationery/skill/recipes/receipt.md.erb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 16,63-64,76-78
+lib/stationery/layout/text.rb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 53-57
+lib/stationery/cli/render.rb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 139
+lib/stationery.rb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 162
+examples/receipt.rb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 28
+lib/stationery/skill/recipes/label.md.erb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 10-11,58-64,66-69,89-90
+docs/app/views/docs/pages/warnings.rb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 32-34
+lib/stationery/raster/render.rb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 32,43,60-63,67,70-71,96-99
+examples/shipping_label.rb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 14
+lib/stationery/text/wrapper.rb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 168-171,179,184-185
+lib/stationery/document.rb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 40-48,225-227,234,248,263-264,266,280,282-283,292,296,336-337,346-348,389,392
+lib/stationery/zpl/render.rb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 14-16,18-19,27-28,34
+benchmark/baseline.json
+  s_f5a1e2cf907cda::t_f5b7448ab19831 41,46
+docs/app/views/docs/pages/pages.rb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 48-85
+lib/stationery/layout/paginator.rb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 10-16,19-20,22,27,40,46,52-56
+lib/stationery/skill/reference/printing.md.erb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 8-10
+lib/stationery/skill/SKILL.md.erb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 54,94-98
+spec/stationery/cli/render_spec.rb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 193-200
+spec/stationery/document_max_pages_spec.rb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 1-148
+lib/stationery/layout/opening.rb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 1-61
+README.md
+  s_f5a1e2cf907cda::t_f5b7448ab19831 487-507,673,698,733-739
+lib/stationery/warnings.rb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 27-36
+spec/fixtures/cli/two_labels.rb
+  s_f5a1e2cf907cda::t_f5b7448ab19831 1-16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "f3d4f467e2b5c83eb53deec9d207285dd76c6f18",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
