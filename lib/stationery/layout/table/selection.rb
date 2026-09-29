@@ -39,13 +39,19 @@ module Stationery
         end
 
         def self.indexes(spec, count)
-          all = (0...count).to_a
           case spec
-          when Integer then [all[spec]].compact
-          when Range then Array(all[spec])
+          when Integer then [index(spec, count)].compact
+          when Range then Array((0...count).to_a[spec])
           when Array then spec.flat_map { |s| indexes(s, count) }
           else raise ArgumentError, "select rows or columns with an Integer, Range or Array, not #{spec.inspect}"
           end
+        end
+
+        # A row or column of `count`, from the end when negative, as
+        # `Array#[]` reads one; nil past either end.
+        def self.index(spec, count)
+          spec += count if spec.negative?
+          spec if spec.between?(0, count - 1)
         end
       end
     end

@@ -103,7 +103,11 @@ module Stationery
           rows = ->(row) { row >= from && (to.nil? || row <= to) && ((row - from) % every).zero? }
           Stream::Selection.new(@stream, rows, (0...column_count).to_a).background = color
         else
-          (from..(to || (row_count - 1))).step(every) { |r| rows(r).background = color }
+          # One selection of every striped row, as each row's own would
+          # be: a long table is not counted again for every row.
+          count = row_count
+          rows = (from..(to || (count - 1))).step(every).filter_map { |row| Selection.index(row, count) }
+          Selection.new(self, rows, (0...column_count).to_a).background = color
         end
         self
       end
