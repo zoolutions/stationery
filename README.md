@@ -85,7 +85,7 @@ InvoicePdf.new(invoice).to_pdf("a.pdf") # also writes a path or an IO
 `examples/` has a complete, runnable invoice, annual report, letter, packing slip, shipping label, fillable form, postcard collage, magazine article, event flyer, two-column newsletter and Factur-X e-invoice,
 and one per thing people build: a 2,000-row price list written `incremental`, a contract with initials
 on every page and signature fields, a landscape certificate, a two-column résumé with its body in HTML,
-a restaurant menu in `columns` with floats, a PDF/UA-1 accessible report and a notice in English, German
+a restaurant menu in `columns` with floats, a till receipt on an 80 mm roll, a PDF/UA-1 accessible report and a notice in English, German
 and Swedish, each hyphenated in its language
 ([previews and live PDFs](https://stationery.zoolutions.llc/docs/examples)); `bundle exec rake examples`
 renders them all, or render one with `stationery render examples/report.rb`.

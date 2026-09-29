@@ -37,6 +37,11 @@ class Views::Docs::Pages::Examples < DocsUI::Page
      "`monochrome dpi: 203`, with a Code 128 and a QR code from `barcode`, and written both as a PDF and, " \
      "with `to_zpl`, as ZPL for a thermal label printer, which draws the two barcodes itself (`native: " \
      "true`): `stationery render examples/shipping_label.rb --zpl`. See [Label printers](/docs/pages)." ],
+    [ "Receipt", "receipt",
+     "A till receipt on an 80 mm roll (`page size: [mm(80), mm(195)]`, as long as its content, where a " \
+     "receipt printer cuts after the last line), declared `monochrome dpi: 203, snap: true`: a logo cut to " \
+     "one bit, the items with their VAT codes, VAT by rate, the total and the payment, a QR code from " \
+     "`barcode type: :qr` and a dashed cut line with scissors drawn on a `canvas` above a coupon." ],
     [ "Application form", "form",
      "An interactive AcroForm: labelled text fields, a comb postcode, a select box, a radio group, check " \
      "boxes with labels, a multiline note and a signature field. Fill it in any viewer; every field and " \
@@ -86,7 +91,7 @@ class Views::Docs::Pages::Examples < DocsUI::Page
   title "Examples"
   eyebrow "Getting started"
 
-  def lead = "Eighteen complete documents from the gem's examples/ directory, rendered live by this site."
+  def lead = "Nineteen complete documents from the gem's examples/ directory, rendered live by this site."
 
   def content
     DocsUI::Section("Running them yourself") do
