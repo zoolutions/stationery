@@ -107,8 +107,9 @@ class Views::Docs::Pages::Comparison < DocsUI::Page
 
     DocsUI::Section("Speed", description: "Same documents, same fonts; see Performance for the method.") do
       md <<~'MD'
-        sghtmltopdf is native code and is faster by a clear margin; Stationery renders faster than
-        Prawn and writes smaller files than both. The numbers, the machine and the way they were
+        sghtmltopdf is native code and is faster on text and tables (2 to 3.5 times); on a page of
+        photographs the two are level. Stationery renders faster than Prawn (1.6 to 6 times) and
+        writes smaller files than both. The numbers, the machine and the way they were
         taken are on the [Performance](/docs/performance) page, and `bundle exec rake bench` runs
         all three engines on yours.
       MD
@@ -124,7 +125,7 @@ class Views::Docs::Pages::Comparison < DocsUI::Page
         **Pick sghtmltopdf** when you already have HTML templates and CSS, need CSS layout
         (flexbox, grid, floats), complex-script text or colour emoji, or must render very large documents
         with bounded memory, and can live without outlines, forms, tagged PDF, PDF/A and encryption.
-        It is much faster, at the price of a native extension.
+        It is faster on text and tables, at the price of a native extension.
 
         **Pick Prawn** when you have a Prawn codebase, want the lowest-level control over every
         coordinate, or need its long track record. New documents that want layout done for them
