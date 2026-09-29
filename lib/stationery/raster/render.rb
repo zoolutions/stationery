@@ -29,7 +29,7 @@ module Stationery
         raise ArgumentError, "#{output} does not take #{key}: (it is what a PDF has, not a picture)"
       end
 
-      def initialize(document, dpi:, pages:, monochrome:, debug:, strict:, shaper:)
+      def initialize(document, dpi:, pages:, monochrome:, debug:, strict:, shaper:, max_pages:)
         raise ArgumentError, "dpi: is a number above 0, not #{dpi.inspect}" unless dpi.nil? || dpi_value?(dpi)
 
         @document = document
@@ -40,6 +40,7 @@ module Stationery
         @debug = debug
         @strict = strict
         @shaper = shaper
+        @max_pages = max_pages
         @cache = {}
       end
 
@@ -56,13 +57,17 @@ module Stationery
       # time, and answers [number, what the block makes of it] for each.
       # The barcodes (Canvas::Native) that `native` answers true for are
       # left off the surface and handed to the block after it, for an output
-      # that draws them with commands of its own.
-      def paint(native: nil)
+      # that draws them with commands of its own. `labels: true` raises
+      # WarningsError on Warnings::TooManyPages, strict or not: each page is
+      # a label printed.
+      def paint(native: nil, labels: false)
         warnings = Warnings.new
         rules = Monochrome::Rules.new(@settings, warnings) if @settings
         canvases = Canvases.new(debug: @debug, warnings:, monochrome: rules)
-        pages = @document.paint_on(canvases, warnings:, shaper: @shaper)
+        pages = @document.paint_on(canvases, warnings:, shaper: @shaper, max_pages: @max_pages)
         raise WarningsError, warnings if @strict && warnings.any?
+
+        refuse_labels(warnings) if labels && @max_pages
 
         chosen(pages.size).map do |number|
           page = pages[number - 1]
@@ -87,6 +92,11 @@ module Stationery
       private
 
       def dpi_value?(dpi) = dpi.is_a?(Numeric) && dpi.positive?
+
+      def refuse_labels(warnings)
+        too_many = warnings.grep(Warnings::TooManyPages)
+        raise WarningsError, too_many if too_many.any?
+      end
 
       def chosen(count)
         numbers = case @pages

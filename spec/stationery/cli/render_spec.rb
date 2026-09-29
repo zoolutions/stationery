@@ -190,6 +190,14 @@ RSpec.describe Stationery::CLI::Render do
       expect(File.binread(target)).to start_with("^XA^PW564^LL339^")
     end
 
+    it "writes no labels for a document that needs more pages than its max_pages" do
+      target = File.join(dir, "two_labels.zpl")
+
+      expect(render(fixture("two_labels.rb"), "--zpl", "--out", target)).to eq(1)
+      expect(File.exist?(target)).to be(false)
+      expect(err.string).to include('the document may have 1 page and needs 2: page 2 starts with "two"')
+    end
+
     it "reports a resolution a ZPL printer does not have" do
       expect(render(fixture("one.rb"), "--zpl", "--dpi", "200", "--out", File.join(dir, "x.zpl"))).to eq(1)
       expect(err.string).to include("152, 203, 300 or 600")

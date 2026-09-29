@@ -50,6 +50,11 @@ module Stationery
         keep_lines(paragraph, head.lines.size, fresh:)
       end
 
+      # Its first line as set when it is what a page break left of a
+      # paragraph, else the first line of its text: what a message names it
+      # by (see Opening).
+      def opening = @paragraph ? @paragraph.lines.first&.text.to_s : @runs.map(&:text).join[/[^\n]*/]
+
       def fit(width, height, overflow:)
         from(paragraph(width).fit(height, overflow:))
       end
