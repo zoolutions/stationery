@@ -37,6 +37,15 @@ module Stationery
         config[:page] = { size: Page::Format.size(size), margin: Page::Format.margin(margin), layout: }
       end
 
+      # The most pages a render may have: `max_pages 1` for a label, a
+      # receipt or a card. A render that needs more lays them all out and
+      # reports Warnings::TooManyPages naming what moved past the limit, so
+      # `strict` raises; to_zpl writes no label then, strict or not.
+      # `max_pages nil` takes an inherited limit away.
+      def max_pages(count)
+        config[:max_pages] = Layout::Paginator.limit(count)
+      end
+
       def font_family(name, **paths)
         config[:families][name.to_s] = Fonts::Family.build(name, **paths)
       end
@@ -213,13 +222,16 @@ module Stationery
     #
     # `monochrome:` is true, false or options laid over those of the class
     # (see .monochrome).
+    #
+    # `max_pages:` replaces the class's limit (see .max_pages) for one
+    # render; nil takes it away.
     def to_pdf(target = nil, strict: self.class.config[:strict], debug: false, encrypt: self.class.config[:encrypt],
                tagged: self.class.config[:tagged], page_labels: self.class.config[:page_labels], attachments: [],
                xmp: metadata[:xmp] != false, conformance: self.class.config[:conformance],
                factur_x: self.class.config[:factur_x], sign: self.class.config[:sign],
                shaper: self.class.config[:shaping][:shaper], incremental: self.class.config[:incremental],
                print: PDF::PrintHints::NONE, missing_glyphs: self.class.config[:missing_glyphs],
-               monochrome: self.class.config[:monochrome], &block)
+               monochrome: self.class.config[:monochrome], max_pages: self.class.config[:max_pages], &block)
       invoice = PDF::FacturX.for(factur_x, self)
       attachments = PDF::Attachments.merge(self.class.config[:attachments], attachments, invoice&.attachment)
       conformance = PDF::Conformance.for(invoice ? invoice.conformance(conformance) : conformance, missing_glyphs:)
@@ -233,7 +245,7 @@ module Stationery
       options = { strict:, debug:, encrypt:, tagged: tagged || conformance&.pdf_ua?, page_labels:, attachments:,
                   xmp: xmp || !conformance.nil?, conformance:, invoice:, signature:, sink: block, shaper:, print:,
                   incremental: incremental && !conformance && !signature && !(strict && block),
-                  monochrome: Monochrome.for(self.class.config[:monochrome], monochrome) }
+                  monochrome: Monochrome.for(self.class.config[:monochrome], monochrome), max_pages: }
       Stationery.instrument("render.stationery", document: self.class.name) do |event|
         block ? render_pdf(event, **options) : write(render_pdf(event, **options), target)
       end
@@ -248,9 +260,10 @@ module Stationery
     # print:, tagged:, …) raises when it is passed and is left alone when
     # the class declares it. See Raster.
     def to_png(target = nil, dpi: nil, pages: nil, monochrome: self.class.config[:monochrome], debug: false,
-               strict: self.class.config[:strict], shaper: self.class.config[:shaping][:shaper], **pdf_only)
+               strict: self.class.config[:strict], shaper: self.class.config[:shaping][:shaper],
+               max_pages: self.class.config[:max_pages], **pdf_only)
       Raster::Render.refuse(pdf_only)
-      Raster::Render.new(self, dpi:, pages:, monochrome:, debug:, strict:, shaper:).call(target)
+      Raster::Render.new(self, dpi:, pages:, monochrome:, debug:, strict:, shaper:, max_pages:).call(target)
     end
 
     # ZPL II for a label printer (a String, one ^XA…^XZ label per page),
@@ -264,10 +277,10 @@ module Stationery
     # barcode that does not say otherwise (see ZPL::Native). See ZPL.
     def to_zpl(target = nil, dpi: nil, copies: nil, pages: nil, compression: :z64, native: nil, monochrome: true,
                debug: false, strict: self.class.config[:strict], shaper: self.class.config[:shaping][:shaper],
-               **pdf_only)
+               max_pages: self.class.config[:max_pages], **pdf_only)
       Raster::Render.refuse(pdf_only, "to_zpl")
-      ZPL::Render.new(self, dpi:, copies:, pages:, compression:, native:, monochrome:, debug:, strict:, shaper:)
-                 .call(target)
+      ZPL::Render.new(self, dpi:, copies:, pages:, compression:, native:, monochrome:, debug:, strict:, shaper:,
+                            max_pages:).call(target)
     end
 
     # Builds the document, lays it out and paints it on the canvases that
@@ -276,11 +289,11 @@ module Stationery
     # Answers the pages, hands each to `each_page` as soon as its content is
     # painted, and yields the bookmarks whose anchors were painted.
     def paint_on(canvases, warnings: Warnings.new, shaper: self.class.config[:shaping][:shaper], each_page: nil,
-                 stand_ins: false)
+                 stand_ins: false, max_pages: self.class.config[:max_pages])
       book = book_for(warnings, shaper, stand_ins)
       builder = builder_for(book, tagged: tagging?(canvases))
       Stationery.instrument("build.stationery", document: self.class.name) { call(builder) }
-      pages = paginate(builder, canvases, each_page, book:, warnings:)
+      pages = paginate(builder, canvases, each_page, book:, warnings:, max_pages:)
       destinations = Structure.resolve(pages, warnings:, book:, canvases:)
       yield builder.outline.resolve(destinations) if block_given?
       @warnings = warnings
@@ -320,7 +333,8 @@ module Stationery
     end
 
     # The PDF bytes; `event` is the render.stationery payload it fills in.
-    def render_pdf(event, strict:, debug:, tagged:, conformance:, shaper:, incremental:, monochrome:, **assembly)
+    def render_pdf(event, strict:, debug:, tagged:, conformance:, shaper:, incremental:, monochrome:, max_pages:,
+                   **assembly)
       tagging = Tagging::Tree.new if tagged
       warnings = Warnings.new
       resources = Resources.new
@@ -329,7 +343,9 @@ module Stationery
       rules = Monochrome::Rules.new(monochrome, warnings) if monochrome
       canvases = PDF::Canvases.new(resources, debug, tagging, warnings, monochrome: rules)
       stand_ins = conformance&.replace_missing_glyphs? || false
-      pages = paint_on(canvases, warnings:, shaper:, each_page: sealer, stand_ins:) { |bookmarks| outline = bookmarks }
+      pages = paint_on(canvases, warnings:, shaper:, each_page: sealer, stand_ins:, max_pages:) do |bookmarks|
+        outline = bookmarks
+      end
       tagging&.audit(pages, warnings, lang: metadata[:lang])
       conformance&.audit!(pages, resources:, warnings:)
       @fields = Forms::AcroForm.values(pages)
@@ -370,10 +386,10 @@ module Stationery
 
     # Takes the root from the builder as it hands it to the paginator, so
     # nothing here keeps the nodes of a page that has been painted.
-    def paginate(builder, canvases, each_page, book:, warnings:)
+    def paginate(builder, canvases, each_page, book:, warnings:, max_pages:)
       Stationery.instrument("paginate.stationery", document: self.class.name) do |event|
         regions = Regions.new(self.class.config[:regions], measure: region_measure(book))
-        paginator = Layout::Paginator.new(canvases:, page: page_options, warnings:, regions:)
+        paginator = Layout::Paginator.new(canvases:, page: page_options, warnings:, regions:, max_pages:)
         paginator.paginate(builder.release) { |page| each_page&.call(page) }.tap do |pages|
           PageTemplates.new(self, book:, canvases:, regions:, warnings:).apply(pages)
           event[:pages] = pages.size

@@ -11,6 +11,7 @@ require "stationery"
 
 class ExampleShippingLabel < Stationery::Document
   page size: "4in x 6in", margin: mm(4)
+  max_pages 1 # one label: what does not fit warns, and to_zpl writes no second label
   monochrome dpi: 203
   default_text size: 10
   metadata title: "Shipping label", creator: "stationery example"

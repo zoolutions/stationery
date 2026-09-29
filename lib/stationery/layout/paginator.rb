@@ -7,15 +7,24 @@ module Stationery
     class Paginator
       attr_reader :warnings
 
+      # What `max_pages` takes: a count of pages, or nil for any number.
+      def self.limit(count)
+        return count if count.nil? || (count.is_a?(Integer) && count.positive?)
+
+        raise ArgumentError, "max_pages is an Integer of 1 or more, or nil, not #{count.inspect}"
+      end
+
       # `canvases:` makes the canvas of each page (see PDF::Canvases); without
       # them the pages are painted for a PDF that names what it draws in
-      # `resources:`.
+      # `resources:`. A render that needs more than `max_pages` pages lays
+      # them all out and reports Warnings::TooManyPages.
       def initialize(resources: nil, canvases: nil, page: {}, warnings: Warnings.new, debug: false, regions: nil,
-                     tagging: nil)
+                     tagging: nil, max_pages: nil)
         @canvases = canvases || PDF::Canvases.new(resources, debug, tagging, warnings)
         @page_options = page
         @regions = regions
         @warnings = warnings
+        @max_pages = self.class.limit(max_pages)
       end
 
       # With a block, each page is handed to it as soon as it is painted.
@@ -28,15 +37,23 @@ module Stationery
         while remaining
           number = pages.size + 1
           page, head, remaining = next_page(remaining, number)
+          moved = Opening.of(head) if number == @max_pages&.succ
           place(page, head, number)
           head = nil
           yield page if block_given?
           pages << page
         end
+        too_many(pages.size, moved)
         pages
       end
 
       private
+
+      def too_many(count, moved)
+        return unless @max_pages && count > @max_pages
+
+        @warnings << Warnings::TooManyPages.new(limit: @max_pages, pages: count, moved:)
+      end
 
       # A page whose regions differ when it is the last one tries the
       # last-page box first: if everything left fits, it is the last page.

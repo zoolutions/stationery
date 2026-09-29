@@ -5,8 +5,9 @@ From the README of stationery <%= version %>. Online: <%= docs("pages") %>. Barc
 
 - **A label for a thermal printer**: `to_zpl`, below first, and the recipe
   [../recipes/label.md](../recipes/label.md) with its checklist.
-- **Verify a label** before calling it done: one page (content that does not fit goes to a second
-  page, and so a second label, without a warning: `doc.to_zpl.scan("^XA").size == 1`), the one-bit
+- **Verify a label** before calling it done: one page (`max_pages 1` in the class, so content that
+  does not fit warns as `TooManyPages` and `to_zpl` raises instead of writing a second
+  label), the one-bit
   picture looked at (`doc.to_png("label.png", monochrome: true)`), its barcodes decoded
   (`zbarimg -q label.png`), the native commands in the ZPL (`grep -o '\^B[CQEX][^^]*' label.zpl`),
   and `doc.warnings` read after `to_zpl`. The `to_png(monochrome: true)` picture at the printer's

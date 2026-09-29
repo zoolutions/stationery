@@ -11,9 +11,12 @@ module Stationery
     # printer's, by default the monochrome dpi (203 unless the class says
     # otherwise), and `copies:` by default the class's `print copies:`, else 1.
     # `native:` is whether barcodes that do not say are drawn by the printer
-    # (see Native).
+    # (see Native). A document that needs more pages than its `max_pages`
+    # raises WarningsError whether the render is strict or not: each page
+    # would be one more label printed.
     class Render
-      def initialize(document, dpi:, copies:, pages:, compression:, native:, monochrome:, debug:, strict:, shaper:)
+      def initialize(document, dpi:, copies:, pages:, compression:, native:, monochrome:, debug:, strict:, shaper:,
+                     max_pages:)
         settings = Monochrome.for(document.class.config[:monochrome], monochrome)
         raise ArgumentError, "to_zpl is always monochrome: a label printer prints one bit a dot" unless settings
 
@@ -21,13 +24,14 @@ module Stationery
         @compression = ZPL.check_compression(compression)
         dpi = ZPL.check_dpi(dpi || settings.dpi)
         @native = Native.new(dpi, native)
-        @raster = Raster::Render.new(document, dpi:, pages:, monochrome: settings, debug:, strict:, shaper:)
+        @raster = Raster::Render.new(document, dpi:, pages:, monochrome: settings, debug:, strict:, shaper:,
+                                               max_pages:)
       end
 
       # The labels, one for each page chosen, in one String; also written to
       # `target` when given, a path or an IO.
       def call(target = nil)
-        zpl = @raster.paint(native: @native) do |surface, natives|
+        zpl = @raster.paint(native: @native, labels: true) do |surface, natives|
           fields = natives.map { |call| @native.field(call) }
           ZPL.label(@raster.bits(surface), width: surface.width, height: surface.height, copies: @copies,
                                            compression: @compression, fields:)

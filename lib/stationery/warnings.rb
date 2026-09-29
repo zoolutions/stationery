@@ -24,6 +24,16 @@ module Stationery
       end
     end
 
+    # A render of a document that may have `limit` pages (`max_pages`) that
+    # needs `pages`. `moved` is what the first page past the limit starts
+    # with (see Layout::Opening), nil when it paints nothing.
+    TooManyPages = Data.define(:limit, :pages, :moved) do
+      def message
+        start = moved ? "starts with #{moved}" : "is blank"
+        "the document may have #{limit} page#{"s" unless limit == 1} and needs #{pages}: page #{limit + 1} #{start}"
+      end
+    end
+
     UnknownFamily = Data.define(:requested, :used) do
       def message = %(font family "#{requested}" is not registered, using "#{used}")
     end
