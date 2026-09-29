@@ -38,12 +38,12 @@
         "bytes": 26414
       },
       "article": {
-        "allocations": 37208,
+        "allocations": 37268,
         "pages": 1,
         "bytes": 39862
       },
       "newsletter": {
-        "allocations": 31991,
+        "allocations": 32115,
         "pages": 1,
         "bytes": 34514
       },
