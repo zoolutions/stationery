@@ -25,6 +25,7 @@ class ExampleReceipt < Stationery::Document
   # printers, and ESC/POS is not something Stationery writes. Print the PDF,
   # or send `to_png` to a driver that takes a picture.
   page size: [mm(80), mm(195)], margin: [mm(4), mm(4), mm(6), mm(4)]
+  max_pages 1 # one slip of paper: what does not fit warns instead of starting a second
   monochrome dpi: 203, snap: true, dither: :threshold
   default_text size: 8.5, leading: 1.5
   metadata title: "Receipt", creator: "stationery example"

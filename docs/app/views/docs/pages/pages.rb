@@ -45,6 +45,44 @@ class Views::Docs::Pages::Pages < DocsUI::Page
       MD
     end
 
+    DocsUI::Section("One page only: max_pages", description: "For a label, a receipt or a card.") do
+      md <<~'MD'
+        Content that does not fit a page continues on the next, as a letter or a report should. A label,
+        a receipt or a card must not, and `max_pages` says so:
+
+        ```ruby
+        class ShippingLabel < Stationery::Document
+          page size: :label_4x6, margin: mm(4)
+          max_pages 1
+        end
+
+        label = ShippingLabel.new(parcel)
+        label.to_pdf
+        label.warnings.map(&:message)
+        # => ["the document may have 1 page and needs 2: page 2 starts with a Code 128 barcode"]
+
+        label.to_pdf(max_pages: nil)   # one render without the limit
+        ```
+
+        A render that needs more pages than the limit lays them all out and reports
+        `Warnings::TooManyPages` (`limit`, `pages`, `moved`), naming what the first page past the limit
+        starts with: text by its first line, quoted and cut at 40 characters, anything else by its kind
+        (`a table`, `an image`, `a QR code`, `a box`). Under [`strict`](/docs/warnings#strict-mode) it raises.
+
+        | Render | More pages than `max_pages` |
+        | --- | --- |
+        | `to_pdf` | every page written, the warning reported (`strict` raises) |
+        | `to_png` | a picture of every page, the warning reported (`strict` raises) |
+        | `to_zpl` | raises `Stationery::WarningsError`, strict or not: no label is written, since each page is one more label printed |
+
+        `to_pdf(max_pages:)`, `to_png(max_pages:)` and `to_zpl(max_pages:)` replace the limit for one
+        render, `nil` takes it away. It is inherited; `max_pages nil` in a subclass takes it away, and a
+        subclass's `page` keeps it. The declaration writes nothing: a document that fits is byte for byte
+        what it is without it. Anything but a positive Integer or `nil` raises `ArgumentError` where it
+        is written.
+      MD
+    end
+
     DocsUI::Section("Millimetres and inches", description: "Units for labels, envelopes and pre-printed forms.") do
       md <<~'MD'
         Every size and position is in points (1/72 inch). `mm`, `cm`, `inch` and `pt` convert to them, in

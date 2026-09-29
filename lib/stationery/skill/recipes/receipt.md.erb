@@ -13,6 +13,7 @@ class ReceiptPdf < Stationery::Document
   LOGO = File.expand_path("logo.png", __dir__)        # in Rails: Rails.root.join("app/assets/images/logo.png").to_s
 
   page size: [mm(80), mm(170)], margin: [mm(5), mm(4)] # 80 mm paper; the length is fixed, so choose it
+  max_pages 1                                         # one slip: what does not fit warns (strict raises)
   default_text size: 8.5
   metadata title: "Receipt", lang: "en"
 
@@ -59,7 +60,8 @@ end
 
 - **The page is the paper**: `page size: [mm(80), mm(170)]` (or `"80mm x 170mm"`). A page has a
   fixed length, set at class level, so a receipt of any number of lines either continues on a
-  second page or renders from a subclass of the length it needs:
+  second page (which `max_pages 1` reports as `Warnings::TooManyPages`, naming what moved there) or
+  renders from a subclass of the length it needs, which keeps `max_pages`:
   `Class.new(ReceiptPdf) { page size: [mm(80), mm(90 + (items.size * 5))], margin: [mm(5), mm(4)] }.new(**attributes)`.
 - **Totals as a table** of two columns: `widths: [nil, 60]` gives the prices 60 pt and the names
   the rest, and `cell: { borders: [] }` takes away the default borders.
@@ -71,6 +73,7 @@ end
   ESC/POS, which Stationery does not write: print the PDF through the printer's driver, or send the
   picture to one that takes images. `to_zpl` is for ZPL label printers (see [label.md](label.md)).
 - Look at it: `stationery render receipt_pdf.rb --png` and open the picture; a narrow page shows
-  where a long item name wraps. It should be one page: a `receipt_pdf-2.png` means the content
-  did not fit, which does not warn. Decode the QR code from the picture: `zbarimg -q receipt_pdf-1.png`
+  where a long item name wraps. It should be one page: with `max_pages 1` a receipt that does not
+  fit prints `warning: the document may have 1 page and needs 2: …` and writes a `receipt_pdf-2.png`
+  of what moved. Decode the QR code from the picture: `zbarimg -q receipt_pdf-1.png`
   (`brew install zbar`) prints `QR-Code:https://…`.

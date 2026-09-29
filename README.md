@@ -484,6 +484,27 @@ render Callout.new(color: "#F3F4F6") { text "Amount due" }
   that starts there, with `style:` `:decimal`, `:roman`, `:roman_lower`, `:alpha`, `:alpha_lower` or
   `nil` (prefix only), `start:` and `prefix:`. `to_pdf(page_labels:)` overrides it for one render.
 - Content taller than a page is placed anyway; `document.warnings` lists every overflow.
+- Content that does not fit a page continues on the next, as a letter or a report should. A label, a
+  receipt or a card must not: `max_pages 1` in the class body says so. A render that needs more pages
+  lays them all out and reports `Warnings::TooManyPages`, naming what the first page past the limit
+  starts with, so `strict` raises:
+
+  ```ruby
+  class ShippingLabel < Stationery::Document
+    page size: :label_4x6, margin: mm(4)
+    max_pages 1
+  end
+
+  label.warnings.map(&:message)
+  # => ["the document may have 1 page and needs 2: page 2 starts with a Code 128 barcode"]
+  ```
+
+  Text is named by its first line, quoted and cut at 40 characters, anything else by its kind (`a
+  table`, `an image`, `a QR code`, `a box`). `to_pdf` and `to_png` keep every page, so the one that
+  spilled can be looked at; `to_zpl` writes no label at all (see Label printers below). `to_pdf(max_pages:)`,
+  `to_png(max_pages:)` and `to_zpl(max_pages:)` replace the limit for one render and `nil` takes it
+  away, as `max_pages nil` does in a subclass; a subclass's `page` keeps it. The declaration writes
+  nothing: a document that fits is byte for byte what it is without it.
 - After `to_pdf`, `document.warnings` is an Enumerable of everything the render noticed but did not
   raise on, each with a `#message`: overflows, SVG elements that were skipped (`UnsupportedSvg`), and
   the other `Stationery::Warnings::*` kinds (missing glyphs, unknown font families, skipped images,
@@ -649,7 +670,7 @@ ShelfLabel.new.to_png(monochrome: { dpi: 203, snap: true }) # one bit to a dot, 
   edges of the box round outwards. Black and white match `pdftoppm -mono` in all but 0.1 to 2% of the
   dots; dithered areas differ dot by dot, since poppler halftones where stationery dithers.
 - **Options.** `dpi:` (96, or the monochrome dpi), `pages:`, `monochrome:`, `debug:` (the layout
-  rectangles), `strict:` and `shaper:` as `to_pdf` has them. What only a PDF has (`sign:`, `encrypt:`,
+  rectangles), `strict:`, `shaper:` and `max_pages:` as `to_pdf` has them. What only a PDF has (`sign:`, `encrypt:`,
   `conformance:`, `attachments:`, `print:`, `tagged:`, `page_labels:`, `xmp:`, `factur_x:`,
   `incremental:`, `missing_glyphs:`) raises `ArgumentError` when it is passed, and is left alone when
   the class declares it, so a signed or encrypted document still has pictures.
@@ -674,6 +695,7 @@ printer.
 ```ruby
 class ShippingLabel < Stationery::Document
   page size: "4in x 6in", margin: mm(4)
+  max_pages 1                               # a second page raises instead of printing a second label
   monochrome dpi: 203
 end
 
@@ -708,7 +730,13 @@ TCPSocket.open("printer.local", 9100) { |socket| label.to_zpl(socket) }
   dots.
 - **`copies:`** is `^PQ`, by default the class's `print copies:`, else 1. **`pages:`** a page number,
   a Range or an Array, in the order given; `target` a path or anything answering `write` (a socket).
-- `strict:`, `debug:` and `shaper:` are those of `to_pdf`; what only a PDF has raises, as for `to_png`.
+- **One label.** Content that does not fit the label goes to a next page, and every page is a label.
+  Declare `max_pages 1` (see Pages) and a document that needs a second page writes no ZPL:
+  `to_zpl` raises `Stationery::WarningsError` with `Warnings::TooManyPages`, strict or not, because
+  the harm of a second label is done when it prints, where no one reads a warning. `to_zpl(max_pages: nil)`
+  writes them all; `to_pdf` and `to_png` of the same document keep every page and warn, so the page
+  that spilled can be looked at.
+- `strict:`, `debug:`, `shaper:` and `max_pages:` are those of `to_pdf`; what only a PDF has raises, as for `to_png`.
 - **Speed.** A 4 × 6 in label takes about 25 ms at 203 dpi and 35 ms at 300 dpi (Ruby 3.4, Apple
   M-series), and is 10 to 20 KB of ZPL.
 - The labels were read back and compared with `to_png` dot for dot, and rendered by
