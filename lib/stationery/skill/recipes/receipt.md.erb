@@ -65,7 +65,10 @@ end
   the rest, and `cell: { borders: [] }` takes away the default borders.
 - **A QR code** is `barcode data, type: :qr`; it is vector bars, so it prints sharp at any size.
 - **A thermal receipt printer** prints black or nothing: `monochrome dpi: 203` reports what it
-  cannot print as it is, and `to_png(monochrome: true)` is the one-bit picture it will print, for a
-  printer driven with images. `to_zpl` is for ZPL label printers (see [label.md](label.md)).
+  cannot print as it is, and `monochrome dpi: 203, snap: true, dither: :threshold` makes every
+  colour black or white and cuts a colour logo at half so its letters stay clean.
+  `to_png(monochrome: true)` is the one-bit picture it will print. Receipt printers are driven in
+  ESC/POS, which Stationery does not write: print the PDF through the printer's driver, or send the
+  picture to one that takes images. `to_zpl` is for ZPL label printers (see [label.md](label.md)).
 - Look at it: `stationery render receipt_pdf.rb --png` and open the picture; a narrow page shows
   where a long item name wraps.
