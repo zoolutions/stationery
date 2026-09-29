@@ -1,0 +1,20 @@
+benchmark/memory.rb
+  s_f5a1e2cf907cda::t_a7302542bf5a35 76-103
+  s_f5a1e2cf907cda::t_7973fc26399382 11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "336761995ec68098f27c3328a4ee3914135a8946",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
