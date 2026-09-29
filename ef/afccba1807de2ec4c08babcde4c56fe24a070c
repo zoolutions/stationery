@@ -1,0 +1,23 @@
+Rakefile
+  s_f5a1e2cf907cda::t_83e5a4a56681af 70-84,103,156-158,160
+README.md
+  s_f5a1e2cf907cda::t_83e5a4a56681af 948-950,953
+AGENTS.md
+  s_f5a1e2cf907cda::t_83e5a4a56681af 48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "efafccba1807de2ec4c08babcde4c56fe24a070c",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
