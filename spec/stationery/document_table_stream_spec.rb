@@ -57,6 +57,18 @@ RSpec.describe Stationery::Document, "#table" do
     expect(document(lazy, widths: [30, nil, 0.3]).to_pdf).to eq(document(whole, widths: [30, nil, 0.3]).to_pdf)
   end
 
+  it "reads every row where the table is measured whole, in a box that does not break or a row" do
+    few = rows.first(5)
+    build = lambda do |source|
+      SpecDocument.build do
+        box(break_inside: :avoid) { table(source.call(few), widths: [30, 60, 40]) }
+        row { column { table(source.call(few), widths: [30, 0.4, 40]) } }
+      end
+    end
+
+    expect(build.call(lazy).to_pdf).to eq(build.call(whole).to_pdf)
+  end
+
   it "builds a cell given as a proc when its row is reached, in the text style the table was given in" do
     build = lambda do |source|
       SpecDocument.build do
