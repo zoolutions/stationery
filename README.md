@@ -934,10 +934,12 @@ Without `conformance` the option changes nothing, and with `:raise` neither.
 (columns) and `examples/accessible_report.rb` (figures, a table with header cells) as PDF/A-3b plus
 PDF/UA-1, the report once more with a link in its footer, and validates
 them with
-[veraPDF](https://verapdf.org) through Docker (`verapdf/cli`); CI runs it on every push. Validate
-your own documents the same way:
+[veraPDF](https://verapdf.org): a `verapdf` on the PATH when there is one (`brew install verapdf`),
+else through Docker (`verapdf/cli`); CI runs it on every push. Validate your own documents the same
+way:
 
 ```sh
+verapdf --format text -v --flavour 3b invoice.pdf
 docker run --rm -v "$PWD:/data:ro" verapdf/cli --format text -v --flavour 3b /data/invoice.pdf
 ```
 
