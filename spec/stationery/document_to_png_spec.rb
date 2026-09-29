@@ -105,6 +105,36 @@ RSpec.describe Stationery::Document, "#to_png" do
     expect(pixel(png, 20 + 16, 20 + 12)).not_to eq([255, 255, 255])
   end
 
+  # The one-bit image a monochrome PDF embeds, as rows of "1" for black.
+  def embedded_bitmap(pdf)
+    objects = reader_for(pdf).objects
+    stream = objects.values.map { objects.deref(it) }.grep(PDF::Reader::Stream).find { it.hash[:Subtype] == :Image }
+    width, height = stream.hash.values_at(:Width, :Height)
+    stride = (width + 7) / 8
+    data = stream.unfiltered_data
+    Array.new(height) { |y| data.byteslice(y * stride, stride).unpack1("B*")[0, width].tr("01", "10") }
+  end
+
+  photos = { "PNG" => File.join(RenderDigests::ROOT, "examples/assets/dunes.png"),
+             "JPEG" => File.join(PdfHelpers::IMAGES, "jpeg/scaled.jpg") }
+  photos.to_a.product([203, 300]).each do |(kind, path), dpi|
+    it "draws a #{kind} photo off the dot grid at #{dpi} dpi dot for dot as the monochrome PDF embeds it" do
+      document = SpecDocument.build do
+        box(height: 1.1) { nil }
+        image path, width: 50.2, height: 30.3
+      end
+      bitmap = embedded_bitmap(document.to_pdf(monochrome: { dpi: }))
+      dots = ZPLReader.png_dots(document.to_png(monochrome: { dpi: }).first)
+      left = ((20 * dpi / 72.0) + 0.5).floor
+      top = ((21.1 * dpi / 72.0) + 0.5).floor
+      drawn = dots[top, bitmap.size].map { it[left, bitmap.first.size] }
+
+      expect(bitmap.size).to eq((30.3 * dpi / 72.0).round)
+      expect(drawn.join.chars.zip(bitmap.join.chars).count { |a, b| a != b }).to eq(0)
+      expect(dots[top + bitmap.size][left, bitmap.first.size]).to eq("0" * bitmap.first.size)
+    end
+  end
+
   it "refuses what only a PDF has when it is asked for, and leaves it alone from the class" do
     signed = Class.new(SpecDocument) do
       encrypt owner_password: "x"
