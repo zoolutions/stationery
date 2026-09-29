@@ -52,7 +52,7 @@ Invoke `/github-review-pr <n>` (Skill tool): CI failures, then review comments. 
 
 ### 2e. Hand off
 
-Run the `fable-validator` agent on the combined diff first; do not open or merge on BLOCK.
+Run the `fable-validator` agent on the combined diff first. On BLOCK do not open or merge: mark it `needs-user` and report the blockers instead of calling it ready.
 
 - automerge: `gh pr merge <n> --auto --merge`, then Phase 3.
 - Otherwise: report it merge-ready with its URL and one line of what is in it, and wait.
