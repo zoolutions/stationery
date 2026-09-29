@@ -25,7 +25,7 @@ class Views::Docs::Pages::ImagesAndSvg < DocsUI::Page
         `to_png`, and a `monochrome` render, which dithers it. Baseline, extended and progressive JPEGs
         decode (every chroma subsampling, restart intervals, grey, RGB, YCbCr, CMYK and YCCK) to the
         pixels libjpeg-turbo gives, a photo drawn small at a half, a quarter or an eighth of its size.
-        A lossless, arithmetic-coded or 12-bit JPEG, or one of more than 33 megapixels, is not decoded:
+        A lossless, arithmetic-coded, hierarchical or 12-bit JPEG, or one of more than 33 megapixels, is not decoded:
         `to_png` draws a crossed box (`SkippedImage`) and monochrome embeds it as it is
         (`NotMonochrome`). The EXIF orientation is not applied, in a picture as in the PDF.
       MD

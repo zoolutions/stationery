@@ -46,7 +46,7 @@ class Views::Docs::Pages::Performance < DocsUI::Page
         (or `incremental` at class level) writes each page's content as soon as the page is painted
         instead, and what is painted later as content streams of its own:
 
-        | Document | Pages | | Before | Now | `incremental: true` |
+        | Document | Pages | | 0.10 | Now | `incremental: true` |
         |---|---:|---|---:|---:|---:|
         | Headings and paragraphs | 1,000 | peak | 391 MB | 111 MB | 108 MB |
         | | | alive | 216 MB | 17 MB | 14 MB |
@@ -63,11 +63,12 @@ class Views::Docs::Pages::Performance < DocsUI::Page
 
         "Peak" is the resident set size of one render in a fresh process, "alive" the megabytes that
         survive a garbage collection when pagination ends (`rake memory`, Apple M2 Max, Ruby 3.4.2
-        +YJIT). The peak moves with the machine, up to a fifth between two runs here, so nothing gates
-        on it. A document without headers, footers, templates or contents gains nothing from
-        `incremental:`, and what is left in every case is the document as it was built: every node
-        exists before the first page is painted. A table resolves its column widths from every cell
-        and keeps the widths, not the cell's text: a cell's node is built when a page reaches its row
+        +YJIT; the text documents measured on 0.11.0, the tables on 0.12.0). The peak moves with the
+        machine, up to a fifth between two runs here, so nothing gates on it. A document without
+        headers, footers, templates or contents gains nothing from `incremental:`, and what is left in
+        every case is the document as it was built: every node but a table cell's exists before the
+        first page is painted. A table with a column without a width resolves its column widths from
+        every cell and keeps the widths, not the cell's text: a cell's node is built when a page reaches its row
         and let go with the page. In a tagged render a row's `TR`, `TH` and `TD` are built when a page
         paints it, and the structure tree holds them until the file is written, so the table of
         165,000 rows tagged peaks at 2.2 GB. When `incremental:` takes the usual path instead is under

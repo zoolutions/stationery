@@ -3,12 +3,12 @@
     "recorded_with": "ruby 3.4.2 (2025-02-15 revision d2930f8e7a) +YJIT +PRISM [arm64-darwin24]",
     "documents": {
       "invoice": {
-        "allocations": 26410,
+        "allocations": 26382,
         "pages": 1,
         "bytes": 26598
       },
       "table": {
-        "allocations": 1276414,
+        "allocations": 1276366,
         "pages": 46,
         "bytes": 133756
       },
@@ -23,7 +23,7 @@
         "bytes": 27352
       },
       "flyer": {
-        "allocations": 79810,
+        "allocations": 79793,
         "pages": 4,
         "bytes": 127763
       },
@@ -58,7 +58,7 @@
         "bytes": 38733
       },
       "pdf_ua": {
-        "allocations": 260484,
+        "allocations": 260477,
         "pages": 6,
         "bytes": 187382
       },
