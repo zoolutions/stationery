@@ -78,6 +78,16 @@ RSpec.describe Stationery::Document, "#to_zpl" do
     end
   end
 
+  it "prints a JPEG photo dithered, the dots to_png(monochrome:) draws" do
+    path = jpeg_path("scaled")
+    document = SpecDocument.build { image path, width: 72 }
+    label = ZPLReader.labels(document.to_zpl).first
+
+    expect(document.warnings.to_a).to be_empty
+    expect(label.dots).to eq(ZPLReader.png_dots(document.to_png(monochrome: true).first))
+    expect(label.dots.join.count("1")).to be > 1000
+  end
+
   it "writes the same dots as plain hex for printers that do not take Z64" do
     hex = shelf_label.to_zpl(compression: :hex)
     label = ZPLReader.labels(hex).first

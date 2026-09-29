@@ -116,7 +116,7 @@ ls "$(bundle show stationery)/examples"      # or: gem contents stationery
 | `table(rows, widths:, width:, header:, split_rows:, cell:) { \|t\| }` | Tables. Cells are strings, layout nodes, procs built with the DSL (`-> { image logo }`) or components. Style with `t.row(0)`, `t.rows(-1)`, `t.column(1)`, `t.columns(1..)`, chained, plus `t.zebra`. Header rows repeat after a page break. A cell may be `{ content:, colspan:, rowspan: }` plus any cell option; rows list only the cells they start, as in HTML, and pages never break through a rowspan. Spans are set in the rows, not through selections. A row taller than the page continues on the next page, cut through its cells, with the header repeated; `split_rows: true` cuts any row that reaches the page bottom instead of moving it whole. |
 | `image(path_or_io, width:, height:, fit:, align:, radius:, rotate:, max_ppi:, downscale:, float:, margin:)` | JPEG, PNG or lossless WebP, aspect preserved. `fit: [w, h]` scales to fit inside; `fit: :cover` fills `width:` × `height:` and crops around the centre. `radius:` rounds the corners; `rotate:` turns it (degrees, clockwise) without changing the space it takes. Drawn at more than twice `max_ppi:` (300) it is reported as oversized; `downscale: true` resamples a PNG or WebP to that resolution instead. |
 | `svg(source_or_path, width:, height:, color:, align:)` | Vector icons and drawings; `currentColor` takes `color:` (or the `color` an element sets). Linear and radial gradients (`fill="url(#id)"`, `href` chains, both gradient units); `text`/`tspan` in the document's fonts; `<style>` stylesheets (element, class, id and `*` selectors); `use`, `symbol` sprites and nested `svg` viewports (`viewBox`, `preserveAspectRatio`); `clipPath` (both `clipPathUnits`). |
-| `barcode(data, type:, level:, module_size:, width:, height:, color:, quiet_zone:, native:, align:, alt:)` | A barcode drawn as vector bars, encoded in Ruby: `type: :code128` (the default; printable ASCII, digit runs in code set C), `:ean13` (12 digits and the check digit, or 13 checked) or `:qr` (byte mode, `level: :l, :m, :q, :h`, versions 1 to 40, UTF-8 marked with an ECI). `module_size:` points a module (1, or 2 for a QR code) or as many as fit `width:`; a linear one is `height:` (36) tall. The quiet zone is part of its size unless `quiet_zone: false`, and it shrinks to fit the space. Monochrome renders put it on the dot grid, a whole number of dots a module. `native: true` has `to_zpl` write the printer's own command for it: see [Label printers](#label-printers-to_zpl). A figure in a tagged PDF, its `alt:` by default the kind and the data. |
+| `barcode(data, type:, level:, module_size:, width:, height:, color:, quiet_zone:, native:, align:, alt:)` | A barcode drawn as vector bars, encoded in Ruby: `type: :code128` (the default; printable ASCII, digit runs in code set C), `:ean13` (12 digits and the check digit, or 13 checked), `:qr` (byte mode, `level: :l, :m, :q, :h`, versions 1 to 40, UTF-8 marked with an ECI) or `:datamatrix` (ECC 200 in ASCII encodation, digit pairs in one codeword, squares from 10 × 10 to 144 × 144). `module_size:` points a module (1, or 2 for a square one) or as many as fit `width:`; a linear one is `height:` (36) tall. The quiet zone is part of its size unless `quiet_zone: false`, and it shrinks to fit the space. Monochrome renders put it on the dot grid, a whole number of dots a module. `native: true` has `to_zpl` write the printer's own command for it: see [Label printers](#label-printers-to_zpl). A figure in a tagged PDF, its `alt:` by default the kind and the data. |
 | `wrap(gap:, row_gap:, align:) { }` | Children side by side at their own widths, wrapping onto new rows (chips, tags). |
 | `stack(gap:, align:) { }` | A base with layers painted over it: ordinary children set the height, `layer` children float over them and take no space. Moves to the next page whole. |
 | `layer(top:, right:, bottom:, left:, width:, height:, **box) { }` | Inside `stack`: a box placed by insets from the stack's edges, in points or as a fraction (`0.4`, `1/3r`) of its width/height; negative insets overhang. Takes every box option (`rotate:`, `shadow:`, `radius:`, …). |
@@ -586,10 +586,11 @@ ShelfLabel.new.to_pdf(monochrome: false)           # as it was, byte for byte
   put on the printer's grid, counted from the top left corner of the page: their edges on whole dots
   and their widths whole numbers of dots, so a hairline is as wide on every label. A curve, a rounded
   corner, a slanted line and anything under a transform keeps its geometry.
-- **Images.** A PNG or a lossless WebP is greyed (a transparent pixel is white paper), resampled to the
-  dots it covers at `dpi:` and dithered, and embedded as a one-bit DeviceGray image
-  (`/BitsPerComponent 1`): what prints is the pattern chosen here, not the driver's. A JPEG is not
-  decoded by stationery, so it is embedded as it is and reported (`an image in JPEG 640x480`).
+- **Images.** A PNG, a lossless WebP or a JPEG is greyed (a transparent pixel is white paper),
+  resampled to the dots it covers at `dpi:` and dithered, and embedded as a one-bit DeviceGray image
+  (`/BitsPerComponent 1`): what prints is the pattern chosen here, not the driver's. A JPEG is decoded
+  for it in Ruby, no larger than the dots need; one of a kind that is not decoded (lossless,
+  arithmetic-coded, 12-bit) is embedded as it is and reported (`an image in JPEG 640x480`).
 - `monochrome` at class level is inherited and adds to what the class inherits; `monochrome false`
   takes it away. `to_pdf(monochrome:)` takes `true`, `false` or options laid over the class's.
 - Monochrome renders keep PDF/A and PDF/UA: the one-bit image is DeviceGray, which the sRGB output
@@ -597,7 +598,7 @@ ShelfLabel.new.to_pdf(monochrome: false)           # as it was, byte for byte
 - `Inspector#colors` lists what a PDF paints with, so a spec can hold it: `expect(pdf).to
   have_pdf_colors("#000000")`.
 
-What it does not do: it does not decode or dither a JPEG (convert it to PNG), does not look at form
+What it does not do: it does not dither a lossless, arithmetic-coded or 12-bit JPEG, does not look at form
 fields (their widget draws them, not the page), does not put dashes, line caps or curves on the grid,
 and does not make small text bolder. It changes nothing without `monochrome`. The rules live in
 `Stationery::Monochrome::Rules` and `Monochrome::Grid`, apart from the PDF canvas, and `to_png` and
@@ -618,14 +619,14 @@ ShelfLabel.new.to_png(monochrome: { dpi: 203, snap: true }) # one bit to a dot, 
 - **What is drawn**: text from the outlines of its glyphs (TrueType, CFF, WOFF; synthetic bold and
   oblique, letter spacing, rise, shaped runs), fills and strokes with their caps, joins (miter limit
   10) and dashes, even-odd and nonzero fills, clips, transforms and rotations, opacity, SVG linear and
-  radial gradients, PNG and WebP images, headers, footers, page templates (a background layer under
+  radial gradients, PNG, WebP and JPEG images, headers, footers, page templates (a background layer under
   the page) and page numbers. A colour picture is 24-bit RGB on white, anti-aliased; a text's origin,
   a stroke's horizontal and vertical edges and an upright image's edges are put on the pixel grid as
   poppler puts them, so it is close to `pdftoppm -r <dpi>` of the same PDF: the examples differ in
   0.0 to 0.5% of their pixels at 72 dpi, in the hinting of a few glyphs and the edges of images.
-- **What is not**: a JPEG is not decoded yet, so it is drawn as a grey box with a cross and reported
-  (`Warnings::SkippedImage`); form fields draw nothing (their widget is the PDF viewer's); links,
-  bookmarks and tagging are not visible anyway.
+- **What is not**: a lossless, arithmetic-coded or 12-bit JPEG, which is not decoded, is drawn as a
+  grey box with a cross and reported (`Warnings::SkippedImage`); form fields draw nothing (their
+  widget is the PDF viewer's); links, bookmarks and tagging are not visible anyway.
 - **Monochrome.** `monochrome:` takes what `to_pdf` takes, and the class's `monochrome` applies
   unless `monochrome: false` is given. The picture is drawn at the monochrome `dpi:` (a `dpi:` given
   to `to_png` replaces it), a pixel in or out by its centre with no anti-aliasing, and written as a
@@ -639,7 +640,8 @@ ShelfLabel.new.to_png(monochrome: { dpi: 203, snap: true }) # one bit to a dot, 
   `incremental:`, `missing_glyphs:`) raises `ArgumentError` when it is passed, and is left alone when
   the class declares it, so a signed or encrypted document still has pictures.
 - **Speed.** A 100 × 150 mm label at 203 dpi (800 × 1200 dots) takes about 30 ms, a one-page invoice
-  at 96 dpi about 0.1 s, a page of dithered photographs at 203 dpi about 0.7 s (Ruby 3.4 with YJIT,
+  at 96 dpi about 0.1 s, a page of dithered photographs at 203 dpi about 0.7 s, a label with a
+  12-megapixel JPEG photo about 1 s (Ruby 3.4 with YJIT,
   Apple M-series). Each page is kept as the list of what it was asked to draw until every page is
   painted, then drawn and encoded one at a time, so a long document does not hold a bitmap per page.
 
@@ -708,17 +710,20 @@ printer's own command, where the picture had it, so the printer puts the bars on
 ^FO146,874^BY4^BCN,124,N,N,N,N^FD>:SX>50042771903^FS             Code 128, its code sets named
 ^FO65,197^BY3^BEN,113,N,N^FD400638133393^FS                       EAN-13, the printer adds the check digit
 ^FO650,625^BQN,2,4^FDMM,B0034https://track.example/SX0042771903^FS  QR code, byte mode, level M
+^FO42,42^BXN,8,200,14,14,6,_,1^FDSX0042771903^FS                  Data Matrix (ECC 200), 14 × 14
 ```
 
 - `^BY` is the module in whole dots, the height in dots, and data ZPL would read as a command is
   escaped with `^FH`. A QR code's `^FO` is 10 dots above it, since `^BQ` draws that far below its
-  origin.
+  origin. A Data Matrix is asked for at its own size, so it takes the same square.
 - It stays in the picture when the printer could not draw it as it is: rotated or otherwise
-  transformed, clipped, lighter than half grey, a module over 10 dots, or a QR code of UTF-8 text
-  (its ECI has no field in `^BQ`).
+  transformed, clipped, lighter than half grey, a module over 10 dots, a QR code of UTF-8 text
+  (its ECI has no field in `^BQ`), or a Data Matrix holding `_` (the escape character `^BX` is given).
 - Rendered by Labelary, the Code 128 is the same dots as `to_png` draws; the EAN-13's guard bars come
   out 13 dots longer, as the printer draws them; a QR code covers the same modules' square, its
-  modules chosen by the printer's own encoder (another mask). All three decode with ZBar to the data.
+  modules chosen by the printer's own encoder (another mask); a Data Matrix of digits and capitals is
+  the same dots, one of other text another encodation in the same square. All decode (ZBar,
+  dmtxread) to the data.
 - Rules and boxes are not written as `^GB`: a box drawn natively would print over white text on it,
   which the picture keeps.
 
@@ -1398,6 +1403,17 @@ before embedding it, alpha included; a JPEG is embedded byte for byte, so
 resize it before you embed it (an ActiveStorage variant per drawn size,
 preprocessed, keeps a render to a download).
 
+A JPEG's pixels are decoded in Ruby only where pixels are needed, for
+`to_png` and a `monochrome` render; a PDF embeds its bytes. Baseline,
+extended and progressive JPEGs are decoded (every chroma subsampling,
+restart intervals, grey, RGB, YCbCr, CMYK and YCCK, CMYK turned into RGB)
+to the pixels libjpeg-turbo gives them, and a photo drawn small at a half, a
+quarter or an eighth of its size (libjpeg's scaled IDCT). A lossless,
+arithmetic-coded or 12-bit JPEG, or one of more than 33 megapixels, is not:
+a picture draws it as a crossed box and a monochrome PDF embeds it as it is,
+each with a warning. The EXIF orientation is not applied, as the PDF does
+not apply it either.
+
 ### Complex scripts: the shaper hook
 
 Stationery places glyphs itself: one per character, the font's ligatures and single substitutions,
@@ -1752,7 +1768,11 @@ without its gem.
 
 A lossless WebP is decoded in Ruby when it is first loaded, which a JPEG or an opaque PNG
 (both passed through) never is: a 1000 × 1000 px image takes 0.2 to 0.4 s on the machine
-above, by what is in it, and the image cache keeps it for the renders that follow.
+above, by what is in it, and the image cache keeps it for the renders that follow. A JPEG is
+decoded only for `to_png` or a monochrome render, once per process and scale: a 1000 × 1000
+px photo in 0.25 s, a 12-megapixel phone photo in 2.8 s at full size and 0.7 s at the quarter
+size a label or a preview needs (progressive: 3.4 s and 1.4 s; about four times as long
+without YJIT).
 
 Time depends on the machine, so CI holds what does not: `bundle exec rake metrics`
 renders fourteen fixed documents and compares the objects each render allocates, its
@@ -1799,7 +1819,7 @@ and reported, text inside a `clipPath` does not clip, and the shapes of a clip p
 path, so overlapping shapes wound in opposite directions cancel where they overlap.
 Images are JPEG, PNG (non-interlaced) and lossless WebP (not lossy or animated WebP, and no more
 than 33 megapixels) and never fetched from a URL; a JPEG is embedded at its
-source resolution (only PNG and WebP can be downscaled), so an oversized one is reported, not resized. `html` reads a fixed subset of CSS (colours, sizes, weights, alignment, margins, padding, table
+source resolution (only PNG and WebP can be downscaled), so an oversized one is reported, not resized; a lossless, arithmetic-coded or 12-bit JPEG is not decoded for `to_png` or `monochrome`. `html` reads a fixed subset of CSS (colours, sizes, weights, alignment, margins, padding, table
 borders and widths, page breaks; see [What CSS is read](#what-css-is-read)), not a layout
 engine's worth: no `display`, positioning, `font-family`, `auto` or negative margins or selectors
 with combinators, and floats for images only, with their `margin` around them.

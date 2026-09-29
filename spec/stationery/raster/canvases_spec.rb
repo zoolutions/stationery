@@ -39,15 +39,33 @@ RSpec.describe Stationery::Raster::Canvases do
     expect(canvases.list(other).size).to eq(1)
   end
 
-  it "draws a JPEG as a crossed box, and says so" do
-    jpeg = Stationery::Images::JPEG.new(File.binread(File.join(RenderDigests::ROOT, "spec/fixtures/images/rgb.jpg")))
-    canvases.body(page).image(jpeg, x: 10, y: 10, width: 40, height: 30)
+  def paint
     surface = Stationery::Raster::Surface.new(100, 100, 3)
     Stationery::Raster::Painter.new(surface, dpi: 72, antialias: true).paint(canvases.list(page))
+    surface
+  end
 
-    expect(warnings.map(&:message)).to eq([%(image "JPEG #{jpeg.width}x#{jpeg.height}" skipped: a JPEG is not ) \
-                                           "decoded for a picture yet; drawn as a crossed box"])
-    expect(surface.data.byteslice(((20 * 100) + 12) * 3, 3).bytes).to eq([229, 231, 235])
+  def rgb_at(surface, x, y) = surface.data.byteslice(((y * 100) + x) * 3, 3).bytes
+
+  it "draws a JPEG's pixels" do
+    _, _, _, samples = jpeg_reference("ycc420")
+    canvases.body(page).image(jpeg("ycc420"), x: 10, y: 10, width: 17, height: 9)
+    surface = paint
+
+    expect(warnings).to be_empty
+    [[0, 0], [16, 8], [5, 3]].each do |x, y|
+      expected = samples[((y * 17) + x) * 3, 3]
+      expect(rgb_at(surface, 10 + x, 10 + y).zip(expected).map { |a, b| (a - b).abs }.max).to be <= 1
+    end
+  end
+
+  it "draws a JPEG it does not decode as a crossed box, and says why" do
+    canvases.body(page).image(jpeg("arithmetic"), x: 10, y: 10, width: 40, height: 30)
+    surface = paint
+
+    expect(warnings.map(&:message)).to eq([%(image "JPEG 8x8" skipped: arithmetic-coded JPEG images are not ) \
+                                           "decoded; drawn as a crossed box"])
+    expect(rgb_at(surface, 12, 20)).to eq([229, 231, 235])
   end
 
   it "paints through the rules of a monochrome render" do
