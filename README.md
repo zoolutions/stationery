@@ -632,8 +632,11 @@ ShelfLabel.new.to_png(monochrome: { dpi: 203, snap: true }) # one bit to a dot, 
   to `to_png` replaces it), a pixel in or out by its centre with no anti-aliasing, and written as a
   1-bit PNG. The rules are those of the PDF (colours reported or snapped, thin lines, the dot grid,
   images dithered at the dots they cover); a page with grey left on it (a colour reported and kept
-  without `snap:`) is dithered as images are. Black and white match `pdftoppm -mono` in all but 0.1 to
-  2% of the dots; dithered areas differ dot by dot, since poppler halftones where stationery dithers.
+  without `snap:`) is dithered as images are. An upright image is drawn dot for dot as the one-bit
+  image the PDF embeds, with its corner on the nearest dot: the PDF leaves the image's box where the
+  layout put it, and its size in dots is the image's own, where poppler stretches it by a dot when both
+  edges of the box round outwards. Black and white match `pdftoppm -mono` in all but 0.1 to 2% of the
+  dots; dithered areas differ dot by dot, since poppler halftones where stationery dithers.
 - **Options.** `dpi:` (96, or the monochrome dpi), `pages:`, `monochrome:`, `debug:` (the layout
   rectangles), `strict:` and `shaper:` as `to_pdf` has them. What only a PDF has (`sign:`, `encrypt:`,
   `conformance:`, `attachments:`, `print:`, `tagged:`, `page_labels:`, `xmp:`, `factur_x:`,

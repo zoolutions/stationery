@@ -24,14 +24,21 @@ module Stationery
 
       # An upright bitmap's [matrix, box] with the box in pixels, its edges
       # on the nearest pixel edges (a pixel at least), as poppler places
-      # one: a one-bit bitmap made at the printer's dots lands dot for dot.
-      def picture(matrix, box)
+      # one. An `image` made for the box at these pixels (a
+      # Monochrome::Bitmap, the box's size rounded to dots) keeps its own
+      # size from the corner on the nearest pixel, so it lands dot for dot
+      # where poppler would stretch it a pixel when both of the box's edges
+      # round outwards.
+      def picture(matrix, box, image = nil)
         a, _, _, d, e, f = matrix
         x, y, w, h = box
         return [matrix, box] unless a.positive? && d.positive?
 
         x0, x1 = edges([(a * x) + e, (a * (x + w)) + e])
         y0, y1 = edges([(d * y) + f, (d * (y + h)) + f])
+        dots = [image.width, image.height] if image.is_a?(Monochrome::Bitmap)
+        return [IDENTITY, [x0, y0, *dots]] if dots == [(a * w).round, (d * h).round]
+
         [IDENTITY, [x0, y0, x1 - x0, y1 - y0]]
       end
 
