@@ -79,7 +79,7 @@ module Stationery
         box = [call.x, call.y, call.width, call.height]
         return placeholder(Stationery::Path.new.rect(*box), call, matrix) if Images.unreadable(call.image)
 
-        matrix, box = Adjust.picture(matrix, box) if Adjust.upright?(matrix)
+        matrix, box = Adjust.picture(matrix, box, call.image) if Adjust.upright?(matrix)
         spans = clipped(fill_spans(Stationery::Path.new.rect(*box), matrix, false), mask(call.clip))
         inverse = Raster.invert(matrix)
         return unless inverse
