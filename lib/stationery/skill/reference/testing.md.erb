@@ -2,6 +2,18 @@
 
 From the README of stationery <%= version %>. Online: <%= docs("testing") %>, <%= docs("cli") %> and <%= docs("rails") %>.
 
+What a spec cannot see is checked by hand, with the pictures (`stationery render FILE --png`):
+look at every page, count them (content that does not fit goes to another page without a
+warning), and decode every barcode with `zbarimg -q FILE-1.png` (`brew install zbar`). A spec
+can decode too, when zbar is installed:
+
+```ruby
+it "prints a Code 128 that scans" do
+  label.to_png("tmp/label.png", monochrome: true)
+  expect(`zbarimg -q tmp/label.png`).to include("CODE-128:SX0042771903")
+end
+```
+
 ## Testing
 
 <%= readme("Testing") %>

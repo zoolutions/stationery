@@ -23,7 +23,8 @@ class InvoicePdf < Stationery::Document
   page size: :a4, margin: 40                         # class level: once for every render
   default_text size: 9, color: "#1F2937"
   metadata title: "Invoice", lang: "en"
-  footer { |page| text "Page #{page.number} of #{page.count}", size: 7, align: :right }
+  strict                                             # raise Stationery::WarningsError instead of writing a file that warned
+  footer { |page| text "Page #{page.number} of #{page.count}", size: 7, align: :right }   # every page
 
   def self.preview = new(Invoice.sample)             # what `stationery render` renders
 
@@ -54,7 +55,12 @@ pdf = InvoicePdf.new(invoice).to_pdf                 # a binary String; to_pdf("
   render; most have a `to_pdf(...)` option of the same name for one render.
 - Header, footer and page template blocks are written at class level but run on the document
   instance, with `page.number` and `page.count` known: instance variables and private methods
-  work in them.
+  work in them. Without `on:` a header or footer is on every page, a cover included. With a
+  cover, write `footer(on: :rest) { … }`: the pages `on:` does not match have no footer, so no
+  empty `footer(on: :first) {}` is needed (it is for taking a footer away from pages an earlier
+  declaration gave one). `on:` also takes `:odd`, `:even`, `:last`, a number, a Range or a lambda.
+- A file handed to `stationery render` needs no `require "stationery"`: the command has loaded the
+  gem. A script run with `ruby` does, and a Rails app loads it from the Gemfile.
 - Reusable pieces are `Stationery::Component` classes, drawn with `render MyComponent.new(...)`.
 - In Rails: `gem "stationery", require: "stationery/rails"`, then `render pdf: InvoicePdf.new(@invoice)`
   or `send_pdf(...)` in a controller; documents usually live in `app/pdfs/`.
@@ -82,18 +88,27 @@ looking at it. After every change:
    viewer's); for a form, `mutool draw -r 96 -o form-%d.png form.pdf` draws them when MuPDF is
    installed.
 3. Read the warnings. `stationery render` prints them to stderr; in code, `doc.warnings` after
-   `to_pdf` lists overflows, missing glyphs, skipped images, unresolved links and the rest, each
-   with a `message`. Fix every one: a warning is a document that is not what was written.
-4. When you cannot look at a picture, or to compare two renders, print the page as text:
+   any render (`to_pdf`, `to_png`, `to_zpl`) lists overflows, missing glyphs, skipped images,
+   unresolved links and the rest, each with a `message`. Fix every one: a warning is a document
+   that is not what was written.
+4. **Count the pages.** Content that does not fit moves to a next page without a warning, and
+   `strict` does not catch it: a page that should be one (a label, a receipt, a one-page invoice)
+   is checked by its page count (`--png` writes `-1.png`, `-2.png`; `have_page_count(1)` in a spec;
+   `doc.to_zpl.scan("^XA").size` for labels).
+5. **Decode every barcode** from the picture: `zbarimg -q invoice_pdf-1.png` (`brew install zbar`)
+   prints each code it reads with its data; a code it cannot read will not scan at the till either.
+6. When you cannot look at a picture, or to compare two renders, print the page as text:
    `stationery inspect app/pdfs/invoice_pdf.pdf` (or the `.rb` file, rendered first) lists each
    page's text lines with their position, font and size, its images, links and form fields in
    points from the top-left corner. It needs the `pdf-reader` gem.
-5. When a layout is puzzling, `to_pdf(debug: true)` (`stationery render FILE --debug`) outlines
+7. When a layout is puzzling, `to_pdf(debug: true)` (`stationery render FILE --debug`) outlines
    every box, column, cell and image in colour.
 
-Then make the checks stay: `strict` at class level (or `to_pdf(strict: true)`) raises
-`Stationery::WarningsError` instead of writing a PDF with warnings, and a spec holds the text,
-pages and conformance (see [reference/testing.md](reference/testing.md)):
+Then make the checks stay: `strict` on a line of its own in the class body (or
+`to_pdf(strict: true)`, `to_zpl(strict: true)` for one render) raises `Stationery::WarningsError`,
+whose `warnings` are the render's, instead of writing a file with warnings; `stationery render
+--strict` exits 1. A spec holds the text, pages and conformance
+(see [reference/testing.md](reference/testing.md)):
 
 ```ruby
 require "stationery/rspec"                                # gem "pdf-reader" in the test group
@@ -162,7 +177,8 @@ end
   `alt:` on every image and svg, headings in order) or both. What would break the claim raises
   `Stationery::ConformanceError` instead of writing a mislabelled file; `missing_glyphs: :replace`
   keeps a PDF/A claim when a customer's name has a character no font has.
-  `factur_x(profile: :en16931) { xml }` makes a Factur-X/ZUGFeRD e-invoice. Validate with veraPDF.
+  `factur_x(profile: :en16931) { xml }` makes a Factur-X/ZUGFeRD e-invoice. Validate with veraPDF:
+  `verapdf --format text -v --flavour 3b invoice.pdf` (`brew install verapdf`; Docker works too).
   See [reference/conformance.md](reference/conformance.md).
 - `barcode "SX0042", type: :code128` (or `:ean13`, `:qr`, `:datamatrix`) draws vector bars.
   `to_zpl` writes ZPL for a thermal label printer, `monochrome dpi: 203` makes the PDF print

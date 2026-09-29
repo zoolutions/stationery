@@ -3,12 +3,20 @@
 From the README of stationery <%= version %>. Online: <%= docs("conformance") %>.
 
 What a standard asks for is checked with a validator, not reasoned about. veraPDF validates
-PDF/A and PDF/UA; with Docker:
+PDF/A and PDF/UA. Installed (`brew install verapdf`, or the installer from verapdf.org):
 
 ```sh
-docker run --rm -v "$PWD:/data:ro" verapdf/cli --format text -v --flavour 3b /data/invoice.pdf   # PDF/A-3b
-docker run --rm -v "$PWD:/data:ro" verapdf/cli --format text -v --flavour ua1 /data/report.pdf   # PDF/UA-1
+verapdf --format text -v --flavour 3b invoice.pdf     # PDF/A-3b ("2b" for PDF/A-2b)
+verapdf --format text -v --flavour ua1 report.pdf     # PDF/UA-1
 ```
+
+Or through Docker, with nothing installed:
+
+```sh
+docker run --rm -v "$PWD:/data:ro" verapdf/cli --format text -v --flavour 3b /data/invoice.pdf
+```
+
+The line to read is `PASS` or `FAIL` for the file, and for a failure the rule's clause (6.2.11.8, 7.18.5, …).
 
 A spec can hold the claim (`have_conformance(:pdf_a3b)`), not its validity.
 

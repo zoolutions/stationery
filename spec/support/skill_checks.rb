@@ -16,7 +16,8 @@ module SkillChecks
   class Names
     # Words in code that are not the gem's: shell commands, keywords, the
     # docs server's MCP tools and the names of block arguments.
-    NOT_METHODS = %w[stationery ruby bundle gem docker claude mutool pdftoppm true false nil def rect value
+    NOT_METHODS = %w[stationery ruby bundle gem docker claude mutool pdftoppm verapdf zbarimg brew grep
+                     true false nil def rect value
                      search_docs get_page list_pages].freeze
 
     def initialize(files)
@@ -39,7 +40,7 @@ module SkillChecks
       require "stationery/rails"
       [Stationery::Document, Stationery::Canvas, Stationery::Layout::Table, Stationery::Layout::Table::Selection,
        Stationery::Testing::Inspector, Stationery::PageInfo, Stationery::Rails,
-       Stationery::Warnings::MissingGlyph].flat_map do |klass|
+       Stationery::Warnings::MissingGlyph, String].flat_map do |klass|
         klass.public_instance_methods + klass.private_instance_methods
       end.concat(Stationery::Document.singleton_class.public_instance_methods,
                  Stationery::Testing::Matchers.instance_methods,

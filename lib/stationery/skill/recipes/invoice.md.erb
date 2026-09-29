@@ -15,7 +15,12 @@ class InvoicePdf < Stationery::Document
   metadata title: "Invoice", author: "Acme Studio AB", lang: "en"
   conformance :pdf_a3b, missing_glyphs: :replace      # PDF/A-3b; a character no font has is drawn as a stand-in
 
-  footer { |page| text "Page #{page.number} of #{page.count}", size: 7, color: MUTED, align: :right }
+  footer do |page|                                    # the seller's details, as invoices carry them
+    row do
+      column(width: 0.8) { text "Acme Studio AB · Storgatan 1, 111 22 Stockholm · VAT SE556677889901", size: 7, color: MUTED }
+      column { text "Page #{page.number} of #{page.count}", size: 7, color: MUTED, align: :right }
+    end
+  end
 
   Line = Struct.new(:description, :quantity, :unit_cents, :vat_rate)
 
@@ -40,6 +45,7 @@ class InvoicePdf < Stationery::Document
       column(width: 0.6) { text "Invoice #{@number}", size: 22, weight: :bold }
       column { image LOGO, height: 34, align: :right }
     end
+    spacer 10                                           # else the logo sits on the rule
     rule height: 2, color: ACCENT
     spacer 18
     row(gap: 24) do
@@ -114,7 +120,8 @@ end
   raises `Stationery::ConformanceError` instead of writing a file that breaks the claim: a CMYK
   colour, `encrypt`, or a character no font has (unless `missing_glyphs: :replace`, as above). Set
   `metadata title:`. Transparency (a PNG logo with alpha) is allowed. Validate the file with
-  veraPDF (see [../reference/conformance.md](../reference/conformance.md)).
+  veraPDF: `verapdf --format text -v --flavour 3b invoice_pdf.pdf` prints `PASS` (`brew install
+  verapdf`; with Docker, see [../reference/conformance.md](../reference/conformance.md)).
 - An application that would rather send a plain PDF than none rescues the claim:
 
   ```ruby

@@ -95,10 +95,19 @@ module Stationery
       end
 
       def status
-        locations(found: false).each do |name, dir|
-          @out.puts "#{name.ljust(6)}  #{File.join(dir, "SKILL.md")}  #{state(name, installed(dir))}"
+        states = locations(found: false).map do |name, dir|
+          installed(dir).tap { @out.puts "#{name.ljust(6)}  #{File.join(dir, "SKILL.md")}  #{state(name, it)}" }
         end
+        elsewhere unless states.any? || @options[:dir]
         OK
+      end
+
+      # Where status did not look, when it found nothing where it did.
+      def elsewhere
+        where = @options[:project] ? "the project (#{@cwd})" : "the home directory (#{@home})"
+        @out.puts "", "Looked in the skills directories of #{where}. For a skill installed elsewhere: " \
+                      "`stationery skill status #{"--project" unless @options[:project]}`, or " \
+                      "`stationery skill status --dir DIR` for one installed with --dir.".squeeze(" ")
       end
 
       def state(name, version)

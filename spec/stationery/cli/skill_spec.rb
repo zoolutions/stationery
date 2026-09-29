@@ -105,6 +105,20 @@ RSpec.describe Stationery::CLI::Skill do
       expect(out.string.lines.grep(/\Aclaude/).first).to include("not written by stationery")
     end
 
+    it "says where else to look when it finds none, and finds one installed with --dir there" do
+      dir = File.join(project, "agent-skills")
+      skill("install", "--dir", dir)
+      out.string = +""
+
+      skill("status")
+      expect(out.string).to include("home directory", "--project", "--dir DIR")
+
+      out.string = +""
+      skill("status", "--dir", dir)
+      expect(out.string).to include(File.join(dir, "stationery/SKILL.md"), "current")
+      expect(out.string).not_to include("--dir DIR")
+    end
+
     it "looks in the project with --project" do
       skill("install", "--target", "claude", "--project")
       out.string = +""

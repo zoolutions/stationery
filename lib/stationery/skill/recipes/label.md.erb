@@ -52,6 +52,32 @@ label.to_pdf("label.pdf")                             # to look at, or to print 
 label.to_zpl("label.zpl")                             # ZPL II for the printer, one ^XA…^XZ per page
 ```
 
+## Verify a label
+
+A label that does not fit its page does not warn: what does not fit moves to a second page, `strict`
+does not catch it, and `to_zpl` writes **two labels**. This recipe leaves about 64 pt (22 mm, three
+lines of 14 pt text) free under the Code 128 box; a return address or a longer address uses it up.
+After every change:
+
+1. **One page.** `label.to_zpl.scan("^XA").size == 1`, or `have_page_count(1)` in a spec; from the
+   shell, `stationery render label_pdf.rb --png` writes `label_pdf-1.png` and a `label_pdf-2.png`
+   when it spilled. Make room by shrinking type, spacers or the barcode's `height:`, not by hoping.
+2. **Look at the printer's picture**: `label.to_png("label.png", monochrome: true)` (one bit, at
+   the class's `monochrome dpi:`), and open it.
+3. **Decode the barcodes** from that picture: `zbarimg -q label.png` (`brew install zbar`) prints
+   `CODE-128:SX0042771903` and `QR-Code:https://…`. A code it cannot read will not scan either.
+4. **Check the native commands** are in the ZPL: `grep -o '\^B[CQEX][^^]*' label.zpl` shows `^BC`
+   (Code 128), `^BQ` (QR), `^BE` (EAN-13), `^BX` (Data Matrix). A barcode that is missing there
+   stayed in the picture (see below), which prints too, but not on the printer's own dot grid.
+5. **Warnings**: `label.warnings` after `to_zpl` (or `to_png`) lists what a one-bit printer
+   cannot print as it is.
+
+There is no ZPL renderer in the gem and none is needed offline: the `^GFA` graphic of each label
+is, dot for dot, the `to_png(monochrome: true)` picture of the same document at the same dpi,
+except where native barcodes go, which the graphic leaves white and the printer fills with its own
+encoder. So the PNG shows the native barcodes as stationery draws them: the same data and place,
+possibly another QR mask. (Online, labelary.com renders a `.zpl` file.)
+
 ## What matters here
 
 - **The page is the label**: `page size: :label_4x6` (also `:label_4x3`, `:label_4x2`,

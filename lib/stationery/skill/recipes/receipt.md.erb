@@ -71,4 +71,6 @@ end
   ESC/POS, which Stationery does not write: print the PDF through the printer's driver, or send the
   picture to one that takes images. `to_zpl` is for ZPL label printers (see [label.md](label.md)).
 - Look at it: `stationery render receipt_pdf.rb --png` and open the picture; a narrow page shows
-  where a long item name wraps.
+  where a long item name wraps. It should be one page: a `receipt_pdf-2.png` means the content
+  did not fit, which does not warn. Decode the QR code from the picture: `zbarimg -q receipt_pdf-1.png`
+  (`brew install zbar`) prints `QR-Code:https://…`.

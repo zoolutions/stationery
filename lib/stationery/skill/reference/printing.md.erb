@@ -1,11 +1,23 @@
-# Printing, monochrome, pictures and label printers
+# Label printers, monochrome, pictures and print hints
 
 From the README of stationery <%= version %>. Online: <%= docs("pages") %>. Barcodes are under
 `barcode` in [elements.md](elements.md).
 
-## Printing
+- **A label for a thermal printer**: `to_zpl`, below first, and the recipe
+  [../recipes/label.md](../recipes/label.md) with its checklist.
+- **Verify a label** before calling it done: one page (content that does not fit goes to a second
+  page, and so a second label, without a warning: `doc.to_zpl.scan("^XA").size == 1`), the one-bit
+  picture looked at (`doc.to_png("label.png", monochrome: true)`), its barcodes decoded
+  (`zbarimg -q label.png`), the native commands in the ZPL (`grep -o '\^B[CQEX][^^]*' label.zpl`),
+  and `doc.warnings` read after `to_zpl`. The `to_png(monochrome: true)` picture at the printer's
+  dpi is the ZPL's graphic dot for dot, with the native barcodes drawn by stationery where the
+  printer draws its own.
+- **Black and white** for any one-bit printer: `monochrome`. **Pictures** of any page: `to_png`.
+  **Print hints** for a PDF printed from a viewer (`print scaling: :none` for labels): at the end.
 
-<%= readme("Printing") %>
+## Label printers: to_zpl
+
+<%= readme("Label printers: to_zpl") %>
 
 ## Monochrome
 
@@ -15,6 +27,6 @@ From the README of stationery <%= version %>. Online: <%= docs("pages") %>. Barc
 
 <%= readme("Pictures of a render: to_png") %>
 
-## Label printers: to_zpl
+## Printing
 
-<%= readme("Label printers: to_zpl") %>
+<%= readme("Printing") %>
