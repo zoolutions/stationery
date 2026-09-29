@@ -1,0 +1,47 @@
+spec/stationery/document_barcode_spec.rb
+  s_f5a1e2cf907cda::t_1db0d0f797d1ac 18,60-70
+docs/app/views/docs/pages/elements.rb
+  s_f5a1e2cf907cda::t_1db0d0f797d1ac 357,367,375,377-378,385-387
+lib/stationery/barcode.rb
+  s_f5a1e2cf907cda::t_1db0d0f797d1ac 5-6,8,10,17
+lib/stationery/barcode/data_matrix.rb
+  s_f5a1e2cf907cda::t_1db0d0f797d1ac 1-111
+lib/stationery/elements.rb
+  s_f5a1e2cf907cda::t_1db0d0f797d1ac 120-123
+spec/stationery/barcode_spec.rb
+  s_f5a1e2cf907cda::t_1db0d0f797d1ac 129-131
+lib/stationery/barcode/qr.rb
+  s_f5a1e2cf907cda::t_1db0d0f797d1ac 113
+lib/stationery/layout/barcode.rb
+  s_f5a1e2cf907cda::t_1db0d0f797d1ac 7,9,14
+spec/stationery/barcode/data_matrix_spec.rb
+  s_f5a1e2cf907cda::t_1db0d0f797d1ac 1-60
+CHANGELOG.md
+  ai_agent 6
+lib/stationery.rb
+  s_f5a1e2cf907cda::t_1db0d0f797d1ac 108-109
+README.md
+  s_f5a1e2cf907cda::t_1db0d0f797d1ac 113,710,715,717-718,721-723
+lib/stationery/zpl/native.rb
+  s_f5a1e2cf907cda::t_1db0d0f797d1ac 6-8,13-15
+lib/stationery/barcode/data_matrix_placement.rb
+  s_f5a1e2cf907cda::t_1db0d0f797d1ac 1-118
+lib/stationery/barcode/reed_solomon.rb
+  s_f5a1e2cf907cda::t_1db0d0f797d1ac 5-22,25,30-39,41,45-48,56-58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "327004739cad88a1926bb5a83d9e9e6f8de4d501",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
