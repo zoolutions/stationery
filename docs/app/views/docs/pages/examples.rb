@@ -51,13 +51,42 @@ class Views::Docs::Pages::Examples < DocsUI::Page
     [ "Newsletter", "newsletter",
      "A masthead across the page, then an article poured through two balanced `columns` with a rule " \
      "between them: justified, hyphenated paragraphs with `orphans:` and `widows:`, headings kept with " \
-     "what follows, a photo with its caption kept together, and a note across the page below the columns." ]
+     "what follows, a photo with its caption kept together, and a note across the page below the columns." ],
+    [ "Price list", "price_list",
+     "2,000 articles over forty-four pages: a table read from an `Enumerator` of records (a seeded `Random`, " \
+     "so the file is the same every time), its header row repeated on every page, a header and a footer " \
+     "with page numbers, and `incremental`, so each page's content is written as soon as it is painted." ],
+    [ "Contract", "contract",
+     "Numbered clauses and sub-clauses whose headings keep 50 points of their text with them " \
+     "(`keep_with_next: 50`), a footer with a text field for each party's initials on every page, and a " \
+     "signature field per party, which `to_pdf(sign: { certificate:, key:, field: \"signature.provider\" })` " \
+     "signs. See [Digital signatures](/docs/conformance)." ],
+    [ "Certificate", "certificate",
+     "Landscape A4 with a frame and rosettes drawn on a `canvas` in a background `page_template`, centred " \
+     "type, an SVG seal, and two signature fields for the people who sign it." ],
+    [ "Résumé", "resume",
+     "Two columns of unequal width (`column(width: 0.3)` and the rest): a tinted sidebar with `mailto:`, " \
+     "`tel:` and web links and a `wrap` of skill chips, and the experience written as HTML with a " \
+     "`<style>` rule, read by `html` with its links." ],
+    [ "Menu", "menu",
+     "A photo floated left and the dish of the day floated right with the introduction wrapped between " \
+     "them, then the courses poured through two balanced `columns`, each course kept together, with " \
+     "headings in the bold of Inter." ],
+    [ "Accessible report", "accessible_report",
+     "PDF/UA-1 (`conformance :pdf_ua1`): headings in order, a photo and an SVG bar chart as figures with " \
+     "their `alt:` text, a table whose header row is tagged as header cells, a list, a title and a " \
+     "language. Validated as PDF/UA-1 and PDF/A-3b with veraPDF in CI." ],
+    [ "Multilingual notice", "multilingual_notice",
+     "English, German and Swedish side by side, each column justified and hyphenated by the patterns of " \
+     "its language (`hyphenate: true`, `\"de\"`, `\"sv\"`). With `CJK_FONT` naming a font that has Japanese, " \
+     "a Japanese paragraph is drawn from it through `font_fallbacks` and breaks between ideographs; Inter " \
+     "and the font packs have no CJK glyphs." ]
   ].freeze
 
   title "Examples"
   eyebrow "Getting started"
 
-  def lead = "Eleven complete documents from the gem's examples/ directory, rendered live by this site."
+  def lead = "Eighteen complete documents from the gem's examples/ directory, rendered live by this site."
 
   def content
     DocsUI::Section("Running them yourself") do

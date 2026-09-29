@@ -16,7 +16,7 @@ class ExampleShippingLabel < Stationery::Document
   metadata title: "Shipping label", creator: "stationery example"
 
   def self.preview
-    new(parcel: "SX 0042 7719 03", service: "EXPRESS", weight: "2.4 kg", route: "UPS-07",
+    new(parcel: "SX 0042 7719 03", service: "EXPRESS", weight: "2.4 kg", route: "R-07",
         from: ["Northwind Supplies", "Unit 5, Harbour Road", "40115 Gothenburg", "Sweden"],
         to: ["Ada Example", "Example Workshop Ltd", "12 Sample Street", "3011 Testville", "Netherlands"])
   end
