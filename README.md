@@ -19,6 +19,17 @@ claude mcp add --transport http stationery https://stationery.zoolutions.llc/mcp
 Any other MCP client takes the same URL, `https://stationery.zoolutions.llc/mcp`,
 as a remote server over HTTP: no key, read-only.
 
+A skill for coding agents ships with the gem: how a document is built, the rules that surprise,
+how to look at a render before calling it done, conformance, labels and a recipe per thing people
+ask for, written from this README for the version installed:
+
+```sh
+stationery skill install                  # ~/.claude/skills/stationery, and Codex's and ~/.agents' when they are there
+stationery skill install --project        # the project's .claude/skills/stationery, to commit with the app
+stationery skill status                   # current, outdated or missing, by the gem's version
+stationery skill print > stationery.md    # one file, for an agent that takes one
+```
+
 - **No runtime dependencies.** Standard library only.
 - **No native extensions and no other processes.** No Prawn, no headless
   Chrome, nothing to leak or kill.
@@ -1276,6 +1287,26 @@ stationery examples invoice --source                     # its code
 `examples` lists the documents under `examples/` of the installed gem with the
 first sentence of their header comment. With a name it prints the path of that
 file, to read, copy or hand to `stationery render`.
+
+```sh
+stationery skill install                                 # the skill for the agents it finds, else Claude Code
+stationery skill install --target claude --project       # into ./.claude/skills/stationery
+stationery skill install --dir ~/agent-skills            # into any skills directory
+stationery skill status                                  # current, outdated or missing, per agent
+stationery skill print                                   # SKILL.md and its files, as one document
+```
+
+`skill install` writes the skill for coding agents that ships with the gem: a
+`SKILL.md` and the reference and recipe files beside it, written from this
+README and the examples for the version installed, with that version in its
+front matter. `--target` is `claude` (`~/.claude/skills`), `codex`
+(`~/.codex/skills`), `agents` (`~/.agents/skills`, read by OpenCode and others)
+or `all`; without it the skill goes to each of them whose directory is there,
+and to Claude Code when none is. `--project` writes under the current directory
+instead of the home directory. A skill named `stationery` that the gem did not
+write is kept unless `--force`. `skill status` says for each agent whether the
+skill there is current, outdated (written for an older version: install it
+again) or missing.
 
 ## Fonts and images
 

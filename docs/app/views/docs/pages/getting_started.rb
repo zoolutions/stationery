@@ -138,6 +138,25 @@ class Views::Docs::Pages::GettingStarted < DocsUI::Page
         and [/llms-full.txt](/llms-full.txt) all of them in one file, and each page is Markdown at its URL
         with `.md`, as `/docs/elements.md`. The [Examples](/docs/examples) page carries the source of every
         example, so an agent gets them there too.
+
+        ### A skill that ships with the gem
+
+        The gem carries a skill for coding agents: how a document is built, the rules that surprise
+        (a String is literal, a Float up to 1 is a share of the width, a fixed `height:` never splits),
+        how to render a document to pictures and look at them before calling it done, conformance,
+        labels and printing, and a recipe per thing people ask for (an invoice, a report, a form, a
+        flyer, a label, a receipt), each pointing at the example that shows it. It is written from the
+        README and the examples of the version installed, and carries that version:
+
+        ```shell
+        stationery skill install                  # ~/.claude/skills/stationery (and Codex's, ~/.agents' when there)
+        stationery skill install --project        # ./.claude/skills/stationery, to commit with the app
+        stationery skill status                   # current, outdated or missing
+        stationery skill print > stationery.md    # one file, for an agent that takes one
+        ```
+
+        Install it again after updating the gem; `status` says when it is behind. Every option is on the
+        [CLI](/docs/cli) page.
       MD
     end
 
