@@ -1,0 +1,19 @@
+CHANGELOG.md
+  s_f5a1e2cf907cda::t_5f43cfeac07786 3,5-33,35-38,40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "7eaaeb92fabd9a865a3fa9fe239dbb2a693e2fc7",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
