@@ -79,7 +79,7 @@ Releases are cut by the maintainer with `bin/release` (`bin/release --dry-run` s
 
 | Command | Tier | For |
 |---|---|---|
-| `/plan` | `fable` | A plan as an issue or `docs/plans/*.md`, before `/lfg` |
+| `/plan` | `fable` | A plan as an issue or `plans/*.md`, before `/lfg` |
 | `/lfg`, `/architect`, `/finish-prs`, `/github-review-pr`, `/review-pr`, `/security` | `opus` | An issue end to end; work across layers; a queue of pull requests; a full review pass; a review; a security audit |
 | `/tdd`, `/perf`, `/github-review-failures`, `/github-review-comments` | `sonnet` | Red, green, refactor; `rake bench` and `rake metrics` against `main`; red CI; review threads |
 

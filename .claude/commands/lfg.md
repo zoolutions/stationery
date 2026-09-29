@@ -1,7 +1,7 @@
 ---
 description: "Executes the full workflow for an issue or feature, from branch to pull request, with verification at each phase. Use when implementing a GitHub issue or a feature end to end."
 model: opus
-argument-hint: "GitHub issue number/URL, a docs/plans/*.md file, or a feature description"
+argument-hint: "GitHub issue number/URL, a plans/*.md file, or a feature description"
 allowed-tools: Bash(gh issue view:*), Bash(gh search:*), Bash(gh issue list:*), Bash(gh pr create:*), Bash(gh pr view:*), Bash(gh pr checks:*), Bash(bundle exec:*), Bash(git:*), Bash(pdftoppm:*), Read, Write, Edit, Glob, Grep, Agent
 ---
 

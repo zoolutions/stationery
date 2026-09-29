@@ -30,7 +30,7 @@ Resolution:
 3. Resolve each file by reading both sides and keeping both intents; never a blanket `--ours`/`--theirs` on source.
    - `CHANGELOG.md`: both sides' bullets under `## Unreleased`; where both changed the same bullet, `main`'s is kept; read the section again after.
    - `lib/stationery/version.rb`: only the release preparation changes it; take the base's.
-   - `docs/Gemfile.lock`: never hand-merge, never `bundle lock`; take the base's and set the `stationery (X.Y.Z)` pin to `version.rb`, or `cd docs && bundle install` if the branch changed real dependencies.
+   - `docs/Gemfile.lock`: never hand-merge, never `bundle lock`; take the base's and set the `stationery (X.Y.Z)` pin to `version.rb`'s version in BOTH places, under `PATH` and under `CHECKSUMS`, or `cd docs && bundle install` if the branch changed real dependencies.
    - `benchmark/baseline.json`: take the base's, then `bundle exec rake metrics`.
 4. Before pushing: `bundle exec rspec`, `bundle exec rubocop lib spec examples Rakefile`, `bundle exec rake metrics`, and `cd docs && bundle exec rspec` if `docs/` was involved.
 5. Commit the merge (the standard message, plus a line for any non-obvious choice) and `git push`.

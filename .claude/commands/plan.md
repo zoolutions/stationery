@@ -1,5 +1,5 @@
 ---
-description: "Investigates the codebase, designs a solution, and produces a durable plan: a GitHub issue or a plan markdown under docs/plans/. Read-only: never edits the gem. Use before /lfg for anything non-trivial."
+description: "Investigates the codebase, designs a solution, and produces a durable plan: a GitHub issue or a plan markdown under plans/. Read-only: never edits the gem. Use before /lfg for anything non-trivial."
 model: fable
 argument-hint: "issue <feature or problem> | md <feature or problem> | <feature or problem>"
 allowed-tools: Bash(gh issue create:*), Bash(gh issue list:*), Bash(gh issue view:*), Bash(gh search:*), Bash(gh label list:*), Bash(git log:*), Bash(git diff:*), Bash(git branch:*), Bash(date:*), Read, Grep, Glob, Write, Agent, AskUserQuestion
@@ -13,12 +13,12 @@ The thinking happens here, on Fable; the execution happens later (`/lfg` on Opus
 
 | Starts with | Artifact |
 |---|---|
-| `md` or `file` | `docs/plans/YYYY-MM-DD-<slug>.md` (date from `date +%F`), left uncommitted |
+| `md` or `file` | `plans/YYYY-MM-DD-<slug>.md` (date from `date +%F`), left uncommitted |
 | anything else | A GitHub issue (feeds `/lfg <number>`) |
 
 ## Constraints
 
-- Read-only for the gem: no edits, commits or branches. The only file you may write is a new plan under `docs/plans/`.
+- Read-only for the gem: no edits, commits or branches. The only file you may write is a new plan under `plans/`.
 - Never copy a secret into a plan.
 - Dedupe first: `gh issue list --search "<keywords>"`.
 
@@ -58,7 +58,7 @@ Two or three approaches with real trade-offs; pick one and say why the others lo
 - Rendered with `bundle exec stationery render <file>.rb --png` and looked at: what should be seen
 ## Out of scope
 ## Execution
-`/lfg <issue-number>` (or `/lfg docs/plans/<file>.md`)
+`/lfg <issue-number>` (or `/lfg plans/<file>.md`)
 ```
 
 Create an issue with `gh issue create --title "..." --body-file <tmpfile>`.

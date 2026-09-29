@@ -9,3 +9,4 @@
 gemfiles/*.lock
 implementation-notes.md
 /.claude/worktrees/
+.claude/settings.local.json
