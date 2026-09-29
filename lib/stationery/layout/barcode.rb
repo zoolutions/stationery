@@ -4,14 +4,14 @@ module Stationery
   module Layout
     # A barcode (a Barcode symbol) at `module_size` points a module, or as
     # many as fit `width:` across, with its quiet zone around it (a linear
-    # one's on its sides, a QR code's all round) unless `quiet_zone: false`:
+    # one's on its sides, a square one's all round) unless `quiet_zone: false`:
     # never wider than the space given, its module made smaller to fit. A
-    # linear barcode is `height:` tall, a QR code square.
+    # linear barcode is `height:` tall, a QR code or a Data Matrix square.
     class Barcode < Node
       LINEAR_MODULE = 1
       SQUARE_MODULE = 2
       HEIGHT = 36
-      NAMES = { code128: "Code 128", ean13: "EAN-13", qr: "QR code" }.freeze
+      NAMES = { code128: "Code 128", ean13: "EAN-13", qr: "QR code", datamatrix: "Data Matrix" }.freeze
 
       def initialize(symbol, type:, module_size: nil, width: nil, height: nil, color: "#000000", quiet_zone: true,
                      native: nil, context: nil, alt: nil)

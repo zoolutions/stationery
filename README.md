@@ -110,7 +110,7 @@ ls "$(bundle show stationery)/examples"      # or: gem contents stationery
 | `table(rows, widths:, width:, header:, split_rows:, cell:) { \|t\| }` | Tables. Cells are strings, layout nodes, procs built with the DSL (`-> { image logo }`) or components. Style with `t.row(0)`, `t.rows(-1)`, `t.column(1)`, `t.columns(1..)`, chained, plus `t.zebra`. Header rows repeat after a page break. A cell may be `{ content:, colspan:, rowspan: }` plus any cell option; rows list only the cells they start, as in HTML, and pages never break through a rowspan. Spans are set in the rows, not through selections. A row taller than the page continues on the next page, cut through its cells, with the header repeated; `split_rows: true` cuts any row that reaches the page bottom instead of moving it whole. |
 | `image(path_or_io, width:, height:, fit:, align:, radius:, rotate:, max_ppi:, downscale:, float:, margin:)` | JPEG, PNG or lossless WebP, aspect preserved. `fit: [w, h]` scales to fit inside; `fit: :cover` fills `width:` × `height:` and crops around the centre. `radius:` rounds the corners; `rotate:` turns it (degrees, clockwise) without changing the space it takes. Drawn at more than twice `max_ppi:` (300) it is reported as oversized; `downscale: true` resamples a PNG or WebP to that resolution instead. |
 | `svg(source_or_path, width:, height:, color:, align:)` | Vector icons and drawings; `currentColor` takes `color:` (or the `color` an element sets). Linear and radial gradients (`fill="url(#id)"`, `href` chains, both gradient units); `text`/`tspan` in the document's fonts; `<style>` stylesheets (element, class, id and `*` selectors); `use`, `symbol` sprites and nested `svg` viewports (`viewBox`, `preserveAspectRatio`); `clipPath` (both `clipPathUnits`). |
-| `barcode(data, type:, level:, module_size:, width:, height:, color:, quiet_zone:, native:, align:, alt:)` | A barcode drawn as vector bars, encoded in Ruby: `type: :code128` (the default; printable ASCII, digit runs in code set C), `:ean13` (12 digits and the check digit, or 13 checked) or `:qr` (byte mode, `level: :l, :m, :q, :h`, versions 1 to 40, UTF-8 marked with an ECI). `module_size:` points a module (1, or 2 for a QR code) or as many as fit `width:`; a linear one is `height:` (36) tall. The quiet zone is part of its size unless `quiet_zone: false`, and it shrinks to fit the space. Monochrome renders put it on the dot grid, a whole number of dots a module. `native: true` has `to_zpl` write the printer's own command for it: see [Label printers](#label-printers-to_zpl). A figure in a tagged PDF, its `alt:` by default the kind and the data. |
+| `barcode(data, type:, level:, module_size:, width:, height:, color:, quiet_zone:, native:, align:, alt:)` | A barcode drawn as vector bars, encoded in Ruby: `type: :code128` (the default; printable ASCII, digit runs in code set C), `:ean13` (12 digits and the check digit, or 13 checked), `:qr` (byte mode, `level: :l, :m, :q, :h`, versions 1 to 40, UTF-8 marked with an ECI) or `:datamatrix` (ECC 200 in ASCII encodation, digit pairs in one codeword, squares from 10 × 10 to 144 × 144). `module_size:` points a module (1, or 2 for a square one) or as many as fit `width:`; a linear one is `height:` (36) tall. The quiet zone is part of its size unless `quiet_zone: false`, and it shrinks to fit the space. Monochrome renders put it on the dot grid, a whole number of dots a module. `native: true` has `to_zpl` write the printer's own command for it: see [Label printers](#label-printers-to_zpl). A figure in a tagged PDF, its `alt:` by default the kind and the data. |
 | `wrap(gap:, row_gap:, align:) { }` | Children side by side at their own widths, wrapping onto new rows (chips, tags). |
 | `stack(gap:, align:) { }` | A base with layers painted over it: ordinary children set the height, `layer` children float over them and take no space. Moves to the next page whole. |
 | `layer(top:, right:, bottom:, left:, width:, height:, **box) { }` | Inside `stack`: a box placed by insets from the stack's edges, in points or as a fraction (`0.4`, `1/3r`) of its width/height; negative insets overhang. Takes every box option (`rotate:`, `shadow:`, `radius:`, …). |
@@ -707,17 +707,20 @@ printer's own command, where the picture had it, so the printer puts the bars on
 ^FO146,874^BY4^BCN,124,N,N,N,N^FD>:SX>50042771903^FS             Code 128, its code sets named
 ^FO65,197^BY3^BEN,113,N,N^FD400638133393^FS                       EAN-13, the printer adds the check digit
 ^FO650,625^BQN,2,4^FDMM,B0034https://track.example/SX0042771903^FS  QR code, byte mode, level M
+^FO42,42^BXN,8,200,14,14,6,_,1^FDSX0042771903^FS                  Data Matrix (ECC 200), 14 × 14
 ```
 
 - `^BY` is the module in whole dots, the height in dots, and data ZPL would read as a command is
   escaped with `^FH`. A QR code's `^FO` is 10 dots above it, since `^BQ` draws that far below its
-  origin.
+  origin. A Data Matrix is asked for at its own size, so it takes the same square.
 - It stays in the picture when the printer could not draw it as it is: rotated or otherwise
-  transformed, clipped, lighter than half grey, a module over 10 dots, or a QR code of UTF-8 text
-  (its ECI has no field in `^BQ`).
+  transformed, clipped, lighter than half grey, a module over 10 dots, a QR code of UTF-8 text
+  (its ECI has no field in `^BQ`), or a Data Matrix holding `_` (the escape character `^BX` is given).
 - Rendered by Labelary, the Code 128 is the same dots as `to_png` draws; the EAN-13's guard bars come
   out 13 dots longer, as the printer draws them; a QR code covers the same modules' square, its
-  modules chosen by the printer's own encoder (another mask). All three decode with ZBar to the data.
+  modules chosen by the printer's own encoder (another mask); a Data Matrix of digits and capitals is
+  the same dots, one of other text another encodation in the same square. All decode (ZBar,
+  dmtxread) to the data.
 - Rules and boxes are not written as `^GB`: a box drawn natively would print over white text on it,
   which the picture keeps.
 

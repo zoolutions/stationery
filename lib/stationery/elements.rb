@@ -117,9 +117,10 @@ module Stationery
       @_builder.add(align ? Layout::Flow.new([node], align:) : node)
     end
 
-    # A barcode of `data`: `type:` :code128 (the default), :ean13 or :qr
-    # (`level:` :l, :m, :q or :h), drawn as vector bars `module_size:` points a
-    # module (1 for a linear one, 2 for a QR code) or as many as fit
+    # A barcode of `data`: `type:` :code128 (the default), :ean13, :qr
+    # (`level:` :l, :m, :q or :h) or :datamatrix, drawn as vector bars
+    # `module_size:` points a module (1 for a linear one, 2 for a square
+    # one) or as many as fit
     # `width:`, `height:` tall (a linear one; 36 by default), in `color:`,
     # with its quiet zone unless `quiet_zone: false`. `native: true` asks
     # to_zpl to have the printer draw it (see Document#to_zpl). `alt:` as

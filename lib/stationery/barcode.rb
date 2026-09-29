@@ -2,19 +2,19 @@
 
 module Stationery
   # Barcodes, encoded in pure Ruby and drawn as vector bars and squares
-  # (the `barcode` element): Code 128, EAN-13 and QR Code. A symbol answers
-  # `linear?`, `quiet` (its quiet zone in modules) and `zpl`, the command a
+  # (the `barcode` element): Code 128, EAN-13, QR Code and Data Matrix. A
+  # symbol answers `linear?`, `quiet` (its quiet zone in modules) and `zpl`, the command a
   # label printer draws it with; a linear one `width` (modules) and `bars`
-  # ([first module, modules wide]), a QR code `size` and `modules`.
+  # ([first module, modules wide]), a square one `size` and `modules`.
   module Barcode
-    TYPES = { code128: "Code128", ean13: "EAN13", qr: "QR" }.freeze
+    TYPES = { code128: "Code128", ean13: "EAN13", qr: "QR", datamatrix: "DataMatrix" }.freeze
 
     module_function
 
     # The symbol of `type` for `data`; `level:` is a QR code's.
     def build(type, data, level: nil)
       name = TYPES.fetch(type) do
-        raise ArgumentError, "barcode type: is :code128, :ean13 or :qr, not #{type.inspect}"
+        raise ArgumentError, "barcode type: is :code128, :ean13, :qr or :datamatrix, not #{type.inspect}"
       end
       raise ArgumentError, "level: is for a QR code" if level && type != :qr
 
