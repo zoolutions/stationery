@@ -23,9 +23,9 @@
         "bytes": 27352
       },
       "flyer": {
-        "allocations": 79793,
+        "allocations": 80188,
         "pages": 4,
-        "bytes": 127763
+        "bytes": 112079
       },
       "form": {
         "allocations": 27097,
@@ -38,14 +38,14 @@
         "bytes": 26414
       },
       "article": {
-        "allocations": 37268,
+        "allocations": 37435,
         "pages": 1,
-        "bytes": 39862
+        "bytes": 36256
       },
       "newsletter": {
-        "allocations": 32115,
+        "allocations": 32285,
         "pages": 1,
-        "bytes": 34514
+        "bytes": 30837
       },
       "webp": {
         "allocations": 10056,
@@ -58,9 +58,9 @@
         "bytes": 38733
       },
       "pdf_ua": {
-        "allocations": 260477,
+        "allocations": 263895,
         "pages": 6,
-        "bytes": 187382
+        "bytes": 64783
       },
       "text_incremental": {
         "allocations": 139897,
