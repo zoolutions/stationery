@@ -255,8 +255,8 @@ RSpec.describe Stationery::PDF::Conformance do
       expect(pdf).to have_conformance(:pdf_ua1).and have_conformance(:pdf_a3b)
       expect(pdf).to have_structure([[:Document, [[:H1, "Report"], [:Link, "Home"], [:Link, "example.com"],
                                                   [:Link, [[:P, "Top"]]]]]])
-      expect(pdf.scan("/StructParent ").size).to eq(3)
-      expect(pdf.scan(%r{/Contents \((?:https://example.com|Page 1)}).size).to eq(3)
+      expect(unpacked(pdf).scan("/StructParent ").size).to eq(3)
+      expect(unpacked(pdf).scan(%r{/Contents \((?:https://example.com|Page 1)}).size).to eq(3)
     end
 
     it "may be encrypted" do

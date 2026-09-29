@@ -67,7 +67,7 @@ module Stationery
         output = @options[:zpl] ? to_zpl(document) : to_pdf(document)
         return FAILURE unless warnings_ok?(document)
 
-        write(output, target)
+        write(output, target, document)
         pictures(document, target) if @options[:png]
         OK
       end
@@ -149,20 +149,21 @@ module Stationery
         false
       end
 
-      def write(pdf, target)
+      def write(pdf, target, document)
         if target == "-"
           @out.binmode
           @out.write(pdf)
         else
           File.binwrite(target, pdf)
-          @out.puts "wrote #{target} (#{count(pdf)}, #{pdf.bytesize} bytes)"
+          @out.puts "wrote #{target} (#{count(pdf, document)}, #{pdf.bytesize} bytes)"
         end
       end
 
-      # "1 page", "3 labels": what the file holds.
-      def count(output)
+      # "1 page", "3 labels": what the file holds. The pages are the
+      # render's: a tagged file's are packed, and encrypted too with it.
+      def count(output, document)
         name = @options[:zpl] ? "label" : "page"
-        count = output.scan(@options[:zpl] ? "^XA" : %r{/Type /Page\b}).size
+        count = @options[:zpl] ? output.scan("^XA").size : document.page_count
         "#{count} #{name}#{"s" unless count == 1}"
       end
 

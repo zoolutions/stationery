@@ -46,6 +46,8 @@ class Views::Docs::Pages::DocumentsAndComponents < DocsUI::Page
             [ :md, "Raise `Stationery::WarningsError` instead of writing a PDF that produced warnings." ] ],
           [ "incremental", "value = true", "false",
             [ :md, "Write each page as soon as it is painted, so a long document with headers or footers holds far less; also `to_pdf(incremental:)`. See [Rendering](#rendering)." ] ],
+          [ "object_streams", "value = true", "on when tagged",
+            [ :md, "Pack every object that is not a stream into deflated object streams with a cross-reference stream (PDF 1.5); a tagged render does unless `object_streams false`; also `to_pdf(object_streams:)`. See [Accessibility](/docs/pages#accessibility-tagged-pdf)." ] ],
           [ "page_template", "layer: :foreground", "—",
             [ :md, "A block run on every page after pagination; `layer: :background` paints under the content." ] ],
           [ "header / footer", "height:, gap:, on:", "gap: 8, on: :all",
@@ -65,6 +67,7 @@ class Views::Docs::Pages::DocumentsAndComponents < DocsUI::Page
         document = InvoicePdf.new(invoice)
         document.to_pdf("invoice.pdf")
         document.warnings.each { |warning| Rails.logger.warn(warning.message) }
+        document.page_count # => 2, the pages the last render laid out
         ```
 
         With a block, `to_pdf { |chunk| … }` streams the file in pieces as it is written and answers the

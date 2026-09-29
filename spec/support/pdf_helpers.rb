@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "pdf/inspector"
+require "zlib"
 require "stationery/testing/inspector"
 
 module PdfHelpers
@@ -22,6 +23,14 @@ module PdfHelpers
   end
 
   def reader_for(pdf) = inspect_pdf(pdf).reader
+
+  # The file with the objects of its object streams inflated after it, so a
+  # tagged render's dictionaries can be searched as text.
+  def unpacked(pdf)
+    packed = pdf.b.scan(%r{/Type /ObjStm .*?>>\nstream\n(.*?)\nendstream}m).flatten
+    ([pdf.b] + packed.map { |data| Zlib::Inflate.inflate(data) }).join("\n")
+  end
+
   def page_count(pdf) = inspect_pdf(pdf).page_count
   def image_count(pdf) = inspect_pdf(pdf).image_count
 
@@ -32,7 +41,7 @@ module PdfHelpers
 
   # Every /Rect a link annotation wrote, as [x1, y1, x2, y2] in page space.
   def link_rects(pdf)
-    pdf.scan(%r{/Rect \[([-\d.\s]+)\]}).flatten.map { |rect| rect.split.map(&:to_f) }
+    unpacked(pdf).scan(%r{/Rect \[([-\d.\s]+)\]}).flatten.map { |rect| rect.split.map(&:to_f) }
   end
 
   # Every internal link as [page index it sits on, target page index, target top].

@@ -131,6 +131,15 @@ module Stationery
         config[:tagged] = value
       end
 
+      # Packs every object that is not a stream (the structure elements of a
+      # tagged PDF, most of all) into deflated object streams, with a
+      # cross-reference stream: PDF 1.5, which PDF/A-2, PDF/A-3 and PDF/UA-1
+      # allow. On for a tagged render unless set; `object_streams false`
+      # writes the classic table for a reader that cannot read them.
+      def object_streams(value = true) # rubocop:disable Style/OptionalBooleanParameter
+        config[:object_streams] = value
+      end
+
       # Claims PDF/A-2b, PDF/A-3b and/or PDF/UA-1 (`conformance :pdf_a3b,
       # :pdf_ua1`) and writes what the level asks for; a render that cannot
       # keep the claim raises. See PDF::Conformance. `missing_glyphs:` is what
@@ -197,8 +206,9 @@ module Stationery
       end
     end
 
-    # `fields` is every form field's name and value from the last render.
-    attr_reader :warnings, :fields
+    # `fields` is every form field's name and value from the last render;
+    # `page_count` is how many pages it laid out.
+    attr_reader :warnings, :fields, :page_count
 
     def page_options = self.class.config[:page]
     def metadata = self.class.config[:metadata]
@@ -225,13 +235,17 @@ module Stationery
     #
     # `max_pages:` replaces the class's limit (see .max_pages) for one
     # render; nil takes it away.
+    #
+    # `object_streams:` packs what is not a stream into object streams (see
+    # .object_streams); nil, the default, packs a tagged render.
     def to_pdf(target = nil, strict: self.class.config[:strict], debug: false, encrypt: self.class.config[:encrypt],
                tagged: self.class.config[:tagged], page_labels: self.class.config[:page_labels], attachments: [],
                xmp: metadata[:xmp] != false, conformance: self.class.config[:conformance],
                factur_x: self.class.config[:factur_x], sign: self.class.config[:sign],
                shaper: self.class.config[:shaping][:shaper], incremental: self.class.config[:incremental],
                print: PDF::PrintHints::NONE, missing_glyphs: self.class.config[:missing_glyphs],
-               monochrome: self.class.config[:monochrome], max_pages: self.class.config[:max_pages], &block)
+               monochrome: self.class.config[:monochrome], max_pages: self.class.config[:max_pages],
+               object_streams: self.class.config[:object_streams], &block)
       invoice = PDF::FacturX.for(factur_x, self)
       attachments = PDF::Attachments.merge(self.class.config[:attachments], attachments, invoice&.attachment)
       conformance = PDF::Conformance.for(invoice ? invoice.conformance(conformance) : conformance, missing_glyphs:)
@@ -243,6 +257,7 @@ module Stationery
       raise ArgumentError, "pass a target or a block, not both" if target && block
 
       options = { strict:, debug:, encrypt:, tagged: tagged || conformance&.pdf_ua?, page_labels:, attachments:,
+                  object_streams: packed?(object_streams, tagged, conformance),
                   xmp: xmp || !conformance.nil?, conformance:, invoice:, signature:, sink: block, shaper:, print:,
                   incremental: incremental && !conformance && !signature && !(strict && block),
                   monochrome: Monochrome.for(self.class.config[:monochrome], monochrome), max_pages: }
@@ -297,6 +312,7 @@ module Stationery
       destinations = Structure.resolve(pages, warnings:, book:, canvases:)
       yield builder.outline.resolve(destinations) if block_given?
       @warnings = warnings
+      @page_count = pages.size
       pages
     end
 
@@ -359,8 +375,8 @@ module Stationery
     end
 
     def assemble(pages, resources, outline, encrypt:, tagging:, page_labels:, attachments:, xmp:, conformance:,
-                 invoice:, signature:, sink:, writer:, print:)
-      assembler = PDF::Assembler.new(pages:, resources:, info:, outline:, tagging:, xmp:, writer:,
+                 invoice:, signature:, sink:, writer:, print:, object_streams:)
+      assembler = PDF::Assembler.new(pages:, resources:, info:, outline:, tagging:, xmp:, writer:, object_streams:,
                                      encryption: writer ? nil : encryption(encrypt),
                                      lang: metadata[:lang], page_labels: PDF::PageLabels.entries(page_labels),
                                      attachments:, conformance:, xmp_extensions: invoice&.xmp_extensions || {},
@@ -370,6 +386,13 @@ module Stationery
       end
     end
 
+    # Object streams when asked for, else when the render is tagged.
+    def packed?(object_streams, tagged, conformance)
+      return object_streams unless object_streams.nil?
+
+      tagged || conformance&.pdf_ua? || false
+    end
+
     def byte_count(pdf) = pdf.is_a?(String) ? pdf.bytesize : pdf
     def encryption(options) = options && PDF::Encryption::StandardSecurity.new(**options)
 
@@ -377,8 +400,10 @@ module Stationery
     # every body at once, to the writer the rest of the file follows on; any
     # other seals the pages nothing paints on again (no header, footer or
     # page template, and no conformance audit to read them).
-    def sealer_for(incremental, conformance, encrypt:, sink:, **)
-      return PDF::PageSealer.new(writer: PDF::Writer.new(encryption: encryption(encrypt), sink:)) if incremental
+    def sealer_for(incremental, conformance, encrypt:, sink:, object_streams:, **)
+      if incremental
+        return PDF::PageSealer.new(writer: PDF::Writer.new(encryption: encryption(encrypt), sink:, object_streams:))
+      end
 
       config = self.class.config
       PDF::PageSealer.new(final: conformance.nil? && config[:templates].empty? && config[:regions].empty?)

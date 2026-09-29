@@ -93,7 +93,7 @@ module Stationery
       # known to exist; nil without a signature.
       def signed
         return unless @signature
-        return @writer.add(@signature.dictionary) if @widgets.any? { |widget| signs?(widget) }
+        return @writer.add_unpacked(@signature.dictionary) if @widgets.any? { |widget| signs?(widget) }
 
         raise ArgumentError, %(sign field: names "#{@signature.field}", but the document has no such signature_field)
       end

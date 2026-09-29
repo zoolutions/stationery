@@ -16,7 +16,7 @@ module Stationery
       # What only a PDF has: refused when asked for, left alone when the
       # class declares it.
       PDF_ONLY = %i[sign encrypt conformance attachments print tagged page_labels xmp factur_x incremental
-                    missing_glyphs].freeze
+                    missing_glyphs object_streams].freeze
       GREY = "\x01-\xFE".b
       DARK = "\x00-\x7F".b
       LIGHT = "\x80-\xFF".b

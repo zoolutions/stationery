@@ -3,7 +3,8 @@
 require "json"
 
 # Every form of `to_pdf` that was there before pages were sealed as they are
-# painted writes what `main` wrote: see RenderDigests for the fixture.
+# painted writes what `main` wrote: see RenderDigests for the fixture. A
+# tagged document is held to it with the classic table it was recorded with.
 RSpec.describe Stationery::Document, "#to_pdf" do
   before do
     allow(Time).to receive(:now).and_return(RenderDigests::FROZEN)
@@ -14,11 +15,12 @@ RSpec.describe Stationery::Document, "#to_pdf" do
 
   RenderDigests.names.each do |name|
     it "writes #{name} to a String as main does, object for object" do
-      expect(digests(RenderDigests.document(name).to_pdf)).to eq(RenderDigests.recorded(name, "string"))
+      expect(digests(RenderDigests.document(name).to_pdf(object_streams: false)))
+        .to eq(RenderDigests.recorded(name, "string"))
     end
 
     it "streams #{name} to a block as main does, object for object" do
-      pdf = RenderDigests.streamed(RenderDigests.document(name))
+      pdf = RenderDigests.streamed(RenderDigests.document(name), object_streams: false)
 
       expect(digests(pdf)).to eq(RenderDigests.recorded(name, "block"))
     end

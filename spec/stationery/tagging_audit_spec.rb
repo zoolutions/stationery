@@ -236,7 +236,7 @@ RSpec.describe "Tagged PDF audit" do # rubocop:disable RSpec/DescribeClass
 
       expect(doc.warnings).to be_empty
       expect(inspect_pdf(pdf).links.size).to eq(5)
-      expect(pdf.scan("/StructParent ").size).to eq(6)
+      expect(unpacked(pdf).scan("/StructParent ").size).to eq(6)
     end
 
     it "leaves a document that is not tagged alone, byte for byte" do

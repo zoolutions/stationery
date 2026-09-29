@@ -24,6 +24,21 @@ RSpec.describe Stationery::CLI::Render do
     expect(err.string).to be_empty
   end
 
+  it "counts the pages of a tagged document, packed into object streams" do
+    target = File.join(dir, "tagged.pdf")
+
+    expect(render(fixture("tagged.rb"), "--out", target)).to eq(0)
+    expect(File.binread(target)).to include("/Type /ObjStm")
+    expect(out.string).to start_with("wrote #{target} (2 pages, ")
+  end
+
+  it "counts the pages of an encrypted tagged document, whose object streams it cannot read" do
+    target = File.join(dir, "encrypted.pdf")
+
+    expect(render(fixture("encrypted_tagged.rb"), "--out", target)).to eq(0)
+    expect(out.string).to start_with("wrote #{target} (2 pages, ")
+  end
+
   it "writes next to the source by default" do
     FileUtils.mkdir(File.join(dir, "cli"))
     FileUtils.cp(fixture("one.rb"), File.join(dir, "cli"))
