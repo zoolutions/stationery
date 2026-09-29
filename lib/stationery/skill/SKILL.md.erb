@@ -1,0 +1,227 @@
+---
+name: stationery
+description: Write PDF documents in Ruby with the stationery gem (Stationery::Document classes, no Prawn, no Chrome). Use when asked to build, change, fix or test a PDF in a Ruby or Rails app, such as an invoice, a report with a table of contents, a receipt, a form, a flyer, a letter, a certificate, a shipping label for a thermal printer (ZPL), a barcode or QR code, an e-invoice (Factur-X, ZUGFeRD), or a PDF/A or PDF/UA file, and whenever the code has gem "stationery" or a class that subclasses Stationery::Document or Stationery::Component.
+metadata:
+  generator: <%= Stationery::Skill::GENERATOR %>
+  version: "<%= version %>"
+---
+
+# Stationery
+
+Stationery writes PDFs from Ruby classes. A document is a class, `view_template` describes the
+page with elements (text, rows, boxes, tables, images, barcodes), and the engine measures, places
+and paginates them: there is no cursor to move and no coordinate to work out. It is pure Ruby with
+no runtime dependency; Inter ships inside the gem, so a document needs no font to start.
+
+This skill was written for stationery <%= version %>. `stationery --version` says which version the
+application has; `stationery skill status` says whether this skill is current for it.
+
+## The model in a page
+
+```ruby
+class InvoicePdf < Stationery::Document
+  page size: :a4, margin: 40                         # class level: once for every render
+  default_text size: 9, color: "#1F2937"
+  metadata title: "Invoice", lang: "en"
+  footer { |page| text "Page #{page.number} of #{page.count}", size: 7, align: :right }
+
+  def self.preview = new(Invoice.sample)             # what `stationery render` renders
+
+  def initialize(invoice)
+    super()                                          # always: the builder needs it
+    @invoice = invoice
+  end
+
+  def view_template                                  # instance level: what is on the pages
+    row(align: :middle) do
+      column(width: 0.6) { text "Invoice #{@invoice.number}", size: 20, weight: :bold }
+      column { image "app/assets/images/logo.png", height: 32, align: :right }
+    end
+    spacer 16
+    table(@invoice.rows, width: :full, header: true) { |t| t.columns(1..).align = :right }
+  end
+end
+
+pdf = InvoicePdf.new(invoice).to_pdf                 # a binary String; to_pdf("a.pdf") also writes it
+```
+
+- The body is a flow: children stack top to bottom and the page breaks where the next child does
+  not fit. `row { column { } }` puts things side by side, `box` pads, paints and borders, `table`
+  is for tabular data, `columns(count: 2)` pours text newspaper style, `float: :left` wraps text
+  around an image or a box.
+- Class-level declarations (`page`, `font_family`, `default_text`, `metadata`, `header`, `footer`,
+  `page_template`, `conformance`, `tagged`, `print`, `monochrome`, `strict`) apply to every
+  render; most have a `to_pdf(...)` option of the same name for one render.
+- Header, footer and page template blocks are written at class level but run on the document
+  instance, with `page.number` and `page.count` known: instance variables and private methods
+  work in them.
+- Reusable pieces are `Stationery::Component` classes, drawn with `render MyComponent.new(...)`.
+- In Rails: `gem "stationery", require: "stationery/rails"`, then `render pdf: InvoicePdf.new(@invoice)`
+  or `send_pdf(...)` in a controller; documents usually live in `app/pdfs/`.
+
+## Always look at what you rendered
+
+A PDF that renders without an error can still be wrong: a column too narrow, text over a picture,
+a table cut in the wrong place, a blank second page. Never report a document as done without
+looking at it. After every change:
+
+1. Render it and write a picture of each page:
+
+   ```sh
+   stationery render app/pdfs/invoice_pdf.rb --png          # invoice_pdf.pdf and invoice_pdf-1.png, …
+   stationery render app/pdfs/invoice_pdf.rb --png-only --pages 1 --dpi 144   # a closer look
+   ```
+
+   `render` loads the file and renders the document it defines, from `def self.preview` when
+   `initialize` takes arguments. In a Rails app, where the file needs the app loaded, write the
+   pictures from a runner: `bin/rails runner 'InvoicePdf.new(Invoice.last).to_png("tmp/invoice.png")'`
+   (one page writes `tmp/invoice.png`, several `tmp/invoice-1.png`, `tmp/invoice-2.png`, …).
+2. **Open every PNG and look at it** (read the image file). Check what a person would: nothing cut
+   off, overlapping or running off the page, columns lined up, totals where they belong, no page
+   that is empty or holds one stray line. The pictures do not draw form fields (they are the PDF
+   viewer's); for a form, `mutool draw -r 96 -o form-%d.png form.pdf` draws them when MuPDF is
+   installed.
+3. Read the warnings. `stationery render` prints them to stderr; in code, `doc.warnings` after
+   `to_pdf` lists overflows, missing glyphs, skipped images, unresolved links and the rest, each
+   with a `message`. Fix every one: a warning is a document that is not what was written.
+4. When you cannot look at a picture, or to compare two renders, print the page as text:
+   `stationery inspect app/pdfs/invoice_pdf.pdf` (or the `.rb` file, rendered first) lists each
+   page's text lines with their position, font and size, its images, links and form fields in
+   points from the top-left corner. It needs the `pdf-reader` gem.
+5. When a layout is puzzling, `to_pdf(debug: true)` (`stationery render FILE --debug`) outlines
+   every box, column, cell and image in colour.
+
+Then make the checks stay: `strict` at class level (or `to_pdf(strict: true)`) raises
+`Stationery::WarningsError` instead of writing a PDF with warnings, and a spec holds the text,
+pages and conformance (see [reference/testing.md](reference/testing.md)):
+
+```ruby
+require "stationery/rspec"                                # gem "pdf-reader" in the test group
+
+RSpec.describe InvoicePdf do
+  subject(:pdf) { InvoicePdf.new(invoice) }
+
+  it { is_expected.to have_pdf_text("Invoice INV-7") }
+  it { is_expected.to have_page_count(1) }
+  it { is_expected.to have_no_warnings }
+end
+```
+
+## Rules that surprise
+
+- **A String is literal.** `text "<b>Total</b>"` prints the tags. `text "<b>Total</b>", markup: true`
+  reads `<b> <i> <u> <br> <color rgb=""> <font size=""> <link href="">` and HTML entities, so
+  escape user data first (`ERB::Util.html_escape(name)`) when you wrap it in tags. Styled runs
+  in Ruby need no escaping: `text { b "Total"; plain " due" }`. `html` and `markdown` are for
+  rich text from users or a CMS.
+- **A Float up to 1 is a share of the width; anything else is points.** `column(width: 0.5)`,
+  `box(width: 0.4)` and `image(width: 1.0)` are shares. `width: 1` (an Integer) is one point,
+  `width: 1/3r` (a Rational) a third of a point: write `0.333`. `table(width:)`, `svg` and `barcode`
+  take points only: `table(..., width: 0.5)` is a table half a point wide, and
+  `table(..., width: :full)` the whole width. `width: :auto` is the content's natural width, `nil`
+  an equal share of what is left. An `svg` without `width:` is drawn at its viewBox size in points,
+  shrunk to fit. **A width that is too small does not warn**: the text is set a letter per line,
+  and only the picture shows it.
+- **Lengths are points** (72 to an inch). `mm(20)`, `cm(2)`, `inch(4)` and `pt(12)` convert in any
+  document or component; `page size: "4in x 6in", margin: "3mm"` reads units. Page sizes:
+  `:a4`, `:a5`, `:a6`, `:letter`, `:legal`, `:label_4x6`, `:label_100x150`, `:dl`, … or
+  `[w, h]`; `layout: :landscape` turns it. Coordinates (`at: [x, y]`, a canvas) are from the
+  top-left corner of the page, y downwards.
+- **What splits and what moves whole.** Text splits between lines, tables between rows (the
+  header row repeats with `header: true`), lists between items, boxes, rows and columns with
+  their content. An image, a rule, a canvas, a barcode, a rotated box, a `stack` and a float move
+  to the next page whole. A box that fits on the next page moves there whole; one taller than a
+  page continues across pages (`break_inside: :avoid` never splits it, `:auto` always may).
+- **A fixed `height:` never splits** a box (nor a row holding it) and does not clip unless told:
+  `overflow: :truncate` or `:shrink_to_fit`. Use `min_height:` for a floor that may still split.
+- **Keep a heading with what follows**: `text "Totals", keep_with_next: true` (or a number of
+  points); `group(keep_together: true) { }` keeps a block on one page. `spacer` at a page break
+  is dropped; `page_break` starts a new page.
+- **Constants resolve where the code is written, not in the document.** A method in a module
+  included into a document that names `ACCENT` looks for it in the module and at the top level,
+  not in the document class, and raises `NameError`. Put shared constants in the module, or write
+  `self.class::ACCENT`.
+- **`print` in a class body** is the print-hints declaration; inside methods it is still
+  `Kernel#print`.
+- **Images and fonts are read from paths** (relative to the process's working directory: use
+  `Rails.root.join(...)` or `File.expand_path(..., __dir__)`) or IOs; nothing is fetched from a
+  URL. JPEG, PNG, lossless WebP and SVG (`svg`) only.
+- **Floats** (`float: :left` on an `image` or a `box`, with a `width:`) wrap everything that follows
+  them in the same flow, not just the next paragraph, until the float ends. Put the float and its
+  text in a `box { }` so what comes after starts below it. A float never splits.
+- **`box(at: [x, y])` takes no room in the flow**: it is placed on the page and the content goes on
+  under it. Follow it with a `spacer` of its height when the flow should start below it.
+- **`columns(count: 2)`** balances the columns by default and continues across pages; there is no
+  element that spans them (end the block, write the full-width part, start another).
+- A character no font has draws as an empty box and warns (`MissingGlyph`); add a family with
+  `font_family` and `font_fallbacks`, or install a pack (`stationery fonts install noto_sans`).
+
+## Conformance, labels and printing, in brief
+
+- `conformance :pdf_a3b` (archival), `:pdf_ua1` (accessible: needs `metadata title:, lang:`,
+  `alt:` on every image and svg, headings in order) or both. What would break the claim raises
+  `Stationery::ConformanceError` instead of writing a mislabelled file; `missing_glyphs: :replace`
+  keeps a PDF/A claim when a customer's name has a character no font has.
+  `factur_x(profile: :en16931) { xml }` makes a Factur-X/ZUGFeRD e-invoice. Validate with veraPDF.
+  See [reference/conformance.md](reference/conformance.md).
+- `barcode "SX0042", type: :code128` (or `:ean13`, `:qr`, `:datamatrix`) draws vector bars.
+  `to_zpl` writes ZPL for a thermal label printer, `monochrome dpi: 203` makes the PDF print
+  well on one, and `print scaling: :none` stops "fit to page" shrinking a label. See
+  [reference/printing.md](reference/printing.md).
+
+## Recipes, by what people ask for
+
+Each recipe is a document that runs, the rules that matter for it, and the example in the gem that
+shows more (`stationery examples NAME --source` prints it).
+
+| Asked for | Recipe | Example in the gem |
+|---|---|---|
+| An invoice (logo, line items, VAT, totals; PDF/A, Factur-X) | [recipes/invoice.md](recipes/invoice.md) | `invoice`, `e_invoice` |
+| A report (contents, page numbers, tables, charts) | [recipes/report.md](recipes/report.md) | `report`, `accessible_report` |
+| A fillable form | [recipes/form.md](recipes/form.md) | `form`, `contract` |
+| A flyer or brochure with photographs | [recipes/flyer.md](recipes/flyer.md) | `flyer`, `article`, `menu` |
+| A shipping label, a barcode, ZPL | [recipes/label.md](recipes/label.md) | `shipping_label`, `packing_slip` |
+| A receipt | [recipes/receipt.md](recipes/receipt.md) | <%= example?("receipt") ? "`receipt`" : "`shipping_label`, `invoice`" %> |
+
+`stationery examples` lists every example with what it shows:
+
+<% Stationery::Examples.names.reject { it.start_with?("shaping/") }.each do |name| -%>
+- `<%= name %>`: <%= example(name) %>
+<% end -%>
+
+## Reference
+
+The README of the gem, section by section, beside this file:
+
+| File | What is in it |
+|---|---|
+| [reference/elements.md](reference/elements.md) | Every element and its options, text style, floats, components |
+| [reference/pages.md](reference/pages.md) | Page sizes, units, headers and footers, page templates, links, bookmarks, contents, warnings |
+| [reference/html_and_markdown.md](reference/html_and_markdown.md) | `html` and `markdown`, the CSS that is read, untrusted input |
+| [reference/forms.md](reference/forms.md) | Form fields |
+| [reference/fonts_and_images.md](reference/fonts_and_images.md) | Font families, packs, fallbacks, OpenType features, hyphenation, images |
+| [reference/conformance.md](reference/conformance.md) | Tagged PDF, PDF/A, PDF/UA, Factur-X, signatures, encryption, attachments |
+| [reference/printing.md](reference/printing.md) | Print hints, monochrome, `to_png`, `to_zpl` and barcodes on label printers |
+| [reference/testing.md](reference/testing.md) | RSpec and Minitest helpers, the Inspector, the CLI, Rails, previews, large documents |
+
+## Where to read more
+
+- The docs: <%= docs("getting-started") %>, by topic: [elements](<%= docs("elements") %>),
+  [layout rules](<%= docs("layout-rules") %>) (what splits, what moves),
+  [pages, headers and footers](<%= docs("pages") %>), [links and contents](<%= docs("links") %>),
+  [fonts](<%= docs("fonts") %>), [images and SVG](<%= docs("images-and-svg") %>),
+  [forms](<%= docs("forms") %>), [PDF/A and PDF/UA](<%= docs("conformance") %>),
+  [warnings and strict](<%= docs("warnings") %>), [testing](<%= docs("testing") %>),
+  [Rails](<%= docs("rails") %>), [CLI](<%= docs("cli") %>), [cookbook](<%= docs("cookbook") %>),
+  [examples](<%= docs("examples") %>) with previews and their source, [limitations](<%= docs("limitations") %>).
+  Every page is Markdown at its URL with `.md`; `<%= Stationery::Skill::DOCS %>/llms-full.txt` is all of them.
+- The same docs over MCP (`search_docs`, `get_page`, `list_pages`), read-only and without a key:
+  `claude mcp add --transport http stationery <%= Stationery::Skill::DOCS %>/mcp`, or that URL as a
+  remote HTTP server in any other client.
+- The examples: `stationery examples` lists them, `stationery examples invoice --source` prints one,
+  `stationery render "$(stationery examples invoice)" --png` renders one to look at.
+
+---
+
+Written for stationery <%= version %> by `stationery skill install`. When the gem is updated, run
+`stationery skill install` again.

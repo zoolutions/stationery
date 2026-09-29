@@ -1,0 +1,108 @@
+# Recipe: a report
+
+A cover, a table of contents with page numbers, headings that never end a page, page numbers in
+the footer, a table that continues across pages and a chart. The examples in the gem:
+`stationery examples report --source` (contents, bookmarks, lists, a table, internal links) and
+`stationery examples accessible_report --source` (PDF/UA-1, a chart as a figure).
+
+```ruby
+class ReportPdf < Stationery::Document
+  ACCENT = "#0F766E"
+  MUTED = "#6B7280"
+
+  page size: :a4, margin: [48, 56, 40, 56]
+  default_text size: 10.5, color: "#1F2937"
+  metadata title: "Quarterly report", author: "Northwind Freight AB", lang: "en"
+  tagged                                               # headings, figures and tables for screen readers
+
+  header(on: :first) {}                                # no header on the cover
+  header(on: :rest) { text "Quarterly report", size: 8, color: MUTED }
+  footer(on: :rest) { |page| text "Page #{page.number} of #{page.count}", size: 8, color: MUTED, align: :center }
+
+  def self.preview
+    new(quarters: [["Q1", 412.0], ["Q2", 455.5], ["Q3", 498.2], ["Q4", 530.9]],
+        regions: Array.new(40) { |i| ["Region #{i + 1}", format("%.1f", 20 + (i * 7 % 30)), format("%+.1f%%", (i % 9) - 3.5)] })
+  end
+
+  def initialize(quarters:, regions:)
+    super()
+    @quarters = quarters
+    @regions = regions
+  end
+
+  def view_template
+    spacer 160
+    text "Quarterly report", size: 32, weight: :bold, heading: 1
+    text "Northwind Freight AB, 2026", size: 13, color: MUTED
+    page_break
+
+    text "Contents", size: 18, weight: :bold, heading: 2
+    spacer 10
+    table_of_contents(levels: 1..2, size: 10)          # lists the bookmarks below, with their pages
+    page_break
+
+    section "1. Revenue"
+    text "Revenue grew in every quarter of the year, and in every region but three."
+    spacer 12
+    svg chart, color: ACCENT, alt: "Bar chart of revenue by quarter: #{@quarters.map { _1.join(' ') }.join(', ')}"
+    spacer 12
+
+    section "2. Regions"
+    table([%w[Region Revenue Change], *@regions], width: :full, widths: [nil, 90, 90], header: true,
+          cell: { borders: [:bottom], border_color: "#E5E7EB", padding: [5, 8] }) do |t|
+      t.row(0).set(weight: :bold, background: "#F3F4F6")
+      t.columns(1..).align = :right
+    end
+  end
+
+  private
+
+  def section(title)
+    spacer 18
+    text title, size: 16, weight: :bold, color: ACCENT, heading: 2, bookmark: title, keep_with_next: 60
+    spacer 8
+  end
+
+  # A bar chart as SVG, drawn from the data: there is no chart element.
+  def chart
+    top = @quarters.map(&:last).max
+    bars = @quarters.each_with_index.map do |(label, value), i|
+      height = (value / top * 150).round(1)
+      x = 30 + (i * 110)
+      %(<rect x="#{x}" y="#{170 - height}" width="70" height="#{height}" fill="currentColor"/>) +
+        %(<text x="#{x + 35}" y="190" font-size="12" text-anchor="middle">#{label}</text>) +
+        %(<text x="#{x + 35}" y="#{164 - height}" font-size="11" text-anchor="middle">#{value}</text>)
+    end
+    %(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 200">#{bars.join}</svg>)
+  end
+end
+```
+
+## What matters here
+
+- **Contents.** `table_of_contents` lists every `bookmark:` (and `bookmark "Title"`) of the
+  document with the page it landed on, one clickable row each; it reads the bookmarks written
+  after it too. `levels: 1..2`, `leader: :dots` (default) or `:line`, `indent:`, text style.
+- **Page numbers** are known after pagination: `footer { |page| … page.number … page.count }`.
+  `on:` picks pages (`:first`, `:rest`, `:odd`, `:even`, `:last`, a number, a Range, a lambda);
+  a later declaration wins for the pages it matches, and an empty block leaves them bare.
+  `page_labels` names pages as viewers show them ("i", "ii", "1").
+- **Headings stay with their text**: `keep_with_next: 60` keeps at least 60 pt of what follows on the
+  same page. `heading: 1..6` makes a heading in a tagged PDF; do not skip a level (1, then 3).
+- **Long tables** continue on the next page with `header: true` rows repeated; a row never splits
+  unless it is taller than a page (or `split_rows: true`).
+- **Charts are SVG or `canvas`.** Build the SVG from the data as above (`currentColor` takes
+  `color:`, `<text>` is set in the document's fonts). An `svg` is drawn at its viewBox size in
+  points, shrunk to the width there is; `width:` is points (`width: 1.0` is one point, not the
+  whole width). Or draw the shapes on a canvas (its `text` takes a font object, so label a canvas
+  chart with SVG or with `text` elements around it):
+  `canvas(height: 120) { |c, rect| c.fill_rect(rect.x, rect.y, 40, 80, color: ACCENT) }` with
+  `rect` the reserved rectangle in page coordinates (see `canvas` in
+  [../reference/elements.md](../reference/elements.md)). A chart image from a charting library
+  works too: `image "chart.png", width: 1.0`. Give it an `alt:` in a tagged document.
+- For PDF/UA-1 add `conformance :pdf_ua1` (it needs `metadata title:` and `lang:`, an `alt:` on every
+  image and svg, and headings in order) and validate with veraPDF.
+- A long document with a footer and contents: `incremental` at class level lets each page go
+  once it is painted (see [../reference/testing.md](../reference/testing.md)).
+- Look at every page: `stationery render report_pdf.rb --png` and open the PNGs; a heading alone at
+  the foot of a page or an empty last page shows only there.

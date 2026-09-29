@@ -1,0 +1,71 @@
+# Recipe: a receipt
+
+A narrow page as a receipt printer's paper roll has it, a logo, the items, totals and a QR code.
+<% if example?("receipt") -%>
+The example in the gem: `stationery examples receipt --source`.
+<% else -%>
+The examples in the gem closest to it: `stationery examples shipping_label --source` (a narrow page,
+barcodes, black and white) and `stationery examples invoice --source` (items and totals).
+<% end -%>
+
+```ruby
+class ReceiptPdf < Stationery::Document
+  LOGO = File.expand_path("logo.png", __dir__)        # in Rails: Rails.root.join("app/assets/images/logo.png").to_s
+
+  page size: [mm(80), mm(170)], margin: [mm(5), mm(4)] # 80 mm paper; the length is fixed, so choose it
+  default_text size: 8.5
+  metadata title: "Receipt", lang: "en"
+
+  def self.preview
+    new(number: "R-1042", time: "2026-09-29 14:32",
+        items: [["Flat white", 2, 4_50], ["Cinnamon bun", 1, 3_80], ["Sparkling water", 1, 2_90]])
+  end
+
+  def initialize(number:, time:, items:)
+    super()
+    @number = number
+    @time = time
+    @items = items
+  end
+
+  def view_template
+    image LOGO, height: 28, align: :center
+    spacer 6
+    text "Harbour Café · Storgatan 1, Stockholm", align: :center
+    text "Receipt #{@number} · #{@time}", size: 7.5, align: :center
+    spacer 8
+    rows = @items.map { |name, qty, cents| ["#{qty} × #{name}", money(qty * cents)] }
+    rows << ["Total", money(total)]
+    table(rows, width: :full, widths: [nil, 60], cell: { borders: [], padding: [2, 0] }) do |t|
+      t.column(1).align = :right
+      t.row(-1).set(weight: :bold, size: 11, borders: [:top], border_width: 1)
+    end
+    spacer 6
+    text "VAT 12% included: #{money((total * 12 / 112.0).round)}", size: 7.5
+    spacer 10
+    barcode "https://harbour.example/r/#{@number}", type: :qr, module_size: 1.5, align: :center
+    spacer 4
+    text "Thank you!", align: :center, weight: :bold
+  end
+
+  private
+
+  def total = @items.sum { |_, qty, cents| qty * cents }
+  def money(cents) = format("%.2f", cents / 100.0)
+end
+```
+
+## What matters here
+
+- **The page is the paper**: `page size: [mm(80), mm(170)]` (or `"80mm x 170mm"`). A page has a
+  fixed length, set at class level, so a receipt of any number of lines either continues on a
+  second page or renders from a subclass of the length it needs:
+  `Class.new(ReceiptPdf) { page size: [mm(80), mm(90 + (items.size * 5))], margin: [mm(5), mm(4)] }.new(**attributes)`.
+- **Totals as a table** of two columns: `widths: [nil, 60]` gives the prices 60 pt and the names
+  the rest, and `cell: { borders: [] }` takes away the default borders.
+- **A QR code** is `barcode data, type: :qr`; it is vector bars, so it prints sharp at any size.
+- **A thermal receipt printer** prints black or nothing: `monochrome dpi: 203` reports what it
+  cannot print as it is, and `to_png(monochrome: true)` is the one-bit picture it will print, for a
+  printer driven with images. `to_zpl` is for ZPL label printers (see [label.md](label.md)).
+- Look at it: `stationery render receipt_pdf.rb --png` and open the picture; a narrow page shows
+  where a long item name wraps.

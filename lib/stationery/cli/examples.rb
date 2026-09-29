@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "../examples"
+
 module Stationery
   class CLI
     # `stationery examples` lists the examples the gem ships, each with the
@@ -7,7 +9,7 @@ module Stationery
     # where one is, and its source with `--source`.
     class Examples
       SUMMARY = "List the examples that ship with the gem, or print where one is"
-      DIR = File.expand_path("../../../examples", __dir__)
+      DIR = Stationery::Examples::DIR
 
       def initialize(out:, err:)
         @out = out
@@ -39,11 +41,11 @@ module Stationery
         end
       end
 
-      def names = Dir.glob("**/*.rb", base: DIR).map { |file| file.delete_suffix(".rb") }.sort
+      def names = Stationery::Examples.names
 
       def list
         width = names.map(&:size).max.to_i
-        names.each { |name| @out.puts "#{name.ljust(width)}  #{summary(name)}".rstrip }
+        names.each { |name| @out.puts "#{name.ljust(width)}  #{Stationery::Examples.summary(name)}".rstrip }
         @out.puts "", "They are in #{DIR}; `stationery examples NAME` prints the path of one."
         OK
       end
@@ -56,14 +58,7 @@ module Stationery
         OK
       end
 
-      def path(name) = File.join(DIR, "#{name}.rb")
-
-      # The first sentence of the comment that opens the file.
-      def summary(name)
-        comment = File.foreach(path(name), chomp: true).drop(2).take_while { |line| line.match?(/\A# *\S/) }
-        text = comment.map { |line| line.delete_prefix("#").strip }.join(" ").sub(/\s*Run it.*\z/, "")
-        (text[/\A.*?\.(?=\s|\z)/] || text).delete_suffix(":")
-      end
+      def path(name) = Stationery::Examples.path(name)
     end
 
     register "examples", Examples

@@ -1,0 +1,78 @@
+# Recipe: a fillable form
+
+Text inputs, a select, radio buttons, check boxes and a signature field that people fill in a PDF
+viewer. The examples in the gem: `stationery examples form --source` (every kind of field) and
+`stationery examples contract --source` (initials in the footer of every page, signature fields).
+
+```ruby
+class ApplicationFormPdf < Stationery::Document
+  MUTED = "#6B7280"
+
+  page size: :a4, margin: 48
+  default_text size: 9.5
+  metadata title: "Membership application", lang: "en"
+
+  def self.preview = new(name: "Astrid Lindqvist")
+
+  def initialize(name: "")
+    super()
+    @name = name
+  end
+
+  def view_template
+    text "Membership application", size: 20, weight: :bold, heading: 1
+    spacer 16
+    row(gap: 12) do
+      labelled("Full name") { text_field "applicant.name", value: @name, required: true }
+      labelled("Email") { text_field "applicant.email" }
+    end
+    spacer 10
+    row(gap: 12) do
+      column(width: 90) { labelled_field("Postcode") { text_field "applicant.postcode", comb: 5 } }
+      labelled("Country") { select "applicant.country", options: %w[Sweden Norway Denmark], value: "Sweden" }
+    end
+    spacer 10
+    labelled_field("Plan") do
+      radio "plan", "basic", label: "Basic"
+      radio "plan", "pro", label: "Pro", checked: true
+    end
+    spacer 10
+    text_field "notes", multiline: true, height: 60, tooltip: "Anything we should know"
+    spacer 10
+    checkbox "terms", label: "I accept the terms"
+    spacer 24
+    signature_field "signature", width: 220, label: "Signature"
+  end
+
+  private
+
+  def labelled(label, &) = column { labelled_field(label, &) }
+
+  def labelled_field(label)
+    text label, size: 8, color: MUTED
+    spacer 3
+    yield
+  end
+end
+```
+
+## What matters here
+
+- Fields lay out like boxes (full width by default; `width:` in points), or sit at a page
+  position with `at: [x, y]`. They work in rows, boxes and table cells.
+- **Dotted names** (`"applicant.name"`) group fields as viewers show them. Radios sharing a name
+  are one group whose value is the checked `value`.
+- **`select` inside a document is the form field**, not `Kernel#select` or `Enumerable#select`
+  called without a receiver: write `list.select { … }` with its receiver.
+- **The value of a field is not page text**: `have_pdf_text("Astrid")` does not find it;
+  `have_pdf_text("Astrid", fields: true)` does, and `document.fields` after `to_pdf` answers
+  `{ "applicant.name" => "Astrid Lindqvist", … }`.
+- **`to_png` and `stationery render --png` do not draw form fields**: they are the viewer's widgets,
+  so the picture shows the labels and blank space. To see the fields, draw the PDF with MuPDF,
+  which paints the appearances the gem writes: `mutool draw -r 96 -o form-%d.png form.pdf`
+  (`pdftoppm` draws the values but not the borders). `stationery inspect form.pdf` lists each
+  field with its rectangle and value.
+- Fields keep PDF/A and PDF/UA (every field has an accessible name from `tooltip:` or its label).
+- Signing the file: `sign certificate:, key:, field: "signature"` fills the signature field with
+  a digital signature (see [../reference/conformance.md](../reference/conformance.md)).
+- Every option of every field: [../reference/forms.md](../reference/forms.md) and <%= docs("forms") %>.

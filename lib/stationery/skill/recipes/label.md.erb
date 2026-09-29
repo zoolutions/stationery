@@ -1,0 +1,85 @@
+# Recipe: a shipping label, barcodes, ZPL
+
+A 4 × 6 in label for a thermal printer, in black and white, with a Code 128 and a QR code, as a PDF
+and as ZPL. The example in the gem: `stationery examples shipping_label --source`; the packing slip
+(`stationery examples packing_slip --source`) draws a barcode on a landscape page.
+
+```ruby
+class ShippingLabelPdf < Stationery::Document
+  page size: :label_4x6, margin: mm(4)                # or "4in x 6in", or [mm(100), mm(150)]
+  monochrome dpi: 203                                 # warn about anything a 203 dpi printer cannot print
+  print scaling: :none                                # no "fit to page" in the print dialog
+  default_text size: 10
+  metadata title: "Shipping label"
+
+  def self.preview
+    new(tracking: "SX0042771903", service: "EXPRESS",
+        to: ["Ada Example", "12 Sample Street", "3011 Testville", "Netherlands"])
+  end
+
+  def initialize(tracking:, service:, to:)
+    super()
+    @tracking = tracking
+    @service = service
+    @to = to
+  end
+
+  def view_template
+    box(background: "#000000", padding: [8, 10]) do
+      text @service, size: 18, weight: :bold, color: "#FFFFFF", align: :center
+    end
+    spacer 10
+    text "SHIP TO", size: 8, weight: :bold
+    text @to.join("\n"), size: 14, leading: 2
+    spacer 12
+    rule height: 2
+    spacer 12
+    row(gap: 12, align: :middle) do
+      column { text "Scan to track", size: 9 }
+      column(width: :auto) { barcode "https://track.example/#{@tracking}", type: :qr, module_size: 2, native: true }
+    end
+    spacer 12
+    box(border: { width: 2 }, padding: 10) do
+      barcode @tracking, type: :code128, height: 60, align: :center, native: true
+      spacer 4
+      text @tracking, size: 12, weight: :bold, letter_spacing: 1, align: :center
+    end
+  end
+end
+
+label = ShippingLabelPdf.preview
+label.to_pdf("label.pdf")                             # to look at, or to print from a browser
+label.to_zpl("label.zpl")                             # ZPL II for the printer, one ^XA…^XZ per page
+```
+
+## What matters here
+
+- **The page is the label**: `page size: :label_4x6` (also `:label_4x3`, `:label_4x2`,
+  `:label_100x150`, `:label_100x50`, or any `"102mm x 74mm"`) with a small margin. Lengths are
+  points; `mm()` and `inch()` convert.
+- **`barcode(data, type:)`**: `:code128` (the default; printable ASCII), `:ean13` (12 digits and
+  the check digit), `:qr` (`level: :l, :m, :q, :h`) or `:datamatrix`. It is vector bars with its
+  quiet zone included. Size a QR code by `module_size:` (points a module) or `width:`, and a linear
+  code by `module_size:` or `width:` and `height:`; it shrinks to the space it is given. No font or
+  gem is needed.
+- **ZPL**: `to_zpl` draws each page one bit to a dot and sends it as a graphic, so any font and
+  layout prints as the PDF shows it. `dpi:` is the printer's (152, 203, 300, 600; 203 by default,
+  or the class's `monochrome dpi:`), `copies:`, `pages:`. `native: true` on a barcode (or
+  `to_zpl(native: true)`) has the printer draw it with its own `^BC` / `^BQ` command, crisp on its
+  dot grid. A barcode the printer could not draw as it is stays in the picture without a word: one
+  rotated or clipped, paler than half grey, a module wider than 10 dots (a QR code sized with a
+  large `width:` at 300 dpi), or a QR code of text outside ASCII. Size a native QR code by
+  `module_size:` (1 to 2 pt) and check the ZPL has its `^BQ` line.
+  Send it to port 9100: `TCPSocket.open(host, 9100) { |s| label.to_zpl(s) }`.
+  From the shell: `stationery render label_pdf.rb --zpl --dpi 300`.
+- **Black and white only.** A thermal printer prints black or nothing. `monochrome dpi: 203` reports
+  every grey, colour, opacity and line thinner than a dot as a warning; `monochrome snap: true`
+  changes them instead (dark to black, light left out). White text on a black box is fine.
+- **Look at what the printer will print**: `label.to_png("label.png", monochrome: true)` draws the
+  one-bit picture at the printer's dpi; open it and check the bars are clean and nothing is cut off.
+  `stationery render label_pdf.rb --png` draws the PDF.
+- **Printing the PDF** from a desktop: `print scaling: :none` keeps the dialog from shrinking the
+  label to fit; `copies:`, `duplex:` and `pick_tray_by_size:` are hints too
+  (see [../reference/printing.md](../reference/printing.md)).
+- In a spec: `have_pdf_colors("#000000", "#FFFFFF")` holds the label to black and white (the
+  white is the service's text on its black box), and `have_page_count(1)` to one label.

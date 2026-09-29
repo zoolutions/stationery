@@ -1,0 +1,37 @@
+# Tagged PDF, PDF/A, PDF/UA, e-invoices, signatures
+
+From the README of stationery <%= version %>. Online: <%= docs("conformance") %>.
+
+What a standard asks for is checked with a validator, not reasoned about. veraPDF validates
+PDF/A and PDF/UA; with Docker:
+
+```sh
+docker run --rm -v "$PWD:/data:ro" verapdf/cli --format text -v --flavour 3b /data/invoice.pdf   # PDF/A-3b
+docker run --rm -v "$PWD:/data:ro" verapdf/cli --format text -v --flavour ua1 /data/report.pdf   # PDF/UA-1
+```
+
+A spec can hold the claim (`have_conformance(:pdf_a3b)`), not its validity.
+
+## Accessibility (tagged PDF)
+
+<%= readme("Accessibility (tagged PDF)") %>
+
+## PDF/A and PDF/UA
+
+<%= readme("PDF/A and PDF/UA") %>
+
+## Factur-X / ZUGFeRD e-invoices
+
+<%= readme("Factur-X / ZUGFeRD e-invoices") %>
+
+## Digital signatures
+
+<%= readme("Digital signatures") %>
+
+## Encryption
+
+<%= readme("Encryption") %>
+
+## Embedded files
+
+<%= readme("Embedded files") %>
