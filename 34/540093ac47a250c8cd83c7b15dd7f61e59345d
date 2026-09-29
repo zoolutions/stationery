@@ -1,0 +1,70 @@
+lib/stationery.rb
+  s_860a5752e028d4::t_a4d6bbc0b7204e 14
+spec/stationery/tagging_audit_spec.rb
+  s_860a5752e028d4::t_3c60217a5ab5e1 239
+lib/stationery/document.rb
+  s_860a5752e028d4::t_758587104c3ffc 387
+  s_860a5752e028d4::t_c77fc8d23f7695 134-142,237-239,246-247,376-377,401-404
+  s_860a5752e028d4::t_36a3846b872a97 259,388-392
+spec/stationery/layout/image_spec.rb
+  s_860a5752e028d4::t_979f26c56ee889 109
+benchmark/metrics.rb
+  s_860a5752e028d4::t_15271dd1e9a362 83-88
+  s_860a5752e028d4::t_758587104c3ffc 15
+  s_860a5752e028d4::t_dfb7de4a1b5443 24,79
+README.md
+  s_860a5752e028d4::t_6d2b4569896d10 675,878-884
+spec/stationery/tagging_region_links_spec.rb
+  s_860a5752e028d4::t_3c60217a5ab5e1 45
+  s_860a5752e028d4::t_758587104c3ffc 133-134
+spec/support/pdf_helpers.rb
+  s_860a5752e028d4::t_3c60217a5ab5e1 4,26-32,44
+  s_860a5752e028d4::t_758587104c3ffc 33
+spec/stationery/pdf/conformance_spec.rb
+  s_860a5752e028d4::t_3c60217a5ab5e1 258-259
+lib/stationery/raster/render.rb
+  s_860a5752e028d4::t_c77fc8d23f7695 19
+lib/stationery/pdf/object_streams.rb
+  s_860a5752e028d4::t_dfb7de4a1b5443 26,35-37
+  s_860a5752e028d4::t_c098ecefd3f507 1-25,27-34,38-41
+spec/stationery/document_paint_on_spec.rb
+  s_860a5752e028d4::t_979f26c56ee889 20
+spec/stationery/document_to_pdf_object_streams_spec.rb
+  s_860a5752e028d4::t_758587104c3ffc 1-79
+spec/stationery/pdf/writer_render_with_object_streams_spec.rb
+  s_860a5752e028d4::t_758587104c3ffc 1-82
+docs/app/views/docs/pages/conformance.rb
+  s_860a5752e028d4::t_6d2b4569896d10 49-53
+spec/stationery/document_to_pdf_bytes_spec.rb
+  s_860a5752e028d4::t_979f26c56ee889 6-7,18-19,23
+docs/app/views/docs/pages/documents_and_components.rb
+  s_860a5752e028d4::t_3a7eefd309eebb 49-50
+spec/stationery/document_to_pdf_streaming_spec.rb
+  s_860a5752e028d4::t_3c60217a5ab5e1 12-14
+CHANGELOG.md
+  s_860a5752e028d4::t_3a7eefd309eebb 3-7
+lib/stationery/pdf/assembler.rb
+  s_860a5752e028d4::t_c77fc8d23f7695 20-21,24,28,49
+lib/stationery/forms/acro_form.rb
+  s_860a5752e028d4::t_9e9fa3261ab17d 96
+lib/stationery/pdf/writer.rb
+  s_860a5752e028d4::t_c098ecefd3f507 8-9,20-22,24-25,27,84,86,97-98,108-144,150
+  s_860a5752e028d4::t_9e9fa3261ab17d 23,55-56,60-61,107
+  s_860a5752e028d4::t_c6ffe686281745 57-59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "34540093ac47a250c8cd83c7b15dd7f61e59345d",
+  "prompts": {},
+  "sessions": {
+    "s_860a5752e028d4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "659f1fed-5e9e-4921-8990-c2e5a6ba8625",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
