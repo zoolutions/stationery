@@ -622,7 +622,7 @@ ShelfLabel.new.to_pdf(monochrome: false)           # as it was, byte for byte
   resampled to the dots it covers at `dpi:` and dithered, and embedded as a one-bit DeviceGray image
   (`/BitsPerComponent 1`): what prints is the pattern chosen here, not the driver's. A JPEG is decoded
   for it in Ruby, no larger than the dots need; one of a kind that is not decoded (lossless,
-  arithmetic-coded, 12-bit) is embedded as it is and reported (`an image in JPEG 640x480`).
+  arithmetic-coded, hierarchical, 12-bit) is embedded as it is and reported (`an image in JPEG 640x480`).
 - `monochrome` at class level is inherited and adds to what the class inherits; `monochrome false`
   takes it away. `to_pdf(monochrome:)` takes `true`, `false` or options laid over the class's.
 - Monochrome renders keep PDF/A and PDF/UA: the one-bit image is DeviceGray, which the sRGB output
@@ -630,7 +630,7 @@ ShelfLabel.new.to_pdf(monochrome: false)           # as it was, byte for byte
 - `Inspector#colors` lists what a PDF paints with, so a spec can hold it: `expect(pdf).to
   have_pdf_colors("#000000")`.
 
-What it does not do: it does not dither a lossless, arithmetic-coded or 12-bit JPEG, does not look at form
+What it does not do: it does not dither a lossless, arithmetic-coded, hierarchical or 12-bit JPEG, does not look at form
 fields (their widget draws them, not the page), does not put dashes, line caps or curves on the grid,
 and does not make small text bolder. It changes nothing without `monochrome`. The rules live in
 `Stationery::Monochrome::Rules` and `Monochrome::Grid`, apart from the PDF canvas, and `to_png` and
@@ -656,7 +656,7 @@ ShelfLabel.new.to_png(monochrome: { dpi: 203, snap: true }) # one bit to a dot, 
   a stroke's horizontal and vertical edges and an upright image's edges are put on the pixel grid as
   poppler puts them, so it is close to `pdftoppm -r <dpi>` of the same PDF: the examples differ in
   0.0 to 0.5% of their pixels at 72 dpi, in the hinting of a few glyphs and the edges of images.
-- **What is not**: a lossless, arithmetic-coded or 12-bit JPEG, which is not decoded, is drawn as a
+- **What is not**: a lossless, arithmetic-coded, hierarchical or 12-bit JPEG, which is not decoded, is drawn as a
   grey box with a cross and reported (`Warnings::SkippedImage`); form fields draw nothing (their
   widget is the PDF viewer's); links, bookmarks and tagging are not visible anyway.
 - **Monochrome.** `monochrome:` takes what `to_pdf` takes, and the class's `monochrome` applies
@@ -1155,9 +1155,10 @@ StatementPdf.new(account).to_pdf { |chunk| response.stream.write(chunk) }
 
 Peak resident memory of one render in a fresh process, and the megabytes still alive when
 pagination ends (`bundle exec rake memory`; Apple M2 Max, Ruby 3.4.2 +YJIT, on a busy machine:
-two runs of the same render peak up to a fifth apart, what is alive repeats):
+two runs of the same render peak up to a fifth apart, what is alive repeats; the text documents
+were measured on 0.11.0, the tables on 0.12.0):
 
-| Document | Pages | | Before | Now | `incremental: true` |
+| Document | Pages | | 0.10 | Now | `incremental: true` |
 |---|---:|---|---:|---:|---:|
 | Headings and paragraphs | 1,000 | peak | 391 MB | 111 MB | 108 MB |
 | | | alive | 216 MB | 17 MB | 14 MB |
@@ -1172,9 +1173,9 @@ two runs of the same render peak up to a fifth apart, what is alive repeats):
 | One table of 165,000 rows | 5,000 | peak | 3,792 MB | 584 MB | 586 MB |
 | | | alive | 2,437 MB | 40 MB | 25 MB |
 
-What is left is the document as it was built: every node exists before the first page is
-painted. A table resolves its column widths from every cell, and keeps the widths, not the
-cell's text: a cell's node is built when a page reaches its row and let go with the page
+What is left is the document as it was built: every node but a table cell's exists before the
+first page is painted. A table with a column without a width resolves its column widths from every
+cell, and keeps the widths, not the cell's text: a cell's node is built when a page reaches its row and let go with the page
 (the table of 165,000 rows holds 105 MB when its columns are resolved, its cells and their
 text, where it held 913 MB). In a tagged render the `TR`, `TH` and `TD` of a row are built
 when a page paints it, and the structure tree holds them until the file is written: the
@@ -1518,7 +1519,7 @@ extended and progressive JPEGs are decoded (every chroma subsampling,
 restart intervals, grey, RGB, YCbCr, CMYK and YCCK, CMYK turned into RGB)
 to the pixels libjpeg-turbo gives them, and a photo drawn small at a half, a
 quarter or an eighth of its size (libjpeg's scaled IDCT). A lossless,
-arithmetic-coded or 12-bit JPEG, or one of more than 33 megapixels, is not:
+arithmetic-coded, hierarchical or 12-bit JPEG, or one of more than 33 megapixels, is not:
 a picture draws it as a crossed box and a monochrome PDF embeds it as it is,
 each with a warning. The EXIF orientation is not applied, as the PDF does
 not apply it either.
@@ -1918,9 +1919,11 @@ Fonts: no variable fonts (including CFF2) and no WOFF2 (it needs Brotli; convert
 nothing and scripts that need contextual shaping (Arabic, Indic, Thai) draw glyph by glyph unless the
 application brings a shaper (`shaper`, see [the shaper hook](#complex-scripts-the-shaper-hook): the gem
 shapes none of them itself), and colour or emoji glyphs no font
-in the chain has are drawn as `.notdef` and reported. Text runs left to right: a shaper orders the glyphs
+in the chain has are drawn as `.notdef` and reported (under a conformance level they raise, or are drawn
+as a stand-in with `missing_glyphs: :replace`). Text runs left to right: a shaper orders the glyphs
 within a stretch of one font and style, nothing reorders stretches or lines (CJK text wraps between
-ideographs, but there is no vertical layout); hyphenation
+ideographs, but there is no vertical layout), and poppler and MuPDF extract shaped right-to-left text
+reversed (see [the matrix](#complex-scripts-the-shaper-hook)); hyphenation
 patterns are bundled for English, German and Swedish only (a soft hyphen works in any language),
 and justification only widens spaces.
 
@@ -1930,7 +1933,7 @@ and reported, text inside a `clipPath` does not clip, and the shapes of a clip p
 path, so overlapping shapes wound in opposite directions cancel where they overlap.
 Images are JPEG, PNG (non-interlaced) and lossless WebP (not lossy or animated WebP, and no more
 than 33 megapixels) and never fetched from a URL; a JPEG is embedded at its
-source resolution (only PNG and WebP can be downscaled), so an oversized one is reported, not resized; a lossless, arithmetic-coded or 12-bit JPEG is not decoded for `to_png` or `monochrome`. `html` reads a fixed subset of CSS (colours, sizes, weights, alignment, margins, padding, table
+source resolution (only PNG and WebP can be downscaled), so an oversized one is reported, not resized; a lossless, arithmetic-coded, hierarchical or 12-bit JPEG, or one of more than 33 megapixels, is not decoded for `to_png`, `to_zpl` or `monochrome`. `html` reads a fixed subset of CSS (colours, sizes, weights, alignment, margins, padding, table
 borders and widths, page breaks; see [What CSS is read](#what-css-is-read)), not a layout
 engine's worth: no `display`, positioning, `font-family`, `auto` or negative margins or selectors
 with combinators, and floats for images only, with their `margin` around them.
@@ -1951,15 +1954,25 @@ a table, a row, `columns` and a box with a size of its own are blocks of the wid
 all the way down, where a box with a background wraps: a table resolves its column widths from
 its width, a row shares its width between its columns and `columns` divides it, and none of them
 can be laid out again at another width from some row on, which widening below the float would
-take (see [Floats](#floats)). Link and form-widget rectangles stay in page space inside `rotate`
+take (see [Floats](#floats)). A table reads its rows as pages reach them only from an Enumerator
+with a width for every column, and then refuses what needs its end (a row counted from the end, a
+cell spanning rows); in a `row`, in a box with `break_inside: :avoid` or beside a float it is read
+whole first (see [Large documents](#large-documents)). Link and form-widget rectangles stay in page space inside `rotate`
 and `transform`, and `shadow:` is stacked rectangles, not a blur.
 
 PDF: PDF/A-2b, PDF/A-3b and PDF/UA-1 only (no PDF/A-1, no level A or U, no PDF/UA-2, no PDF/X),
-no JavaScript and no action but links and the print dialog (`print dialog: :on_open`). A render carries one signature (`/ETSI.CAdES.detached`, RSA or EC with SHA-256):
+no JavaScript and no action but links and the print dialog (`print dialog: :on_open`). Under PDF/UA-1 a
+link in the header row a table repeats on its next pages, and `canvas.link` without a `tag:`, raise: they
+are outside the structure tree. A render carries one signature (`/ETSI.CAdES.detached`, RSA or EC with SHA-256):
 no long-term validation data (PAdES B-LT), no second signature and no signing
 of a file that already exists, all of which need incremental updates.
 Form fields are set in the document's fonts, but text typed into one is drawn by the viewer:
 characters outside the glyphs the field kept (ASCII and Latin-1) use the viewer's own font.
+
+Pictures and labels: `to_png` and `to_zpl` draw no form fields (their widget is the viewer's), and
+`to_zpl` sends each page as one graphic field, with only barcodes as the printer's own commands (no
+`^GB` rules or boxes, no printer fonts). The labels were compared with `to_png` and rendered by a ZPL
+viewer, not printed by the gem's specs.
 
 ## License
 
