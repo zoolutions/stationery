@@ -1,0 +1,51 @@
+CHANGELOG.md
+  s_f5a1e2cf907cda::t_b7c4bb13dbade4 5
+examples/shipping_label.rb
+  s_f5a1e2cf907cda::t_53ba1464dee245 14
+lib/stationery/skill/recipes/receipt.md.erb
+  s_f5a1e2cf907cda::t_f65244175846e0 76-78
+  s_f5a1e2cf907cda::t_17b24b5db68a15 16
+  s_f5a1e2cf907cda::t_0686065fca93f7 63-64
+lib/stationery/skill/SKILL.md.erb
+  s_f5a1e2cf907cda::t_fa3f5eaea13076 94-95,98
+  s_f5a1e2cf907cda::t_ff80014b25914d 54
+  s_f5a1e2cf907cda::t_d15082dba64816 96-97
+examples/receipt.rb
+  s_f5a1e2cf907cda::t_97acc98c21aa54 28
+README.md
+  s_f5a1e2cf907cda::t_fa85324162be8f 673
+  s_f5a1e2cf907cda::t_bd2df47c1489d1 504
+  s_f5a1e2cf907cda::t_0bf79604667ac6 733,735-739
+  s_f5a1e2cf907cda::t_d2b85a0c320c5c 734
+  s_f5a1e2cf907cda::t_7c3bde1da0c7ad 487-503,505-507
+  s_f5a1e2cf907cda::t_f7dfbec065c787 698
+docs/app/views/docs/pages/pages.rb
+  s_f5a1e2cf907cda::t_09270e661505cc 48-85
+lib/stationery/skill/reference/printing.md.erb
+  s_f5a1e2cf907cda::t_2439e4313bebef 9
+  s_f5a1e2cf907cda::t_32da6500bc7175 8,10
+lib/stationery/skill/recipes/label.md.erb
+  s_f5a1e2cf907cda::t_a7ed0dd6f1cb8e 58-59,66-69
+  s_f5a1e2cf907cda::t_388d11dbb6fd82 61-64
+  s_f5a1e2cf907cda::t_e690d006716714 89-90
+  s_f5a1e2cf907cda::t_37487a8fad8a4a 10-11
+  s_f5a1e2cf907cda::t_fbbaba4e594bff 60
+docs/app/views/docs/pages/warnings.rb
+  s_f5a1e2cf907cda::t_1d0a339c8a03e9 32-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "2d3c0a0cde4e4214bb857f1d0cd66be61d09bb14",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
