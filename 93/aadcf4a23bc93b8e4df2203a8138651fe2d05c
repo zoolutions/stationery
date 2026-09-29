@@ -1,0 +1,62 @@
+lib/stationery/layout/table/stream.rb
+  s_f5a1e2cf907cda::t_3a2c6d6a5d8419 1-33,35-38,41-123
+  s_f5a1e2cf907cda::t_b01af4aa3b8478 34,39-40
+spec/stationery/layout/table_memory_spec.rb
+  s_f5a1e2cf907cda::t_fda0a111f591c0 60-69
+lib/stationery/layout/table.rb
+  s_f5a1e2cf907cda::t_6d44896d4602c5 316
+  s_f5a1e2cf907cda::t_3a13d3bceaad12 382
+  s_f5a1e2cf907cda::t_7718a177c92bad 61
+  s_f5a1e2cf907cda::t_5d4e39c576386b 353,358
+  s_f5a1e2cf907cda::t_c41b3f9e17904c 298
+  s_f5a1e2cf907cda::t_30a993daff8026 206-229,233-234,242
+  s_f5a1e2cf907cda::t_e60e77e33808d3 239
+  s_f5a1e2cf907cda::t_21620a90dd1cbf 368
+  s_f5a1e2cf907cda::t_42cece22cfdf7b 192,195
+  s_f5a1e2cf907cda::t_7946304e4df98f 81-85,95-99,102-107
+  s_f5a1e2cf907cda::t_0b88aefd1c960f 402-405,408
+  s_f5a1e2cf907cda::t_61ad02759c5c08 150-151,154-155
+  s_f5a1e2cf907cda::t_cbe689e76e9e7e 176,179,181
+  s_f5a1e2cf907cda::t_4bc8db1d21327d 230-232
+  s_f5a1e2cf907cda::t_94acbf658eedf7 42-46,51-60,62-63
+  s_f5a1e2cf907cda::t_3b30af183c6fa3 235,240-241
+  s_f5a1e2cf907cda::t_f40723fd9ef339 119
+  s_f5a1e2cf907cda::t_61ff89c4fe16f2 236-238
+  s_f5a1e2cf907cda::t_b095fd97a4b218 18-21
+  s_f5a1e2cf907cda::t_49148dc1c5e5df 136-141
+  s_f5a1e2cf907cda::t_c64e7cfab23de4 88-92
+lib/stationery/elements.rb
+  s_f5a1e2cf907cda::t_1bdff14fdbbe9b 137-138,141-145
+  s_f5a1e2cf907cda::t_385a03a173b134 248-262
+spec/stationery/layout/table_stream_spec.rb
+  s_f5a1e2cf907cda::t_a78b9d542ba7c7 52-57
+  s_f5a1e2cf907cda::t_24485afda172c3 6
+  s_f5a1e2cf907cda::t_00cd5e75fdd5fd 1-5,8-19,24-25,28-30,34-51,58-63,65-68,70-135
+  s_f5a1e2cf907cda::t_a519e1874a2446 7
+  s_f5a1e2cf907cda::t_181798a7dfce88 26-27,31-33
+  s_f5a1e2cf907cda::t_107347d61904b2 64,69
+  s_f5a1e2cf907cda::t_4c71c8eded2da5 20-23
+lib/stationery.rb
+  s_f5a1e2cf907cda::t_e9870372af84f0 160
+spec/stationery/document_table_stream_spec.rb
+  s_f5a1e2cf907cda::t_62bdb9c4f8a01a 41
+  s_f5a1e2cf907cda::t_abbbc1379e2a2a 8-19,26,37-38,40,42,46-48,53,56-57,64,69
+  s_f5a1e2cf907cda::t_2156f3b756129c 5
+  s_f5a1e2cf907cda::t_363f3081f1fbbb 1-4,6-7,20-25,27-36,39,43-45,49-52,54-55,58-63,65-68,70-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "93aadcf4a23bc93b8e4df2203a8138651fe2d05c",
+  "prompts": {},
+  "sessions": {
+    "s_f5a1e2cf907cda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e4364a9-bbf5-490a-b746-666bffd199ec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
