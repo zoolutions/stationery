@@ -57,6 +57,32 @@ RSpec.describe "what a long table holds before its pages" do # rubocop:disable R
     expect(node.cell(2, 1)).to be(grid.at(2, 1))
   end
 
+  it "measures no cell's natural or minimum width when every column has a width" do
+    [[40, 120, 80], [0.2, 0.5, 0.3]].each do |widths|
+      node = table(rows, header: true, widths:)
+      node.split(400, 200)
+      node.fixed_width(400)
+
+      expect(node.cells.cells.filter_map { it.instance_variable_get(:@natural_width) }).to be_empty
+    end
+  end
+
+  it "stripes a long table with one selection, not one per row" do
+    node = table(rows)
+    allow(Stationery::Layout::Table::Selection).to receive(:new).and_call_original
+    node.zebra(from: 1, color: "#EEEEEE")
+
+    expect(Stationery::Layout::Table::Selection).to have_received(:new).once
+    expect((0..4).map { node.cell(it, 0).options[:background] }).to eq([nil, "#EEEEEE", nil, "#EEEEEE", nil])
+    expect(node.cell(-1, 0)).to be_nil
+    expect(node.cell(299, 0).options[:background]).to eq("#EEEEEE")
+  end
+
+  it "reads a row index from the end as an Array does" do
+    expect([-1, -301, -302, 300, 0].map { Stationery::Layout::Table::Selection.index(it, 301) })
+      .to eq([300, 0, nil, 300, 0])
+  end
+
   it "places no cell on a grid to resolve the columns of a table without rowspans" do
     node = table(rows, header: true) { |t| t.row(0).weight = :bold }
     allow(Stationery::Layout::Table::Grid).to receive(:new).and_call_original

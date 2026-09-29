@@ -15,6 +15,10 @@ module Stationery
     # still to come are not placed on a grid until a page paints them, nor
     # measured until a page reaches them: a long table holds the wrapped
     # lines of the page being filled, not of every row.
+    #
+    # Rows given as an Enumerator, to a table whose every column has a width,
+    # are read as pages reach them (see Stream): the table holds the rows of
+    # the page being filled and the one after them, not every row.
     class Table < Node
       # How far over a limit the rows measured so far must be before the rest
       # is left unmeasured: more than any rounding in their sum.
@@ -35,12 +39,28 @@ module Stationery
         @width = width
         @header = header == true ? 1 : (header || 0).to_i
         defaults = DEFAULT_CELL.merge(cell)
-        @cells = rows.map { |row| row.map { |content| build_cell(content, defaults) } }
+        if Table.streams?(rows, widths)
+          stream(rows, defaults)
+        else
+          @cells = rows.map { |row| row.map { |content| build_cell(content, defaults) } }.to_a
+        end
         check_header
         yield self if block_given?
       end
 
-      def row_count = @cells.size
+      # Whether rows are read as pages reach them: an Enumerator (lazy or
+      # not) for a table whose every column has a width, so that no column
+      # waits on every row for its width.
+      def self.streams?(rows, widths)
+        rows.is_a?(Enumerator) && widths.is_a?(Array) && !widths.empty? && !widths.include?(nil)
+      end
+
+      # Every row, read to the end of a stream: what a page that paints the
+      # whole table, or a question about the whole of it, needs.
+      def row_count
+        read_all
+        @cells.size
+      end
 
       def column_count
         @column_count ||= if row_spans?
@@ -58,16 +78,37 @@ module Stationery
         nil
       end
 
-      def rows(spec) = Selection.new(self, Selection.indexes(spec, row_count), (0...column_count).to_a)
+      def rows(spec)
+        return Stream::Selection.new(@stream, Stream.rows(spec), (0...column_count).to_a) if @stream
+
+        Selection.new(self, Selection.indexes(spec, row_count), (0...column_count).to_a)
+      end
       alias row rows
 
-      def columns(spec) = Selection.new(self, (0...row_count).to_a, Selection.indexes(spec, column_count))
+      def columns(spec)
+        return cells.columns(spec) if @stream
+
+        Selection.new(self, (0...row_count).to_a, Selection.indexes(spec, column_count))
+      end
       alias column columns
 
-      def cells = Selection.new(self, (0...row_count).to_a, (0...column_count).to_a)
+      def cells
+        return Stream::Selection.new(@stream, ->(_) { true }, (0...column_count).to_a) if @stream
+
+        Selection.new(self, (0...row_count).to_a, (0...column_count).to_a)
+      end
 
       def zebra(color:, from: 0, to: nil, every: 2)
-        (from..(to || (row_count - 1))).step(every) { |r| rows(r).background = color }
+        if @stream
+          rows = ->(row) { row >= from && (to.nil? || row <= to) && ((row - from) % every).zero? }
+          Stream::Selection.new(@stream, rows, (0...column_count).to_a).background = color
+        else
+          # One selection of every striped row, as each row's own would
+          # be: a long table is not counted again for every row.
+          count = row_count
+          rows = (from..(to || (count - 1))).step(every).filter_map { |row| Selection.index(row, count) }
+          Selection.new(self, rows, (0...column_count).to_a).background = color
+        end
         self
       end
 
@@ -79,6 +120,7 @@ module Stationery
         @column_metrics = nil
         @row_heights = nil
         @column_count = nil
+        @flexible = nil
         @grid = nil
       end
 
@@ -95,10 +137,12 @@ module Stationery
 
       def column_widths(available)
         @column_widths ||= {}
-        @column_widths[available] ||= Widths.resolve(
-          spec: Array.new(column_count) { |i| @widths&.[](i) },
-          natural: column_metric(:natural_width), min: column_metric(:min_width), target: target(available)
-        )
+        @column_widths[available] ||= begin
+          flexible = flexible?
+          Widths.resolve(spec: Array.new(column_count) { |i| @widths&.[](i) },
+                         natural: (column_metric(:natural_width) if flexible),
+                         min: (column_metric(:min_width) if flexible), target: target(available))
+        end
       end
 
       def measure(width) = row_heights(width).sum
@@ -107,9 +151,12 @@ module Stationery
         return measure(width) if row_spans?
 
         used = 0
-        row_count.times do |row|
+        row = 0
+        while row?(row)
           used += height_of(width, row)
           return used if used > limit + SLACK
+
+          row += 1
         end
         measure(width)
       end
@@ -130,12 +177,12 @@ module Stationery
 
       def split(width, height, **options)
         heights = measured(width)
-        [@header, row_count].min.times { |row| height_of(width, row) }
+        @header.times { |row| row?(row) && height_of(width, row) }
         used = heights.first(@header).sum
         count = @header
-        count += 1 while count < row_count && used + height_of(width, count) <= height + EPSILON &&
+        count += 1 while row?(count) && used + height_of(width, count) <= height + EPSILON &&
                          (used += heights[count])
-        return [self, nil] if count == row_count
+        return [self, nil] unless row?(count)
 
         count = grid.boundaries.grep(@header..count).max if row_spans?
         split_row(count, width, height - heights.first(count).sum, fresh: options[:fresh]) ||
@@ -146,9 +193,10 @@ module Stationery
 
       # Becomes a fragment holding `rows`, with the column widths and row
       # heights its table measured at `width`.
-      def carry(rows, continued, widths, heights)
+      def carry(rows, continued, widths, heights, stream)
         @cells = rows
         @continued = continued
+        @stream = stream
         @grid = nil
         @column_widths = widths
         @row_heights = heights
@@ -158,6 +206,43 @@ module Stationery
       private
 
       def grid = @grid ||= Grid.new(@cells)
+
+      def stream(rows, defaults)
+        @stream = Stream.new(rows, @widths.size) { |row| row.map { |content| build_cell(content, defaults) } }
+        @cells = []
+        @read = 0
+        @column_count = @widths.size
+        @row_spans = false
+      end
+
+      # Whether the table has a row at `row`, read from its stream when it
+      # is the next one. A row read joins the measured rows unmeasured.
+      def row?(row)
+        row < @cells.size || (@stream && pull) || false
+      end
+
+      def pull
+        cells = @stream.pull(@read)
+        return @stream = nil unless cells
+
+        @read += 1
+        @cells << cells
+        @row_heights&.each_value { it << nil }
+        true
+      end
+
+      def read_all
+        nil while @stream && pull
+      end
+
+      # Whether a column takes its width from its cells, having none given.
+      def flexible?
+        return @flexible unless @flexible.nil?
+
+        @flexible = false
+        column_count.times { |i| @flexible = true if @widths&.[](i).nil? }
+        @flexible
+      end
 
       # Whether any cell spans rows, of the table a fragment was cut from too.
       def row_spans?
@@ -214,7 +299,7 @@ module Stationery
         return [nil, self] if count == @header
 
         heights = measured(width)
-        [fragment(@cells.first(count), width, heights.first(count)),
+        [fragment(@cells.first(count), width, heights.first(count), stream: nil),
          fragment(@cells.first(@header) + @cells.drop(count), width,
                   heights.first(@header) + heights.drop(count), continued: true)]
       end
@@ -232,7 +317,7 @@ module Stationery
 
         heights = measured(width)
         above, below = [heads, tails].map { |cells| [row_height(placements, cells, widths)] }
-        [fragment(@cells.first(row) + [heads], width, heights.first(row) + above),
+        [fragment(@cells.first(row) + [heads], width, heights.first(row) + above, stream: nil),
          fragment(@cells.first(@header) + [tails] + @cells.drop(row + 1), width,
                   heights.first(@header) + below + heights.drop(row + 1), continued: true)]
       end
@@ -269,11 +354,12 @@ module Stationery
       end
 
       def natural_total
-        natural = column_metric(:natural_width)
+        natural = column_metric(:natural_width) if flexible?
         Array.new(column_count) { |i| @widths&.[](i) || natural[i] }.sum
       end
 
       def column_metric(metric)
+        read_all
         @column_metrics ||= {}
         @column_metrics[metric] ||= if row_spans?
                                       grid.column_metric { |p| p.cell.public_send(metric, @context) }
@@ -283,6 +369,7 @@ module Stationery
       end
 
       def row_heights(width)
+        read_all
         heights = measured(width)
         heights.each_index { |row| heights[row] || height_of(width, row) } if heights.include?(nil)
         heights
@@ -296,7 +383,7 @@ module Stationery
         @row_heights[width] ||= if row_spans?
                                   grid.row_heights(column_widths(width)) { |p, span| p.cell.measure(@context, span) }
                                 else
-                                  Array.new(row_count)
+                                  Array.new(@cells.size)
                                 end
       end
 
@@ -316,12 +403,13 @@ module Stationery
       end
 
       # A copy holding other rows of this table. Its cells are built and
-      # tagged already and its column metrics are this table's.
-      def fragment(rows, width, heights, continued: @continued)
-        %i[natural_width min_width].each { |metric| column_metric(metric) }
+      # tagged already and its column metrics are this table's. The fragment
+      # a page does not paint yet reads on from the stream, if there is one.
+      def fragment(rows, width, heights, continued: @continued, stream: @stream)
+        %i[natural_width min_width].each { |metric| column_metric(metric) } if flexible?
         column_count
         row_spans?
-        dup.carry(rows, continued, { width => column_widths(width) }, { width => heights })
+        dup.carry(rows, continued, { width => column_widths(width) }, { width => heights }, stream)
       end
     end
   end

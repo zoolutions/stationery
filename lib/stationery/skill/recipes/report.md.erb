@@ -90,7 +90,12 @@ end
 - **Headings stay with their text**: `keep_with_next: 60` keeps at least 60 pt of what follows on the
   same page. `heading: 1..6` makes a heading in a tagged PDF; do not skip a level (1, then 3).
 - **Long tables** continue on the next page with `header: true` rows repeated; a row never splits
-  unless it is taller than a page (or `split_rows: true`).
+  unless it is taller than a page (or `split_rows: true`). Rows given as an Enumerator
+  (`Order.find_each.lazy.map { |o| [o.number, o.total] }`) to a table with a width for every
+  column (`widths: [80, 0.5, 90]`) are read as pages reach them, so the rows of about a page are
+  held at a time, however many there are; such a table selects rows from its start only (`t.row(0)`, `t.rows(1..)`,
+  `zebra`), and none of its cells may span rows. With a column without a width the rows are read
+  when the table is built.
 - **Charts are SVG or `canvas`.** Build the SVG from the data as above (`currentColor` takes
   `color:`, `<text>` is set in the document's fonts). An `svg` is drawn at its viewBox size in
   points, shrunk to the width there is; `width:` is points (`width: 1.0` is one point, not the

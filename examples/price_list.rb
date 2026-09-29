@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 # A wholesale price list of 2,000 articles over forty-odd pages: one long
-# table read from an Enumerator of records, its header row repeated on every
-# page, written incrementally so each page lets go of its content once it is
-# painted. Run it to write examples/price_list.pdf:
+# table read from an Enumerator of records as pages reach them, its header
+# row repeated on every page, written incrementally so each page lets go of
+# its content once it is painted. Run it to write examples/price_list.pdf:
 #
 #   ruby -Ilib examples/price_list.rb
 #   ruby -Ilib exe/stationery render examples/price_list.rb
@@ -73,23 +73,24 @@ class ExamplePriceList < Stationery::Document
 
   private
 
-  # `table` takes any Enumerable of rows and reads it once, as the table is
-  # built; the header row is the first and repeats after every page break.
+  # An Enumerator of rows, to a table whose every column has a width, is
+  # read as pages reach them: no more than a page of articles is held at a
+  # time (`Article.find_each.lazy.map { … }` reads a database the same way).
+  # The header row is the first and repeats after every page break.
   def price_table
-    rows = Enumerator.new do |yielder|
-      yielder << ["Article", "Description", "Unit", "Pack", "Per unit", "Per pack"]
-      @articles.each do |article|
-        yielder << [article.number, article.name, article.unit, article.pack.to_s, money(article.price),
-                    money(article.price * article.pack)]
-      end
-    end
-    table(rows, header: true, width: :full, widths: [62, nil, 62, 36, 66, 72],
-                cell: { padding: [2.5, 6], borders: [] }) do |t|
+    header = ["Article", "Description", "Unit", "Pack", "Per unit", "Per pack"]
+    rows = [header].each + @articles.lazy.map { |article| article_row(article) }
+    table(rows, header: true, widths: [62, 217, 62, 36, 66, 72], cell: { padding: [2.5, 6], borders: [] }) do |t|
       t.row(0).set(background: ACCENT, color: "#FFFFFF", weight: :bold)
       t.columns(3..).align = :right
       t.columns(0).rows(1..).color = MUTED
       t.zebra(from: 1, color: ZEBRA)
     end
+  end
+
+  def article_row(article)
+    [article.number, article.name, article.unit, article.pack.to_s, money(article.price),
+     money(article.price * article.pack)]
   end
 
   def money(amount)

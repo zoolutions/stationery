@@ -234,8 +234,10 @@ class Views::Docs::Pages::Elements < DocsUI::Page
       md <<~'MD'
         `table(rows, widths: nil, width: :auto, header: false, split_rows: false, cell: {}, anchor:, bookmark:) { |t| … }`
 
+        - **`rows`** is an Array or any Enumerable of rows. An Enumerator (lazy or not) whose table has a
+          width for every column is read as pages reach it (below).
         - **Cells** are strings, layout nodes, procs built with the DSL (`-> { image logo }`) or components.
-        - **`widths:`** per column: points, or `nil` for a share of the rest. **`width:`** `:auto`, `:full` or points.
+        - **`widths:`** per column: points, a fraction of the table (`0.25`), or `nil` for a share of the rest. **`width:`** `:auto`, `:full` or points.
         - **`header:`** `true` (one row) or a row count; header rows repeat after every page break.
         - **`cell:`** defaults for every cell: `padding` (5), `borders` (all four), `border_width` (0.5),
           `border_color`, plus `background`, `color`, `weight`, `style`, `size`, `font`, `align`, `valign`,
@@ -286,6 +288,30 @@ class Views::Docs::Pages::Elements < DocsUI::Page
         A row taller than the page continues on the next page, cut through its cells, with the header
         repeated. `split_rows: true` cuts any row that reaches the page bottom instead of moving it whole —
         useful for long tables of tall rows.
+
+        ### Rows read as pages reach them
+
+        Rows given as an Enumerator, lazy or not, to a table with a width for every column (points or
+        fractions) are read as pages reach them: the table holds the rows of the page being filled and
+        the one after them, and none before its first page. With `incremental` a price list of a
+        million rows peaks at 130 MB, where the same rows as an Array peak at 2.8 GB (see
+        [Large documents](/docs/performance#large-documents)).
+
+        ```ruby
+        rows = [%w[Order Customer Total]].each + Order.find_each.lazy.map { |o| [o.number, o.customer, o.total] }
+        table(rows, header: true, widths: [80, 0.5, 90]) do |t|
+          t.row(0).weight = :bold
+          t.columns(2).align = :right
+          t.zebra(from: 1, color: "#F4F4F4")
+        end
+        ```
+
+        The header rows, `zebra`, `split_rows`, cells spanning columns and selections by index from the
+        start (`t.row(0)`, `t.rows(1..)`, `t.columns(…)`) work as for an Array, applied to each row as it
+        is read; a proc or component cell is built then, in the text style the table was given in. What
+        needs the end of the table raises an `ArgumentError`: a row counted from the end (`t.row(-1)`,
+        `t.rows(1..-2)`), a cell spanning rows, and a row with more columns than widths. An Enumerator
+        with a column without a width is read whole when the table is built, as an Array is.
       MD
     end
   end

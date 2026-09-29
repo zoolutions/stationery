@@ -164,12 +164,12 @@
     },
     "price_list": {
       "string": {
-        "bytes": "2229ae607f5e0efeffa42e67bbcbd00c3c3e3e4db9842ce658b4b01cf9e77957",
-        "objects": "98555d77419bc25a383b7b20d5231498073cccc77200d90ea6e4abe8e57fe5be"
+        "bytes": "5cea80fdb4d14d653eb0ab9964f2dd02422c17fe33593705fb4aa4bf5adbf8c1",
+        "objects": "98dd4e74391a8f8e49f1d8b0d1c6907e11dbf2c31c0693897cc6ba028733aac9"
       },
       "block": {
-        "bytes": "264890cfc32da2823ff1cec355467da043db1e5d748692f07436eda97ea74619",
-        "objects": "a2b51b124006bb02da97d3f24e2970a650c31eea83353675345caa809ac3e607"
+        "bytes": "888a103883ff4530458d1ec0190e90c5562f403b7d0deb2a20181445bbe76c7b",
+        "objects": "3719758e1d8443a8a15eca68cb2765b3a09a0037c02deda4fffdd2e9a81df981"
       }
     },
     "resume": {

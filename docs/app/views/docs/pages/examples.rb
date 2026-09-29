@@ -58,8 +58,9 @@ class Views::Docs::Pages::Examples < DocsUI::Page
      "between them: justified, hyphenated paragraphs with `orphans:` and `widows:`, headings kept with " \
      "what follows, a photo with its caption kept together, and a note across the page below the columns." ],
     [ "Price list", "price_list",
-     "2,000 articles over forty-four pages: a table read from an `Enumerator` of records (a seeded `Random`, " \
-     "so the file is the same every time), its header row repeated on every page, a header and a footer " \
+     "2,000 articles over forty-four pages: a table read from a lazy `Enumerator` of records as pages reach " \
+     "them, every column given a width (a seeded `Random`, so the file is the same every time), its header " \
+     "row repeated on every page, a header and a footer " \
      "with page numbers, and `incremental`, so each page's content is written as soon as it is painted." ],
     [ "Contract", "contract",
      "Numbered clauses and sub-clauses whose headings keep 50 points of their text with them " \
