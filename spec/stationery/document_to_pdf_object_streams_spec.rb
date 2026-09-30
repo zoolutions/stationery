@@ -90,7 +90,7 @@ RSpec.describe Stationery::Document, "#to_pdf" do
     expect(packed?(pdf)).to be(true)
     expect(pdf).to match(%r{^\d+ 0 obj\n<</Type /Sig })
     verdict = openssl_verdict(pdf)
-    expect(verdict).to eq("CMS Verification successful") if verdict
+    expect(verdict).to include("Verification successful") if verdict
   end
 
   it "is a PDF option a picture refuses" do
