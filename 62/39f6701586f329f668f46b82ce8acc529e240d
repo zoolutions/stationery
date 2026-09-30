@@ -1,0 +1,19 @@
+spec/stationery/tagging_region_links_spec.rb
+  s_950d558813f0eb::t_f3a10244ee1978 152
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "6239f6701586f329f668f46b82ce8acc529e240d",
+  "prompts": {},
+  "sessions": {
+    "s_950d558813f0eb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ad9f1a67-3954-4708-b6a4-703730248158",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
