@@ -73,7 +73,8 @@ every change:
    `CODE-128:SX0042771903` and `QR-Code:https://…`. A code it cannot read will not scan either.
 4. **Check the native commands** are in the ZPL: `grep -o '\^B[CQEX][^^]*' label.zpl` shows `^BC`
    (Code 128), `^BQ` (QR), `^BE` (EAN-13), `^BX` (Data Matrix). A barcode that is missing there
-   stayed in the picture (see below), which prints too, but not on the printer's own dot grid.
+   stayed in the picture (see below): it prints, on the dot grid as part of the `^GFA` graphic,
+   but drawn by stationery, not by the printer's own barcode encoder.
 5. **Warnings**: `label.warnings` after `to_zpl` (or `to_png`) lists what a one-bit printer
    cannot print as it is.
 
@@ -100,7 +101,8 @@ possibly another QR mask. (Online, labelary.com renders a `.zpl` file.)
   dot grid. A barcode the printer could not draw as it is stays in the picture without a word: one
   rotated or clipped, paler than half grey, a module wider than 10 dots (a QR code sized with a
   large `width:` at 300 dpi), or a QR code of text outside ASCII. Size a native QR code by
-  `module_size:` (1 to 2 pt) and check the ZPL has its `^BQ` line.
+  `module_size:`, at most 720 / dpi points so a module is 10 dots or fewer (3.5 pt at 203 dpi,
+  2.4 pt at 300, 1.2 pt at 600), and check the ZPL has its `^BQ` line.
   Send it to port 9100: `TCPSocket.open(host, 9100) { |s| label.to_zpl(s) }`.
   From the shell: `stationery render label_pdf.rb --zpl --dpi 300`.
 - **Black and white only.** A thermal printer prints black or nothing. `monochrome dpi: 203` reports

@@ -298,7 +298,8 @@ class Views::Docs::Pages::Elements < DocsUI::Page
         [Large documents](/docs/performance#large-documents)).
 
         ```ruby
-        rows = [%w[Order Customer Total]].each + Order.find_each.lazy.map { |o| [o.number, o.customer, o.total] }
+        orders = Order.preload(:customer).find_each.lazy.map { |o| [o.number, o.customer.name, o.total] }
+        rows = [%w[Order Customer Total]].each + orders
         table(rows, header: true, widths: [80, 0.5, 90]) do |t|
           t.row(0).weight = :bold
           t.columns(2).align = :right

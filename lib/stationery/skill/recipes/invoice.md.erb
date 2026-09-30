@@ -93,9 +93,9 @@ class InvoicePdf < Stationery::Document
 
   def subtotal = @lines.sum { |line| line.quantity * line.unit_cents }
 
-  def vat_by_rate
-    @lines.group_by(&:vat_rate).transform_values do |lines|
-      (lines.sum { |line| line.quantity * line.unit_cents } * lines.first.vat_rate / 100.0).round
+  def vat_by_rate                                      # exact: Rational, rounded once per rate
+    @lines.group_by(&:vat_rate).to_h do |rate, lines|
+      [rate, (lines.sum { |line| line.quantity * line.unit_cents } * Rational(rate, 100)).round]
     end
   end
 
@@ -108,9 +108,12 @@ end
 
 ## What matters here
 
-- **Money is computed by the application**, in integer cents or `BigDecimal`, never in Floats;
-  the document only formats it. Totals are ordinary table rows: a cell `{ content:, colspan: }`
-  spans columns, `t.rows(-3..)` selects the last three rows.
+- **Money is integer cents** (or `BigDecimal`), never a Float. This document derives the line
+  amounts and VAT from its lines, exactly (`Rational(rate, 100)`, rounded once per rate); an
+  application whose invoice already holds its totals, as its books have them, passes those in
+  and the document only formats them, so the PDF cannot disagree with the ledger by a cent.
+  Totals are ordinary table rows: a cell `{ content:, colspan: }` spans columns, `t.rows(-3..)`
+  selects the last three rows.
 - **A table has black 0.5 pt borders on every cell by default.** `cell: { borders: [] }` takes
   them away; `borders: [:top]` on a selection draws one rule. `header: true` repeats the first row
   on every page the table continues onto; `t.zebra(from:, to:, color:)` stripes rows.
@@ -118,9 +121,10 @@ end
   as wide as the page.
 - **PDF/A-3b** (`conformance :pdf_a3b`) embeds the sRGB output intent and XMP identification, and
   raises `Stationery::ConformanceError` instead of writing a file that breaks the claim: a CMYK
-  colour, `encrypt`, or a character no font has (unless `missing_glyphs: :replace`, as above). Set
-  `metadata title:`. Transparency (a PNG logo with alpha) is allowed. Validate the file with
-  veraPDF: `verapdf --format text -v --flavour 3b invoice_pdf.pdf` prints `PASS` (`brew install
+  colour, or a character no font has (unless `missing_glyphs: :replace`, as above). `encrypt` with
+  a conformance level raises `ArgumentError` before anything renders: the two contradict each
+  other. Set `metadata title:`. Transparency (a PNG logo with alpha) is allowed. Validate the
+  file with veraPDF: `verapdf --format text -v --flavour 3b invoice_pdf.pdf` prints `PASS` (`brew install
   verapdf`; with Docker, see [../reference/conformance.md](../reference/conformance.md)).
 - An application that would rather send a plain PDF than none rescues the claim:
 

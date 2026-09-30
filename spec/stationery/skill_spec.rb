@@ -106,4 +106,13 @@ RSpec.describe Stationery::Skill do
       expect(document.warnings.map(&:message)).to eq([]), name
     end
   end
+
+  it "escapes the data its report recipe writes into SVG" do
+    report = SkillChecks::Recipes.new(files.slice("recipes/report.md")).classes.values.first
+    document = report.new(quarters: [["R&D <est.>", 10.0]], regions: [])
+
+    expect(document.to_pdf).to start_with("%PDF")
+    expect(document.warnings.map(&:message)).to eq([])
+    expect(document).to have_pdf_text("R&D <est.>")
+  end
 end

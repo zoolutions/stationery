@@ -305,8 +305,9 @@ HTML
 #### Untrusted input
 
 `html` and `markdown` are meant for content you did not write (a CMS body, a comment, an
-ActionText field), and nothing in that content can reach outside the document or take the
-process down:
+ActionText field). Nothing in that content can reach outside the document, and parsing it is
+bounded: nesting is capped and time grows with the input's length. How much input you accept,
+and so how many pages it renders to, is yours to bound:
 
 - **No requests.** Remote images are never fetched; an image is read only from `images:` or from
   under `base_path:`, and a path that climbs out of it is skipped (`SkippedImage`).
@@ -396,9 +397,10 @@ signature_field "signature", label: "Signature of the applicant"
   applied per character, so a value in any script the fonts cover is drawn (`/V` holds it as
   Unicode). A character no font has is drawn as `.notdef` inside a `Span` whose `ActualText` is the
   character, as in any other text (or as the font's stand-in under `conformance` with
-  `missing_glyphs: :replace`), so the appearance still extracts as written. Check marks and radio dots are paths. `NeedAppearances` is set too, so viewers redraw
-  edited values; ZapfDingbats is listed for the ones that redraw a button's mark, never embedded
-  and never used by the appearances themselves.
+  `missing_glyphs: :replace`), so the appearance still extracts as written. Check marks and radio
+  dots are paths. `NeedAppearances` is set too, so viewers redraw edited values, except under a
+  conformance level or a signature, which leave it out; ZapfDingbats is listed for the ones that
+  redraw a button's mark, never embedded and never used by the appearances themselves.
 - A field that can be edited keeps printable ASCII and Latin-1 in its font beyond the value it shows
   (and a select the glyphs of every option), about 10 KB per font, so the text a viewer redraws
   after an edit has its glyphs; what is typed outside that range falls back to the viewer's own
@@ -410,7 +412,7 @@ signature_field "signature", label: "Signature of the applicant"
 - `read_only:`, `required:`, `multiline:`, `max_length:` and `comb:` set the matching field flags.
 - A radio group's value is its checked choice's `value` (`Off` when none is checked); a select box
   lists its `options:` and draws the chosen `value`; a signature field is left unsigned for the
-  signer, unless `sign field:` signs it (see [Digital signatures](#digital-signatures)).
+  signer, unless `sign` names it with `field:` (see [Digital signatures](#digital-signatures)).
 - `document.fields` returns `{ name => value }` for the last render (a check box's value is `true` or
   `false`, an unchecked radio group's and a signature field's `nil`). Encrypted documents keep their fields fillable.
 - In tests, `document.fields` is what the form was filled with, and `have_pdf_text("Astrid", fields:
@@ -495,6 +497,8 @@ render Callout.new(color: "#F3F4F6") { text "Amount due" }
     max_pages 1
   end
 
+  label = ShippingLabel.new
+  label.to_pdf                              # warnings are there after a render
   label.warnings.map(&:message)
   # => ["the document may have 1 page and needs 2: page 2 starts with a Code 128 barcode"]
   ```
@@ -1132,9 +1136,10 @@ ContractPdf.new.to_pdf(sign: { certificate:, key:, passphrase: "…" }) # per re
   time (`Time.now`).
 - `timestamp: "https://tsa.example/tsr"` asks an RFC 3161 time-stamping authority (TSA) to sign the
   signature value and the time it saw it, and carries that token in the signature's unsigned
-  attributes: PAdES baseline B-T. A reader can then trust the signing time, and the signature, after
-  the signer's certificate has expired. It is one HTTP request per render, with Ruby's own
-  `net/http`; `timestamp: { url:, username:, password:, hash: :sha256 }` adds HTTP basic auth or
+  attributes: PAdES baseline B-T. The token proves when the signature existed, by a clock other
+  than the signer's. Whether a viewer still accepts the signature once the signer's certificate
+  has expired depends on its trust settings and on revocation data (B-LT), which the file does
+  not carry. It is one HTTP request per render, with Ruby's own `net/http`; `timestamp: { url:, username:, password:, hash: :sha256 }` adds HTTP basic auth or
   another digest (`:sha384`, `:sha512`), and `client:` (a callable given the request DER and
   answering the response DER) replaces the HTTP client. A TSA that cannot be reached, refuses, or
   answers for another request or another digest raises `Stationery::SignatureError`: the document
@@ -1256,7 +1261,8 @@ reach them, and holds the rows of the page being filled and the one after them, 
 its first page:
 
 ```ruby
-rows = [%w[Order Customer Total]].each + Order.find_each.lazy.map { |o| [o.number, o.customer, o.total] }
+orders = Order.preload(:customer).find_each.lazy.map { |o| [o.number, o.customer.name, o.total] }
+rows = [%w[Order Customer Total]].each + orders
 table(rows, header: true, widths: [80, 0.5, 90]) do |t|
   t.row(0).weight = :bold
   t.columns(2).align = :right
@@ -1325,7 +1331,7 @@ document.
 # spec/pdfs/previews/invoice_pdf_preview.rb
 class InvoicePdfPreview < Stationery::Preview
   def paid = InvoicePdf.new(Invoice.paid.first)
-  def overdue(params) = InvoicePdf.new(Invoice.find(params.fetch("id", Invoice.overdue.first.id)))
+  def overdue(params) = InvoicePdf.new(Invoice.find(params.fetch("id") { Invoice.overdue.first.id }))
 end
 ```
 

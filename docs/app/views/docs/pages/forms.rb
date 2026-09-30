@@ -339,7 +339,7 @@ class Views::Docs::Pages::Forms < DocsUI::Page
         `NeedAppearances` is set, so a viewer redraws a field after an edit, using the font and size the
         field names (`/DA`, for example `/F1 10 Tf 0 g`). A form with check boxes or radio buttons also
         lists ZapfDingbats in its resources, for viewers that redraw a button's mark with it; it is
-        never embedded and never used by the appearances stationery writes. Under a [conformance level](/docs/conformance) both are left out.
+        never embedded and never used by the appearances stationery writes. Under a [conformance level](/docs/conformance), and in a signed document, both are left out.
 
         ### Fields made without a font book
 
