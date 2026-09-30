@@ -1,0 +1,19 @@
+spec/stationery/document_to_pdf_object_streams_spec.rb
+  s_950d558813f0eb::t_1d032364810a45 93
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "50ea30662ed69c0a96554f99262e31f73481bd89",
+  "prompts": {},
+  "sessions": {
+    "s_950d558813f0eb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ad9f1a67-3954-4708-b6a4-703730248158",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
