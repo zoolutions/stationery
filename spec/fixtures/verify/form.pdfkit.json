@@ -1,0 +1,81 @@
+{
+  "fields": [
+    {
+      "value": "Astrid Lindqvist",
+      "name": "applicant.name",
+      "appearance": null
+    },
+    {
+      "name": "applicant.email",
+      "value": "astrid@example.se",
+      "appearance": null
+    },
+    {
+      "appearance": null,
+      "value": "",
+      "name": "applicant.address.street"
+    },
+    {
+      "value": "",
+      "name": "applicant.address.postcode",
+      "appearance": null
+    },
+    {
+      "name": "applicant.address.country",
+      "value": null,
+      "appearance": null
+    },
+    {
+      "name": "plan",
+      "appearance": null,
+      "value": null
+    },
+    {
+      "name": "plan",
+      "value": null,
+      "appearance": null
+    },
+    {
+      "value": null,
+      "name": "plan",
+      "appearance": null
+    },
+    {
+      "name": "notes",
+      "value": "",
+      "appearance": null
+    },
+    {
+      "value": null,
+      "appearance": null,
+      "name": "terms"
+    },
+    {
+      "appearance": null,
+      "value": null,
+      "name": "newsletter"
+    },
+    {
+      "name": "signature",
+      "appearance": null,
+      "value": null
+    },
+    {
+      "appearance": null,
+      "value": "",
+      "name": "signed_on"
+    }
+  ],
+  "pages": [
+    {
+      "painted": true,
+      "number": 1,
+      "text": "Membership application\nFill in the form on screen, sign it and send it back to us.\nApplicant\nFull name Email\nStreet address Postcode Country\nMembership\nBasic · SEK 290 / year\nPro · SEK 590 / year\nTeam · SEK 1,490 / year\nAnything we should know? (workshops you are interested in, accessibility needs)\nConsent\nI accept the terms of membership and the workshop safety rules.\nSend me the monthly newsletter.\nDate\nNordic Makers Guild · Box 118, 221 00 Lund · members@makers.example",
+      "links": []
+    }
+  ],
+  "file": "form.pdf",
+  "warnings": [],
+  "outline": [],
+  "errors": []
+}

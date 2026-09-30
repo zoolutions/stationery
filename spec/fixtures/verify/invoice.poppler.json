@@ -1,0 +1,30 @@
+{
+  "file": "invoice.pdf",
+  "pages": [
+    {
+      "number": 1,
+      "text": "Invoice INV-2026-042\nInvoice date\n\n26 September 2026\n\nDue date\n\n26 October 2026\n\nReference\n\nPO-7781\n\nAMOUNT DUE\n\n€10 637,50\nOPEN\n\nFROM\n\nBILL TO\n\nAcme Studio AB\nStorgatan 1\n111 22 Stockholm\nhello@acme.test\n\nMüller & Söhne GmbH\nHauptstraße 5\n10115 Berlin\n\nDescription\n\nQty\n\nPrice\n\nVAT\n\nAmount\n\nBrand workshop\n\n1\n\n€2 400,00\n\n25%\n\n€2 400,00\n\nLogo design, three concepts\n\n1\n\n€3 200,00\n\n25%\n\n€3 200,00\n\nIllustration set (12)\n\n12\n\n€180,00\n\n25%\n\n€2 160,00\n\nPrint-ready files\n\n1\n\n€450,00\n\n25%\n\n€450,00\n\nRush delivery\n\n1\n\n€300,00\n\n25%\n\n€300,00\n\nSubtotal\n\n€8 510,00\n\nVAT 25%\n\n€2 127,50\n\nTotal\n\n€10 637,50\n\nThank you for your business\nPay to IBAN SE45 5000 0000 0583 9825 7466 within 30 days. Questions? hello@acme.test\n\nPage 1 of 1\n\n",
+      "painted": true
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "fonts": [
+    {
+      "name": "OADZOW+OpenSans-Bold",
+      "embedded": true,
+      "unicode": true
+    },
+    {
+      "name": "BBDPFR+OpenSans-Regular",
+      "embedded": true,
+      "unicode": true
+    }
+  ],
+  "attachments": [],
+  "signatures": {
+    "count": 0,
+    "valid": null
+  },
+  "structure": false
+}

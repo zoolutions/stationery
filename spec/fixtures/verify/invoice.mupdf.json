@@ -1,0 +1,12 @@
+{
+  "file": "invoice.pdf",
+  "pages": [
+    {
+      "number": 1,
+      "text": "Invoice INV-2026-042\n\nInvoice date\n26 September 2026\n\nDue date\n26 October 2026\n\nReference\nPO-7781\n\nAMOUNT DUE\n€10 637,50\n\nOPEN\n\nFROM\n\nAcme Studio AB\nStorgatan 1\n111 22 Stockholm\nhello@acme.test\n\nBILL TO\n\nMüller & Söhne GmbH\nHauptstraße 5\n10115 Berlin\n\nDescription\nQty\nPrice\nVAT\nAmount\n\nBrand workshop\n1\n€2 400,00\n25%\n€2 400,00\n\nLogo design, three concepts\n1\n€3 200,00\n25%\n€3 200,00\n\nIllustration set (12)\n12\n€180,00\n25%\n€2 160,00\n\nPrint-ready files\n1\n€450,00\n25%\n€450,00\n\nRush delivery\n1\n€300,00\n25%\n€300,00\n\nSubtotal\n€8 510,00\n\nVAT 25%\n€2 127,50\n\nTotal\n€10 637,50\n\nThank you for your business\n\nPay to IBAN SE45 5000 0000 0583 9825 7466 within 30 days. Questions? hello@acme.test\n\nPage 1 of 1\n\n\f\n",
+      "painted": true
+    }
+  ],
+  "errors": [],
+  "warnings": []
+}

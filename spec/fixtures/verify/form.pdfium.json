@@ -1,0 +1,85 @@
+{
+  "file": "form.pdf",
+  "pages": [
+    {
+      "number": 1,
+      "text": "Membership application\r\nFill in the form on screen, sign it and send it back to us.\r\nApplicant\r\nFull name Email\r\nStreet address Postcode Country\r\nMembership\r\nBasic · SEK 290 / year\r\nPro · SEK 590 / year\r\nTeam · SEK 1,490 / year\r\nAnything we should know? (workshops you are interested in, accessibility needs)\r\nConsent\r\nI accept the terms of membership and the workshop safety rules.\r\nSend me the monthly newsletter.\r\nDate\r\nNordic Makers Guild · Box 118, 221 00 Lund · members@makers.example",
+      "painted": true,
+      "links": []
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "outline": [],
+  "fields": [
+    {
+      "name": "applicant.name",
+      "value": "Astrid Lindqvist",
+      "appearance": true
+    },
+    {
+      "name": "applicant.email",
+      "value": "astrid@example.se",
+      "appearance": true
+    },
+    {
+      "name": "applicant.address.street",
+      "value": "",
+      "appearance": true
+    },
+    {
+      "name": "applicant.address.postcode",
+      "value": "",
+      "appearance": true
+    },
+    {
+      "name": "applicant.address.country",
+      "value": null,
+      "appearance": true
+    },
+    {
+      "name": "plan",
+      "value": null,
+      "appearance": true
+    },
+    {
+      "name": "plan",
+      "value": null,
+      "appearance": true
+    },
+    {
+      "name": "plan",
+      "value": null,
+      "appearance": true
+    },
+    {
+      "name": "notes",
+      "value": "",
+      "appearance": true
+    },
+    {
+      "name": "terms",
+      "value": null,
+      "appearance": true
+    },
+    {
+      "name": "newsletter",
+      "value": null,
+      "appearance": true
+    },
+    {
+      "name": "signature",
+      "value": null,
+      "appearance": true
+    },
+    {
+      "name": "signed_on",
+      "value": "",
+      "appearance": true
+    }
+  ],
+  "signatures": {
+    "count": 0,
+    "valid": null
+  }
+}

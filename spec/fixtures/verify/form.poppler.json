@@ -1,0 +1,30 @@
+{
+  "file": "form.pdf",
+  "pages": [
+    {
+      "number": 1,
+      "text": "Membership application\nFill in the form on screen, sign it and send it back to us.\n\nApplicant\nFull name\n\nEmail\n\nAstrid Lindqvist\n\nastrid@example.se\n\nStreet address\n\nPostcode\n\nCountry\n\nSweden\n\nMembership\nBasic · SEK 290 / year\n\n● Pro · SEK 590 / year\nTeam · SEK 1,490 / year\nAnything we should know? (workshops you are interested in, accessibility needs)\n\nConsent\nI accept the terms of membership and the workshop safety rules.\n✔ Send me the monthly newsletter.\n\nDate\nSignature of the applicant\n\nNordic Makers Guild · Box 118, 221 00 Lund · members@makers.example\n\n",
+      "painted": true
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "fonts": [
+    {
+      "name": "TPPHJD+Inter-Bold",
+      "embedded": true,
+      "unicode": true
+    },
+    {
+      "name": "RYWCVQ+Inter-Regular",
+      "embedded": true,
+      "unicode": true
+    }
+  ],
+  "attachments": [],
+  "signatures": {
+    "count": 0,
+    "valid": null
+  },
+  "structure": false
+}
