@@ -14,7 +14,8 @@ module Stationery
     module Command
       POLL = 0.01 # seconds between looks at a running child
 
-      Result = Data.define(:stdout, :stderr, :status, :timed_out) do
+      # `timeout` is the seconds the tool was given.
+      Result = Data.define(:stdout, :stderr, :status, :timed_out, :timeout) do
         def success? = !timed_out && status&.success? == true
         def exitstatus = status&.exitstatus
       end
@@ -23,9 +24,9 @@ module Stationery
         Tempfile.create("stationery-verify-out") do |out|
           Tempfile.create("stationery-verify-err") do |err|
             status, timed_out = spawn(argv, env:, timeout:, chdir:, out:, err:)
-            Result.new(stdout: read(out), stderr: read(err), status:, timed_out:)
+            Result.new(stdout: read(out), stderr: read(err), status:, timed_out:, timeout:)
           rescue SystemCallError => e # the program could not start: that tool's failure, not the run's
-            Result.new(stdout: "", stderr: "#{e.message}\n", status: nil, timed_out: false)
+            Result.new(stdout: "", stderr: "#{e.message}\n", status: nil, timed_out: false, timeout:)
           end
         end
       end

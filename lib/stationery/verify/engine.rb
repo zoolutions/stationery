@@ -24,7 +24,7 @@ module Stationery
       # Why a tool failed, from its result: timed out, or its exit status
       # and the last lines it wrote to stderr.
       def failure(tool, result)
-        return "#{tool} timed out after #{TIMEOUT} s" if result.timed_out
+        return "#{tool} timed out after #{result.timeout} s" if result.timed_out
 
         ended = result.exitstatus ? "exited #{result.exitstatus}" : "did not finish"
         ["#{tool} #{ended}", *result.stderr.lines.last(3).map(&:strip)].join(": ")

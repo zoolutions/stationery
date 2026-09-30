@@ -8,7 +8,7 @@ RSpec.describe Stationery::Verify::Engines do
 
   def ran(stdout: "", stderr: "", exitstatus: 0)
     status = instance_double(Process::Status, success?: exitstatus.zero?, exitstatus:)
-    Stationery::Verify::Command::Result.new(stdout:, stderr:, status:, timed_out: false)
+    Stationery::Verify::Command::Result.new(stdout:, stderr:, status:, timed_out: false, timeout: 60)
   end
 
   after { FileUtils.rm_rf(dir) }
@@ -58,7 +58,7 @@ RSpec.describe Stationery::Verify::Engines do
 
   describe Stationery::Verify::Engines::Qpdf, "killed" do
     it "fails a --check that did not finish" do
-      killed = Stationery::Verify::Command::Result.new(stdout: "", stderr: "", timed_out: false,
+      killed = Stationery::Verify::Command::Result.new(stdout: "", stderr: "", timed_out: false, timeout: 60,
                                                        status: instance_double(Process::Status, success?: false,
                                                                                                 exitstatus: nil))
       allow(Stationery::Verify::Command).to receive(:run) { |*argv, **| argv.include?("--check") ? killed : ran(stdout: "1\n") }
@@ -148,6 +148,16 @@ RSpec.describe Stationery::Verify::Engines do
       allow(File).to receive(:file?).with(File.expand_path("spec/legacy/build/pdf.mjs")).and_return(true)
 
       expect(Stationery::Verify::Engines::Pdfjs.new.send(:directory)).to eq(File.expand_path("spec"))
+    end
+
+    it "says how long a script that timed out was given" do
+      allow(Stationery::Verify::Command).to receive(:run) do |*, timeout:, **|
+        Stationery::Verify::Command::Result.new(stdout: "", stderr: "", status: nil, timed_out: true, timeout:)
+      end
+
+      facts = Stationery::Verify::Engines::Pdfium.new.facts(%w[a.pdf b.pdf c.pdf])
+
+      expect(facts.first["errors"]).to eq(["#{ENV.fetch("STATIONERY_PYTHON", "python3")} timed out after 240 s"])
     end
 
     it "calls a grey picture painted when a pixel is not white" do
