@@ -42,25 +42,30 @@ RSpec.describe Stationery::Verify::Comparison do
     expect(problems("invoice", "pdfium", read)).to eq(['page 1: text not found: "Rush delivery"'])
   end
 
-  it "finds a line whose first word is read near the rest, as a list's marker read apart from its item" do
+  it "finds a list's marker read apart from its item: before it on the page, or right after it" do
     report = Stationery::Verify::Expectation.read(Stationery::Testing::Inspector.new(RenderDigests.example("report")))
-    facts = lambda do |text|
-      pages = report.pages.map { |page| { "number" => page.number, "text" => page.lines.join("\n") } }
-      pages[3]["text"] = pages[3]["text"].sub("1. Commissioning the automated sorting line in Jönköping.", text)
-      { "file" => "report.pdf", "pages" => pages, "errors" => [], "warnings" => [] }
+    list = report.pages[3].lines.grep(/\A\d\. (Commissioning|Moving|Consolidating)/)
+    items = list.map { it.sub(/\A\d\. /, "") }
+    read = lambda do |text|
+      pages = report.pages.map { |page| { "number" => page.number, "text" => (page.lines - list).join("\n") } }
+      pages[3]["text"] += "\n#{text}"
+      described_class.new(report, { "file" => "report.pdf", "pages" => pages, "errors" => [], "warnings" => [] },
+                          engine: "pdfkit").problems
     end
-    read = ->(text) { described_class.new(report, facts.call(text), engine: "pdfkit").problems }
 
-    item = "Commissioning the automated sorting line in Jönköping."
-    # PDFKit on macOS 26 reads a list's markers as a column before the items.
-    expect(read.call("1. 2. 3. #{item}")).to eq([])
-    expect(read.call("#{item}\n1.")).to eq([])
-    expect(read.call("1. Stray#{" words" * 20}\n#{item}")).to eq(
-      ['page 4: text not found: "1. Commissioning the automated sorting line in Jönköping."']
-    )
-    expect(read.call("1. Commissioning the automated line in Jönköping. sorting")).to eq(
-      ['page 4: text not found: "1. Commissioning the automated sorting line in Jönköping."']
-    )
+    expect(list.size).to eq(3)
+    # PDFKit on macOS 26 reads the markers as a column before the items.
+    expect(read.call("1. 2. 3. #{items.join("\n")}")).to eq([])
+    expect(read.call(items.zip(%w[1. 2. 3.]).flatten.join("\n"))).to eq([])
+    expect(read.call("#{items.join("\n")}\nfar below: 1. 2. 3."))
+      .to eq(list.map { "page 4: text not found: #{it.inspect}" })
+  end
+
+  it "holds a line that does not start with a list's marker to being found whole" do
+    read = facts("invoice", "pdfium")
+    read["pages"][0]["text"] = read["pages"][0]["text"].sub("Rush delivery", "delivery Rush")
+
+    expect(problems("invoice", "pdfium", read)).to eq(['page 1: text not found: "Rush delivery"'])
   end
 
   it "names the first five lines not found on a page and counts the rest" do

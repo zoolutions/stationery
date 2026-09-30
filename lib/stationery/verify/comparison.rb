@@ -13,6 +13,9 @@ module Stationery
     # error and warning is a problem unless the allowlist names it.
     class Comparison
       IGNORED = /[[:space:]\u00AD]/
+      # A list's marker: 1. 10) a. iv) or a bullet.
+      MARKER = /\A(?:\d{1,3}|[a-z]|[ivxlcdm]{1,6})[.)]\z|\A[\u2022\u25E6\u25AA\u2023\u2013\u2014*-]\z/i
+      MARKER_PREFIX = /\A(?:(?:\d{1,3}|[a-z]|[ivxlcdm]{1,6})[.)]|[\u2022\u25E6\u25AA\u2023\u2013\u2014*-])/i
       SHOWN = 5 # text lines not found named on a page; the rest are counted
       BARE_ORIGIN = %r{\A(https?://[^/?#]+)\z}i
 
@@ -58,31 +61,50 @@ module Stationery
         return [] if text.nil?
 
         found = normalize(text)
-        missing = expected.lines.reject { |line| found?(found, line) }
+        items = expected.lines.filter_map { |line| split_marker(line)[1] }
+        missing = expected.lines.reject { |line| found?(found, line, items) }
         more = missing.size > SHOWN ? ["text not found: #{missing.size - SHOWN} more lines"] : []
         missing.first(SHOWN).map { |line| "text not found: #{line.inspect}" } + more
       end
 
-      # A line is found whole, or as its first word found near the rest:
-      # before it by no more than the line is long, or right after it. A run
-      # of text can join what the page draws apart (a list's marker and its
-      # item), which an engine may read elsewhere (PDFKit on macOS 26 reads
-      # a list's markers as a column before its items).
-      def found?(found, line)
-        whole?(found, normalize(line)) || near?(found, *line.strip.split(/[[:space:]]+/, 2).map { normalize(it) })
+      # A line is found whole, or, when it starts with a list's marker, as
+      # the rest found whole with the marker right after it, or before it
+      # with nothing between them but other markers and other items of the
+      # page. The page draws a marker apart from its item (its own Lbl, its
+      # own colour) and an engine may read the markers as a column of their
+      # own (PDFKit on macOS 26: "1. 2. 3. First… Second… Third…").
+      def found?(found, line, items = [])
+        return true if whole?(found, normalize(line))
+
+        marker, rest = split_marker(line)
+        rest ? marked?(found, marker, rest, items) : false
       end
 
-      def near?(found, head, tail = nil)
-        return false if head.to_s.empty? || tail.to_s.empty?
+      # [marker, rest], normalized, for a line that starts with a marker.
+      def split_marker(line)
+        marker, rest = line.strip.split(/[[:space:]]+/, 2)
+        rest && marker.match?(MARKER) ? [normalize(marker), normalize(rest)] : []
+      end
 
-        reach = head.size + tail.size
-        starts(found, tail).any? do |start|
-          before = found[[start - reach, 0].max...start]
-          before.include?(head) || found[start + tail.size, head.size] == head
+      def marked?(found, marker, rest, items)
+        offsets(found, rest).any? do |start|
+          found[start + rest.size, marker.size] == marker ||
+            offsets(found[0...start], marker).any? { |at| list?(found[(at + marker.size)...start], items) }
         end
       end
 
-      def starts(text, part) = text.enum_for(:scan, part).map { Regexp.last_match.begin(0) }
+      # Whether `gap` is made of markers and the items of the page's lists.
+      def list?(gap, items)
+        until gap.empty?
+          step = gap[MARKER_PREFIX] || items.find { |item| gap.start_with?(item) }
+          return false unless step
+
+          gap = gap.delete_prefix(step)
+        end
+        true
+      end
+
+      def offsets(text, part) = text.enum_for(:scan, part).map { Regexp.last_match.begin(0) }
 
       # A line that ends in a hyphen is found without it too: an engine may
       # join a word broken across lines (pdftotext does).

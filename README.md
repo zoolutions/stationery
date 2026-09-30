@@ -1012,12 +1012,12 @@ reads it (`stationery verify` needs the `pdf-reader` gem, as `inspect` does):
 
 Any error or warning from any engine fails the check. Text is found, not compared: both sides lose
 their whitespace and soft hyphens and are NFKC-normalized, and each text line of a page must be in
-what the engine reads of it, whole or with its first word near the rest (a list's marker and its
-item are drawn apart, and an engine may read the markers as a column of their own). A page drawn
-blank on purpose passes; one with text or an image that an engine paints all white fails. The few
-messages that are the check's environment and not the file (pdf.js warns it has no OffscreenCanvas in Node, pdfsig that the machine has no certificate
-store, Debian's mutool that it was built without colour management) are listed with why in
-`Stationery::Verify::Allowlist`.
+what the engine reads of it, whole; a list's item may have its marker read apart, as a column of
+markers before the items, since the page draws them apart. A page drawn blank on purpose passes;
+one with text or an image that an engine paints all white fails. The few messages that are the
+check's environment and not the file (pdf.js warns it has no OffscreenCanvas in Node, pdfsig that
+the machine has no certificate store, Debian's mutool that it was built without colour management)
+are listed with why in `Stationery::Verify::Allowlist`.
 
 ```sh
 stationery verify invoice.pdf report.pdf                 # every engine installed
