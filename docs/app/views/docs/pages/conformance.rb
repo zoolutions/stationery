@@ -4,7 +4,7 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
   title "PDF/A and PDF/UA"
   eyebrow "Guide"
 
-  def lead = "Archival (PDF/A), accessible (PDF/UA-1), e-invoice (Factur-X) and digitally signed output, claimed only when the file keeps it."
+  def lead = "Archival (PDF/A), accessible (PDF/UA-1), e-invoice (Factur-X) and digitally signed output, claimed only when the file keeps it, and checked in the engines viewers are built on."
 
   def content
     DocsUI::Section("Claiming a level", description: "At class level or per render.") do
@@ -269,6 +269,10 @@ class Views::Docs::Pages::Conformance < DocsUI::Page
         # <summary status="valid"/>
         ```
       MD
+    end
+
+    DocsUI::Section("Viewers: stationery verify", description: "Does the file work where people open it?") do
+      md SourceMarkdown.readme_section("Viewers: stationery verify")
     end
 
     DocsUI::Section("In tests") do

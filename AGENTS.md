@@ -48,9 +48,10 @@ A layout node, the SVG renderer and a `canvas { |c| … }` block call only what 
 | PDF/A, PDF/UA | veraPDF: a local `verapdf` (`brew install verapdf`), else Docker | `bundle exec rake verify:conformance` |
 | Factur-X | Mustang, through Docker | `bundle exec rake verify:factur_x` |
 | Signatures | `openssl`, and `pdfsig` when installed | `bundle exec rake verify:signature` |
-| File structure | `qpdf --check` | by hand |
+| File structure | `qpdf --check` | `bundle exec rake verify:readers` |
+| Opens and works in the major viewers | qpdf, Poppler, MuPDF, PDFium, pdf.js, PDFKit | `bundle exec rake verify:readers` |
 
-A new example that is tagged joins the `renders` of `verify:conformance` in the `Rakefile`. A rule is taken from the validator's profile, and a pull request says which rule it is.
+A new example that is tagged joins the `conformance` renders in the `Rakefile`, which `verify:readers` checks too. An engine message is added to `Stationery::Verify::Allowlist` only when its cause is found in the engine's source and is the check's environment, not the file; a file that lacks what a viewer needs is a bug to fix. A rule is taken from the validator's profile, and a pull request says which rule it is.
 
 ## What is drawn is looked at
 
@@ -65,6 +66,8 @@ A change to layout is rendered to a picture (`pdftoppm -png -r 72 file.pdf out`)
 ## Releases
 
 Releases are cut by the maintainer with `bin/release` (`bin/release --dry-run` shows what would ship), never with `rake release` by hand and never by an agent without being asked. A release is prepared by a pull request that turns `## Unreleased` into the section of the version and records the metrics baseline.
+
+Acrobat cannot be driven in CI, so before a release pull request merges the maintainer opens a fixed set from `bundle exec rake verify:readers:render` (`tmp/readers/`) in Acrobat Reader on macOS **and** Windows: `invoice`, `form`, `report`, `e_invoice`, `accessible_report`, `conforming_signed_form` and `encrypted_invoice` (password `reader`). On each: it opens without a warning bar; the form fills and prints; links and bookmarks jump; the attachment opens; the signature panel reads the signature; the tag tree shows in Acrobat's Accessibility panel (Pro) or its reading order. The result is a checklist in the release pull request's body. No claim of Adobe compatibility is made beyond what this step saw.
 
 ## Out of scope by design
 
