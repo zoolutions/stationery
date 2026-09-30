@@ -42,6 +42,21 @@ RSpec.describe Stationery::Verify::Comparison do
     expect(problems("invoice", "pdfium", read)).to eq(['page 1: text not found: "Rush delivery"'])
   end
 
+  it "finds a line read in two pieces, as a list's marker read apart from its item, but not in three" do
+    report = Stationery::Verify::Expectation.read(Stationery::Testing::Inspector.new(RenderDigests.example("report")))
+    facts = lambda do |text|
+      pages = report.pages.map { |page| { "number" => page.number, "text" => page.lines.join("\n") } }
+      pages[3]["text"] = pages[3]["text"].sub("1. Commissioning the automated sorting line in Jönköping.", text)
+      { "file" => "report.pdf", "pages" => pages, "errors" => [], "warnings" => [] }
+    end
+    read = ->(text) { described_class.new(report, facts.call(text), engine: "pdfkit").problems }
+
+    expect(read.call("Commissioning the automated sorting line in Jönköping.\n1.")).to eq([])
+    expect(read.call("1. Commissioning the automated line in Jönköping. sorting")).to eq(
+      ['page 4: text not found: "1. Commissioning the automated sorting line in Jönköping."']
+    )
+  end
+
   it "names the first five lines not found on a page and counts the rest" do
     read = facts("invoice", "pdfium")
     read["pages"][0]["text"] = ""

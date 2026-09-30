@@ -1012,7 +1012,8 @@ reads it (`stationery verify` needs the `pdf-reader` gem, as `inspect` does):
 
 Any error or warning from any engine fails the check. Text is found, not compared: both sides lose
 their whitespace and soft hyphens and are NFKC-normalized, and each text line of a page must be in
-what the engine reads of it. A page drawn blank on purpose passes; one with text or an image that
+what the engine reads of it, whole or in two pieces split at a space (a list's marker and its item
+are drawn apart, and an engine may read them in another order). A page drawn blank on purpose passes; one with text or an image that
 an engine paints all white fails. The few messages that are the check's environment and not the
 file (pdf.js warns it has no OffscreenCanvas in Node, pdfsig that the machine has no certificate
 store, Debian's mutool that it was built without colour management) are listed with why in

@@ -58,14 +58,27 @@ module Stationery
         return [] if text.nil?
 
         found = normalize(text)
-        missing = expected.lines.reject { |line| found?(found, normalize(line)) }
+        missing = expected.lines.reject { |line| found?(found, line) }
         more = missing.size > SHOWN ? ["text not found: #{missing.size - SHOWN} more lines"] : []
         missing.first(SHOWN).map { |line| "text not found: #{line.inspect}" } + more
       end
 
+      # A line is found whole, or in two pieces split at a space: a run of
+      # text can join what the page draws apart (a list's marker and its
+      # item), which an engine may read in another order (PDFKit on macOS 26).
+      def found?(found, line)
+        whole?(found, normalize(line)) || pieces(line).any? { |parts| parts.all? { |part| whole?(found, part) } }
+      end
+
       # A line that ends in a hyphen is found without it too: an engine may
       # join a word broken across lines (pdftotext does).
-      def found?(found, line) = found.include?(line) || (line.end_with?("-") && found.include?(line.chomp("-")))
+      def whole?(found, line) = found.include?(line) || (line.end_with?("-") && found.include?(line.chomp("-")))
+
+      def pieces(line)
+        line.enum_for(:scan, /[[:space:]]+/).map { Regexp.last_match }
+            .map { |gap| [line[0...gap.begin(0)], line[gap.end(0)..]].map { |part| normalize(part) } }
+            .reject { |parts| parts.any?(&:empty?) }
+      end
 
       def normalize(text) = text.unicode_normalize(:nfkc).gsub(IGNORED, "")
 
