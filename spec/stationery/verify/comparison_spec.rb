@@ -52,6 +52,9 @@ RSpec.describe Stationery::Verify::Comparison do
     read = ->(text) { described_class.new(report, facts.call(text), engine: "pdfkit").problems }
 
     expect(read.call("Commissioning the automated sorting line in Jönköping.\n1.")).to eq([])
+    expect(read.call("1. Stray\nCommissioning the automated sorting line in Jönköping.")).to eq(
+      ['page 4: text not found: "1. Commissioning the automated sorting line in Jönköping."']
+    )
     expect(read.call("1. Commissioning the automated line in Jönköping. sorting")).to eq(
       ['page 4: text not found: "1. Commissioning the automated sorting line in Jönköping."']
     )

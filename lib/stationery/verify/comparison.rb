@@ -63,11 +63,12 @@ module Stationery
         missing.first(SHOWN).map { |line| "text not found: #{line.inspect}" } + more
       end
 
-      # A line is found whole, or in two pieces split at a space: a run of
-      # text can join what the page draws apart (a list's marker and its
-      # item), which an engine may read in another order (PDFKit on macOS 26).
+      # A line is found whole, or as its two pieces split at a space read
+      # the other way round, next to each other: a run of text can join what
+      # the page draws apart (a list's marker and its item), which an engine
+      # may read item first (PDFKit on macOS 26).
       def found?(found, line)
-        whole?(found, normalize(line)) || pieces(line).any? { |parts| parts.all? { |part| whole?(found, part) } }
+        whole?(found, normalize(line)) || pieces(line).any? { |head, tail| found.include?(tail + head) }
       end
 
       # A line that ends in a hyphen is found without it too: an engine may
