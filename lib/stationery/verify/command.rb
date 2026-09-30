@@ -1,12 +1,16 @@
 # frozen_string_literal: true
 
 require "tempfile"
+require "tmpdir"
 
 module Stationery
   module Verify
     # Runs an engine's tool: an argument array, never through a shell, its
     # output written to files as it runs (so a large one cannot block it),
-    # and the child killed when it takes longer than `timeout` seconds.
+    # in `chdir` (the temporary directory unless asked: a tool that loads
+    # modules from where it runs must not load a checked file's neighbours),
+    # and its process group killed when it takes longer than `timeout`
+    # seconds (swift runs the compiled script as a child of its own).
     module Command
       POLL = 0.01 # seconds between looks at a running child
 
@@ -15,17 +19,26 @@ module Stationery
         def exitstatus = status&.exitstatus
       end
 
-      def self.run(*argv, env: {}, timeout: 60)
+      def self.run(*argv, env: {}, timeout: 60, chdir: Dir.tmpdir)
         Tempfile.create("stationery-verify-out") do |out|
           Tempfile.create("stationery-verify-err") do |err|
-            # [program, argv0] never goes through a shell, whatever argv holds.
-            pid = Process.spawn(env, [argv.first, argv.first], *argv.drop(1), in: File::NULL, out:, err:)
-            status, timed_out = wait(pid, timeout)
-            Result.new(stdout: File.read(out.path, encoding: Encoding::UTF_8),
-                       stderr: File.read(err.path, encoding: Encoding::UTF_8), status:, timed_out:)
+            status, timed_out = spawn(argv, env:, timeout:, chdir:, out:, err:)
+            Result.new(stdout: read(out), stderr: read(err), status:, timed_out:)
           end
         end
       end
+
+      def self.spawn(argv, env:, timeout:, chdir:, out:, err:)
+        # [program, argv0] never goes through a shell, whatever argv holds.
+        pid = Process.spawn(env, [argv.first, argv.first], *argv.drop(1), in: File::NULL, out:, err:, chdir:,
+                                                                          pgroup: true)
+        waited = wait(pid, timeout)
+      ensure
+        kill(pid) if pid && !waited
+      end
+
+      # What a tool wrote, as UTF-8 with anything that is not replaced.
+      def self.read(file) = File.read(file.path, encoding: Encoding::UTF_8).scrub
 
       # The executable `name` on the PATH (or at `name`, a path), or nil.
       def self.which(name)
@@ -45,8 +58,15 @@ module Stationery
 
           sleep POLL
         end
-        Process.kill(:KILL, pid)
-        [Process.waitpid2(pid).last, true]
+        [kill(pid), true]
+      end
+
+      # Kills the child's process group and answers the child's status.
+      def self.kill(pid)
+        Process.kill(:KILL, -pid)
+        Process.waitpid2(pid).last
+      rescue Errno::ESRCH, Errno::ECHILD
+        nil # it was gone already
       end
     end
   end

@@ -17,7 +17,7 @@ module Stationery
 
       private
 
-      def run(*argv, env: {}, timeout: TIMEOUT) = Command.run(*argv, env:, timeout:)
+      def run(*argv, env: {}, timeout: TIMEOUT, **) = Command.run(*argv, env:, timeout:, **)
 
       def failed(path, message) = { "file" => path, "pages" => [], "errors" => [message], "warnings" => [] }
 
@@ -44,9 +44,16 @@ module Stationery
       # the script did not answer for fails with why the script stopped.
       def scripted(argv, paths, env:)
         result = run(*argv, *paths, env:, timeout: (TIMEOUT * paths.size) + TIMEOUT)
-        answers = lines(result.stdout).select { |line| line.start_with?("{") }
-        read = answers.to_h { |line| JSON.parse(line).then { |facts| [facts["file"], facts] } }
+        answers = lines(result.stdout).select { |line| line.start_with?("{") }.filter_map { |line| parse(line) }
+        read = answers.to_h { |facts| [facts["file"], facts] }
         paths.map { |path| read.fetch(path) { failed(path, failure(argv.first, result)) } }
+      end
+
+      # A line that is not JSON answers for no file, which then fails.
+      def parse(line)
+        JSON.parse(line)
+      rescue JSON::ParserError
+        nil
       end
 
       def password_env(password) = password ? { "STATIONERY_VERIFY_PASSWORD" => password } : {}

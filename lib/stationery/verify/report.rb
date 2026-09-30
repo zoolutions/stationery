@@ -37,10 +37,13 @@ module Stationery
 
       def result_lines(result, width)
         verdict = result.passed? ? "ok" : "FAILED"
-        ["  #{result.engine.ljust(width)}  #{verdict}  (#{result.version})", *result.problems.map do |problem|
-          "      #{problem}"
-        end]
+        ["  #{result.engine.ljust(width)}  #{verdict}  (#{result.version})",
+         *result.problems.map { |problem| "      #{printable(problem)}" }]
       end
+
+      # A problem quotes what engines read from the file, which may hold
+      # control characters: they print escaped, not to the terminal.
+      def printable(text) = text.scrub.gsub(/[[:cntrl:]]/) { |char| char.dump[1..-2] }
     end
   end
 end

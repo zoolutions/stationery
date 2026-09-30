@@ -5,7 +5,8 @@ module Stationery
     module Engines
       # pdf.js, the engine of Firefox, through Node, pdfjs-dist and
       # scripts/pdfjs.mjs. STATIONERY_PDFJS names pdfjs-dist's directory;
-      # without it, the one Node resolves from the working directory.
+      # without it, the one Node resolves from the working directory, whose
+      # code then runs: set STATIONERY_PDFJS where that directory is not yours.
       class Pdfjs < Engine
         NAME = "pdfjs"
         INSTALL = "npm i pdfjs-dist (STATIONERY_PDFJS names its directory)"
@@ -31,7 +32,7 @@ module Stationery
         def resolved
           return unless Command.which("node")
 
-          result = run("node", "-e", RESOLVE)
+          result = run("node", "-e", RESOLVE, chdir: Dir.pwd)
           result.stdout.strip if result.success?
         end
       end

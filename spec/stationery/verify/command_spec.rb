@@ -30,6 +30,20 @@ RSpec.describe Stationery::Verify::Command do
     expect(Process.clock_gettime(Process::CLOCK_MONOTONIC) - started).to be < 10
   end
 
+  it "kills the child's children too when it runs past its timeout" do
+    pidfile = File.join(Dir.mktmpdir, "grandchild")
+    script = "pid = spawn('sleep', '30'); File.write(#{pidfile.inspect}, pid.to_s); Process.wait(pid)"
+    described_class.run("ruby", "-e", script, timeout: 1)
+
+    expect { Process.kill(0, File.read(pidfile).to_i) }.to raise_error(Errno::ESRCH)
+  end
+
+  it "runs in the temporary directory unless asked, and replaces bytes that are not UTF-8" do
+    expect(described_class.run("ruby", "-e", "print Dir.pwd").stdout).to eq(File.realpath(Dir.tmpdir))
+    expect(described_class.run("ruby", "-e", "print Dir.pwd", chdir: __dir__).stdout).to eq(__dir__)
+    expect(described_class.run("ruby", "-e", "$stdout.write(\"a\\xFFb\")").stdout).to eq("a\uFFFDb")
+  end
+
   it "finds an executable on the PATH or at a path, and nothing else" do
     ruby = described_class.which("ruby")
 

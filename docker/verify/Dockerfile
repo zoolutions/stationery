@@ -6,7 +6,9 @@
 #   docker build -f docker/verify/Dockerfile -t stationery-verify .
 #   docker run --rm -v "$PWD:/data:ro" stationery-verify /data/invoice.pdf
 #
-# The pins are exact; bumping one is a pull request that runs the corpus
+# The engines' own versions are pinned (pypdfium2, pdfjs-dist, pdf-reader);
+# the base images, Debian's packages and the engines' dependencies follow
+# their releases. Bumping a pin is a pull request that runs the corpus
 # (rake verify:readers) through the image.
 ARG RUBY_VERSION=3.4
 ARG NODE_VERSION=22
@@ -29,7 +31,7 @@ RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm
 RUN python3 -m venv /opt/pdfium \
  && /opt/pdfium/bin/pip install --no-cache-dir "pypdfium2==${PYPDFIUM2_VERSION}"
 RUN mkdir -p /opt/pdfjs \
- && npm install --prefix /opt/pdfjs --no-audit --no-fund "pdfjs-dist@${PDFJS_VERSION}" \
+ && npm install --prefix /opt/pdfjs --no-audit --no-fund --ignore-scripts "pdfjs-dist@${PDFJS_VERSION}" \
  && npm cache clean --force
 
 WORKDIR /src
@@ -44,5 +46,6 @@ ENV STATIONERY_PYTHON=/opt/pdfium/bin/python \
     STATIONERY_PDFJS=/opt/pdfjs/node_modules/pdfjs-dist
 RUN useradd --create-home verify
 USER verify
-WORKDIR /data
+# Not /data: nothing an engine loads is looked for where the checked files are.
+WORKDIR /home/verify
 ENTRYPOINT ["stationery", "verify"]

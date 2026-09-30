@@ -113,6 +113,22 @@ RSpec.describe Stationery::Verify::Engines do
       expect(facts.map { |read| read["errors"] }).to eq([[], ["#{python} exited 1: Traceback: Boom"]])
     end
 
+    it "fails a file whose line of facts is not JSON, and reads the others" do
+      allow(Stationery::Verify::Command).to receive(:run)
+        .and_return(ran(stdout: %({"file":"a.pdf","pages":[],"errors":[],"warnings":[]}\n{"file":"b.pdf",\n)))
+
+      facts = Stationery::Verify::Engines::Pdfium.new.facts(%w[a.pdf b.pdf])
+
+      expect(facts.map { |read| read["errors"].size }).to eq([0, 1])
+    end
+
+    it "runs Python isolated, so no module is loaded from the working directory" do
+      allow(Stationery::Verify::Command).to receive(:run).and_return(ran)
+      Stationery::Verify::Engines::Pdfium.new.facts(%w[a.pdf])
+
+      expect(Stationery::Verify::Command).to have_received(:run).with(anything, "-I", anything, "a.pdf", any_args)
+    end
+
     it "calls a grey picture painted when a pixel is not white" do
       engine = described_class.new
 

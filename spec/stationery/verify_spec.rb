@@ -33,14 +33,15 @@ RSpec.describe Stationery::Verify do
 
   it "hands the engines absolute paths, so none reads as an option, and reports the paths it was given" do
     seen = []
-    Dir.chdir(dir) do
-      File.binwrite("-o.pdf", File.binread(invoice))
-      read = ->(path) { seen << path && clean.call(path) }
-
-      expect(described_class.run(["-o.pdf"], engines: [FakeEngine.new("qpdf", true, read)]).results.map(&:file))
-        .to eq(["-o.pdf"])
+    relative = Pathname(invoice).relative_path_from(Pathname.pwd).to_s
+    read = lambda do |path|
+      seen << path
+      clean.call(path)
     end
-    expect(seen).to eq([File.join(File.realpath(dir), "-o.pdf")])
+
+    expect(described_class.run([relative], engines: [FakeEngine.new("qpdf", true, read)]).results.map(&:file))
+      .to eq([relative])
+    expect(seen).to eq([File.expand_path(relative)])
   end
 
   it "fails a file an engine finds a problem in, and a run where no engine ran" do
@@ -56,6 +57,13 @@ RSpec.describe Stationery::Verify do
 
     expect(report.results.first.problems.first).to start_with("pdf-reader cannot read the file")
     expect(report.passed?).to be(false)
+  end
+
+  it "prints the control characters an engine read from the file escaped" do
+    odd = ->(path) { clean.call(path).merge("warnings" => ["font \e]0;owned\a name"]) }
+
+    expect(described_class.run([invoice], engines: [FakeEngine.new("qpdf", true, odd)]).lines)
+      .to include('      warning: font \\e]0;owned\\a name')
   end
 
   it "prints one line per file and engine, the problems under it, then the engines not run" do
