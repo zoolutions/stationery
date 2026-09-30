@@ -56,7 +56,7 @@ class Views::Docs::Pages::Pages < DocsUI::Page
           max_pages 1
         end
 
-        label = ShippingLabel.new(parcel)
+        label = ShippingLabel.new
         label.to_pdf
         label.warnings.map(&:message)
         # => ["the document may have 1 page and needs 2: page 2 starts with a Code 128 barcode"]
