@@ -1,0 +1,29 @@
+docs/Gemfile.lock
+  ai_agent 111,113,158,171,257,265,433,452,458,489,491
+docs/bun.lock
+  ai_agent 7-9,84
+docs/package.json
+  s_4bc2eeeaa9b300::t_291568a610abaf 8-10
+docs/AGENTS.md
+  s_4bc2eeeaa9b300::t_291568a610abaf 69-71
+docs/config/initializers/docs_kit.rb
+  s_4bc2eeeaa9b300::t_291568a610abaf 1
+docs/Dockerfile
+  s_4bc2eeeaa9b300::t_291568a610abaf 23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "cc434e13ba62d6276ced377067323e2de6a27a04",
+  "prompts": {},
+  "sessions": {
+    "s_4bc2eeeaa9b300": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6e809c10-4efa-4042-941e-c34fb1c8b79e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
