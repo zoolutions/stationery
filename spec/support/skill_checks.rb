@@ -57,11 +57,14 @@ module SkillChecks
       @files = files.select { |path, _| path.start_with?("recipes/") }
     end
 
-    def documents
+    def documents = classes.transform_values(&:preview)
+
+    # The document classes the recipes write, by "path Name".
+    def classes
       dir = Dir.mktmpdir("recipes")
       FileUtils.cp(File.join(ASSETS, "logo.png"), dir)
       FileUtils.cp_r(ASSETS, File.join(dir, "photos"))
-      @files.flat_map { |path, text| build(path, text, dir) }
+      @files.flat_map { |path, text| build(path, text, dir) }.to_h
     end
 
     private
@@ -73,7 +76,7 @@ module SkillChecks
         # Named, as `stationery render` asks of a document class, and anew each time.
         namespace = Built.const_set("#{name}#{Built.constants.size}", Module.new)
         namespace.module_eval(source, File.join(dir, "#{File.basename(path, ".md")}.rb"), 1)
-        ["#{path} #{name}", namespace.const_get(name).preview]
+        ["#{path} #{name}", namespace.const_get(name)]
       end
     end
   end

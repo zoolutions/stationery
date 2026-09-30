@@ -23,17 +23,17 @@ class ApplicationFormPdf < Stationery::Document
     text "Membership application", size: 20, weight: :bold, heading: 1
     spacer 16
     row(gap: 12) do
-      labelled("Full name") { text_field "applicant.name", value: @name, required: true }
-      labelled("Email") { text_field "applicant.email" }
+      labelled("Full name") { text_field "applicant.name", value: @name, required: true, tooltip: "Full name" }
+      labelled("Email") { text_field "applicant.email", tooltip: "Email" }
     end
     spacer 10
     row(gap: 12) do
-      column(width: 90) { labelled_field("Postcode") { text_field "applicant.postcode", comb: 5 } }
-      labelled("Country") { select "applicant.country", options: %w[Sweden Norway Denmark], value: "Sweden" }
+      column(width: 90) { labelled_field("Postcode") { text_field "applicant.postcode", comb: 5, tooltip: "Postcode" } }
+      labelled("Country") { select "applicant.country", options: %w[Sweden Norway Denmark], value: "Sweden", tooltip: "Country" }
     end
     spacer 10
     labelled_field("Plan") do
-      radio "plan", "basic", label: "Basic"
+      radio "plan", "basic", label: "Basic", tooltip: "Plan"         # a radio group is named by its first choice
       radio "plan", "pro", label: "Pro", checked: true
     end
     spacer 10
@@ -72,7 +72,10 @@ end
   which paints the appearances the gem writes: `mutool draw -r 96 -o form-%d.png form.pdf`
   (`pdftoppm` draws the values but not the borders). `stationery inspect form.pdf` lists each
   field with its rectangle and value.
-- Fields keep PDF/A and PDF/UA (every field has an accessible name from `tooltip:` or its label).
+- Fields keep PDF/A and PDF/UA. Every field has an accessible name: its `tooltip:`, else a check
+  box's or signature field's `label:`, else its field name (`applicant.name`), which is what a
+  screen reader then says. So a text field, a select and a radio group get a `tooltip:`, as above:
+  the text printed beside a field is not its name.
 - Signing the file: `sign certificate:, key:, field: "signature"` fills the signature field with
   a digital signature (see [../reference/conformance.md](../reference/conformance.md)).
 - Every option of every field: [../reference/forms.md](../reference/forms.md) and <%= docs("forms") %>.

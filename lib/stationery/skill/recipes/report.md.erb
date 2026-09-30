@@ -6,6 +6,8 @@ the footer, a table that continues across pages and a chart. The examples in the
 `stationery examples accessible_report --source` (PDF/UA-1, a chart as a figure).
 
 ```ruby
+require "erb"                                          # ERB::Util.html_escape, for data written into SVG
+
 class ReportPdf < Stationery::Document
   ACCENT = "#0F766E"
   MUTED = "#6B7280"
@@ -63,14 +65,15 @@ class ReportPdf < Stationery::Document
     spacer 8
   end
 
-  # A bar chart as SVG, drawn from the data: there is no chart element.
+  # A bar chart as SVG, drawn from the data: there is no chart element. Text
+  # from the data is escaped, as "&" or "<" in it would break the XML.
   def chart
     top = @quarters.map(&:last).max
     bars = @quarters.each_with_index.map do |(label, value), i|
       height = (value / top * 150).round(1)
       x = 30 + (i * 110)
       %(<rect x="#{x}" y="#{170 - height}" width="70" height="#{height}" fill="currentColor"/>) +
-        %(<text x="#{x + 35}" y="190" font-size="12" text-anchor="middle">#{label}</text>) +
+        %(<text x="#{x + 35}" y="190" font-size="12" text-anchor="middle">#{ERB::Util.html_escape(label)}</text>) +
         %(<text x="#{x + 35}" y="#{164 - height}" font-size="11" text-anchor="middle">#{value}</text>)
     end
     %(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 200">#{bars.join}</svg>)
@@ -91,13 +94,15 @@ end
   same page. `heading: 1..6` makes a heading in a tagged PDF; do not skip a level (1, then 3).
 - **Long tables** continue on the next page with `header: true` rows repeated; a row never splits
   unless it is taller than a page (or `split_rows: true`). Rows given as an Enumerator
-  (`Order.find_each.lazy.map { |o| [o.number, o.total] }`) to a table with a width for every
+  (`Order.preload(:customer).find_each.lazy.map { |o| [o.number, o.customer.name, o.total] }`,
+  preloading what each row reads) to a table with a width for every
   column (`widths: [80, 0.5, 90]`) are read as pages reach them, so the rows of about a page are
   held at a time, however many there are; such a table selects rows from its start only (`t.row(0)`, `t.rows(1..)`,
   `zebra`), and none of its cells may span rows. With a column without a width the rows are read
   when the table is built.
 - **Charts are SVG or `canvas`.** Build the SVG from the data as above (`currentColor` takes
-  `color:`, `<text>` is set in the document's fonts). An `svg` is drawn at its viewBox size in
+  `color:`, `<text>` is set in the document's fonts), and escape every string from the data with
+  `ERB::Util.html_escape`: an "&" or "<" in a label breaks the SVG or adds elements to it. An `svg` is drawn at its viewBox size in
   points, shrunk to the width there is; `width:` is points (`width: 1.0` is one point, not the
   whole width). Or draw the shapes on a canvas (its `text` takes a font object, so label a canvas
   chart with SVG or with `text` elements around it):
