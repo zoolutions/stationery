@@ -1,0 +1,146 @@
+lib/stationery/verify/engines/pdfjs.rb
+  s_aca5bc318bad5c::t_8a16e98978e440 1-40
+lib/stationery/verify/engines/qpdf.rb
+  s_aca5bc318bad5c::t_8a16e98978e440 1-46
+lib/stationery/verify.rb
+  s_aca5bc318bad5c::t_de9fc94f86c8bb 65
+  s_aca5bc318bad5c::t_ecf42b1b68172c 1-52,54-55,58-59,63-64,72-75,78-89
+  s_aca5bc318bad5c::t_6d2f75292c6588 53,66-71
+  s_aca5bc318bad5c::t_5ad4c20bc35c04 56-57,60
+  s_aca5bc318bad5c::t_99b7b90e48a1ff 61-62,76-77
+spec/fixtures/verify/form.pdfkit.json
+  s_aca5bc318bad5c::t_bc262d248df77a 1-81
+lib/stationery/verify/expectation.rb
+  s_aca5bc318bad5c::t_0aba32370e8c91 8,34-35,37-39
+  s_aca5bc318bad5c::t_ef9cf7ab0a2f4b 9-10
+  s_aca5bc318bad5c::t_34a6416d6d2e82 1-7,11-33,36,40-44
+lib/stationery/verify/command.rb
+  s_aca5bc318bad5c::t_c23e4a22980241 3,7-9,11-12,19-26,37-42,44-47,49
+  s_aca5bc318bad5c::t_ea05e64fc44a20 30,32-33
+  s_aca5bc318bad5c::t_fed3efaa6b20db 1-2,4-6,10,13-18,27-29,31,34-36,43,48,50-53
+spec/fixtures/verify/form.pdfjs.json
+  s_aca5bc318bad5c::t_bc262d248df77a 1-85
+lib/stationery/verify/report.rb
+  s_aca5bc318bad5c::t_de9fc94f86c8bb 1-21,29-39,43-46
+  s_aca5bc318bad5c::t_99b7b90e48a1ff 22-28,40-42
+spec/stationery/verify/command_spec.rb
+  s_aca5bc318bad5c::t_99b7b90e48a1ff 9-10
+  s_aca5bc318bad5c::t_eb9c56f39a2502 1-8,11-41
+spec/stationery/verify/engines_spec.rb
+  s_aca5bc318bad5c::t_f76b73645d2e79 112-113,117
+  s_aca5bc318bad5c::t_c1e4f74b804fe5 1-111,114-116,118-123
+spec/fixtures/verify/invoice.mupdf.json
+  s_aca5bc318bad5c::t_c46295e970b9ff 1-12
+spec/fixtures/verify/form.mupdf.json
+  s_aca5bc318bad5c::t_c46295e970b9ff 1-12
+spec/fixtures/verify/invoice.poppler.json
+  s_aca5bc318bad5c::t_c46295e970b9ff 1-30
+lib/stationery/verify/allowlist.rb
+  s_aca5bc318bad5c::t_d7a29a874d6896 1-17,22-29
+  s_aca5bc318bad5c::t_0355aa9d61b1d5 18-21
+lib/stationery/cli.rb
+  s_aca5bc318bad5c::t_3e196ac723cc9c 80
+spec/support/fake_engine.rb
+  s_aca5bc318bad5c::t_f76b73645d2e79 1-14
+lib/stationery/verify/scripts/pdfjs.mjs
+  s_aca5bc318bad5c::t_4d4baef625a492 81,86-87,100
+  s_aca5bc318bad5c::t_e9b537ffe343cf 1-29,33-64,66-80,82-85,88-97,99,101-108
+  s_aca5bc318bad5c::t_2afb1525ba984b 30-32,65,98
+lib/stationery/verify/engines/pdfium.rb
+  s_aca5bc318bad5c::t_8a16e98978e440 1-15,18-29
+  s_aca5bc318bad5c::t_99b7b90e48a1ff 16-17
+lib/stationery/testing/inspector.rb
+  s_aca5bc318bad5c::t_e0fe510c37956c 13-15,29,31,46
+  s_aca5bc318bad5c::t_6d2f75292c6588 27,48
+spec/fixtures/verify/form.pdfium.json
+  s_aca5bc318bad5c::t_bc262d248df77a 1-85
+lib/stationery/verify/engine.rb
+  s_aca5bc318bad5c::t_f0da26a7d01c85 47-48
+  s_aca5bc318bad5c::t_ebdac6f0403975 1-36,39-46,49-55
+  s_aca5bc318bad5c::t_99b7b90e48a1ff 37-38
+lib/stationery/verify/engines/pdfkit.rb
+  s_aca5bc318bad5c::t_8a16e98978e440 1-20
+Rakefile
+  s_aca5bc318bad5c::t_99b7b90e48a1ff 148-152
+  s_aca5bc318bad5c::t_f0da26a7d01c85 154
+  s_aca5bc318bad5c::t_d090d9c5714932 83-102,110-111,118-147,153,155-160
+spec/stationery/verify_spec.rb
+  s_aca5bc318bad5c::t_537202cd77b11c 63-64,66-68
+  s_aca5bc318bad5c::t_5ad4c20bc35c04 34-45
+  s_aca5bc318bad5c::t_f76b73645d2e79 1-33,46-62,65,69-70
+lib/stationery/verify/comparison.rb
+  s_aca5bc318bad5c::t_f66e83fb9c3385 16,61-63
+  s_aca5bc318bad5c::t_ea05e64fc44a20 79,82,87-89
+  s_aca5bc318bad5c::t_e991c1de21aa59 15
+  s_aca5bc318bad5c::t_f0da26a7d01c85 136-137
+  s_aca5bc318bad5c::t_52c5aa195ed4fe 1-14,18-27,30-60,64,69-78,80,85-86,90-105,107,114-124,126,128-135,138-146
+  s_aca5bc318bad5c::t_0aba32370e8c91 106,108-113
+  s_aca5bc318bad5c::t_41ff5b6b71bc81 28-29,81,83-84,125,127
+  s_aca5bc318bad5c::t_eb00bf0596dbd0 65-68
+  s_aca5bc318bad5c::t_9de3bbafc8ab4f 17
+spec/stationery/verify/comparison_spec.rb
+  s_aca5bc318bad5c::t_99b7b90e48a1ff 10-17,101-104
+  s_aca5bc318bad5c::t_f76b73645d2e79 38-40,114-115
+  s_aca5bc318bad5c::t_29b1409688728d 1-9,18-37,41-44,55-100,105-113,116-122
+  s_aca5bc318bad5c::t_f66e83fb9c3385 45-54
+spec/fixtures/verify/form.qpdf.json
+  s_aca5bc318bad5c::t_c46295e970b9ff 1-10
+spec/fixtures/verify/invoice.pdfjs.json
+  s_aca5bc318bad5c::t_bc262d248df77a 1-21
+spec/fixtures/verify/invoice.qpdf.json
+  s_aca5bc318bad5c::t_c46295e970b9ff 1-10
+spec/stationery/verify/expectation_spec.rb
+  s_aca5bc318bad5c::t_eb00bf0596dbd0 51
+  s_aca5bc318bad5c::t_0aba32370e8c91 22-26,28-29
+  s_aca5bc318bad5c::t_4bd52ceab1a39c 27
+  s_aca5bc318bad5c::t_a74075ec5c8617 1-21,30-50,52-53
+spec/stationery/cli/verify_spec.rb
+  s_aca5bc318bad5c::t_537202cd77b11c 27
+  s_aca5bc318bad5c::t_f76b73645d2e79 14,18,44
+  s_aca5bc318bad5c::t_b8e5fec7caf301 13
+  s_aca5bc318bad5c::t_da7b1ecf7ca6a1 1-12,15,19-21,28-43,45-47,49-110
+  s_aca5bc318bad5c::t_509dbe0841de49 16-17,22-26
+  s_aca5bc318bad5c::t_cf081115b356d9 48
+spec/fixtures/verify/invoice.pdfkit.json
+  s_aca5bc318bad5c::t_bc262d248df77a 1-19
+spec/fixtures/verify/form.poppler.json
+  s_aca5bc318bad5c::t_c46295e970b9ff 1-30
+spec/fixtures/verify/invoice.pdfium.json
+  s_aca5bc318bad5c::t_bc262d248df77a 1-23
+lib/stationery/verify/scripts/pdfkit.swift
+  s_aca5bc318bad5c::t_2a7ca7c81722ce 1-64,67-80
+  s_aca5bc318bad5c::t_1165bf1c170343 65-66
+lib/stationery/verify/engines/poppler.rb
+  s_aca5bc318bad5c::t_2004cd506da63c 1-16,18-39,42-44,46-49,52-71,73,77-83
+  ai_agent 45
+  s_aca5bc318bad5c::t_013de5fd8145bb 72
+  s_aca5bc318bad5c::t_eb00bf0596dbd0 17
+  s_aca5bc318bad5c::t_99b7b90e48a1ff 40-41,50-51,74-76
+lib/stationery/cli/verify.rb
+  s_aca5bc318bad5c::t_3e196ac723cc9c 92
+  s_aca5bc318bad5c::t_c1882a2dff1ec9 1-91,93-98
+lib/stationery/verify/engines/mupdf.rb
+  s_aca5bc318bad5c::t_f0da26a7d01c85 29-35,37-38
+  s_aca5bc318bad5c::t_8a16e98978e440 1-26,36,39-44
+  s_aca5bc318bad5c::t_f76b73645d2e79 27-28
+lib/stationery/verify/scripts/pdfium.py
+  s_aca5bc318bad5c::t_f4bcbef32cfc5e 25,76-83
+  s_aca5bc318bad5c::t_7fa3685ff8a4ed 66-72,94
+  s_aca5bc318bad5c::t_c4c9cd5ba52067 1-24,26-65,73-75,84-93,95-99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "85f8e7ff2a584bb01b50a71790845f3dae56fbf6",
+  "prompts": {},
+  "sessions": {
+    "s_aca5bc318bad5c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b0c38bc5-660c-4ed5-b411-8b8214054532",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
