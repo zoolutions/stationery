@@ -42,7 +42,7 @@ RSpec.describe Stationery::Verify::Comparison do
     expect(problems("invoice", "pdfium", read)).to eq(['page 1: text not found: "Rush delivery"'])
   end
 
-  it "finds a line read in two pieces, as a list's marker read apart from its item, but not in three" do
+  it "finds a line whose first word is read near the rest, as a list's marker read apart from its item" do
     report = Stationery::Verify::Expectation.read(Stationery::Testing::Inspector.new(RenderDigests.example("report")))
     facts = lambda do |text|
       pages = report.pages.map { |page| { "number" => page.number, "text" => page.lines.join("\n") } }
@@ -51,8 +51,11 @@ RSpec.describe Stationery::Verify::Comparison do
     end
     read = ->(text) { described_class.new(report, facts.call(text), engine: "pdfkit").problems }
 
-    expect(read.call("Commissioning the automated sorting line in Jönköping.\n1.")).to eq([])
-    expect(read.call("1. Stray\nCommissioning the automated sorting line in Jönköping.")).to eq(
+    item = "Commissioning the automated sorting line in Jönköping."
+    # PDFKit on macOS 26 reads a list's markers as a column before the items.
+    expect(read.call("1. 2. 3. #{item}")).to eq([])
+    expect(read.call("#{item}\n1.")).to eq([])
+    expect(read.call("1. Stray#{" words" * 20}\n#{item}")).to eq(
       ['page 4: text not found: "1. Commissioning the automated sorting line in Jönköping."']
     )
     expect(read.call("1. Commissioning the automated line in Jönköping. sorting")).to eq(

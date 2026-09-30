@@ -63,23 +63,30 @@ module Stationery
         missing.first(SHOWN).map { |line| "text not found: #{line.inspect}" } + more
       end
 
-      # A line is found whole, or as its two pieces split at a space read
-      # the other way round, next to each other: a run of text can join what
-      # the page draws apart (a list's marker and its item), which an engine
-      # may read item first (PDFKit on macOS 26).
+      # A line is found whole, or as its first word found near the rest:
+      # before it by no more than the line is long, or right after it. A run
+      # of text can join what the page draws apart (a list's marker and its
+      # item), which an engine may read elsewhere (PDFKit on macOS 26 reads
+      # a list's markers as a column before its items).
       def found?(found, line)
-        whole?(found, normalize(line)) || pieces(line).any? { |head, tail| found.include?(tail + head) }
+        whole?(found, normalize(line)) || near?(found, *line.strip.split(/[[:space:]]+/, 2).map { normalize(it) })
       end
+
+      def near?(found, head, tail = nil)
+        return false if head.to_s.empty? || tail.to_s.empty?
+
+        reach = head.size + tail.size
+        starts(found, tail).any? do |start|
+          before = found[[start - reach, 0].max...start]
+          before.include?(head) || found[start + tail.size, head.size] == head
+        end
+      end
+
+      def starts(text, part) = text.enum_for(:scan, part).map { Regexp.last_match.begin(0) }
 
       # A line that ends in a hyphen is found without it too: an engine may
       # join a word broken across lines (pdftotext does).
       def whole?(found, line) = found.include?(line) || (line.end_with?("-") && found.include?(line.chomp("-")))
-
-      def pieces(line)
-        line.enum_for(:scan, /[[:space:]]+/).map { Regexp.last_match }
-            .map { |gap| [line[0...gap.begin(0)], line[gap.end(0)..]].map { |part| normalize(part) } }
-            .reject { |parts| parts.any?(&:empty?) }
-      end
 
       def normalize(text) = text.unicode_normalize(:nfkc).gsub(IGNORED, "")
 

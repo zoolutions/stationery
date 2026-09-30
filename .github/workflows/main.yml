@@ -109,9 +109,6 @@ jobs:
         run: bundle exec rake verify:readers
         env:
           ENGINES: qpdf,poppler,mupdf,pdfkit
-      - name: "Temporary: PDFKit's text of the report's page 4"
-        if: failure()
-        run: swift lib/stationery/verify/scripts/pdfkit.swift tmp/readers/report.pdf | ruby -rjson -e 'p JSON.parse($stdin.read)["pages"][3]["text"]'
 
   rails:
     runs-on: ubuntu-latest
