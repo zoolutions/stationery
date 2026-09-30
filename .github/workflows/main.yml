@@ -81,6 +81,34 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends poppler-utils
       - name: openssl and pdfsig verify the signed example
         run: bundle exec rake verify:signature
+      - name: Render the readers' corpus
+        run: bundle exec rake verify:readers:render
+      - name: Build the verify image (qpdf, Poppler, MuPDF, PDFium, pdf.js)
+        run: docker build -f docker/verify/Dockerfile -t stationery-verify .
+      - name: The verify image checks the readers' corpus
+        run: |
+          cd tmp/readers
+          plain=$(ls *.pdf | grep -v '^encrypted_' | sed 's|^|/data/|')
+          docker run --rm -v "$PWD:/data:ro" stationery-verify $plain
+          docker run --rm -v "$PWD:/data:ro" stationery-verify --password reader /data/encrypted_invoice.pdf
+
+  readers-macos:
+    runs-on: macos-latest
+    name: Readers (macOS, PDFKit)
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+      - name: Install qpdf, Poppler and MuPDF
+        run: brew install qpdf poppler mupdf
+      - name: qpdf, Poppler, MuPDF and PDFKit check the readers' corpus
+        run: bundle exec rake verify:readers
+        env:
+          ENGINES: qpdf,poppler,mupdf,pdfkit
 
   rails:
     runs-on: ubuntu-latest
