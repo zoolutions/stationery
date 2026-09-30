@@ -149,7 +149,7 @@ RSpec.describe "Tagged PDF links of headers, footers and page templates" do # ru
     klass = Class.new(SpecDocument) { footer { text "example.com", link: "https://example.com" } }
     pdf = build(klass) { text "Body" }.to_pdf
 
-    expect(page_contents(pdf).join).not_to include("BDC")
+    expect(page_contents(pdf).join).not_to include("BDC", "BMC")
     expect(catalog_of(pdf).keys).not_to include(:StructTreeRoot, :MarkInfo)
     expect(inspect_pdf(pdf).links).to eq(["https://example.com"])
   end
