@@ -51,6 +51,14 @@ RSpec.describe Stationery::Verify do
     expect(described_class.run([invoice], engines: [FakeEngine.new("qpdf", false)]).passed?).to be(false)
   end
 
+  it "reports what pdf-reader raised on a file as that file's problem" do
+    allow(Stationery::Verify::Expectation).to receive(:read).and_raise(NoMethodError, "odd")
+    report = described_class.run([invoice], engines: [FakeEngine.new("qpdf", true, clean)])
+
+    expect(report.results.first.problems.first).to eq("pdf-reader cannot read the file (NoMethodError: odd), " \
+                                                      "so there is nothing to hold the engine to")
+  end
+
   it "holds a file pdf-reader cannot read to the engines opening it cleanly, and fails it" do
     File.binwrite(truncated = File.join(dir, "truncated.pdf"), File.binread(invoice).byteslice(0, 2000))
     report = described_class.run([truncated], engines: [FakeEngine.new("qpdf", true, clean)])

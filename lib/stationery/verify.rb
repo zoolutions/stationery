@@ -73,15 +73,15 @@ module Stationery
 
     def self.expectation(path, password)
       Expectation.read(Testing::Inspector.new(Pathname(path), password:))
-    rescue ::PDF::Reader::MalformedPDFError, ::PDF::Reader::EncryptedPDFError,
-           ::PDF::Reader::UnsupportedFeatureError => e
-      e # pdf-reader cannot read it: each engine is then held to opening it with no error
+    rescue StandardError => e
+      e # pdf-reader cannot read it: each engine is then held to opening it with no error, and the file fails
     end
 
     def self.problems(expectation, facts, engine)
       return Comparison.new(expectation, facts, engine: engine.name).problems if expectation.is_a?(Expectation)
 
-      ["pdf-reader cannot read the file (#{expectation.message}), so there is nothing to hold the engine to",
+      ["pdf-reader cannot read the file (#{expectation.class.name.split("::").last}: #{expectation.message}), " \
+       "so there is nothing to hold the engine to",
        *Comparison.new(Expectation.new(pages: [], outline: [], fields: [], attachments: [], signatures: 0, valid: true,
                                        tagged: false), facts.slice("errors", "warnings"), engine: engine.name).problems]
     end

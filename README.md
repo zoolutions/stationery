@@ -1032,7 +1032,7 @@ none of them:
 
 ```sh
 brew install qpdf poppler mupdf        # apt-get install qpdf poppler-utils mupdf-tools
-pip install pypdfium2                  # STATIONERY_PYTHON=/path/to/python names another Python
+pip install pypdfium2                  # Python 3.11+; STATIONERY_PYTHON=/path/to/python names another
 npm i pdfjs-dist                       # STATIONERY_PDFJS=/path/to/node_modules/pdfjs-dist
 ```
 

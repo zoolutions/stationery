@@ -56,6 +56,17 @@ RSpec.describe Stationery::Verify::Engines do
     end
   end
 
+  describe Stationery::Verify::Engines::Qpdf, "killed" do
+    it "fails a --check that did not finish" do
+      killed = Stationery::Verify::Command::Result.new(stdout: "", stderr: "", timed_out: false,
+                                                       status: instance_double(Process::Status, success?: false,
+                                                                                                exitstatus: nil))
+      allow(Stationery::Verify::Command).to receive(:run) { |*argv, **| argv.include?("--check") ? killed : ran(stdout: "1\n") }
+
+      expect(described_class.new.facts(["file.pdf"]).first["errors"]).to eq(["qpdf --check did not finish"])
+    end
+  end
+
   describe Stationery::Verify::Engines::Poppler do
     let(:signed) do
       <<~PDFSIG
@@ -122,11 +133,21 @@ RSpec.describe Stationery::Verify::Engines do
       expect(facts.map { |read| read["errors"].size }).to eq([0, 1])
     end
 
-    it "runs Python isolated, so no module is loaded from the working directory" do
+    it "runs Python without the working directory on its path, and a relative STATIONERY_PYTHON from here" do
       allow(Stationery::Verify::Command).to receive(:run).and_return(ran)
+      stub_const("ENV", ENV.to_h.merge("STATIONERY_PYTHON" => "venv/bin/python"))
       Stationery::Verify::Engines::Pdfium.new.facts(%w[a.pdf])
 
-      expect(Stationery::Verify::Command).to have_received(:run).with(anything, "-I", anything, "a.pdf", any_args)
+      expect(Stationery::Verify::Command).to have_received(:run)
+        .with(File.expand_path("venv/bin/python"), "-P", anything, "a.pdf", any_args)
+    end
+
+    it "reads a relative STATIONERY_PDFJS from here" do
+      stub_const("ENV", ENV.to_h.merge("STATIONERY_PDFJS" => "spec"))
+      allow(File).to receive(:file?).and_call_original
+      allow(File).to receive(:file?).with(File.expand_path("spec/legacy/build/pdf.mjs")).and_return(true)
+
+      expect(Stationery::Verify::Engines::Pdfjs.new.send(:directory)).to eq(File.expand_path("spec"))
     end
 
     it "calls a grey picture painted when a pixel is not white" do

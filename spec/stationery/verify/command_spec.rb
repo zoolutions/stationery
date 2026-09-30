@@ -44,6 +44,13 @@ RSpec.describe Stationery::Verify::Command do
     expect(described_class.run("ruby", "-e", "$stdout.write(\"a\\xFFb\")").stdout).to eq("a\uFFFDb")
   end
 
+  it "answers a program that cannot start as a failure, not an exception" do
+    result = described_class.run("stationery-no-such-tool", "x")
+
+    expect(result.success?).to be(false)
+    expect(result.stderr).to include("stationery-no-such-tool")
+  end
+
   it "finds an executable on the PATH or at a path, and nothing else" do
     ruby = described_class.which("ruby")
 

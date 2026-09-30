@@ -15,7 +15,7 @@ module Stationery
       POLL = 0.01 # seconds between looks at a running child
 
       Result = Data.define(:stdout, :stderr, :status, :timed_out) do
-        def success? = !timed_out && status&.success?
+        def success? = !timed_out && status&.success? == true
         def exitstatus = status&.exitstatus
       end
 
@@ -24,6 +24,8 @@ module Stationery
           Tempfile.create("stationery-verify-err") do |err|
             status, timed_out = spawn(argv, env:, timeout:, chdir:, out:, err:)
             Result.new(stdout: read(out), stderr: read(err), status:, timed_out:)
+          rescue SystemCallError => e # the program could not start: that tool's failure, not the run's
+            Result.new(stdout: "", stderr: "#{e.message}\n", status: nil, timed_out: false)
           end
         end
       end
@@ -40,9 +42,13 @@ module Stationery
       # What a tool wrote, as UTF-8 with anything that is not replaced.
       def self.read(file) = File.read(file.path, encoding: Encoding::UTF_8).scrub
 
-      # The executable `name` on the PATH (or at `name`, a path), or nil.
+      # The executable `name` on the PATH (or at `name`, a path from the
+      # working directory, answered absolute), or nil.
       def self.which(name)
-        return (name if File.file?(name) && File.executable?(name)) if name.include?(File::SEPARATOR)
+        if name.include?(File::SEPARATOR)
+          path = File.expand_path(name)
+          return (path if File.file?(path) && File.executable?(path))
+        end
 
         ENV.fetch("PATH", "").split(File::PATH_SEPARATOR).map { |dir| File.join(dir, name) }
            .find { |path| File.file?(path) && File.executable?(path) }

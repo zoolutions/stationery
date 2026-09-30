@@ -23,7 +23,7 @@ module Stationery
         def read(path, options)
           check = run("qpdf", *options, "--check", path)
           count = run("qpdf", *options, "--show-npages", path)
-          errors = check.exitstatus == 2 || check.timed_out ? [failure("qpdf --check", check)] : []
+          errors = check.success? || check.exitstatus == 3 ? [] : [failure("qpdf --check", check)]
           errors << failure("qpdf --show-npages", count) unless count.success?
           warnings = check.exitstatus == 3 ? lines(check.stderr) + lines(check.stdout).grep(/WARNING/) : []
           { "file" => path, "pages" => (1..count.stdout.to_i).map { |number| { "number" => number } },

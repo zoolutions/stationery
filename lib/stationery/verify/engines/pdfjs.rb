@@ -25,7 +25,7 @@ module Stationery
         def directory
           return @directory if defined?(@directory)
 
-          found = ENV.fetch("STATIONERY_PDFJS") { resolved }
+          found = ENV["STATIONERY_PDFJS"] ? File.expand_path(ENV["STATIONERY_PDFJS"]) : resolved
           @directory = found if found && File.file?(File.join(found, "legacy/build/pdf.mjs"))
         end
 

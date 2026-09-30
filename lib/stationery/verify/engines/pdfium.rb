@@ -11,20 +11,24 @@ module Stationery
         SCRIPT = File.expand_path("../scripts/pdfium.py", __dir__)
         VERSION = "import pypdfium2.version as v; print(v.PYPDFIUM_INFO, v.PDFIUM_INFO)"
 
-        # -I everywhere: isolated, so Python loads no module from beside the
-        # script or from the working directory.
-        def available? = !Command.which(python).nil? && run(python, "-I", "-c", "import pypdfium2").success?
+        # -P everywhere: Python loads no module from beside the script or from
+        # the working directory, and still finds a pip install --user.
+        def available? = !Command.which(python).nil? && run(python, "-P", "-c", "import pypdfium2").success?
 
         def version
-          versions = run(python, "-I", "-c", VERSION).stdout.split
+          versions = run(python, "-P", "-c", VERSION).stdout.split
           "pypdfium2 #{versions[0]}, PDFium #{versions[1]}"
         end
 
-        def facts(paths, password: nil) = scripted([python, "-I", SCRIPT], paths, env: password_env(password))
+        def facts(paths, password: nil) = scripted([python, "-P", SCRIPT], paths, env: password_env(password))
 
         private
 
-        def python = ENV.fetch("STATIONERY_PYTHON", "python3")
+        # Absolute: the tools run in the temporary directory.
+        def python
+          name = ENV.fetch("STATIONERY_PYTHON", "python3")
+          name.include?(File::SEPARATOR) ? File.expand_path(name) : name
+        end
       end
     end
   end

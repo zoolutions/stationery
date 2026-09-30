@@ -26,7 +26,8 @@ module Stationery
       def failure(tool, result)
         return "#{tool} timed out after #{TIMEOUT} s" if result.timed_out
 
-        ["#{tool} exited #{result.exitstatus}", *result.stderr.lines.last(3).map(&:strip)].join(": ")
+        ended = result.exitstatus ? "exited #{result.exitstatus}" : "did not finish"
+        ["#{tool} #{ended}", *result.stderr.lines.last(3).map(&:strip)].join(": ")
       end
 
       def lines(text) = text.to_s.lines.map(&:strip).reject(&:empty?)
