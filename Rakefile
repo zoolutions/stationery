@@ -80,6 +80,26 @@ namespace :verify do
     end
   end
 
+  # The renders veraPDF validates, by name: the levels each claims, and the
+  # veraPDF flavour of each.
+  conformance = { "invoice" => { pdf_a3b: "3b" }, "report" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
+                  "e_invoice" => { pdf_a3b: "3b" }, "form" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
+                  "article" => { pdf_ua1: "ua1", pdf_a3b: "3b" }, "newsletter" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
+                  "signed_invoice" => { pdf_a3b: "3b" }, "signed_form" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
+                  "linked_report" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
+                  "accessible_report" => { pdf_ua1: "ua1", pdf_a3b: "3b" } }
+
+  # Writes the render `name` of `conformance` to `path`: an example, signed
+  # when the name says so, with a linked footer when it says so.
+  conforming = lambda do |name, path|
+    options = { conformance: conformance.fetch(name).keys }
+    options[:sign] = identity.call if name.start_with?("signed_")
+    options[:sign][:field] = "signature" if name == "signed_form"
+    source = name.delete_prefix("signed_")
+    document = source.start_with?("linked_") ? linked.call(source.delete_prefix("linked_")) : example.call(source)
+    document.to_pdf(path, **options)
+  end
+
   desc "Validate PDF/A-3b and PDF/UA-1 renders of the examples, plain and signed, with veraPDF " \
        "(a local verapdf, else Docker)"
   task :conformance do
@@ -87,23 +107,57 @@ namespace :verify do
     require "stationery"
     out = File.expand_path("tmp/conformance", __dir__)
     mkdir_p out
-    renders = { "invoice" => { pdf_a3b: "3b" }, "report" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
-                "e_invoice" => { pdf_a3b: "3b" }, "form" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
-                "article" => { pdf_ua1: "ua1", pdf_a3b: "3b" }, "newsletter" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
-                "signed_invoice" => { pdf_a3b: "3b" }, "signed_form" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
-                "linked_report" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
-                "accessible_report" => { pdf_ua1: "ua1", pdf_a3b: "3b" } }
-    failures = renders.flat_map do |name, levels|
-      options = { conformance: levels.keys }
-      options[:sign] = identity.call if name.start_with?("signed_")
-      options[:sign][:field] = "signature" if name == "signed_form"
-      source = name.delete_prefix("signed_")
-      document = source.start_with?("linked_") ? linked.call(source.delete_prefix("linked_")) : example.call(source)
-      document.to_pdf(File.join(out, "#{name}.pdf"), **options)
+    failures = conformance.flat_map do |name, levels|
+      conforming.call(name, File.join(out, "#{name}.pdf"))
       failed = levels.values.reject { |flavour| verapdf.call(out, "#{name}.pdf", flavour) }
       failed.map { |flavour| "#{name}.pdf is not #{flavour}" }
     end
     abort failures.join("\n") if failures.any?
+  end
+
+  readers = File.expand_path("tmp/readers", __dir__)
+  # The user password of the encrypted file of the readers' corpus.
+  password = "reader"
+
+  namespace :readers do
+    desc "Render the corpus verify:readers checks to tmp/readers/: every example, the conformance renders, " \
+         "an encrypted invoice, a packed invoice and an unpacked tagged report"
+    task :render do
+      $LOAD_PATH.unshift(File.expand_path("lib", __dir__))
+      require "stationery"
+      rm_rf readers
+      mkdir_p readers
+      Dir[File.expand_path("examples/*.rb", __dir__)].map { |file| File.basename(file, ".rb") }.sort.each do |name|
+        example.call(name).to_pdf(File.join(readers, "#{name}.pdf"))
+      end
+      conformance.each_key { |name| conforming.call(name, File.join(readers, "conforming_#{name}.pdf")) }
+      example.call("invoice").to_pdf(File.join(readers, "encrypted_invoice.pdf"),
+                                     encrypt: { user_password: password, owner_password: "verify-owner" })
+      example.call("invoice").to_pdf(File.join(readers, "packed_invoice.pdf"), object_streams: true)
+      example.call("accessible_report").to_pdf(File.join(readers, "unpacked_accessible_report.pdf"),
+                                               object_streams: false)
+    end
+  end
+
+  desc "Check the readers' corpus (verify:readers:render) in the engines viewers are built on: qpdf, Poppler, " \
+       "MuPDF, PDFium, pdf.js, PDFKit (ENGINES=qpdf,poppler,… to choose; default every one installed)"
+  task readers: "readers:render" do
+    require "stationery/verify"
+    engines = ENV["ENGINES"] ? Stationery::Verify.adapters(ENV["ENGINES"].split(",")) : Stationery::Verify.adapters
+    missing = engines.reject(&:available?)
+    if ENV["ENGINES"] && missing.any?
+      abort "not installed: #{missing.map do |one|
+        "#{one.name} (#{one.install})"
+      end.join(", ")}"
+    end
+
+    files = Dir[File.join(readers, "*.pdf")]
+    encrypted = files.grep(/encrypted_/)
+    plain = Stationery::Verify.run(files - encrypted, engines:)
+    locked = Stationery::Verify.run(encrypted, engines:, password:)
+    report = plain.with(results: plain.results + locked.results)
+    puts report.lines
+    abort "verify:readers failed" unless report.passed?
   end
 
   desc "Verify a signed render of the invoice example with openssl, and with pdfsig when it is installed " \

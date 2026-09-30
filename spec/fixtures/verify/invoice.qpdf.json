@@ -1,0 +1,10 @@
+{
+  "file": "invoice.pdf",
+  "pages": [
+    {
+      "number": 1
+    }
+  ],
+  "errors": [],
+  "warnings": []
+}

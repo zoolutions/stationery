@@ -993,6 +993,66 @@ docker run --rm -v "$PWD:/data:ro" verapdf/cli --format text -v --flavour 3b /da
 
 In tests, `have_conformance(:pdf_a3b)` checks the claim (not the validity: that is veraPDF's job).
 
+### Viewers: stationery verify
+
+veraPDF answers whether a file keeps PDF/A or PDF/UA, not whether it works where people open it.
+A file can pass PDF/A-3b and still trip a viewer, and open everywhere and still fail PDF/A. No
+validator answers "works in every viewer", so `stationery verify` reads the file with the engines
+the viewers are built on and holds what each reads against what the file holds, as pdf-reader
+reads it (`stationery verify` needs the `pdf-reader` gem, as `inspect` does):
+
+| Engine | Viewers | Checks |
+|---|---|---|
+| qpdf | (the file's structure) | `--check` without an error or a warning; the page count |
+| Poppler | Evince, Okular, the Linux desktop | pages; text; each page with content paints; every font embedded, with a ToUnicode map; attachments; signatures (`pdfsig`); a tagged file's structure tree |
+| MuPDF | SumatraPDF, mobile viewers | pages; text; each page with content paints |
+| PDFium | Chrome, Edge | pages; text; painting; links; outline; form fields and their appearances; signatures |
+| pdf.js | Firefox | pages; text; painting operators; links; outline; form fields; attachments; a tagged file's structure tree |
+| PDFKit | Preview, Safari (macOS) | pages; text; painting; links; outline; form fields |
+
+Any error or warning from any engine fails the check. Text is found, not compared: both sides lose
+their whitespace and soft hyphens and are NFKC-normalized, and each text line of a page must be in
+what the engine reads of it, whole; a list's item may have its marker read apart, as a column of
+markers before the items, since the page draws them apart. A page drawn blank on purpose passes;
+one with text or an image that an engine paints all white fails. The few messages that are the
+check's environment and not the file (pdf.js warns it has no OffscreenCanvas in Node, pdfsig that
+the machine has no certificate store, Debian's mutool that it was built without colour management)
+are listed with why in `Stationery::Verify::Allowlist`.
+
+```sh
+stationery verify invoice.pdf report.pdf                 # every engine installed
+stationery verify invoice.rb                             # render it first
+stationery verify invoice.pdf --engines qpdf,poppler     # these, and fail if one is missing
+stationery verify locked.pdf --password 1234 --json
+```
+
+It exits 0 when every engine passes every file, 1 otherwise (or when no engine is installed), 2 on
+a usage error, and prints one line per file and engine, the problems under it, then the engines not
+installed with the line that installs each. The engines are tools you install; the gem depends on
+none of them:
+
+```sh
+brew install qpdf poppler mupdf        # apt-get install qpdf poppler-utils mupdf-tools
+pip install pypdfium2                  # Python 3.11+; STATIONERY_PYTHON=/path/to/python names another
+npm i pdfjs-dist                       # STATIONERY_PDFJS=/path/to/node_modules/pdfjs-dist
+```
+
+PDFKit needs macOS and Swift (`xcode-select --install`). Poppler and MuPDF take `--password` on
+their command lines, where other processes of the machine can see it; qpdf reads it from a file and
+the scripted engines from the environment. pdfsig takes no password, so an encrypted file's
+signatures are not read by Poppler. A Docker image has every engine but PDFKit:
+
+```sh
+docker run --rm -v "$PWD:/data:ro" ghcr.io/zoolutions/stationery-verify /data/invoice.pdf
+```
+
+`bundle exec rake verify:readers` renders every example, the renders `verify:conformance`
+validates, an encrypted invoice, an invoice packed with object streams and a tagged report without
+them to `tmp/readers/`, and checks them (`ENGINES=qpdf,pdfkit` to choose). CI checks them with the
+image on Linux and with qpdf, Poppler, MuPDF and PDFKit on macOS. Adobe Acrobat cannot be driven
+in CI: before a release, the maintainer opens a fixed set of them in Acrobat Reader on macOS and
+Windows (see `AGENTS.md`).
+
 ### Factur-X / ZUGFeRD e-invoices
 
 A Factur-X (in Germany: ZUGFeRD) invoice is one PDF that people read and accounting software
@@ -1349,6 +1409,16 @@ Page 1  595.3 x 841.9 pt
   Links (x, y, width x height, target)
      329.2  596.5  65.6 x 11.6  mailto:hello@acme.test
 ```
+
+```sh
+stationery verify invoice.pdf                            # in every engine installed
+stationery verify invoice.rb --engines qpdf,pdfjs --json
+```
+
+`verify` reads PDFs, or the documents Ruby files define, with the engines
+viewers are built on (qpdf, Poppler, MuPDF, PDFium, pdf.js, PDFKit) and fails
+when one of them errs, warns or reads something the file does not hold. See
+[Viewers](#viewers-stationery-verify).
 
 ```sh
 stationery fonts list                                    # packs, licenses, what is in vendor/fonts

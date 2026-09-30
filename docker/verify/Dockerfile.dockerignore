@@ -1,0 +1,10 @@
+# BuildKit reads this (named after docker/verify/Dockerfile) instead of a
+# .dockerignore at the context root. The context is the repository root: the
+# image needs what the gem is built from, and nothing else.
+*
+!/stationery.gemspec
+!/README.md
+!/CHANGELOG.md
+!/LICENSE.txt
+!/lib/
+!/exe/

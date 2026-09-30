@@ -1,0 +1,85 @@
+{
+  "file": "form.pdf",
+  "pages": [
+    {
+      "number": 1,
+      "text": "Membership application  Fill in the form on screen, sign it and send it back to us.  Applicant  Full name   Email Street address   Postcode   Country  Membership  Basic · SEK 290 / year Pro · SEK 590 / year Team · SEK 1,490 / year  Anything we should know? (workshops you are interested in, accessibility needs)  Consent  I accept the terms of membership and the workshop safety rules. Send me the monthly newsletter.  Date  Nordic Makers Guild · Box 118, 221 00 Lund · members@makers.example",
+      "painted": true,
+      "links": []
+    }
+  ],
+  "errors": [],
+  "outline": [],
+  "fields": [
+    {
+      "name": "applicant",
+      "value": null,
+      "appearance": null
+    },
+    {
+      "name": "applicant.name",
+      "value": "Astrid Lindqvist",
+      "appearance": true
+    },
+    {
+      "name": "applicant.email",
+      "value": "astrid@example.se",
+      "appearance": true
+    },
+    {
+      "name": "applicant.address",
+      "value": null,
+      "appearance": null
+    },
+    {
+      "name": "applicant.address.street",
+      "value": "",
+      "appearance": true
+    },
+    {
+      "name": "applicant.address.postcode",
+      "value": "",
+      "appearance": true
+    },
+    {
+      "name": "applicant.address.country",
+      "value": "Sweden",
+      "appearance": true
+    },
+    {
+      "name": "plan",
+      "value": "pro",
+      "appearance": true
+    },
+    {
+      "name": "notes",
+      "value": "",
+      "appearance": true
+    },
+    {
+      "name": "terms",
+      "value": "Off",
+      "appearance": true
+    },
+    {
+      "name": "newsletter",
+      "value": "Yes",
+      "appearance": true
+    },
+    {
+      "name": "signature",
+      "value": null,
+      "appearance": true
+    },
+    {
+      "name": "signed_on",
+      "value": "",
+      "appearance": true
+    }
+  ],
+  "attachments": [],
+  "structure": false,
+  "warnings": [
+    "Warning: _getAppearance: OffscreenCanvas is not supported, annotation may not render correctly."
+  ]
+}

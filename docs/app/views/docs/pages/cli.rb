@@ -81,6 +81,43 @@ class Views::Docs::Pages::Cli < DocsUI::Page
       MD
     end
 
+    DocsUI::Section("stationery verify", description: "Check PDFs in the engines viewers are built on.") do
+      md <<~'MD'
+        ```shell
+        stationery verify invoice.pdf report.pdf                 # every engine installed
+        stationery verify invoice.rb                             # render it first
+        stationery verify invoice.pdf --engines qpdf,poppler     # these, and fail if one is missing
+        stationery verify locked.pdf --password 1234 --json
+        ```
+
+        | Option | Meaning |
+        | --- | --- |
+        | `--engines LIST` | The engines to run, comma-separated: `qpdf`, `poppler`, `mupdf`, `pdfium`, `pdfjs`, `pdfkit`. Without it, every one installed. |
+        | `--password PASSWORD` | The user password of encrypted files. Poppler and MuPDF take it on their command lines, where other processes of the machine can see it. |
+        | `--json` | Print the report as JSON. |
+        | `-c, --class NAME` | The document class to render when a Ruby file defines several. |
+        | `-h, --help` | Show help. |
+
+        `verify` reads each file with qpdf, Poppler, MuPDF, PDFium, pdf.js and PDFKit, the engines of the
+        Linux desktop viewers, Chrome and Edge, Firefox, and Preview and Safari, and holds what each reads
+        against what the file holds. Any error or warning an engine gives fails it, and so does a page
+        count, a text line, a link, the outline, a form field, an attachment, a signature or a structure
+        tree it reads otherwise. It exits 0 when every engine passes every file, 1 otherwise or when no
+        engine is installed, and 2 on a usage error. It needs the `pdf-reader` gem, and the engines are
+        tools you install: see [Viewers](/docs/conformance#viewers-stationery-verify).
+
+        ```text
+        invoice.pdf
+          qpdf     ok  (qpdf version 12.4.2)
+          poppler  ok  (poppler 26.09.0)
+          mupdf    ok  (mutool 1.28.5)
+          pdfjs    FAILED  (pdfjs-dist 6.3.289)
+              page 1: link not found: {uri: "https://example.com/terms"}
+        not run: pdfium (pip install pypdfium2 (STATIONERY_PYTHON names the Python that has it))
+        ```
+      MD
+    end
+
     DocsUI::Section("self.preview", description: "Documents that need arguments.") do
       md <<~'MD'
         A document whose `initialize` needs arguments renders from `def self.preview`, which returns an

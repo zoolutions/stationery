@@ -10,8 +10,9 @@ require_relative "layout"
 module Stationery
   module Testing
     # Reads a rendered PDF back for assertions. The subject is a
-    # Stationery::Document, PDF bytes, a path (String or Pathname) or an IO.
-    # Needs the pdf-reader gem, loaded on first use.
+    # Stationery::Document, PDF bytes, a path (String or Pathname) or an IO;
+    # `password:` opens an encrypted one. Needs the pdf-reader gem, loaded on
+    # first use.
     class Inspector
       UTF16_BOM = "\xFE\xFF".b
       # id-aa-signatureTimeStampToken: a signature's RFC 3161 timestamp.
@@ -23,9 +24,11 @@ module Stationery
       COLOR_OPERATORS = { "g" => 1, "G" => 1, "rg" => 3, "RG" => 3, "k" => 4, "K" => 4 }.freeze
       NUMBER = /\A[-+]?(?:\d+\.?\d*|\.\d+)\z/
       LITERAL_STRING = /\((?:\\.|[^\\()])*\)/m
+      NEEDS_READER = 'Stationery::Testing needs pdf-reader: add gem "pdf-reader" to your test group'
 
-      def initialize(subject)
+      def initialize(subject, password: nil)
         @subject = subject
+        @password = password
       end
 
       def pdf
@@ -40,9 +43,9 @@ module Stationery
       def reader
         @reader ||= begin
           require "pdf/reader"
-          ::PDF::Reader.new(StringIO.new(pdf))
+          ::PDF::Reader.new(StringIO.new(pdf), **{ password: @password }.compact)
         rescue LoadError
-          raise Stationery::Error, 'Stationery::Testing needs pdf-reader: add gem "pdf-reader" to your test group'
+          raise Stationery::Error, NEEDS_READER
         end
       end
 
