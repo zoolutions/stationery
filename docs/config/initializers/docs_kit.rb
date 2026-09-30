@@ -1,4 +1,4 @@
-# docs-kit synced: v1.1.1
+# docs-kit synced: v1.2.1
 # frozen_string_literal: true
 
 # docs-kit configuration — everything that makes this site look like

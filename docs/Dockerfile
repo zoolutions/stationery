@@ -20,7 +20,7 @@ FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 # The gem lives at /rails, the Rails app at /rails/docs.
 WORKDIR /rails/docs
 
-ARG BUN_VERSION=1.3.2
+ARG BUN_VERSION=1.4.2
 ENV BUN_INSTALL="/usr/local/bun" \
     PATH="/usr/local/bun/bin:$PATH" \
     BUNDLE_DEPLOYMENT="0" \
