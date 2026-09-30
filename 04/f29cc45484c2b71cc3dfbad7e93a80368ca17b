@@ -1,0 +1,25 @@
+AGENTS.md
+  s_950d558813f0eb::t_b75af1e717e65c 68
+.github/workflows/release.yml
+  s_950d558813f0eb::t_b75af1e717e65c 3-15,24,27,31,33,36,39-41,44-72,75,77-79,81-83,85,90-92,94-101,104-105,109-111,113-114,117-118,120-121,125-127,133-134,136-137,140,144-146,151,155-158,160,166-167,169,174,176-178,180-186,189,192,197,201,204-205,208-209,212-214,216-218
+bin/release
+  s_950d558813f0eb::t_b75af1e717e65c 2-6,8-11,15-18,36,43-51,54,66,86,96-118,137
+Rakefile
+  s_950d558813f0eb::t_b75af1e717e65c 290-291
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "04f29cc45484c2b71cc3dfbad7e93a80368ca17b",
+  "prompts": {},
+  "sessions": {
+    "s_950d558813f0eb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ad9f1a67-3954-4708-b6a4-703730248158",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
