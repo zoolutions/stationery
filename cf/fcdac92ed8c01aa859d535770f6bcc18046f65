@@ -1,0 +1,37 @@
+.github/workflows/release.yml
+  s_aca5bc318bad5c::t_2bb2f568145b33 153-154,160
+lib/stationery/verify/engines/pdfium.rb
+  s_aca5bc318bad5c::t_c7e90d2911b43e 12,14-16,19,23
+lib/stationery/verify/engines/pdfjs.rb
+  s_aca5bc318bad5c::t_c7e90d2911b43e 8-9,35
+docker/verify/Dockerfile
+  s_aca5bc318bad5c::t_2bb2f568145b33 9-11,34,49-50
+spec/stationery/verify_spec.rb
+  s_aca5bc318bad5c::t_f13954b5720d3d 62-68
+lib/stationery/verify/command.rb
+  s_aca5bc318bad5c::t_553a6c67129b96 4,10-13,22,25-26,31-42,61-69
+lib/stationery/verify/report.rb
+  s_aca5bc318bad5c::t_2bb2f568145b33 40-41,43-46
+spec/stationery/verify/engines_spec.rb
+  s_aca5bc318bad5c::t_f13954b5720d3d 116-131
+spec/stationery/verify/command_spec.rb
+  s_aca5bc318bad5c::t_f13954b5720d3d 33-46
+lib/stationery/verify/engine.rb
+  s_aca5bc318bad5c::t_5e0d324238f7e7 47-48,52-56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "cffcdac92ed8c01aa859d535770f6bcc18046f65",
+  "prompts": {},
+  "sessions": {
+    "s_aca5bc318bad5c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b0c38bc5-660c-4ed5-b411-8b8214054532",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
