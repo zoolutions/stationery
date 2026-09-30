@@ -93,15 +93,17 @@ module Stationery
         end
       end
 
-      # Whether `gap` is made of markers and the items of the page's lists.
-      def list?(gap, items)
-        until gap.empty?
-          step = gap[MARKER_PREFIX] || items.find { |item| gap.start_with?(item) }
-          return false unless step
+      # Whether `gap` is made of markers and the items of the page's lists,
+      # every way of reading it tried (an item may start with something
+      # shaped like a marker: "3.5 mm screws"), each offset once.
+      def list?(gap, items, from = 0, seen = {})
+        return true if from == gap.size
+        return false if seen[from]
 
-          gap = gap.delete_prefix(step)
-        end
-        true
+        seen[from] = true
+        rest = gap[from..]
+        steps = [rest[MARKER_PREFIX], *items.select { |item| !item.empty? && rest.start_with?(item) }].compact
+        steps.any? { |step| list?(gap, items, from + step.size, seen) }
       end
 
       def offsets(text, part) = text.enum_for(:scan, part).map { Regexp.last_match.begin(0) }

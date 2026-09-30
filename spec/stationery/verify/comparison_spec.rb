@@ -61,6 +61,17 @@ RSpec.describe Stationery::Verify::Comparison do
       .to eq(list.map { "page 4: text not found: #{it.inspect}" })
   end
 
+  it "reads a column of markers before items that start with something shaped like a marker" do
+    page = Stationery::Verify::Expectation::Page.new(number: 1, lines: ["1. 3.5 mm screws", "2. 4.0 mm bolts"],
+                                                     links: [], content: true)
+    expectation = Stationery::Verify::Expectation.new(pages: [page], outline: [], fields: [], attachments: [],
+                                                      signatures: 0, valid: true, tagged: false)
+    read = { "file" => "list.pdf", "pages" => [{ "number" => 1, "text" => "1. 2. 3.5 mm screws 4.0 mm bolts" }],
+             "errors" => [], "warnings" => [] }
+
+    expect(described_class.new(expectation, read, engine: "pdfkit").problems).to eq([])
+  end
+
   it "holds a line that does not start with a list's marker to being found whole" do
     read = facts("invoice", "pdfium")
     read["pages"][0]["text"] = read["pages"][0]["text"].sub("Rush delivery", "delivery Rush")
