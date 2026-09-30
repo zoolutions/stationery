@@ -1,0 +1,39 @@
+lib/stationery/verify/engine.rb
+  s_aca5bc318bad5c::t_9aee0a6deafde0 29-30
+spec/stationery/verify_spec.rb
+  s_aca5bc318bad5c::t_b0d3ad1a3f9a09 54-61
+lib/stationery/verify/engines/pdfjs.rb
+  s_aca5bc318bad5c::t_9aee0a6deafde0 28
+spec/stationery/verify/engines_spec.rb
+  s_aca5bc318bad5c::t_9aee0a6deafde0 66
+  s_aca5bc318bad5c::t_b0d3ad1a3f9a09 59-65,67-69,136,138,141-150
+lib/stationery/verify.rb
+  s_aca5bc318bad5c::t_e1729ae9c532e2 76-77,83-84
+lib/stationery/verify/command.rb
+  s_aca5bc318bad5c::t_e1729ae9c532e2 18
+  s_aca5bc318bad5c::t_9aee0a6deafde0 27-28,45-46,48-51
+spec/stationery/verify/command_spec.rb
+  s_aca5bc318bad5c::t_b0d3ad1a3f9a09 47-53
+README.md
+  s_aca5bc318bad5c::t_55b4c0e112c4cc 1035
+lib/stationery/verify/engines/pdfium.rb
+  s_aca5bc318bad5c::t_9aee0a6deafde0 14-16,19,23,27-31
+lib/stationery/verify/engines/qpdf.rb
+  s_aca5bc318bad5c::t_9aee0a6deafde0 26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "690b701e9b78399919c6dc7dd8736ebc092e738f",
+  "prompts": {},
+  "sessions": {
+    "s_aca5bc318bad5c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b0c38bc5-660c-4ed5-b411-8b8214054532",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
