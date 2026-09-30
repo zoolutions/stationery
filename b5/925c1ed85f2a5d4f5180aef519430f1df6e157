@@ -1,0 +1,21 @@
+lib/stationery/verify/comparison.rb
+  s_aca5bc318bad5c::t_03108bb40631e2 96-106
+spec/stationery/verify/comparison_spec.rb
+  s_aca5bc318bad5c::t_5c9ee5dfd53d33 64-74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "b5925c1ed85f2a5d4f5180aef519430f1df6e157",
+  "prompts": {},
+  "sessions": {
+    "s_aca5bc318bad5c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b0c38bc5-660c-4ed5-b411-8b8214054532",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
