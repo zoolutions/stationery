@@ -65,7 +65,7 @@ A change to layout is rendered to a picture (`pdftoppm -png -r 72 file.pdf out`)
 
 ## Releases
 
-Releases are cut by the maintainer with `bin/release` (`bin/release --dry-run` shows what would ship), never with `rake release` by hand and never by an agent without being asked. A release is prepared by a pull request that turns `## Unreleased` into the section of the version and records the metrics baseline.
+Releases are cut by the maintainer with `bin/release` (`bin/release --dry-run` shows what would ship), never with `rake release` by hand and never by an agent without being asked. A release is prepared by a pull request that turns `## Unreleased` into the section of the version and records the metrics baseline. `bin/release`, `rakelib/release.rake` and the shared jobs of `.github/workflows/release.yml` are the zoolutions release kit, synced verbatim from docs-kit (`RELEASE_KIT.md` there): never edit them here; only the `test` and `publish-verify-image` jobs are this repo's.
 
 Acrobat cannot be driven in CI, so before a release pull request merges the maintainer opens a fixed set from `bundle exec rake verify:readers:render` (`tmp/readers/`) in Acrobat Reader on macOS **and** Windows: `invoice`, `form`, `report`, `e_invoice`, `accessible_report`, `conforming_signed_form` and `encrypted_invoice` (password `reader`). On each: it opens without a warning bar; the form fills and prints; links and bookmarks jump; the attachment opens; the signature panel reads the signature; the tag tree shows in Acrobat's Accessibility panel (Pro) or its reading order. The result is a checklist in the release pull request's body. No claim of Adobe compatibility is made beyond what this step saw.
 

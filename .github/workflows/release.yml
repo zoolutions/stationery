@@ -1,5 +1,18 @@
 name: Release
 
+# The zoolutions release kit (canonical copy in docs-kit, see RELEASE_KIT.md;
+# sync with `script/release-kit sync`). Everything outside the project-specific
+# `test` job is BYTE-IDENTICAL in every gem: the gem name and version come from
+# the one *.gemspec. Hardened for zizmor: actions pinned by SHA, no bundler cache
+# in a publishing workflow (cache poisoning), `${{ }}` only via env (template
+# injection), checkout without persisted credentials.
+#
+# The test job MUST install frozen whenever a Gemfile.lock is committed: that is
+# the gate that fails a release whose lockfile pins `rake release` missed,
+# before anything is published.
+#
+# Fired by `rake release[X.Y.Z]` / `bin/release` publishing the GitHub Release.
+
 on:
   release:
     types: [published]
@@ -8,138 +21,28 @@ permissions:
   contents: read
 
 jobs:
+  # ── project-specific ──────────────────────────────────────────────────────
   test:
-    runs-on: ubuntu-latest
     name: Test before release
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: true
       matrix:
-        ruby:
-          - "3.4"
-          - "4.0"
+        ruby: ["3.4", "4.0"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
         with:
           ruby-version: ${{ matrix.ruby }}
-          bundler-cache: true
+      - run: bundle install
+        env:
+          BUNDLE_FROZEN: ${{ hashFiles('Gemfile.lock') != '' }}
       - run: bundle exec rspec
 
-  build:
-    needs: test
-    runs-on: ubuntu-latest
-    outputs:
-      gem_name: ${{ steps.build.outputs.gem_name }}
-      version: ${{ steps.build.outputs.version }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.4"
-          bundler-cache: true
-
-      - name: Verify tag matches gem version
-        run: |
-          GEM_VERSION=$(ruby -r ./lib/stationery/version -e "puts Stationery::VERSION")
-          TAG_VERSION="${{ github.event.release.tag_name }}"
-          TAG_VERSION="${TAG_VERSION#v}"
-          if [ "$GEM_VERSION" != "$TAG_VERSION" ]; then
-            echo "::error::Tag version ($TAG_VERSION) does not match gem version ($GEM_VERSION)"
-            exit 1
-          fi
-
-      - name: Build gem
-        id: build
-        run: |
-          gem build stationery.gemspec --strict
-          GEM_NAME=$(ls stationery-*.gem)
-          echo "gem_name=$GEM_NAME" >> "$GITHUB_OUTPUT"
-          TAG_VERSION="${{ github.event.release.tag_name }}"
-          echo "version=${TAG_VERSION#v}" >> "$GITHUB_OUTPUT"
-
-      - name: Verify gem contents
-        run: |
-          GEM_NAME=$(ls stationery-*.gem)
-          gem unpack "$GEM_NAME" --target /tmp/gem-verify
-
-          echo "=== File count ==="
-          find /tmp/gem-verify -type f | wc -l
-
-          echo "=== Checking for unwanted files ==="
-          UNWANTED=$(find /tmp/gem-verify \( -name ".git*" -o -name "*.gemspec" \) -print)
-          if [ -n "$UNWANTED" ]; then
-            echo "::error::Unwanted files found in gem:"
-            echo "$UNWANTED"
-            exit 1
-          fi
-
-          UNWANTED_DIRS=$(find /tmp/gem-verify -type d \( -name "spec" -o -name "test" \) -print)
-          if [ -n "$UNWANTED_DIRS" ]; then
-            echo "::error::Unwanted directories found in gem:"
-            echo "$UNWANTED_DIRS"
-            exit 1
-          fi
-
-          echo "No unwanted files found"
-
-      - name: Generate checksums
-        run: |
-          GEM_NAME=$(ls stationery-*.gem)
-          sha256sum "$GEM_NAME" > "$GEM_NAME.sha256"
-          sha512sum "$GEM_NAME" > "$GEM_NAME.sha512"
-          echo "=== SHA256 ===" && cat "$GEM_NAME.sha256"
-          echo "=== SHA512 ===" && cat "$GEM_NAME.sha512"
-
-      - name: Upload gem artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: gem
-          path: |
-            stationery-*.gem
-            stationery-*.gem.sha256
-            stationery-*.gem.sha512
-          if-no-files-found: error
-
-  publish-rubygems:
-    needs: build
-    runs-on: ubuntu-latest
-    environment: rubygems
-    permissions:
-      id-token: write
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: gem
-
-      - name: Verify checksums
-        run: |
-          sha256sum -c stationery-*.gem.sha256
-          sha512sum -c stationery-*.gem.sha512
-
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.4"
-
-      - name: Configure RubyGems trusted publishing credentials
-        uses: rubygems/configure-rubygems-credentials@v1.0.0
-
-      - name: Push to RubyGems with Sigstore attestation
-        run: |
-          GEM_NAME=$(ls stationery-*.gem)
-          gem exec sigstore-cli sign "$GEM_NAME" \
-            --bundle "$GEM_NAME.sigstore.json"
-          gem push "$GEM_NAME" --attestation "$GEM_NAME.sigstore.json"
-
-      - name: Upload Sigstore bundle
-        uses: actions/upload-artifact@v4
-        with:
-          name: sigstore
-          path: stationery-*.gem.sigstore.json
-          if-no-files-found: error
-
+  # The verify image (docker/verify/Dockerfile) ships with every gem release, so
+  # `docker run ghcr.io/zoolutions/stationery-verify:<version>` matches the gem.
   publish-verify-image:
     needs: [build, publish-rubygems]
     runs-on: ubuntu-latest
@@ -147,17 +50,17 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
-      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push ghcr.io/zoolutions/stationery-verify
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           file: docker/verify/Dockerfile
@@ -166,26 +69,150 @@ jobs:
             ghcr.io/zoolutions/stationery-verify:${{ needs.build.outputs.version }}
             ghcr.io/zoolutions/stationery-verify:latest
 
+  # ── shared: keep identical across the gems ────────────────────────────────
+  build:
+    needs: test
+    runs-on: ubuntu-26.04
+    outputs:
+      gem: ${{ steps.gem.outputs.gem }}
+      version: ${{ steps.gem.outputs.version }}
+      gem_file: ${{ steps.build.outputs.gem_file }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: "3.4"
+
+      - name: Verify tag matches gem version
+        id: gem
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          read -r GEM VERSION < <(ruby -e '
+            specs = Dir["*.gemspec"]
+            abort "expected exactly one *.gemspec, found #{specs.inspect}" unless specs.size == 1
+            spec = Gem::Specification.load(specs.first)
+            puts "#{spec.name} #{spec.version}"
+          ')
+          if [ "$VERSION" != "${RELEASE_TAG#v}" ]; then
+            echo "::error::Tag ($RELEASE_TAG) does not match the $GEM gemspec version ($VERSION)"
+            exit 1
+          fi
+          echo "gem=$GEM" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build gem
+        id: build
+        env:
+          GEM: ${{ steps.gem.outputs.gem }}
+          VERSION: ${{ steps.gem.outputs.version }}
+        run: |
+          gem build "$GEM.gemspec" --strict
+          echo "gem_file=$GEM-$VERSION.gem" >> "$GITHUB_OUTPUT"
+
+      - name: Verify gem contents
+        env:
+          GEM_FILE: ${{ steps.build.outputs.gem_file }}
+        run: |
+          gem unpack "$GEM_FILE" --target /tmp/gem-verify
+          echo "=== $(find /tmp/gem-verify -type f | wc -l) files ==="
+
+          UNWANTED=$(find /tmp/gem-verify \( -name ".git*" -o -name "*.gemspec" \) -print)
+          UNWANTED_DIRS=$(find /tmp/gem-verify -type d \( -name "spec" -o -name "test" \) -print)
+          if [ -n "$UNWANTED$UNWANTED_DIRS" ]; then
+            echo "::error::Unwanted files in the gem:"
+            printf '%s\n' "$UNWANTED" "$UNWANTED_DIRS"
+            exit 1
+          fi
+          echo "No unwanted files found"
+
+      - name: Generate checksums
+        env:
+          GEM_FILE: ${{ steps.build.outputs.gem_file }}
+        run: |
+          sha256sum "$GEM_FILE" | tee "$GEM_FILE.sha256"
+          sha512sum "$GEM_FILE" | tee "$GEM_FILE.sha512"
+
+      - name: Upload gem artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: gem
+          path: |
+            ${{ steps.build.outputs.gem_file }}
+            ${{ steps.build.outputs.gem_file }}.sha256
+            ${{ steps.build.outputs.gem_file }}.sha512
+          if-no-files-found: error
+
+  publish-rubygems:
+    needs: build
+    runs-on: ubuntu-26.04
+    environment: rubygems
+    permissions:
+      id-token: write
+    env:
+      GEM: ${{ needs.build.outputs.gem }}
+      VERSION: ${{ needs.build.outputs.version }}
+      GEM_FILE: ${{ needs.build.outputs.gem_file }}
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: gem
+
+      - name: Verify checksums
+        run: |
+          sha256sum -c "$GEM_FILE.sha256"
+          sha512sum -c "$GEM_FILE.sha512"
+
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: "3.4"
+
+      - name: Configure RubyGems trusted publishing credentials
+        uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
+
+      # Always sign, so a re-run still has a Sigstore bundle for the release
+      # assets; skip only the push when this version is already on RubyGems.
+      - name: Sign with Sigstore and push to RubyGems
+        run: |
+          gem exec sigstore-cli sign "$GEM_FILE" --bundle "$GEM_FILE.sigstore.json"
+
+          if curl -fsS -o /dev/null "https://rubygems.org/api/v2/rubygems/$GEM/versions/$VERSION.json"; then
+            echo "::warning::$GEM $VERSION is already on RubyGems, skipping the push"
+          else
+            gem push "$GEM_FILE" --attestation "$GEM_FILE.sigstore.json"
+          fi
+
+      - name: Upload Sigstore bundle
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sigstore
+          path: ${{ needs.build.outputs.gem_file }}.sigstore.json
+          if-no-files-found: error
+
   upload-release-assets:
     needs: [build, publish-rubygems]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: gem
-      - uses: actions/download-artifact@v4
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: sigstore
-      - name: Upload assets to GitHub release
+
+      - name: Upload assets to the GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          REPO: ${{ github.repository }}
+          GEM_FILE: ${{ needs.build.outputs.gem_file }}
         run: |
-          GEM_NAME="${{ needs.build.outputs.gem_name }}"
-          gh release upload "${{ github.event.release.tag_name }}" \
-            "$GEM_NAME" \
-            "$GEM_NAME.sha256" \
-            "$GEM_NAME.sha512" \
-            "$GEM_NAME.sigstore.json" \
-            --repo "${{ github.repository }}"
+          gh release upload "$RELEASE_TAG" \
+            "$GEM_FILE" "$GEM_FILE.sha256" "$GEM_FILE.sha512" "$GEM_FILE.sigstore.json" \
+            --repo "$REPO" --clobber
