@@ -139,7 +139,7 @@ ls "$(bundle show stationery)/examples"      # or: gem contents stationery
 | `keep_with_next: true \| points` | On `text`, `box` or `group`: never end a page with this node; with a number, keep at least that many points of what follows with it. |
 | `text_style(**style) { }` | Default text style for a block. |
 | `canvas(height:) { \|canvas, rect\| }` | Draw directly: rectangles, rounded rectangles, circles, lines, Bézier paths, clipping, images, links; `rotate(degrees, around:) { }` and `transform([a, b, c, d, e, f]) { }` blocks. |
-| `text_field(name, value:, width:, height:, multiline:, max_length:, comb:, read_only:, required:, font_size:, min_font_size:, max_font_size:, align:, color:, border:, background:, radius:, tooltip:, at:)` | An interactive text input (AcroForm). `width:` is `:full` or points; `font_size:` is points or `:auto`; `align:` is `:left`, `:center` or `:right`; dotted names (`"address.city"`) group fields. See [Forms](#forms). |
+| `text_field(name, value:, width:, height:, multiline:, max_length:, comb:, read_only:, required:, font_size:, min_font_size:, max_font_size:, align:, color:, border:, background:, radius:, tooltip:, at:)` | An interactive text input (AcroForm). `width:` is `:full` or points; `font_size:` is points, `:auto` or `:fit`; `align:` is `:left`, `:center` or `:right`; dotted names (`"address.city"`) group fields. See [Forms](#forms). |
 | `checkbox(name, checked:, size:, label:, at:)` | An interactive check box, with an optional label drawn to its right. |
 | `radio(name, value, checked:, size:, label:, at:)` | One choice of a radio group: radios sharing `name` form one field whose value is the checked `value`. |
 | `select(name, options:, value:, width:, height:, editable:, font_size:, min_font_size:, max_font_size:, align:, color:, at:)` | A drop-down (combo box); `editable: true` also accepts typed values. |
@@ -418,8 +418,12 @@ signature_field "signature", label: "Signature of the applicant"
   `font_size: :auto` writes `0 Tf` and the appearance draws the largest size, in tenths of a point,
   at which one line fits the field's height and width (a `comb:` field's cells; a `multiline:`
   field wrapped to its width and height), within `min_font_size:` (4 by default) and
-  `max_font_size:` (the height by default). A `comb:` field ignores `align:`, its cells place each
-  character. Under `monochrome`, `color:` is checked like any other colour; under PDF/A a CMYK one
+  `max_font_size:` (the height by default). `font_size: :fit` sizes the value the same way and writes
+  the number it chose in `/DA`, so every viewer reads a size, where `0 Tf` showed 9 px in Firefox's
+  editable input (which still caps a size at the field's height ÷ 1.35 and sets it in its own face).
+  A longer value typed afterwards does not shrink, and an empty field is sized to its bound, so a
+  field left empty to be filled in wants `:auto`. `min_font_size:` and `max_font_size:` go with
+  either. A `comb:` field ignores `align:`, its cells place each character. Under `monochrome`, `color:` is checked like any other colour; under PDF/A a CMYK one
   is reported. A field that uses none of them is written as it was.
 - A radio group's value is its checked choice's `value` (`Off` when none is checked); a select box
   lists its `options:` and draws the chosen `value`; a signature field is left unsigned for the
@@ -1882,7 +1886,7 @@ own; lines read top to bottom, then left to right. An image is `{ x:, y:, width:
 [w, h] }` in the order drawn (the rectangle it fills, before any clip); a link has its `uri:`, or the
 `page:` and `top:` it goes to; a field has its full `name:`, `type:` (`:text`, `:choice`,
 `:checkbox`, `:radio`, `:button`, `:signature`), `value:`, for a button the `state:` that turns
-it on, and for a text field or a choice the `align:`, `font_size:` (`:auto` for `0 Tf`) and `color:`
+it on, and for a text field or a choice the `align:`, `font_size:` (`:auto` for `0 Tf`, the number for `:fit`) and `color:`
 (`"#RRGGBB"`) its value is drawn in. `outline` is the bookmarks as `{ title:, page:, top:, children: }`. `metadata` leaves out the
 dates, which change with every render, so two renders of one document have the same layout.
 `warnings` are the render's messages when the subject is a document.

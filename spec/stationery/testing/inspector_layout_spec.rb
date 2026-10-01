@@ -93,6 +93,14 @@ RSpec.describe Stationery::Testing::Inspector, "#layout" do
     expect(first[:fields].first).to include(align: :left, font_size: 10, color: "#000000")
   end
 
+  it "reports a font_size: :fit field's size as the number written in /DA" do
+    doc = SpecDocument.build { text_field "total", value: "9 kr", font_size: :fit, height: 40 }
+    field = described_class.new(doc).layout[:pages].first[:fields].first
+    written = form_fields(doc.to_pdf).fetch("total")[:DA][/ ([\d.]+) Tf/, 1].to_f
+
+    expect(field[:font_size]).to be_a(Numeric).and(eq(written)).and(be > 10)
+  end
+
   it "names the kind of each button and the state that turns it on" do
     doc = SpecDocument.build do
       checkbox "terms", checked: true, label: "I accept"

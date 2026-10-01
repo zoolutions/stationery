@@ -155,16 +155,87 @@ RSpec.describe Stationery::Forms do
       expect(sizes(appearance_of(pdf, name)).first).to be > 20
     end
 
-    it "takes a positive number or :auto, and its bounds only with :auto" do
+    it "takes a positive number, :auto or :fit, and its bounds only with :auto or :fit" do
       expect { field_class.new(:text, "a", font_size: 0) }
-        .to raise_error(ArgumentError, "font_size: is a number of points or :auto, not 0")
+        .to raise_error(ArgumentError, "font_size: is a number of points, :auto or :fit, not 0")
       expect { field_class.new(:text, "a", font_size: "12") }
-        .to raise_error(ArgumentError, 'font_size: is a number of points or :auto, not "12"')
+        .to raise_error(ArgumentError, 'font_size: is a number of points, :auto or :fit, not "12"')
       expect { field_class.new(:text, "a", min_font_size: 8) }
-        .to raise_error(ArgumentError, "min_font_size: needs font_size: :auto")
+        .to raise_error(ArgumentError, "min_font_size: needs font_size: :auto or :fit")
       expect { field_class.new(:text, "a", font_size: :auto, max_font_size: -1) }
         .to raise_error(ArgumentError, /max_font_size: is a number of points/)
       expect { field_class.new(:text, "a", font_size: :auto, min_font_size: 20, max_font_size: 10) }
+        .to raise_error(ArgumentError, "min_font_size: 20 is above max_font_size: 10")
+    end
+  end
+
+  describe "font_size: :fit" do
+    def written(field) = field[:DA][/ ([\d.]+) Tf/, 1].to_f
+
+    it "writes the size it fits in /DA and draws it" do
+      field, stream = bare(:text, "a", value: "Hi", font_size: :fit)
+      size = tenth((20 - (2 * padding)) / glyph_box)
+
+      expect(field[:DA]).to eq("/Helv #{Stationery::PDF::Serializer.number(size)} Tf 0 g")
+      expect(sizes(stream)).to eq([size])
+    end
+
+    it "shrinks a long value to the width and writes that" do
+      value = "Espresso machine Deluxe 3000"
+      field, stream = bare(:text, "a", value:, font_size: :fit)
+
+      expect(written(field)).to eq(tenth(96 / helvetica(value, 1)))
+      expect(sizes(stream)).to eq([written(field)])
+    end
+
+    it "keeps within min_font_size: and max_font_size:, and writes the bound it hits" do
+      floored, = bare(:text, "a", value: "x" * 200, font_size: :fit, min_font_size: 6)
+      capped, = bare(:text, "a", value: "Hi", font_size: :fit, max_font_size: 12)
+
+      expect(floored[:DA]).to eq("/Helv 6 Tf 0 g")
+      expect(capped[:DA]).to eq("/Helv 12 Tf 0 g")
+    end
+
+    it "wraps a multiline value and writes the fitted size" do
+      field, stream = bare(:text, "a", value: "word " * 12, multiline: true, font_size: :fit, height: 60)
+
+      expect(stream.scan(/ Td$/).size).to be > 1
+      expect(written(field)).to be > 4
+      expect(sizes(stream).uniq).to eq([written(field)])
+    end
+
+    it "writes the first widget's size for a field placed twice" do
+      field = field_class.new(:text, "a", value: "Hi", font_size: :fit)
+      pdf = render do
+        canvas(height: 80) do |canvas, rect|
+          canvas.widget(field, rect.x, rect.y, 100, 20)
+          canvas.widget(field, rect.x, rect.y + 30, 100, 40)
+        end
+      end
+      dictionary = form_fields(pdf).fetch("a")
+      short, tall = dictionary[:Kids].map { |kid| sizes(appearance_of(pdf, kid)).first }
+
+      expect(written(dictionary)).to eq(short)
+      expect(tall).to be > short
+    end
+
+    it "writes the largest size for an empty value" do
+      field = field_class.new(:text, "a", value: "", font_size: :fit, max_font_size: 14)
+
+      expect(Stationery::Forms::Appearance.new(field, 100, 40).default_appearance).to eq("/Helv 14 Tf 0 g")
+    end
+
+    it "sizes a select's value and writes it" do
+      pdf = render { select "unit", options: %w[kg piece], value: "piece", font_size: :fit, height: 30 }
+      unit = form_fields(pdf).fetch("unit")
+
+      expect(written(unit)).to be > 10
+      expect(sizes(appearance_of(pdf, unit)).first).to eq(written(unit))
+    end
+
+    it "takes its bounds, and refuses a minimum above the maximum" do
+      expect { field_class.new(:text, "a", font_size: :fit, min_font_size: 8, max_font_size: 20) }.not_to raise_error
+      expect { field_class.new(:text, "a", font_size: :fit, min_font_size: 20, max_font_size: 10) }
         .to raise_error(ArgumentError, "min_font_size: 20 is above max_font_size: 10")
     end
   end

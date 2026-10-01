@@ -234,12 +234,12 @@
     },
     "price_card": {
       "string": {
-        "bytes": "a13c7ee35a8a61befe20668e2dcdc5a47503325e81c0c8ac3795b2f1bba8553c",
-        "objects": "2ec2846f72c8087652fb133b1245b0c41bda08603d490a15c982d068751df550"
+        "bytes": "d6c681ac805da9b9192dda2a30cee374a59a90f20f89b284a68535525df8547c",
+        "objects": "c322289bcfd00868dca81529fcff2c6d33985e24f6a92507b7798360ffeb73da"
       },
       "block": {
-        "bytes": "2ac5fc397b5a469ecfd05a928a36fbb05d85e352210149673d05c3defe232af6",
-        "objects": "8e94c4f981ade05952b7feb3de9a40094b9914703a5bb632d4a25c07ca1d00f3"
+        "bytes": "7b6285f03abfbbbe4ec1c2f55aa9c140e4736080a4ca173191b3a152e87ef8b9",
+        "objects": "a7b2ebb0ede6f8d7945bbe29a28da4faa8e469b44fb272241194e7929ba400c6"
       }
     }
   }

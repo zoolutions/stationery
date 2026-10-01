@@ -17,7 +17,7 @@ module Stationery
       DEFAULTS = { font_size: 10, read_only: false, required: false, border: "#9CA3AF", background: "#FFFFFF",
                    radius: 2, tooltip: nil }.freeze
       # What a text field and a select take beyond the defaults: where the
-      # value sits, its colour, and the bounds of `font_size: :auto`.
+      # value sits, its colour, and the bounds of `font_size: :auto` or `:fit`.
       BOUNDS = %i[min_font_size max_font_size].freeze
       STYLE = [:align, :color, *BOUNDS].freeze
       OPTIONS = {
@@ -55,6 +55,10 @@ module Stationery
       def font_size = @options[:font_size]
       # Whether the value is drawn at the largest size that fits (`font_size: :auto`).
       def auto_size? = font_size == :auto
+      # Whether it is the size `:auto` would draw, written as a number (`font_size: :fit`).
+      def fit? = font_size == :fit
+      # Whether the gem chooses the size the value is drawn at (`:auto` or `:fit`).
+      def sized? = auto_size? || fit?
       def min_font_size = @options[:min_font_size]
       def max_font_size = @options[:max_font_size]
       def align = @options.fetch(:align, :left)
@@ -150,10 +154,10 @@ module Stationery
       def validate_style
         raise ArgumentError, "align: is :left, :center or :right, not #{align.inspect}" unless ALIGNMENTS.key?(align)
 
-        points(:font_size, " or :auto") unless auto_size?
+        points(:font_size, ", :auto or :fit") unless sized?
         BOUNDS.each do |key|
           next unless @options.key?(key)
-          raise ArgumentError, "#{key}: needs font_size: :auto" unless auto_size?
+          raise ArgumentError, "#{key}: needs font_size: :auto or :fit" unless sized?
 
           points(key)
         end
