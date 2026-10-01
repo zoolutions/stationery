@@ -1,0 +1,78 @@
+spec/fixtures/cli/inspected.rb
+  s_1a321b6a57e5a4::t_59aa96c7b88c9b 17
+spec/stationery/forms_style_spec.rb
+  s_1a321b6a57e5a4::t_c6f5b7ff1797e3 5-6,15,59,61,84,116,153,155,157,159,161,202-203,205-206,214
+  s_1a321b6a57e5a4::t_62ae28b5382ac0 166-198,207,210-212
+  s_1a321b6a57e5a4::t_af6c416d8040b3 199-201,204,208-209
+  s_1a321b6a57e5a4::t_8ca240380c814e 1-4,7-14,16-58,60,62-83,85-115,117-152,154,156,158,160,162-165,213,215-220
+spec/stationery/cli/inspect_spec.rb
+  s_1a321b6a57e5a4::t_c6f5b7ff1797e3 55-57
+  s_1a321b6a57e5a4::t_59aa96c7b88c9b 54
+spec/stationery/testing/inspector_layout_spec.rb
+  s_1a321b6a57e5a4::t_59aa96c7b88c9b 81-95
+CHANGELOG.md
+  s_1a321b6a57e5a4::t_e03153455ae469 5
+lib/stationery/cli/layout_text.rb
+  s_1a321b6a57e5a4::t_e0d9b4bfddb386 56,87-91
+  s_1a321b6a57e5a4::t_1130db10bdae7d 92-99
+README.md
+  s_1a321b6a57e5a4::t_13c82f978525e4 99,142,145,389,414-423,1884-1886
+lib/stationery/pdf/conformance.rb
+  s_1a321b6a57e5a4::t_a727e14b944f17 30-31,179-190
+lib/stationery/forms/field.rb
+  s_1a321b6a57e5a4::t_b429f74e69d5b1 19-20,24-25,28-30,32,43,45-50,56-60,84,149-152,155-169
+  s_1a321b6a57e5a4::t_3fb2403b6607ce 153
+  s_1a321b6a57e5a4::t_72e47d3a09d1d8 21-22,154
+lib/stationery/forms/auto_size.rb
+  s_1a321b6a57e5a4::t_f4e2afd2a0d4d2 7-9
+  s_1a321b6a57e5a4::t_ac578e192ac211 46-47
+  s_1a321b6a57e5a4::t_db52f95ccb5e2f 1-6,10-45,48-94
+lib/stationery/forms/appearance.rb
+  s_1a321b6a57e5a4::t_3fe6495c099fef 19-20,23-26,33,44-45,49,52-55,68,112-113,118-119,123-128,139
+lib/stationery/testing/layout.rb
+  s_1a321b6a57e5a4::t_e0d9b4bfddb386 21-22,104,108-120
+  s_1a321b6a57e5a4::t_c6f5b7ff1797e3 23
+Rakefile
+  s_1a321b6a57e5a4::t_2d3ffff0fc8cf4 90-91
+spec/fixtures/renders/main.json
+  s_1a321b6a57e5a4::t_ee21e02ac88d34 234-236,239-240,243
+  s_1a321b6a57e5a4::t_789370d637c403 237-238,241-242
+spec/support/render_digests.rb
+  s_1a321b6a57e5a4::t_2d3ffff0fc8cf4 23
+spec/integration/price_card_spec.rb
+  s_1a321b6a57e5a4::t_16a5f4261f13d3 1-37
+lib/stationery.rb
+  s_1a321b6a57e5a4::t_3fe6495c099fef 124
+docs/app/views/docs/pages/examples.rb
+  s_1a321b6a57e5a4::t_9e7c7a416ae534 49-52
+docs/app/views/docs/pages/getting_started.rb
+  s_1a321b6a57e5a4::t_9e7c7a416ae534 165
+lib/stationery/elements/forms.rb
+  s_1a321b6a57e5a4::t_9e7c7a416ae534 12-14,33
+examples/price_card.rb
+  s_1a321b6a57e5a4::t_e97f254b9f9db4 16,24,27-33,48-51
+  s_1a321b6a57e5a4::t_2d3ffff0fc8cf4 80-85
+  s_1a321b6a57e5a4::t_02bb6124e789db 1-15,17-23,25-26,34-47,52-79
+lib/stationery/monochrome/painting.rb
+  s_1a321b6a57e5a4::t_a727e14b944f17 50-59
+docs/app/views/docs/pages/forms.rb
+  s_1a321b6a57e5a4::t_25b8bf072fb550 254-257
+  s_1a321b6a57e5a4::t_f4e2afd2a0d4d2 215-253,258-272
+  s_1a321b6a57e5a4::t_a4f93695193cbb 23,95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "d8df2cac7e280ed196b7f504851475f4cdc76152",
+  "prompts": {},
+  "sessions": {
+    "s_1a321b6a57e5a4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1c8e7aa0-b477-4868-9e36-7f52c83adde6",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
