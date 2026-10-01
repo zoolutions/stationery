@@ -21,7 +21,7 @@ module Stationery
       SIGNATURE = { rule: 14, label_size: 7, label_baseline: 4, label_gray: 0.42 }.freeze
 
       # The size the value is drawn at: the field's, or what `font_size:
-      # :auto` fits (see AutoSize).
+      # :auto` or `:fit` fits (see AutoSize).
       attr_reader :size
 
       # `resources` are the render's, where the field's fonts get their names.
@@ -30,7 +30,7 @@ module Stationery
         @width = width
         @height = height
         @type = field.typeface.with(resources)
-        @size = field.auto_size? ? AutoSize.new(field, @type, width, height).size : field.font_size
+        @size = field.sized? ? AutoSize.new(field, @type, width, height).size : field.font_size
         @contents = contents
         keep
       end
@@ -41,8 +41,9 @@ module Stationery
       # The resource names of the fonts it draws with or keeps for editing.
       def font_names = @type.names
 
-      # What the field's /DA says: the font, size (0 for auto) and colour a
-      # viewer redraws the value with. nil for a field without variable text.
+      # What the field's /DA says: the font, size (0 for `:auto`, the fitted
+      # number for `:fit`) and colour a viewer redraws the value with. nil for
+      # a field without variable text.
       def default_appearance
         return unless @field.variable_text?
 

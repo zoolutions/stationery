@@ -9,8 +9,8 @@ module Stationery
   module Elements
     # A text input. `width:` is :full or points; `multiline:`, `max_length:`,
     # `comb:` (a cell count, or true with max_length:), `read_only:`,
-    # `required:`, `font_size:` (points, or :auto with `min_font_size:` and
-    # `max_font_size:`), `align:` (:left, :center, :right), `color:`,
+    # `required:`, `font_size:` (points, or :auto or :fit with `min_font_size:`
+    # and `max_font_size:`), `align:` (:left, :center, :right), `color:`,
     # `border:`, `background:` and `radius:`.
     def text_field(name, value: "", width: :full, height: 22, at: nil, **)
       field_node(Forms::Field.new(:text, name, value: value.to_s, typeface: field_typeface, **), width:, height:, at:)

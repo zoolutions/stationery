@@ -1,12 +1,14 @@
 # frozen_string_literal: true
 
 # A shop-window price card a person fills in on screen and prints: the
-# product's name centred and shrunk to fit its line (`font_size: :auto`),
-# the price large, centred and red, the price per unit right-aligned in grey
-# and a select of units. The fields have no border and no background, so the
-# printed card shows the values alone; a viewer that redraws a field after
-# an edit keeps its alignment, colour and auto-size (/Q and /DA). Run it to
-# write examples/price_card.pdf:
+# product's name centred and shrunk to fit its line, the price large,
+# centred and red, the price per unit right-aligned in grey and a select of
+# units. The name and price are fitted by the gem and the size it chose is
+# written to the file (`font_size: :fit`), so every viewer shows them at
+# that size. The fields have no border and no background, so the printed
+# card shows the values alone; a viewer that redraws a field after an edit
+# keeps its alignment, colour and size (/Q and /DA). Run it to write
+# examples/price_card.pdf:
 #
 #   ruby -Ilib examples/price_card.rb
 #   ruby -Ilib exe/stationery render examples/price_card.rb
@@ -51,14 +53,14 @@ class ExamplePriceCard < Stationery::Document
     spacer 10
     label "Product"
     text_style(weight: :bold) do
-      text_field "product", value: @product, height: 44, font_size: :auto, max_font_size: 32, align: :center,
+      text_field "product", value: @product, height: 44, font_size: :fit, max_font_size: 32, align: :center,
                             tooltip: "Product", **BARE
     end
     rule height: 0.5, color: HAIRLINE
     spacer 10
     label "Price"
     text_style(weight: :bold) do
-      text_field "price", value: @price, height: 150, font_size: :auto, max_font_size: 120, align: :center,
+      text_field "price", value: @price, height: 150, font_size: :fit, max_font_size: 120, align: :center,
                           color: SALE, tooltip: "Price", **BARE
     end
     spacer 6

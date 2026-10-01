@@ -418,8 +418,12 @@ signature_field "signature", label: "Signature of the applicant"
   `font_size: :auto` writes `0 Tf` and the appearance draws the largest size, in tenths of a point,
   at which one line fits the field's height and width (a `comb:` field's cells; a `multiline:`
   field wrapped to its width and height), within `min_font_size:` (4 by default) and
-  `max_font_size:` (the height by default). A `comb:` field ignores `align:`, its cells place each
-  character. Under `monochrome`, `color:` is checked like any other colour; under PDF/A a CMYK one
+  `max_font_size:` (the height by default). `font_size: :fit` sizes the value the same way and writes
+  the number it chose in `/DA`, so every viewer reads a size, where `0 Tf` showed 9 px in Firefox's
+  editable input (which still caps a size at the field's height ÷ 1.35 and sets it in its own face).
+  A longer value typed afterwards does not shrink, and an empty field is sized to its bound, so a
+  field left empty to be filled in wants `:auto`. `min_font_size:` and `max_font_size:` go with
+  either. A `comb:` field ignores `align:`, its cells place each character. Under `monochrome`, `color:` is checked like any other colour; under PDF/A a CMYK one
   is reported. A field that uses none of them is written as it was.
 - A radio group's value is its checked choice's `value` (`Off` when none is checked); a select box
   lists its `options:` and draws the chosen `value`; a signature field is left unsigned for the
