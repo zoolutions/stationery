@@ -20,6 +20,7 @@ class Views::Docs::Pages::Forms < DocsUI::Page
     radios
     selects
     signature_fields
+    styles
     names
     values
     appearance
@@ -91,7 +92,7 @@ class Views::Docs::Pages::Forms < DocsUI::Page
           [ "at", "[x, y]", "nil", "A page position in points from the top left corner, outside the flow." ],
           [ "read_only", "Boolean", "false", [ :md, "The reader cannot change the value. A read-only field also keeps only its value's glyphs in the font; see [Appearance and fonts](#appearance-and-fonts)." ] ],
           [ "required", "Boolean", "false", "Sets the field's Required flag, which viewers use to highlight it and to check it when the form is submitted." ],
-          [ "font_size", "Numeric", "10", "The size of the value a text field or select box shows, in points." ],
+          [ "font_size", "Numeric or :auto", "10", [ :md, "The size of the value a text field or select box shows, in points; `:auto` for the largest that fits. See [Alignment, colour and auto-size](#alignment-colour-and-auto-size)." ] ],
           [ "border", "Color", "\"#9CA3AF\"", [ :md, "The frame's stroke; `nil` for none. A signature field draws its rule in it." ] ],
           [ "background", "Color", "\"#FFFFFF\"", [ :md, "The frame's fill; `nil` for none." ] ],
           [ "radius", "Numeric", "2", "The frame's corner radius. A radio button is always a circle." ],
@@ -208,6 +209,64 @@ class Views::Docs::Pages::Forms < DocsUI::Page
           [ "editable", "Boolean", "false", "Lets the reader type a value that is not in the list." ]
         ]
       )
+    end
+  end
+
+  def styles
+    DocsUI::Section("Alignment, colour and auto-size", description: "How a text field's or select's value is set, in the file and in its appearance.") do
+      md <<~'MD'
+        ```ruby
+        text_style(weight: :bold) do
+          text_field "price", value: "4 990 kr", align: :center, color: "#DC2626", font_size: :auto,
+                              max_font_size: 120, height: 150, border: nil, background: nil
+        end
+        select "unit", options: ["per piece", "per kg"], value: "per piece", align: :center
+        ```
+
+        Each option is written to the field, where a viewer reads it when it redraws the value, and
+        drawn the same way in the appearance stationery writes, so the field looks the same before and
+        after an edit. A field that uses none of them is written as it was. Bold and italic come from the
+        text style around the field, as its font does.
+      MD
+
+      DocsUI::PropTable(
+        [
+          [ "align", ":left, :center, :right", ":left", [ :md, "Written as `/Q` (1 or 2; nothing for `:left`). The value is placed within the field's box less its padding, each line of a `multiline:` value by its own width. A `comb:` field ignores it: its cells place each character." ] ],
+          [ "color", "Color", "\"#000000\"", [ :md, "Any colour the gem takes. The colour operator of `/DA` (`0 g` for black, `rg` for RGB, `k` for CMYK) and the colour the value is painted in. Under `monochrome` it is checked like any other colour; under PDF/A a CMYK one is reported." ] ],
+          [ "font_size: :auto", "", "", [ :md, "Writes `0 Tf` in `/DA`. The appearance draws the largest size, in tenths of a point, at which one line fits the field's height and width; a `comb:` field's widest character fits its cell; a `multiline:` value, wrapped to the width, fits the height." ] ],
+          [ "min_font_size", "Numeric", "4", [ :md, "With `font_size: :auto`: the smallest size drawn. A value that does not fit at it is clipped." ] ],
+          [ "max_font_size", "Numeric", "the height", [ :md, "With `font_size: :auto`: the largest size drawn." ] ]
+        ]
+      )
+
+      md <<~'MD'
+        `min_font_size:` and `max_font_size:` are not in the file: a viewer that redraws the field sizes
+        it by its own rule, and may draw a short value larger than the cap.
+
+        ### What viewers do when they redraw
+
+        Every viewer shows the appearance as stationery drew it. A viewer redraws a field from `/DA` and
+        `/Q` when it opens a form with `NeedAppearances` (every render without a conformance level or a
+        signature) and after an edit. Read from each engine's source on 2026-10-01:
+
+        | Viewer | `align:` (`/Q`) | `color:` | `font_size: :auto`, one line | `font_size: :auto`, `multiline:` |
+        | --- | --- | --- | --- | --- |
+        | Firefox (pdf.js) | Yes | Yes | Fits the height and the width, no floor or cap | Shrinks until the lines fit, no cap |
+        | Chrome, Edge (PDFium) | Yes; not a select's (`GenerateComboBoxAP` sets no alignment) | Yes | The largest of 4, 6, 8, 9, 10, 12, 14 … 144 pt that fits | 4 to 12 pt |
+        | Evince, Okular (poppler) | Yes | Yes | Fits the height and the width, whole points | The largest of 20 down to 1 pt that fits |
+        | MuPDF | Yes | Yes | Fits the width, capped at the height | 12 pt, not shrunk |
+        | Acrobat, Acrobat Reader | Not tested | Not tested | Reported: the size that fills the height, shrinking as the text grows | Not tested |
+        | Preview (macOS) | Not tested | Not tested | Not tested | Not tested |
+
+        Sources: pdf.js `src/core/annotation.js` (`_getAppearance`, `_computeFontSize`) and
+        `src/core/default_appearance.js`; PDFium `core/fpdfdoc/cpdf_generateap.cpp` and
+        `cpvt_variabletext.cpp` (`GetAutoFontSize`); poppler `poppler/Annot.cc` (`drawText`,
+        `calculateFontSize`); MuPDF `source/pdf/pdf-appearance.c` (`write_variable_text`). Acrobat's is
+        what its users report; Adobe documents no rule.
+
+        `stationery inspect` and `Inspector#layout` report each field's `align:`, `font_size:` (`:auto`
+        for `0 Tf`) and `color:` (see [Testing](#testing)).
+      MD
     end
   end
 

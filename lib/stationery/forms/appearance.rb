@@ -16,7 +16,13 @@ module Stationery
       # The check mark's corners in the unit square (y down) and its stroke.
       CHECK = { points: [[0.22, 0.52], [0.42, 0.72], [0.78, 0.28]], stroke: 0.12 }.freeze
       DOT = 0.45
+      # What /DA and the appearance say when the value is black.
+      BLACK = "0 g"
       SIGNATURE = { rule: 14, label_size: 7, label_baseline: 4, label_gray: 0.42 }.freeze
+
+      # The size the value is drawn at: the field's, or what `font_size:
+      # :auto` fits (see AutoSize).
+      attr_reader :size
 
       # `resources` are the render's, where the field's fonts get their names.
       def initialize(field, width, height, resources = nil)
@@ -24,6 +30,7 @@ module Stationery
         @width = width
         @height = height
         @type = field.typeface.with(resources)
+        @size = field.auto_size? ? AutoSize.new(field, @type, width, height).size : field.font_size
         @contents = contents
         keep
       end
@@ -34,13 +41,17 @@ module Stationery
       # The resource names of the fonts it draws with or keeps for editing.
       def font_names = @type.names
 
-      # What the field's /DA says: the font and size a viewer redraws the
-      # value with. nil for a field without variable text.
+      # What the field's /DA says: the font, size (0 for auto) and colour a
+      # viewer redraws the value with. nil for a field without variable text.
       def default_appearance
         return unless @field.variable_text?
 
-        "/#{@type.name} #{num(@field.font_size)} Tf 0 g"
+        "/#{@type.name} #{@field.auto_size? ? 0 : num(size)} Tf #{text_color}"
       end
+
+      # What it paints: its content streams and its /DA, for a check of the
+      # colours they use (see PDF::Conformance).
+      def paints = [*(@contents.is_a?(Hash) ? @contents.values : @contents), default_appearance].compact
 
       # One stream, or a Hash of streams by appearance state for buttons.
       # `fonts` are the references by resource name.
@@ -54,7 +65,7 @@ module Stationery
       private
 
       def options = @field.options
-      def size = @field.font_size
+      def text_color = @field.color == Field::BLACK ? BLACK : @field.color.fill
       def num(value) = PDF::Serializer.number(value.is_a?(Float) && value == value.round ? value.round : value)
 
       def contents
@@ -98,29 +109,23 @@ module Stationery
         return comb_cells if options[:comb]
         return multiline_runs if options[:multiline]
 
-        [[PADDING, middle_baseline, @field.value.to_s]]
+        value = @field.value.to_s
+        [[start(value), middle_baseline, value]]
       end
 
       def multiline_runs
         top = @height - PADDING - @type.ascent(size)
-        wrap(@field.value.to_s, @width - (2 * PADDING)).each_with_index.map do |line, index|
-          [PADDING, top - (index * size * LEADING), line]
+        AutoSize.wrap(@type, @field.value.to_s, @width - (2 * PADDING), size).each_with_index.map do |line, index|
+          [start(line), top - (index * size * LEADING), line]
         end
       end
 
-      # The value broken into lines no wider than `width`, keeping its own
-      # line breaks; a word wider than a line stands alone.
-      def wrap(text, width)
-        text.split("\n", -1).flat_map do |paragraph|
-          paragraph.split.each_with_object([+""]) do |word, lines|
-            candidate = lines.last.empty? ? word : "#{lines.last} #{word}"
-            if lines.last.empty? || @type.width(candidate, size) <= width
-              lines[-1] = candidate
-            else
-              lines << word
-            end
-          end
-        end
+      # Where a line starts: aligned within the box less its padding, as a
+      # viewer does (PDF 32000-1, 12.7.3.3).
+      def start(line)
+        return PADDING if @field.align == :left
+
+        PADDING + Geometry.align_offset(@field.align, @width - (2 * PADDING), @type.width(line, size))
       end
 
       def comb_cells
@@ -131,7 +136,7 @@ module Stationery
       end
 
       def variable_text(runs)
-        ops = ["/Tx BMC", "q", "1 1 #{num(@width - 2)} #{num(@height - 2)} re W n", "0 g"]
+        ops = ["/Tx BMC", "q", "1 1 #{num(@width - 2)} #{num(@height - 2)} re W n", text_color]
         runs.reject { |_, _, text| text.empty? }.each do |x, y, text|
           ops.push("BT", "#{num(x)} #{num(y)} Td", *@type.show(text, size), "ET")
         end

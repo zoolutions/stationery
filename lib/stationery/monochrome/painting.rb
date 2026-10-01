@@ -47,6 +47,16 @@ module Stationery
         super
       end
 
+      # A field's value is text: its colour is reported, or snapped in /DA
+      # and the appearance alike. Its frame is drawn as it is.
+      def widget(field, x, y, w, h, tag: nil)
+        if field.variable_text?
+          color, = @monochrome.paint(field.color, :text, @page)
+          field = field.with(color:) unless color.equal?(field.color)
+        end
+        super
+      end
+
       # A gradient is reported by its stops; snapped, it is a black fill or nothing.
       def shade_path(path, shading, matrix:, even_odd: false, opacity: nil)
         return super unless shading.respond_to?(:stops)

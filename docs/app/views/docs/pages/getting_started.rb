@@ -162,7 +162,7 @@ class Views::Docs::Pages::GettingStarted < DocsUI::Page
 
     DocsUI::Section("Where next") do
       md <<~'MD'
-        - [Examples](/docs/examples) — nineteen complete documents with previews and live PDFs.
+        - [Examples](/docs/examples) — twenty complete documents with previews and live PDFs.
         - [Documents and components](/docs/documents-and-components) — class-level configuration and reusable pieces.
         - [Elements](/docs/elements) — every element and its options.
         - [Forms](/docs/forms) — fillable fields, their options and how they behave in a viewer.
