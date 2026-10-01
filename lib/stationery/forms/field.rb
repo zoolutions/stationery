@@ -16,13 +16,20 @@ module Stationery
                comb: 25 }.freeze
       DEFAULTS = { font_size: 10, read_only: false, required: false, border: "#9CA3AF", background: "#FFFFFF",
                    radius: 2, tooltip: nil }.freeze
+      # What a text field and a select take beyond the defaults: where the
+      # value sits, its colour, and the bounds of `font_size: :auto`.
+      BOUNDS = %i[min_font_size max_font_size].freeze
+      STYLE = [:align, :color, *BOUNDS].freeze
       OPTIONS = {
-        text: %i[multiline max_length comb], checkbox: [], radio: %i[checked], select: %i[options editable],
-        signature: %i[label]
+        text: [:multiline, :max_length, :comb, *STYLE], checkbox: [], radio: %i[checked],
+        select: [:options, :editable, *STYLE], signature: %i[label]
       }.freeze
       VARIABLE_TEXT = %i[text select].freeze
+      # The /Q (quadding) of each `align:` (PDF 32000-1, 12.7.3.3).
+      ALIGNMENTS = { left: 0, center: 1, right: 2 }.freeze
+      BLACK = Color.parse("#000000")
 
-      attr_reader :kind, :name, :value, :options, :typeface
+      attr_reader :kind, :name, :value, :options, :typeface, :color
 
       def initialize(kind, name, value: nil, typeface: Standard.new, **options)
         @kind = kind
@@ -33,12 +40,24 @@ module Stationery
         raise ArgumentError, "unknown #{kind} field option: #{unknown.join(", ")}" if unknown.any?
 
         @options = DEFAULTS.merge(options)
+        @color = Color.parse(@options.fetch(:color, BLACK))
         validate_comb
+        validate_style
+      end
+
+      # A copy with `changes` to its options.
+      def with(**changes)
+        self.class.new(@kind, @name, value: @value, typeface: @typeface, **@options, **changes)
       end
 
       def segments = @name.split(".")
       def type = TYPES.fetch(@kind)
       def font_size = @options[:font_size]
+      # Whether the value is drawn at the largest size that fits (`font_size: :auto`).
+      def auto_size? = font_size == :auto
+      def min_font_size = @options[:min_font_size]
+      def max_font_size = @options[:max_font_size]
+      def align = @options.fetch(:align, :left)
       # Whether a viewer redraws its text when the value changes.
       def variable_text? = VARIABLE_TEXT.include?(@kind)
       # The accessible name: `tooltip:`, a signature's label, else the name.
@@ -62,6 +81,7 @@ module Stationery
       def field_entries(value = field_value, default_appearance: nil)
         entries = { FT: type, TU: PDF::TextString.new(tooltip) }
         entries[:DA] = default_appearance if default_appearance
+        entries[:Q] = ALIGNMENTS.fetch(align) unless align == :left
         entries[:Ff] = flags if flags.positive?
         entries[:V] = value unless value.nil?
         entries[:MaxLen] = max_length if max_length
@@ -125,6 +145,28 @@ module Stationery
         return unless @options[:comb] && !max_length
 
         raise ArgumentError, "a comb field needs max_length: (or comb: <cells>)"
+      end
+
+      def validate_style
+        raise ArgumentError, "align: is :left, :center or :right, not #{align.inspect}" unless ALIGNMENTS.key?(align)
+
+        points(:font_size, " or :auto") unless auto_size?
+        BOUNDS.each do |key|
+          next unless @options.key?(key)
+          raise ArgumentError, "#{key}: needs font_size: :auto" unless auto_size?
+
+          points(key)
+        end
+        return unless min_font_size && max_font_size && min_font_size > max_font_size
+
+        raise ArgumentError, "min_font_size: #{min_font_size} is above max_font_size: #{max_font_size}"
+      end
+
+      def points(key, alternative = "")
+        value = @options[key]
+        return if value.is_a?(Numeric) && value.positive?
+
+        raise ArgumentError, "#{key}: is a number of points#{alternative}, not #{value.inspect}"
       end
     end
   end

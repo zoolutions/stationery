@@ -53,7 +53,7 @@ module Stationery
            "#{box(image)}  #{image[:pixels].join(" x ")} px"
          end,
          *section("Links (x, y, width x height, target)", page[:links]) { |link| "#{box(link)}  #{target(link)}" },
-         *section("Fields (x, y, width x height, name, type, value)", page[:fields]) do |field|
+         *section("Fields (x, y, width x height, name, type, value, alignment, size, colour)", page[:fields]) do |field|
            "#{box(field)}  #{field_text(field)}"
          end]
       end
@@ -84,7 +84,19 @@ module Stationery
 
       def field_text(field)
         value = field[:value].is_a?(Array) ? field[:value].inspect : field[:value]&.inspect
-        [field[:name], field[:type], field[:state] && "on: #{field[:state]}", value].compact.join("  ")
+        [field[:name], field[:type], field[:state] && "on: #{field[:state]}", value, *style(field)].compact.join("  ")
+      end
+
+      # What is not the default of a field's alignment, size and colour.
+      def style(field)
+        return [] unless field.key?(:align)
+
+        size = field[:font_size]
+        [field[:align] == :left ? nil : field[:align],
+         if size == :auto then "auto"
+         elsif size != Forms::Field::DEFAULTS[:font_size] then "#{number(size)} pt"
+         end,
+         field[:color] == "#000000" ? nil : field[:color]]
       end
 
       def structure

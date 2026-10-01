@@ -14,6 +14,8 @@ class CliInspectedDocument < Stationery::Document
     image File.expand_path("../images/rgb.jpg", __dir__), width: 20
     text "Visit", link: "https://example.com"
     text_field "name", value: "Astrid", width: 80
+    text_field "price", value: "9 kr", width: 80, align: :center, font_size: :auto, color: "#DC2626"
+    text_field "qty", value: "2", width: 80, font_size: 12
     page_break
     text "The end", bookmark: "End"
   end

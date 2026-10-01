@@ -78,6 +78,21 @@ RSpec.describe Stationery::Testing::Inspector, "#layout" do
     expect(field.slice(:name, :type, :value, :width)).to eq(name: "name", type: :text, value: "Astrid", width: 100.0)
   end
 
+  it "reports a text field's or a select's alignment, size and colour, and a button's none" do
+    doc = SpecDocument.build do
+      text_field "price", value: "9 kr", align: :center, font_size: :auto, color: "#DC2626"
+      select "unit", options: %w[kg], value: "kg", font_size: 12, color: [0, 0, 0, 100]
+      checkbox "terms"
+    end
+    fields = described_class.new(doc).layout[:pages].first[:fields]
+
+    expect(fields.map { |field| field.slice(:name, :align, :font_size, :color) })
+      .to eq([{ name: "price", align: :center, font_size: :auto, color: "#DC2626" },
+              { name: "unit", align: :left, font_size: 12, color: "#000000" },
+              { name: "terms" }])
+    expect(first[:fields].first).to include(align: :left, font_size: 10, color: "#000000")
+  end
+
   it "names the kind of each button and the state that turns it on" do
     doc = SpecDocument.build do
       checkbox "terms", checked: true, label: "I accept"

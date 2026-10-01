@@ -18,6 +18,9 @@ module Stationery
       # The Radio and Pushbutton flags of a button field's /Ff.
       RADIO = 1 << 15
       PUSHBUTTON = 1 << 16
+      ALIGNMENTS = %i[left center right].freeze
+      # The font size and colour operator of a /DA: "/F1 10 Tf 0.5 g".
+      DEFAULT_APPEARANCE = /([\d.]+) Tf\s+((?:-?[\d.]+\s+)+)(g|rg|k)\s*\z/
 
       def initialize(inspector)
         @inspector = inspector
@@ -98,9 +101,23 @@ module Stationery
           name = chain.filter_map { |field| field[:T] && decode(field[:T]) }.reverse.join(".")
           type = inherit(chain, :FT)
           { name:, type: field_type(type, inherit(chain, :Ff).to_i), value: value(inherit(chain, :V)),
-            **rect(widget, left, top), state: state(widget) }.compact
+            **rect(widget, left, top), state: state(widget), **style(chain) }.compact
         end
       end
+
+      # The alignment, size (:auto for 0) and colour a field's value is
+      # drawn in; nothing for a field without variable text.
+      def style(chain)
+        match = DEFAULT_APPEARANCE.match(inherit(chain, :DA).to_s) or return {}
+
+        size, values, operator = match.captures
+        values = values.split.map(&:to_f)
+        values *= 3 if operator == "g"
+        { align: ALIGNMENTS.fetch(inherit(chain, :Q).to_i, :left), font_size: size.to_f.zero? ? :auto : number(size),
+          color: Monochrome.hex(Color.new(operator == "k" ? :cmyk : :rgb, values)) }
+      end
+
+      def number(text) = text.include?(".") ? text.to_f : text.to_i
 
       def parents(widget)
         chain = [widget]

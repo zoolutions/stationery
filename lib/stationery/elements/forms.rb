@@ -9,7 +9,9 @@ module Stationery
   module Elements
     # A text input. `width:` is :full or points; `multiline:`, `max_length:`,
     # `comb:` (a cell count, or true with max_length:), `read_only:`,
-    # `required:`, `font_size:`, `border:`, `background:` and `radius:`.
+    # `required:`, `font_size:` (points, or :auto with `min_font_size:` and
+    # `max_font_size:`), `align:` (:left, :center, :right), `color:`,
+    # `border:`, `background:` and `radius:`.
     def text_field(name, value: "", width: :full, height: 22, at: nil, **)
       field_node(Forms::Field.new(:text, name, value: value.to_s, typeface: field_typeface, **), width:, height:, at:)
     end
@@ -28,7 +30,7 @@ module Stationery
     end
 
     # A drop-down (combo box) of `options`; `editable: true` also accepts
-    # typed values.
+    # typed values. `font_size:`, `align:` and `color:` as a text field's.
     def select(name, options:, value: nil, width: :full, height: 22, at: nil, **)
       field = Forms::Field.new(:select, name, value: value&.to_s, options: options.map(&:to_s),
                                               typeface: field_typeface, **)

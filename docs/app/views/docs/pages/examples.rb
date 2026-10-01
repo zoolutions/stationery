@@ -46,6 +46,10 @@ class Views::Docs::Pages::Examples < DocsUI::Page
      "An interactive AcroForm: labelled text fields, a comb postcode, a select box, a radio group, check " \
      "boxes with labels, a multiline note and a signature field. Fill it in any viewer; every field and " \
      "option is on [Forms](/docs/forms)." ],
+    [ "Price card", "price_card",
+     "A shop-window price card filled in on screen and printed: fields without a frame whose values are " \
+     "centred (`align: :center`), coloured (`color:`) and sized to fit (`font_size: :auto`), written to the " \
+     "file as `/Q` and `/DA` so a viewer redraws an edit the same way. See [Forms](/docs/forms)." ],
     [ "Magazine article", "article",
      "Floats: a photo floated left with justified text wrapping beside it and continuing below, a pull " \
      "quote floated right between two paragraphs, and an image floated by CSS inside `html`. Tagged: the " \

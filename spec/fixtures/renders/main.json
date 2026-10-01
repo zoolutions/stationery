@@ -231,6 +231,16 @@
         "bytes": "c408f76052f0f2910d26fc90d79d122a03ccd88d5afde08d178ba7bbe9faa620",
         "objects": "6dafdb4ecca6c4cbf77a0ef49b85b52e27c17e2f0daf8ffe134193a1ecd9f6da"
       }
+    },
+    "price_card": {
+      "string": {
+        "bytes": "a13c7ee35a8a61befe20668e2dcdc5a47503325e81c0c8ac3795b2f1bba8553c",
+        "objects": "2ec2846f72c8087652fb133b1245b0c41bda08603d490a15c982d068751df550"
+      },
+      "block": {
+        "bytes": "2ac5fc397b5a469ecfd05a928a36fbb05d85e352210149673d05c3defe232af6",
+        "objects": "8e94c4f981ade05952b7feb3de9a40094b9914703a5bb632d4a25c07ca1d00f3"
+      }
     }
   }
 }

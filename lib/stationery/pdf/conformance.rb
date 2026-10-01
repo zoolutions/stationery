@@ -27,6 +27,8 @@ module Stationery
       OUTPUT_CONDITION = "sRGB IEC61966-2.1"
       PRINT = 4
       CMYK_OPERATOR = /^(?:-?[\d.]+ ){4}[kK]$/
+      # The colour a field's /DA sets, after its font and size.
+      CMYK_DEFAULT_APPEARANCE = /Tf (?:-?[\d.]+ ){4}k\z/
       # What a character no font has does: :raise, or :replace to draw the
       # font's stand-in for it (see Fonts::Font#stand_in).
       MISSING_GLYPHS = %i[raise replace].freeze
@@ -174,7 +176,18 @@ module Stationery
         pages.each_with_index do |page, index|
           subjects << "CMYK colour on page #{index + 1}" if page.content.match?(CMYK_OPERATOR)
         end
-        subjects
+        subjects + cmyk_fields(pages)
+      end
+
+      # A field's appearance and /DA are not page content: each is read on its own.
+      def cmyk_fields(pages)
+        widgets = pages.flat_map(&:annotations).select { |annotation| annotation[:widget] && annotation[:appearance] }
+        widgets.select { |annotation| cmyk_paint?(annotation[:appearance].paints) }
+               .map { |annotation| %(CMYK colour in form field "#{annotation[:widget].name}") }.uniq
+      end
+
+      def cmyk_paint?(paints)
+        paints.any? { |paint| paint.match?(CMYK_OPERATOR) || paint.match?(CMYK_DEFAULT_APPEARANCE) }
       end
     end
   end

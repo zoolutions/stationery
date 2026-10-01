@@ -87,7 +87,8 @@ namespace :verify do
                   "article" => { pdf_ua1: "ua1", pdf_a3b: "3b" }, "newsletter" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
                   "signed_invoice" => { pdf_a3b: "3b" }, "signed_form" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
                   "linked_report" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
-                  "accessible_report" => { pdf_ua1: "ua1", pdf_a3b: "3b" } }
+                  "accessible_report" => { pdf_ua1: "ua1", pdf_a3b: "3b" },
+                  "price_card" => { pdf_ua1: "ua1", pdf_a3b: "3b" } }
 
   # Writes the render `name` of `conformance` to `path`: an example, signed
   # when the name says so, with a linked footer when it says so.

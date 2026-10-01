@@ -96,7 +96,7 @@ InvoicePdf.new(invoice).to_pdf("a.pdf") # also writes a path or an IO
 `examples/` has a complete, runnable invoice, annual report, letter, packing slip, shipping label, fillable form, postcard collage, magazine article, event flyer, two-column newsletter and Factur-X e-invoice,
 and one per thing people build: a 2,000-row price list written `incremental`, a contract with initials
 on every page and signature fields, a landscape certificate, a two-column résumé with its body in HTML,
-a restaurant menu in `columns` with floats, a till receipt on an 80 mm roll, a PDF/UA-1 accessible report and a notice in English, German
+a restaurant menu in `columns` with floats, a till receipt on an 80 mm roll, a shop-window price card whose fields centre, colour and size their values, a PDF/UA-1 accessible report and a notice in English, German
 and Swedish, each hyphenated in its language
 ([previews and live PDFs](https://stationery.zoolutions.llc/docs/examples)); `bundle exec rake examples`
 renders them all, or render one with `stationery render examples/report.rb`.
@@ -139,10 +139,10 @@ ls "$(bundle show stationery)/examples"      # or: gem contents stationery
 | `keep_with_next: true \| points` | On `text`, `box` or `group`: never end a page with this node; with a number, keep at least that many points of what follows with it. |
 | `text_style(**style) { }` | Default text style for a block. |
 | `canvas(height:) { \|canvas, rect\| }` | Draw directly: rectangles, rounded rectangles, circles, lines, Bézier paths, clipping, images, links; `rotate(degrees, around:) { }` and `transform([a, b, c, d, e, f]) { }` blocks. |
-| `text_field(name, value:, width:, height:, multiline:, max_length:, comb:, read_only:, required:, font_size:, border:, background:, radius:, tooltip:, at:)` | An interactive text input (AcroForm). `width:` is `:full` or points; dotted names (`"address.city"`) group fields. See [Forms](#forms). |
+| `text_field(name, value:, width:, height:, multiline:, max_length:, comb:, read_only:, required:, font_size:, min_font_size:, max_font_size:, align:, color:, border:, background:, radius:, tooltip:, at:)` | An interactive text input (AcroForm). `width:` is `:full` or points; `font_size:` is points or `:auto`; `align:` is `:left`, `:center` or `:right`; dotted names (`"address.city"`) group fields. See [Forms](#forms). |
 | `checkbox(name, checked:, size:, label:, at:)` | An interactive check box, with an optional label drawn to its right. |
 | `radio(name, value, checked:, size:, label:, at:)` | One choice of a radio group: radios sharing `name` form one field whose value is the checked `value`. |
-| `select(name, options:, value:, width:, height:, editable:, at:)` | A drop-down (combo box); `editable: true` also accepts typed values. |
+| `select(name, options:, value:, width:, height:, editable:, font_size:, min_font_size:, max_font_size:, align:, color:, at:)` | A drop-down (combo box); `editable: true` also accepts typed values. |
 | `signature_field(name, width:, height:, label:, at:)` | An empty signature field for the signer to fill, drawn as a rule over the label. |
 | `html(source, styles:, gap:, images:, base_path:, bookmarks:, links:, max_depth:)` | Rich text from HTML (ActionText/Trix, CMS output): paragraphs, headings, lists, quotes, code, rules, tables, images, inline marks and links, styled by a CSS subset (`<style>` rules and inline `style`). See [HTML and Markdown](#html-and-markdown). |
 | `markdown(source, styles:, gap:, images:, base_path:, bookmarks:, links:, max_depth:)` | The same from CommonMark (plus GFM tables and strikethrough). |
@@ -386,6 +386,7 @@ text_field "applicant.name", value: @applicant.name, required: true
 text_field "applicant.notes", multiline: true, height: 60
 text_field "applicant.pin", comb: 6                      # six cells; sets max_length
 select "applicant.country", options: %w[Sweden Norway Denmark], value: "Sweden"
+text_field "price", value: "4 990 kr", align: :center, color: "#DC2626", font_size: :auto, height: 110
 radio "plan", "basic", label: "Basic"                    # radios sharing a name form one group
 radio "plan", "pro", checked: true, label: "Pro"
 checkbox "terms", checked: false, label: "I accept the terms"
@@ -410,6 +411,16 @@ signature_field "signature", label: "Signature of the applicant"
 - Dotted names build the field hierarchy viewers show as groups; widgets sharing a name are one field
   with several widgets. A name used as both a field and a group raises `ArgumentError`.
 - `read_only:`, `required:`, `multiline:`, `max_length:` and `comb:` set the matching field flags.
+- `align:` (`:left`, `:center`, `:right`), `color:` and `font_size: :auto` style a text field's or a
+  select's value, both in the file and in the appearance, so the field looks the same before and
+  after a viewer redraws it: `align:` is written as `/Q` and the value is placed within the box less
+  its padding; `color:` (any colour the gem takes, black by default) is the colour operator of `/DA`;
+  `font_size: :auto` writes `0 Tf` and the appearance draws the largest size, in tenths of a point,
+  at which one line fits the field's height and width (a `comb:` field's cells; a `multiline:`
+  field wrapped to its width and height), within `min_font_size:` (4 by default) and
+  `max_font_size:` (the height by default). A `comb:` field ignores `align:`, its cells place each
+  character. Under `monochrome`, `color:` is checked like any other colour; under PDF/A a CMYK one
+  is reported. A field that uses none of them is written as it was.
 - A radio group's value is its checked choice's `value` (`Off` when none is checked); a select box
   lists its `options:` and draws the chosen `value`; a signature field is left unsigned for the
   signer, unless `sign` names it with `field:` (see [Digital signatures](#digital-signatures)).
@@ -1870,8 +1881,9 @@ A text line is a run of one font and size on one baseline, so a word set in bold
 own; lines read top to bottom, then left to right. An image is `{ x:, y:, width:, height:, pixels:
 [w, h] }` in the order drawn (the rectangle it fills, before any clip); a link has its `uri:`, or the
 `page:` and `top:` it goes to; a field has its full `name:`, `type:` (`:text`, `:choice`,
-`:checkbox`, `:radio`, `:button`, `:signature`), `value:` and, for a button, the `state:` that turns
-it on. `outline` is the bookmarks as `{ title:, page:, top:, children: }`. `metadata` leaves out the
+`:checkbox`, `:radio`, `:button`, `:signature`), `value:`, for a button the `state:` that turns
+it on, and for a text field or a choice the `align:`, `font_size:` (`:auto` for `0 Tf`) and `color:`
+(`"#RRGGBB"`) its value is drawn in. `outline` is the bookmarks as `{ title:, page:, top:, children: }`. `metadata` leaves out the
 dates, which change with every render, so two renders of one document have the same layout.
 `warnings` are the render's messages when the subject is a document.
 
