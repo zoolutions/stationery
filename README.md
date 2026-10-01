@@ -139,7 +139,7 @@ ls "$(bundle show stationery)/examples"      # or: gem contents stationery
 | `keep_with_next: true \| points` | On `text`, `box` or `group`: never end a page with this node; with a number, keep at least that many points of what follows with it. |
 | `text_style(**style) { }` | Default text style for a block. |
 | `canvas(height:) { \|canvas, rect\| }` | Draw directly: rectangles, rounded rectangles, circles, lines, Bézier paths, clipping, images, links; `rotate(degrees, around:) { }` and `transform([a, b, c, d, e, f]) { }` blocks. |
-| `text_field(name, value:, width:, height:, multiline:, max_length:, comb:, read_only:, required:, font_size:, min_font_size:, max_font_size:, align:, color:, border:, background:, radius:, tooltip:, at:)` | An interactive text input (AcroForm). `width:` is `:full` or points; `font_size:` is points or `:auto`; `align:` is `:left`, `:center` or `:right`; dotted names (`"address.city"`) group fields. See [Forms](#forms). |
+| `text_field(name, value:, width:, height:, multiline:, max_length:, comb:, read_only:, required:, font_size:, min_font_size:, max_font_size:, align:, color:, border:, background:, radius:, tooltip:, at:)` | An interactive text input (AcroForm). `width:` is `:full` or points; `font_size:` is points, `:auto` or `:fit`; `align:` is `:left`, `:center` or `:right`; dotted names (`"address.city"`) group fields. See [Forms](#forms). |
 | `checkbox(name, checked:, size:, label:, at:)` | An interactive check box, with an optional label drawn to its right. |
 | `radio(name, value, checked:, size:, label:, at:)` | One choice of a radio group: radios sharing `name` form one field whose value is the checked `value`. |
 | `select(name, options:, value:, width:, height:, editable:, font_size:, min_font_size:, max_font_size:, align:, color:, at:)` | A drop-down (combo box); `editable: true` also accepts typed values. |
@@ -1886,7 +1886,7 @@ own; lines read top to bottom, then left to right. An image is `{ x:, y:, width:
 [w, h] }` in the order drawn (the rectangle it fills, before any clip); a link has its `uri:`, or the
 `page:` and `top:` it goes to; a field has its full `name:`, `type:` (`:text`, `:choice`,
 `:checkbox`, `:radio`, `:button`, `:signature`), `value:`, for a button the `state:` that turns
-it on, and for a text field or a choice the `align:`, `font_size:` (`:auto` for `0 Tf`) and `color:`
+it on, and for a text field or a choice the `align:`, `font_size:` (`:auto` for `0 Tf`, the number for `:fit`) and `color:`
 (`"#RRGGBB"`) its value is drawn in. `outline` is the bookmarks as `{ title:, page:, top:, children: }`. `metadata` leaves out the
 dates, which change with every render, so two renders of one document have the same layout.
 `warnings` are the render's messages when the subject is a document.

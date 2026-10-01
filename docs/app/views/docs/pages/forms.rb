@@ -258,7 +258,7 @@ class Views::Docs::Pages::Forms < DocsUI::Page
         | Viewer | `align:` (`/Q`) | `color:` | `font_size: :auto`, one line | `font_size: :auto`, `multiline:` | `font_size: :fit` or a number |
         | --- | --- | --- | --- | --- | --- |
         | Firefox (pdf.js), appearance | Yes | Yes | Fits the height and the width, no floor or cap | Shrinks until the lines fit, no cap | The number |
-        | Firefox (pdf.js), input while editing | | | 9 px (`DEFAULT_FONT_SIZE`), capped as a number is | 9 px, capped as a number is | The number, capped at (height − 2) ÷ 1.35, in the browser's face; `multiline:` caps each line's share of the height the same way |
+        | Firefox (pdf.js), input while editing | Not checked | Not checked | 9 px (`DEFAULT_FONT_SIZE`), capped as a number is | 9 px, capped as a number is | The number, capped at (height − 2) ÷ 1.35, in the browser's face; `multiline:` caps each line's share of the height the same way |
         | Chrome, Edge (PDFium) | Yes; not a select's (`GenerateComboBoxAP` sets no alignment) | Yes | The largest of 4, 6, 8, 9, 10, 12, 14 … 144 pt that fits | 4 to 12 pt | The number |
         | Evince, Okular (poppler) | Yes | Yes | Fits the height and the width, whole points | The largest of 20 down to 1 pt that fits | The number, not shrunk |
         | MuPDF | Yes | Yes | Fits the width, capped at the height | 12 pt, not shrunk | The number |

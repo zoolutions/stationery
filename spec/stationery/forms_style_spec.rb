@@ -176,7 +176,7 @@ RSpec.describe Stationery::Forms do
       field, stream = bare(:text, "a", value: "Hi", font_size: :fit)
       size = tenth((20 - (2 * padding)) / glyph_box)
 
-      expect(field[:DA]).to eq("/Helv #{size} Tf 0 g")
+      expect(field[:DA]).to eq("/Helv #{Stationery::PDF::Serializer.number(size)} Tf 0 g")
       expect(sizes(stream)).to eq([size])
     end
 
