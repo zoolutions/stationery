@@ -45,7 +45,7 @@ module Stationery
       def size
         min = @field.min_font_size || [MIN, @field.max_font_size].compact.min
         max = [tenth([@field.max_font_size, height_fit].compact.min), min].max
-        fit = @field.options[:multiline] ? lines_fit(min, max) : [max, width_fit].compact.min
+        fit = @field.options[:multiline] && !@cell ? lines_fit(min, max) : [max, width_fit].compact.min
         [tenth(fit), min].max
       end
 

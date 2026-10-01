@@ -136,6 +136,12 @@ RSpec.describe Stationery::Forms do
       expect(sizes(stream).uniq).to eq([tenth(10 / helvetica("W", 1))])
     end
 
+    it "fits a comb field to its cells even when it is also multiline" do
+      _, stream = bare(:text, "a", value: "ab", comb: 4, multiline: true, font_size: :auto, width: 40, height: 40)
+
+      expect(sizes(stream).uniq).to eq([tenth(10 / [helvetica("a", 1), helvetica("b", 1)].max)])
+    end
+
     it "sizes a select's value and keeps the font's repertoire for editing" do
       pdf = render do
         select "unit", options: %w[kg piece], value: "piece", font_size: :auto, align: :center, color: "#64748B"

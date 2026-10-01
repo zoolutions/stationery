@@ -52,7 +52,8 @@ RSpec.describe Stationery::CLI::Inspect do
       expect(lines).to include(match(/\A      10\.0 +[\d.]+  20 x [\d.]+  \d+ x \d+ px\z/),
                                match(%r{\A      10\.0 +[\d.]+  [\d.]+ x [\d.]+  https://example\.com\z}),
                                match(/\A      10\.0 +[\d.]+  80 x [\d.]+  name  text  "Astrid"\z/),
-                               match(/\A {6}10\.0 +[\d.]+  80 x [\d.]+  price  text  "9 kr"  center  auto  #DC2626\z/))
+                               match(/\A {6}10\.0 +[\d.]+  80 x [\d.]+  price  text  "9 kr"  center  auto  #DC2626\z/),
+                               match(/\A {6}10\.0 +[\d.]+  80 x [\d.]+  qty  text  "2"  12 pt\z/))
       expect(lines).to include(start_with("  Images ("), start_with("  Links ("),
                                "  Fields (x, y, width x height, name, type, value, alignment, size, colour)")
     end
