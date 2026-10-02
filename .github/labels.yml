@@ -200,7 +200,6 @@ paths:
   "lib/stationery/{barcode,zpl}/**/*": barcodes
   "lib/stationery/{barcode,zpl}.rb": barcodes
   "lib/stationery/rails/**/*": rails
-  "lib/stationery/rails.rb": rails
   "lib/stationery/{rails,railtie,preview}.rb": rails
   "lib/stationery/cli/**/*": cli
   "lib/stationery/cli.rb": cli
@@ -237,7 +236,6 @@ paths:
   "spec/stationery/verify_spec.rb": conformance
   "spec/stationery/{barcode,zpl}/**/*": barcodes
   "spec/stationery/{barcode,zpl}_spec.rb": barcodes
-  "spec/stationery/rails_spec.rb": rails
   "spec/stationery/{rails,railtie,preview}_spec.rb": rails
   "spec/stationery/cli/**/*": cli
   "spec/stationery/cli_spec.rb": cli
