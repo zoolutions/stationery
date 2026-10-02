@@ -2,7 +2,7 @@
 description: "Executes the full workflow for an issue or feature, from branch to pull request, with verification at each phase. Use when implementing a GitHub issue or a feature end to end."
 model: opus
 argument-hint: "GitHub issue number/URL, a plans/*.md file, or a feature description"
-allowed-tools: Bash(gh issue view:*), Bash(gh search:*), Bash(gh issue list:*), Bash(gh pr create:*), Bash(gh pr edit:*), Bash(gh pr view:*), Bash(gh pr checks:*), Bash(bundle exec:*), Bash(bin/labels infer:*), Bash(bin/labels sync), Bash(git:*), Bash(pdftoppm:*), Read, Write, Edit, Glob, Grep, Agent
+allowed-tools: Bash(gh issue view:*), Bash(gh search:*), Bash(gh issue list:*), Bash(gh pr create:*), Bash(gh pr edit:*), Bash(gh pr view:*), Bash(gh pr checks:*), Bash(bundle exec:*), Bash(bin/labels infer:*), Bash(bin/labels sync), Bash(bin/labels sync --dry-run), Bash(git:*), Bash(pdftoppm:*), Read, Write, Edit, Glob, Grep, Agent
 ---
 
 # LFG: an issue, end to end
@@ -21,7 +21,7 @@ git switch -c issue-<number>-<slug> origin/main   # or feature/<slug> without an
 ## Phase 1: Understand
 
 1. Read the issue (`gh issue view <n> --json title,body,labels,comments`) or the plan file.
-   **Keep the issue's `type` and `area` labels**: Phase 7 puts them on the pull request. `/lfg` never edits the issue's own labels; the issue's lifecycle is the user's to manage. A `plans/*.md` plan carries them on its `Labels:` line. If there are none, or you were given a description, pin the `type` now (one, per `.github/LABELS.md`); the areas come from the actual changed paths when the PR is opened, via `bin/labels infer`.
+   **Keep the issue's `type` and `area` labels**: Phase 7 puts them on the pull request. `/lfg` never edits the issue's own labels; the issue's lifecycle is the user's to manage. A `plans/*.md` plan carries them on its `Labels:` line. If either group is missing, or you were given a description, pin the `type` now (one, per `.github/LABELS.md`); the areas come from the actual changed paths when the PR is opened, via `bin/labels infer`.
 2. Write the acceptance criteria as **GIVEN / WHEN / THEN**. Do not go on until you can.
 3. State in a sentence what changes for someone who uses the gem, the edge cases the issue does not name, and the code path from the document class to the bytes written.
 4. Make a task list.
@@ -84,7 +84,7 @@ Conventional commits (`feat:`, `fix:`, `perf:`, `docs:`, `test:`, `refactor:`, `
 - **Fable validation**: the verdict line, "Not verified", "Accepted risks";
 - **Deviations & judgment calls**, moved from `implementation-notes.md` (then delete the file), or "None: the plan held."
 
-**Label the PR, every time.** The `--label` flags are the issue's `type` + `area` labels from Phase 1, never a `status` label (`plan`, `epic`, ...). For a description-only run, infer them: one `type` (`.github/LABELS.md` maps conventional-commit prefixes to types) plus `bin/labels infer $(git diff --name-only origin/main...HEAD)`. Exactly one type, at least one area: when `infer` prints nothing (changes confined to unmapped paths such as specs, the README or the Gemfile), pick the closest area by hand — never zero. `gh pr create` fails on a label that doesn't exist on GitHub: run `bin/labels sync` (or label after the fact with `gh pr edit <n> --add-label ...`).
+**Label the PR, every time.** The `--label` flags are the issue's `type` + `area` labels from Phase 1, never a `status` label (`plan`, `epic`, ...). For a description-only run, infer them: one `type` (`.github/LABELS.md` maps conventional-commit prefixes to types) plus `bin/labels infer $(git diff --name-only origin/main...HEAD)`. Exactly one type, at least one area: when `infer` prints nothing (changes confined to unmapped paths such as specs, the README or the Gemfile), pick the closest area by hand — never zero. `gh pr create` fails on a label that doesn't exist on GitHub: run `bin/labels sync` first, then re-run the create (`gh pr edit <n> --add-label ...` labels a PR that is already open, once the labels exist).
 
 The branch is merged when CI is green, with `main` merged in first if it moved (merged, not rebased). Never release: `bin/release` is the maintainer's.
 

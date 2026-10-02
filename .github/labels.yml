@@ -29,7 +29,7 @@ labels:
     description: Refactoring or cleanup that pays down an accepted shortcut
     group: type
   - name: security
-    color: e9e257
+    color: "e9e257"
     description: Vulnerability, hardening, or an authorization correctness fix
     group: type
   - name: documentation
@@ -109,7 +109,7 @@ labels:
     description: Barcodes and ZPL label printing
     group: area
   - name: rails
-    color: 300e84
+    color: "300e84"
     description: The Rails integration and previews
     group: area
   - name: cli
@@ -128,7 +128,7 @@ labels:
     description: Has a /plan body with Context, Decision, Steps and Gates; ready for /lfg
     group: status
   - name: epic
-    color: 5319e7
+    color: "5319e7"
     description: Umbrella item tracking several smaller issues
     group: status
   - name: blocker
@@ -163,7 +163,7 @@ labels:
     description: This issue or pull request already exists
     group: community
   - name: invalid
-    color: e4e669
+    color: "e4e669"
     description: This doesn't seem right
     group: community
   - name: wontfix
@@ -177,39 +177,77 @@ labels:
 # path may match several globs — every matching area applies.
 paths:
   "lib/stationery/{layout,elements}/**/*": layout
+  "lib/stationery/{layout,elements}.rb": layout
   "lib/stationery/{regions,units}.rb": layout
   "lib/stationery/{text,hyphenation}/**/*": text
+  "lib/stationery/{text,hyphenation}.rb": text
   "lib/stationery/shaper.rb": text
   "lib/stationery/fonts/**/*": fonts
   "lib/stationery/pdf/**/*": pdf
   "lib/stationery/{structure,resources,warnings}.rb": pdf
   "lib/stationery/{images,raster,monochrome}/**/*": images
+  "lib/stationery/{images,raster,monochrome}.rb": images
   "lib/stationery/raster.rb": images
   "lib/stationery/svg/**/*": svg
   "lib/stationery/canvas/**/*": canvas
+  "lib/stationery/canvas.rb": canvas
   "lib/stationery/path.rb": canvas
   "lib/stationery/{html,css,markdown,rich}/**/*": markup
+  "lib/stationery/{html,css,markdown,rich}.rb": markup
   "lib/stationery/forms/**/*": forms
   "lib/stationery/tagging/**/*": tagging
   "lib/stationery/verify/**/*": conformance
   "lib/stationery/verify.rb": conformance
   "lib/stationery/{barcode,zpl}/**/*": barcodes
+  "lib/stationery/{barcode,zpl}.rb": barcodes
   "lib/stationery/zpl.rb": barcodes
   "lib/stationery/rails/**/*": rails
+  "lib/stationery/rails.rb": rails
   "lib/stationery/{rails,railtie,preview}.rb": rails
   "lib/stationery/cli/**/*": cli
+  "lib/stationery/cli.rb": cli
   "exe/**/*": cli
   "lib/stationery/testing/**/*": testing
   "lib/stationery/rspec.rb": testing
   "lib/stationery/skill/**/*": dx
   "lib/stationery/skill.rb": dx
   "{benchmark,examples}/**/*": dx
+  "spec/stationery/{layout,elements}/**/*": layout
+  "spec/stationery/{layout,elements}_spec.rb": layout
+  "spec/stationery/{regions,units}_spec.rb": layout
+  "spec/stationery/{text,hyphenation}/**/*": text
+  "spec/stationery/{text,hyphenation}_spec.rb": text
+  "spec/stationery/shaper_spec.rb": text
+  "spec/stationery/fonts/**/*": fonts
+  "spec/stationery/fonts_spec.rb": fonts
+  "spec/stationery/pdf/**/*": pdf
+  "spec/stationery/{structure,resources,warnings}_spec.rb": pdf
+  "spec/stationery/{images,raster,monochrome}/**/*": images
+  "spec/stationery/{images,raster,monochrome}_spec.rb": images
+  "spec/stationery/svg/**/*": svg
+  "spec/stationery/canvas/**/*": canvas
+  "spec/stationery/canvas_spec.rb": canvas
+  "spec/stationery/path_spec.rb": canvas
+  "spec/stationery/{html,css,markdown,rich}/**/*": markup
+  "spec/stationery/forms_spec.rb": forms
+  "spec/stationery/tagging/**/*": tagging
+  "spec/stationery/tagging_spec.rb": tagging
+  "spec/stationery/verify/**/*": conformance
+  "spec/stationery/verify_spec.rb": conformance
+  "spec/stationery/{barcode,zpl}/**/*": barcodes
+  "spec/stationery/{barcode,zpl}_spec.rb": barcodes
+  "spec/stationery/zpl_spec.rb": barcodes
+  "spec/stationery/rails_spec.rb": rails
+  "spec/stationery/{rails,railtie,preview}_spec.rb": rails
+  "spec/stationery/cli/**/*": cli
+  "spec/stationery/cli_spec.rb": cli
+  "spec/stationery/testing/**/*": testing
+  "spec/stationery/skill_spec.rb": dx
   ".github/**/*": devops
   "bin/release": devops
   "rakelib/**/*": devops
-  "Dockerfile*": devops
+  "**/Dockerfile*": devops
   ".claude/**/*": dx
   "{AGENTS,CLAUDE}.md": dx
   "bin/labels": dx
-  "lode/**/*": dx
   "docs/**/*": docs-site
