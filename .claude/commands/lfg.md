@@ -2,7 +2,7 @@
 description: "Executes the full workflow for an issue or feature, from branch to pull request, with verification at each phase. Use when implementing a GitHub issue or a feature end to end."
 model: opus
 argument-hint: "GitHub issue number/URL, a plans/*.md file, or a feature description"
-allowed-tools: Bash(gh issue view:*), Bash(gh search:*), Bash(gh issue list:*), Bash(gh pr create:*), Bash(gh pr view:*), Bash(gh pr checks:*), Bash(bundle exec:*), Bash(git:*), Bash(pdftoppm:*), Read, Write, Edit, Glob, Grep, Agent
+allowed-tools: Bash(gh issue view:*), Bash(gh search:*), Bash(gh issue list:*), Bash(gh pr create:*), Bash(gh pr edit:*), Bash(gh pr view:*), Bash(gh pr checks:*), Bash(bundle exec:*), Bash(bin/labels infer:*), Bash(bin/labels sync), Bash(bin/labels sync --dry-run), Bash(git:*), Bash(pdftoppm:*), Read, Write, Edit, Glob, Grep, Agent
 ---
 
 # LFG: an issue, end to end
@@ -21,6 +21,7 @@ git switch -c issue-<number>-<slug> origin/main   # or feature/<slug> without an
 ## Phase 1: Understand
 
 1. Read the issue (`gh issue view <n> --json title,body,labels,comments`) or the plan file.
+   **Keep the issue's `type` and `area` labels**: Phase 7 puts them on the pull request. `/lfg` never edits the issue's own labels; the issue's lifecycle is the user's to manage. A `plans/*.md` plan carries them on its `Labels:` line. If either group is missing, or you were given a description, pin the `type` now (one, per `.github/LABELS.md`); the areas come from the actual changed paths when the PR is opened, via `bin/labels infer`.
 2. Write the acceptance criteria as **GIVEN / WHEN / THEN**. Do not go on until you can.
 3. State in a sentence what changes for someone who uses the gem, the edge cases the issue does not name, and the code path from the document class to the bytes written.
 4. Make a task list.
@@ -76,12 +77,14 @@ Spawn the `fable-validator` agent (it is pinned to Fable) with the issue, the ac
 
 ## Phase 7: Commit and pull request
 
-Conventional commits (`feat:`, `fix:`, `perf:`, `docs:`, `test:`, `refactor:`, `chore:`), specific files added, no AI attribution. Push and open the pull request with the body in a file (`gh pr create --title "..." --body-file <file>`), so backticks survive. The body has:
+Conventional commits (`feat:`, `fix:`, `perf:`, `docs:`, `test:`, `refactor:`, `chore:`), specific files added, no AI attribution. Push and open the pull request with the body in a file (`gh pr create --title "..." --label <type> --label <area> [--label <area>...] --body-file <file>`), so backticks survive. The body has:
 
 - **Summary**, with `Closes #<n>`;
 - **Test plan**: the checks run and their result, what the rendered pictures showed, the veraPDF rule when one applies;
 - **Fable validation**: the verdict line, "Not verified", "Accepted risks";
 - **Deviations & judgment calls**, moved from `implementation-notes.md` (then delete the file), or "None: the plan held."
+
+**Label the PR, every time.** Exactly one `type` and at least one `area`, never a `status` label (`plan`, `epic`, …). The type is the one from Phase 1 (the issue's, or the one you pinned there). The areas are the issue's or plan's area labels; when it has none, they come from `bin/labels infer $(git diff --name-only origin/main...HEAD)`, and when `infer` prints nothing (only unmapped paths, such as the README or the Gemfile) pick the closest area by hand — never zero. `gh pr create` fails on a label that doesn't exist on GitHub: run `bin/labels sync` first, then re-run the create (`gh pr edit <n> --add-label ...` labels a PR that is already open, once the labels exist).
 
 The branch is merged when CI is green, with `main` merged in first if it moved (merged, not rebased). Never release: `bin/release` is the maintainer's.
 
@@ -97,4 +100,5 @@ End with the 3 to 5 decisions someone must understand to maintain the change (de
 - [ ] Rendered to PNG and looked at, if anything draws differently
 - [ ] `## Unreleased` bullet; README and docs pages updated
 - [ ] `fable-validator` PASS or PASS WITH NOTES, recorded in the body
+- [ ] PR labelled: one `type` + at least one `area`, no `status` (`.github/LABELS.md`)
 - [ ] Pull request body ends with Deviations & judgment calls; close-out delivered

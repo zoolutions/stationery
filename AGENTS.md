@@ -63,6 +63,18 @@ A change to layout is rendered to a picture (`pdftoppm -png -r 72 file.pdf out`)
 - A change in behaviour is named as one. A release gathers them in one bullet, **Behaviour changes**, at the end of its section.
 - When both sides of a merge changed a bullet, `main`'s is kept. After a merge the bullets are read again: a union of both sides can keep the wrong copy.
 
+## Labels
+
+Every pull request carries exactly one `type` label and at least one `area`
+label from `.github/labels.yml`, never a `status` label. `/plan` labels the
+issue, `/lfg` copies the issue's `type` and `area` labels onto the PR (never
+`plan` or another status label). Without an issue, the type comes from the
+change's conventional-commit prefix and the areas from
+`bin/labels infer $(git diff --name-only origin/main...HEAD)`. Labels change in
+the manifest and reach GitHub with `bin/labels sync`, never through the UI.
+Rules: `.github/LABELS.md`. `bin/labels` + `.github/LABELS.md` are the shared
+labels kit (canonical copy in docs-kit): never edit them in place.
+
 ## Releases
 
 Releases are cut by the maintainer with `bin/release` (`bin/release --dry-run` shows what would ship), never with `rake release` by hand and never by an agent without being asked. A release is prepared by a pull request that turns `## Unreleased` into the section of the version and records the metrics baseline. `bin/release`, `rakelib/release.rake` and the shared jobs of `.github/workflows/release.yml` are the zoolutions release kit, synced verbatim from docs-kit (`RELEASE_KIT.md` there): never edit them here; only the `test` and `publish-verify-image` jobs are this repo's.
