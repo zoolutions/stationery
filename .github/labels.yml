@@ -187,7 +187,6 @@ paths:
   "lib/stationery/{structure,resources,warnings}.rb": pdf
   "lib/stationery/{images,raster,monochrome}/**/*": images
   "lib/stationery/{images,raster,monochrome}.rb": images
-  "lib/stationery/raster.rb": images
   "lib/stationery/svg/**/*": svg
   "lib/stationery/canvas/**/*": canvas
   "lib/stationery/canvas.rb": canvas
@@ -200,7 +199,6 @@ paths:
   "lib/stationery/verify.rb": conformance
   "lib/stationery/{barcode,zpl}/**/*": barcodes
   "lib/stationery/{barcode,zpl}.rb": barcodes
-  "lib/stationery/zpl.rb": barcodes
   "lib/stationery/rails/**/*": rails
   "lib/stationery/rails.rb": rails
   "lib/stationery/{rails,railtie,preview}.rb": rails
@@ -218,6 +216,7 @@ paths:
   "spec/stationery/{text,hyphenation}/**/*": text
   "spec/stationery/{text,hyphenation}_spec.rb": text
   "spec/stationery/shaper_spec.rb": text
+  "spec/stationery/shaper_*_spec.rb": text
   "spec/stationery/fonts/**/*": fonts
   "spec/stationery/fonts_spec.rb": fonts
   "spec/stationery/pdf/**/*": pdf
@@ -229,14 +228,15 @@ paths:
   "spec/stationery/canvas_spec.rb": canvas
   "spec/stationery/path_spec.rb": canvas
   "spec/stationery/{html,css,markdown,rich}/**/*": markup
+  "spec/stationery/forms_*_spec.rb": forms
   "spec/stationery/forms_spec.rb": forms
   "spec/stationery/tagging/**/*": tagging
+  "spec/stationery/tagging_*_spec.rb": tagging
   "spec/stationery/tagging_spec.rb": tagging
   "spec/stationery/verify/**/*": conformance
   "spec/stationery/verify_spec.rb": conformance
   "spec/stationery/{barcode,zpl}/**/*": barcodes
   "spec/stationery/{barcode,zpl}_spec.rb": barcodes
-  "spec/stationery/zpl_spec.rb": barcodes
   "spec/stationery/rails_spec.rb": rails
   "spec/stationery/{rails,railtie,preview}_spec.rb": rails
   "spec/stationery/cli/**/*": cli
