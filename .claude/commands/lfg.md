@@ -21,7 +21,7 @@ git switch -c issue-<number>-<slug> origin/main   # or feature/<slug> without an
 ## Phase 1: Understand
 
 1. Read the issue (`gh issue view <n> --json title,body,labels,comments`) or the plan file.
-   **Keep the issue's `type` and `area` labels**: Phase 7 puts them on the pull request. `/lfg` never edits the issue's own labels; the issue's lifecycle is the user's to manage. A `plans/*.md` plan carries them on its `Labels:` line. If there are none, or you were given a description, infer them: one `type` label plus `bin/labels infer <changed paths>` for the areas (`.github/LABELS.md`).
+   **Keep the issue's `type` and `area` labels**: Phase 7 puts them on the pull request. `/lfg` never edits the issue's own labels; the issue's lifecycle is the user's to manage. A `plans/*.md` plan carries them on its `Labels:` line. If there are none, or you were given a description, pin the `type` now (one, per `.github/LABELS.md`); the areas come from the actual changed paths when the PR is opened, via `bin/labels infer`.
 2. Write the acceptance criteria as **GIVEN / WHEN / THEN**. Do not go on until you can.
 3. State in a sentence what changes for someone who uses the gem, the edge cases the issue does not name, and the code path from the document class to the bytes written.
 4. Make a task list.
@@ -84,7 +84,7 @@ Conventional commits (`feat:`, `fix:`, `perf:`, `docs:`, `test:`, `refactor:`, `
 - **Fable validation**: the verdict line, "Not verified", "Accepted risks";
 - **Deviations & judgment calls**, moved from `implementation-notes.md` (then delete the file), or "None: the plan held."
 
-**Label the PR, every time.** The `--label` flags are the issue's `type` + `area` labels from Phase 1, never a `status` label (`plan`, `epic`, ...). For a description-only run, infer them: one `type` (`.github/LABELS.md` maps conventional-commit prefixes to types) plus `bin/labels infer $(git diff --name-only origin/main...HEAD)`. Exactly one type, at least one area. `gh pr create` fails on a label that doesn't exist on GitHub: run `bin/labels sync` (or label after the fact with `gh pr edit <n> --add-label ...`).
+**Label the PR, every time.** The `--label` flags are the issue's `type` + `area` labels from Phase 1, never a `status` label (`plan`, `epic`, ...). For a description-only run, infer them: one `type` (`.github/LABELS.md` maps conventional-commit prefixes to types) plus `bin/labels infer $(git diff --name-only origin/main...HEAD)`. Exactly one type, at least one area: when `infer` prints nothing (changes confined to unmapped paths such as specs, the README or the Gemfile), pick the closest area by hand — never zero. `gh pr create` fails on a label that doesn't exist on GitHub: run `bin/labels sync` (or label after the fact with `gh pr edit <n> --add-label ...`).
 
 The branch is merged when CI is green, with `main` merged in first if it moved (merged, not rebased). Never release: `bin/release` is the maintainer's.
 
