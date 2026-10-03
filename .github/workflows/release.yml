@@ -24,7 +24,7 @@ jobs:
   # ── project-specific ──────────────────────────────────────────────────────
   test:
     name: Test before release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: true
       matrix:
@@ -45,7 +45,7 @@ jobs:
   # `docker run ghcr.io/zoolutions/stationery-verify:<version>` matches the gem.
   publish-verify-image:
     needs: [build, publish-rubygems]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       packages: write

@@ -11,10 +11,10 @@ permissions:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     name: Lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - uses: ruby/setup-ruby@v1
@@ -27,7 +27,7 @@ jobs:
         run: gem build stationery.gemspec --strict
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     name: Ruby ${{ matrix.ruby }}
     strategy:
       fail-fast: false
@@ -36,7 +36,7 @@ jobs:
           - "3.4"
           - "4.0"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - uses: ruby/setup-ruby@v1
@@ -49,10 +49,10 @@ jobs:
         run: bundle exec rake examples
 
   metrics:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     name: Metrics gate
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - uses: ruby/setup-ruby@v1
@@ -63,10 +63,10 @@ jobs:
         run: bundle exec rake metrics
 
   conformance:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     name: PDF/A and PDF/UA (veraPDF)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - uses: ruby/setup-ruby@v1
@@ -96,7 +96,7 @@ jobs:
     runs-on: macos-latest
     name: Readers (macOS, PDFKit)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - uses: ruby/setup-ruby@v1
@@ -111,12 +111,12 @@ jobs:
           ENGINES: qpdf,poppler,mupdf,pdfkit
 
   rails:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     name: Rails
     env:
       BUNDLE_GEMFILE: gemfiles/rails.gemfile
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - uses: ruby/setup-ruby@v1
@@ -127,13 +127,13 @@ jobs:
         run: bundle exec rake spec:rails
 
   docs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     name: Docs site
     defaults:
       run:
         working-directory: docs
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - uses: ruby/setup-ruby@v1
