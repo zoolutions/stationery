@@ -1952,8 +1952,10 @@ non-main Ractor (Ruby 4.0) fills caches of its own. A parsed font never
 changes once it is read, so it can be made shareable and handed to a Ractor
 as it is.
 
-A Ractor can read only what is shareable, so a document class that renders
-inside one is finalized at boot, after its class body has run:
+A Ractor can read only what is shareable, so boot ends with
+`Stationery.finalize!`, which freezes what renders read. The Railtie runs it
+once the app has initialized; a Rails-less app calls it once its setup is
+done:
 
 ```ruby
 class InvoicePdf < Stationery::Document
@@ -1963,22 +1965,30 @@ class InvoicePdf < Stationery::Document
   def initialize(lines) = @lines = lines
   def view_template = @lines.each { |line| text line }
 end
-InvoicePdf.finalize! # its settings are deep-frozen; a subclass has its own
-Stationery.finalize! # Stationery.font_paths frozen, the instrumenter kept
+Stationery.finalize! # outside Rails: font_paths and every document class loaded so far
 
 pdfs = Array.new(4) { |i| Ractor.new(["Invoice #{i}"]) { |lines| InvoicePdf.new(lines).to_pdf } }.map(&:value)
 ```
 
-- `Document.finalize!` makes the class's settings Ractor-shareable, so the
-  blocks of its page templates, headers and footers may not use a local
-  variable from around them, and a `shaper` must be shareable. After it the
-  settings cannot change (a `FrozenError`); a class not finalized renders on
-  the main Ractor as before.
-- `Stationery.finalize!` freezes `Stationery.font_paths` and keeps the
-  instrumenter in use. The Railtie runs it after the app has initialized; a
-  Rails-less app runs it once its setup is done. An instrumenter for renders
-  inside a Ractor must be shareable: a module (`ActiveSupport::Notifications`)
-  or a frozen object.
+- `Stationery.finalize!` freezes `Stationery.font_paths`, keeps the
+  instrumenter in use and finalizes every document class loaded by then,
+  with their subclasses (`Document.finalize!`). In a Rails app with
+  `config.eager_load` (production, and the CI test runs of a Rails 7.1+ app)
+  that is every class under `app/`. A class loaded later (autoloaded in
+  development) or defined after boot is not finalized: it renders on the
+  main Ractor as before, and `InvoicePdf.finalize!` finalizes it.
+- A finalized class's settings cannot change (a `FrozenError`); a subclass
+  has its own. They are made Ractor-shareable as far as what they hold lets
+  them be, and nothing raises: a block of a page template, header or footer
+  that uses an unshareable local from around it, a `shaper` or a `sign` key
+  that is not shareable, is kept as it is, so the class renders on the main
+  Ractor as before and not inside another one.
+  `Ractor.shareable?(InvoicePdf.config)` says whether a Ractor can render it.
+  A String the app gave is copied, not frozen in place, and an object the gem
+  did not build is never frozen.
+- An instrumenter for renders inside a Ractor must be shareable: a module
+  (`ActiveSupport::Notifications`) or a frozen object. Another one is kept,
+  for the main Ractor.
 - What a Ractor is handed (`Ractor.new(lines)`) is copied unless it is
   shareable.
 
