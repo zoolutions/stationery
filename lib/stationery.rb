@@ -206,11 +206,28 @@ require_relative "stationery/document"
 
 # Pure-Ruby PDF documents built from Phlex-style components.
 module Stationery
-  @font_paths = []
+  # Appended to at boot, on the main Ractor (the Railtie, an app's own
+  # setup); finalize! freezes it.
+  @font_paths = [] # rubocop:disable ThreadSafety/MutableClassInstanceVariable
 
   class << self
     # Directories searched for font files; the Railtie appends the app's.
+    # Frozen by finalize!.
     attr_reader :font_paths
+
+    # Ends boot: what the gem holds for every render becomes Ractor-shareable,
+    # so a document class finalized too (Document.finalize!) renders inside
+    # any Ractor. `font_paths` is frozen, as a frozen copy of each directory,
+    # and the instrumenter in use is kept, so one loaded later is not picked
+    # up. Run it once everything that adds a font path has; the Railtie runs
+    # it after the app has initialized. Answers Stationery; running it again
+    # changes nothing.
+    def finalize!
+      # rubocop:disable-next ThreadSafety/ClassInstanceVariable -- written at boot on the main Ractor, before any render
+      @font_paths = @font_paths.map { |path| path.to_s.dup.freeze }.freeze
+      Instrumentation.finalize!
+      self
+    end
   end
   # Names of the font families shipped inside the gem.
   def self.bundled_fonts = Fonts::Bundled.names

@@ -34,14 +34,20 @@ RSpec.describe Stationery::Railtie do
     expect(response.body).to start_with("%PDF")
   end
 
+  it "finalizes Stationery once the app has initialized" do
+    expect(Stationery.font_paths).to be_frozen
+    expect(Ractor.shareable?(Stationery.font_paths)).to be(true) if defined?(Ractor)
+    expect(Stationery.instrumenter).to be(ActiveSupport::Notifications)
+  end
+
   describe "initializers" do
     let(:root) { Dir.mktmpdir }
     let(:fonts) { File.join(root, "vendor/fonts") }
 
-    after do
-      Stationery.font_paths.delete(fonts)
-      FileUtils.remove_entry(root)
-    end
+    # The app above has booted, and so finalized: each example adds its font
+    # paths on a fresh boot of its own.
+    around { |example| BootState.around(&example) }
+    after { FileUtils.remove_entry(root) }
 
     def run_initializer(name, **config)
       options = ActiveSupport::OrderedOptions[config]

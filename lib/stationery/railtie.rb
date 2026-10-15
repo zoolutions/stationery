@@ -32,6 +32,9 @@ module Stationery
       Railtie.add_previews(app.routes) if app.config.stationery.show_previews
     end
 
+    # Once every initializer has added its font paths: see Stationery.finalize!.
+    config.after_initialize { Stationery.finalize! }
+
     def self.add_font_paths(root, dirs)
       dirs.each do |dir|
         path = root.join(dir).to_s
