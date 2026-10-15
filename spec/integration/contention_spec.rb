@@ -8,6 +8,7 @@ RSpec.describe "a full render under contention" do
   before do
     Stationery::Images::Cache.clear
     Stationery::Fonts::Registry.clear
+    Stationery::Store.fetch(:stationery_hyphenation) { Stationery::Memo.new }.clear
   end
 
   let(:subject_call) { -> { CanaryDocuments.pinned { CanaryDocuments::Report.new.to_pdf } } }

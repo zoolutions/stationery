@@ -2,9 +2,15 @@
 
 RSpec.describe Stationery::Store do
   it "builds a value once and hands every later fetch the same object" do
-    built = described_class.fetch(:stationery_spec_store) { Object.new }
+    builds = 0
+    build = proc do
+      builds += 1
+      Object.new
+    end
+    built = described_class.fetch(:stationery_spec_store_once, &build)
 
-    expect(described_class.fetch(:stationery_spec_store) { Object.new }).to equal(built)
+    expect(described_class.fetch(:stationery_spec_store_once, &build)).to equal(built)
+    expect(builds).to eq(1)
   end
 
   it "is Ractor.store_if_absent where Ruby has it", if: defined?(Ractor) && Ractor.respond_to?(:store_if_absent) do

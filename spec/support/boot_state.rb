@@ -15,7 +15,7 @@ module BootState
   ensure
     Stationery.instance_variable_set(:@font_paths, font_paths)
     Stationery::Instrumentation.instance_variable_set(:@instrumenter, instrumenter)
-    configs.each { |document, config| document.instance_variable_set(:@config, config) }
+    configs&.each { |document, config| document.instance_variable_set(:@config, config) }
   end
 
   def self.documents(klass) = klass.subclasses.flat_map { [it, *documents(it)] }

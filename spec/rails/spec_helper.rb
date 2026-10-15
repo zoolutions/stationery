@@ -17,6 +17,9 @@ class StationeryRailsApp < Rails::Application
   config.stationery.preview_paths = [File.expand_path("../fixtures/previews", __dir__)]
 end
 
+require_relative "../support/documents"
+require_relative "../support/fake_shapers"
+
 # Document classes the app has loaded when its boot ends, as config.eager_load
 # loads app/ before the after_initialize hooks run: the Railtie finalizes them.
 # The second holds what a Ractor cannot share (a shaper that records its
@@ -36,7 +39,6 @@ end
 
 StationeryRailsApp.initialize!
 
-require_relative "../support/documents"
 require_relative "../support/pdf_helpers"
 
 class PdfController < ActionController::Base

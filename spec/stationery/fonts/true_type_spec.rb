@@ -148,14 +148,17 @@ RSpec.describe Stationery::Fonts::TrueType do
       it "measures, substitutes and draws #{name} as before" do
         fresh = described_class.new(File.binread(font_path(name)))
         frozen = Ractor.make_shareable(described_class.new(File.binread(font_path(name))))
-        gids = "office AV".each_char.map { |char| fresh.glyph_id(char.ord) }
+        # The Japanese subset has no Latin: its own text, so real glyphs are compared.
+        sample = name == "NotoSansJP-Subset.otf" ? "日本語テキスト" : "office AV"
+        gids = sample.each_char.map { |char| fresh.glyph_id(char.ord) }
         answers = lambda do |ttf|
           [gids.each_cons(2).map { |left, right| ttf.kerning.adjust(left, right) }, ttf.ligatures.substitute(gids),
            ttf.ligatures.substitute(gids, %w[liga onum]),
            gids.map { |gid| ttf.outline(gid).enum_for(:each_segment).to_a }]
         end
 
-        expect(Ractor.shareable?(frozen)).to be(true)
+        expect(gids).to all(be_positive)
+        expect(Ractor.shareable?(fresh)).to be(false) # the deep freeze is what makes it shareable
         expect(answers.call(frozen)).to eq(answers.call(fresh))
       end
     end

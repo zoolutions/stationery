@@ -17,7 +17,12 @@ RSpec.describe "the caches, per Ractor" do
       stationery_fonts: -> { Stationery::Fonts::Registry.load(inter) },
       stationery_images: -> { Stationery::Images.load(image_path("rgb.jpg")) },
       stationery_hyphenation: -> { Stationery::Hyphenation.points("hyphenation", "en") },
-      stationery_previews: -> { Stationery::Preview.all } }
+      stationery_previews: -> { Stationery::Preview.all },
+      stationery_cell_paddings: -> { Stationery::Layout::Table::Cell.new("x", { padding: 4 }).padding },
+      stationery_icc_profile: -> { Stationery::PDF::Conformance.icc_profile },
+      # A Reed–Solomon coder's divisors sit under a key naming its field and first root.
+      Stationery::Barcode::ReedSolomon::QR.instance_variable_get(:@divisors) =>
+        -> { Stationery::Barcode::ReedSolomon::QR.divisor(7) } }
   end
 
   def lock?(value) = value.is_a?(Thread::Mutex) || value.is_a?(Monitor)

@@ -76,7 +76,7 @@ RSpec.describe Stationery, ".finalize!" do
       described_class.finalize!
 
       expect([SpecDocument, parent, child].map(&:config)).to all(be_frozen)
-      expect([parent, child].map { Ractor.shareable?(it.config) }).to eq([true, true])
+      expect([parent, child].map { Ractor.shareable?(it.config) }).to eq([true, true]) if defined?(Ractor)
       expect { child.page(size: :a4) }.to raise_error(FrozenError)
     end
 
@@ -116,7 +116,7 @@ RSpec.describe Stationery, ".finalize!" do
       expect(klass.config).to be_frozen
       expect(klass.config[:shaping][:shaper]).to be(recording)
       expect([recording, recording.calls, draft, $stdout]).to all(satisfy { !it.frozen? })
-      expect(Ractor.shareable?(klass.config)).to be(false)
+      expect(Ractor.shareable?(klass.config)).to be(false) if defined?(Ractor)
       expect(klass.new.to_pdf).to start_with("%PDF")
       expect(recording.texts).to include("Hello", "Draft")
     end

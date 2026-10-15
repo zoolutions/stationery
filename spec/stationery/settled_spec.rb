@@ -40,7 +40,7 @@ RSpec.describe Stationery, ".settled" do
     expect([given, given[:metadata], name, list, list.first]).to all(satisfy { !it.frozen? })
   end
 
-  it "makes plain settings Ractor-shareable" do
+  it "makes plain settings Ractor-shareable", if: defined?(Ractor) do
     region = Stationery::Region.new(slot: :footer, height: nil, gap: 8, on: :all, block: SettledBlocks.page_number)
     settled = described_class.settled({ regions: [region], at: Time.utc(2026, 1, 1), size: [1, +"2"] })
 
@@ -48,14 +48,14 @@ RSpec.describe Stationery, ".settled" do
     expect(settled[:regions].first).to eq(region)
   end
 
-  it "makes a block shareable when it uses nothing unshareable from around it" do
+  it "makes a block shareable when it uses nothing unshareable from around it", if: defined?(Ractor) do
     block = SettledBlocks.page_number
 
     expect(described_class.settled(block)).to be(block)
     expect(Ractor.shareable?(block)).to be(true)
   end
 
-  it "keeps a block that uses an unshareable local as it is" do
+  it "keeps a block that uses an unshareable local as it is", if: defined?(Ractor) do
     draft = +"draft"
     block = SettledBlocks.using(draft)
 
@@ -74,7 +74,7 @@ RSpec.describe Stationery, ".settled" do
     expect { object.call("still works") }.to change(object, :calls).to(["still works"])
   end
 
-  it "answers what is shareable already as it is" do
+  it "answers what is shareable already as it is", if: defined?(Ractor) do
     shareable = Ractor.make_shareable({ page: { size: :a4 } })
 
     expect(described_class.settled(shareable)).to be(shareable)

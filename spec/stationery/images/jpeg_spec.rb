@@ -73,8 +73,8 @@ RSpec.describe Stationery::Images::JPEG do
       expect(described_class::Decoder).to have_received(:new).twice
     end
 
-    # One image is shared by every thread of a Ractor through Images::Cache:
-    # a scale is decoded once, under the image's lock, however many ask.
+    # A decoded image, shared the way a Ractor's Images::Cache shares one,
+    # decodes each scale once, under the image's lock, however many ask.
     it "decodes a scale once however many threads ask for it" do
       image = jpeg("ycc420")
       allow(described_class::Decoder).to receive(:new).and_wrap_original do |build, *args|
