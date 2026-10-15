@@ -13,6 +13,16 @@ RSpec.describe Stationery::CLI do
     expect(described_class.commands).to include("render" => Stationery::CLI::Render)
   end
 
+  it "keeps its commands in a frozen Hash, which registering replaces" do
+    commands = described_class.commands
+    described_class.register("render", Stationery::CLI::Render)
+
+    expect(described_class.commands).to be_frozen
+    expect(described_class.commands).not_to equal(commands)
+    expect(described_class.commands).to eq(commands)
+    expect(Ractor.shareable?(described_class.commands)).to be(true) if defined?(Ractor)
+  end
+
   %w[help --help -h].each do |flag|
     it "prints usage listing every command for #{flag}" do
       expect(start(flag)).to eq(0)

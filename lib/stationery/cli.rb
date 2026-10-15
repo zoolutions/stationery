@@ -18,11 +18,16 @@ module Stationery
     # Raised by a command to fail with a message and exit code 1.
     class Error < StandardError; end
 
+    # Filled as the commands' files load, on the main Ractor; frozen, so a
+    # registration publishes a new Hash.
+    @commands = {}.freeze
+
     class << self
-      def commands = @commands ||= {}
+      attr_reader :commands
 
       def register(name, command)
-        commands[name.to_s] = command
+        # rubocop:disable-next ThreadSafety/ClassInstanceVariable -- written while the commands' files load, on the main Ractor; always a frozen Hash
+        @commands = @commands.merge(name.to_s => command).freeze
       end
 
       def start(argv, out: $stdout, err: $stderr) = new(out:, err:).run(argv.dup)
