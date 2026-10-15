@@ -1,7 +1,11 @@
 # frozen_string_literal: true
 
 require_relative "stationery/version"
+require_relative "stationery/shareable"
 require_relative "stationery/errors"
+require_relative "stationery/store"
+require_relative "stationery/lru"
+require_relative "stationery/memo"
 require_relative "stationery/instrumentation"
 require_relative "stationery/pdf/types"
 require_relative "stationery/pdf/serializer"

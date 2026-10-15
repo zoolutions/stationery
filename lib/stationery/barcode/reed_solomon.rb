@@ -19,15 +19,16 @@ module Stationery
         end
         (255...512).each { |power| @exp[power] = @exp[power - 255] }
         @first_root = first_root
-        @divisors = {}
+        @divisors = :"stationery_reed_solomon_#{polynomial}"
       end
 
       def multiply(a, b) = a.zero? || b.zero? ? 0 : @exp[@log[a] + @log[b]]
 
       # The generator polynomial of `degree`, highest power first and its
-      # leading 1 left out.
+      # leading 1 left out; made once per degree and Ractor (see Store), so
+      # the coder itself never changes and every Ractor can share it.
       def divisor(degree)
-        @divisors[degree] ||= begin
+        Store.fetch(@divisors) { Memo.new }.fetch(degree) do
           result = Array.new(degree, 0)
           result[-1] = 1
           root = @exp[@first_root]
@@ -38,7 +39,7 @@ module Stationery
             end
             root = multiply(root, 2)
           end
-          result
+          result.freeze
         end
       end
 
@@ -54,8 +55,8 @@ module Stationery
         result
       end
 
-      QR = new(0x11D, 0)
-      DATA_MATRIX = new(0x12D, 1)
+      QR = Stationery.shareable(new(0x11D, 0))
+      DATA_MATRIX = Stationery.shareable(new(0x12D, 1))
     end
   end
 end

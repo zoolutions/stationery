@@ -6,12 +6,12 @@ module Stationery
     # read the first time a document draws with it, so requiring the gem
     # never touches the files.
     module Bundled
-      DIR = File.expand_path("data", __dir__)
+      DIR = File.expand_path("data", __dir__).freeze
       DEFAULT = "Inter"
-      FAMILIES = {
+      FAMILIES = Stationery.shareable(
         "Inter" => { regular: "Inter-Regular.ttf", bold: "Inter-Bold.ttf",
                      italic: "Inter-Italic.ttf", bold_italic: "Inter-BoldItalic.ttf" }
-      }.freeze
+      )
 
       def self.names = FAMILIES.keys
 

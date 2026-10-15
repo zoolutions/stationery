@@ -9,8 +9,6 @@ module Stationery
         SIDES = %i[top right bottom left].freeze
         TEXT_OPTIONS = { size: :size, color: :color, weight: :weight, style: :style, font: :family,
                          letter_spacing: :letter_spacing }.freeze
-        BOXES = {} # rubocop:disable Style/MutableConstant
-
         attr_reader :content, :options, :colspan, :rowspan, :tag, :row_tag
 
         # `options` is shared with the other cells of a table, which is why a
@@ -47,11 +45,12 @@ module Stationery
           @natural_width = @min_width = @heights = nil
         end
 
-        # A padding of one number is a box every cell with that number shares:
-        # a long table holds one Array of it, not one per cell.
+        # A padding of one number is a box every cell with that number shares
+        # (one per Ractor, see Store): a long table holds one Array of it, not
+        # one per cell.
         def padding
           @padding ||= if (value = @options[:padding]).is_a?(Numeric)
-                         BOXES[value] ||= Geometry.box(value).freeze
+                         Store.fetch(:stationery_cell_paddings) { Memo.new }.fetch(value) { Geometry.box(value).freeze }
                        else
                          Geometry.box(value)
                        end

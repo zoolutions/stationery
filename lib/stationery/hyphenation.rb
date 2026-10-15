@@ -8,7 +8,7 @@ module Stationery
   #   Stationery::Hyphenation.hyphenate("Silbentrennung", "de") # => ["Sil", "ben", "tren", "nung"]
   #   Stationery::Hyphenation.points("hyphenation", "en")       # => [2, 6]
   module Hyphenation
-    PATTERNS = File.expand_path("hyphenation/patterns", __dir__)
+    PATTERNS = File.expand_path("hyphenation/patterns", __dir__).freeze
 
     # Language tags accepted by `hyphenate:`, mapped to a bundled pattern set.
     LANGUAGES = {
@@ -19,9 +19,7 @@ module Stationery
 
     # Letters kept intact at either end of a word (the pattern sets' own
     # typesetting minimums).
-    MINIMUMS = { "en-us" => [2, 3], "de-1996" => [2, 2], "sv" => [2, 2] }.freeze
-
-    LOCK = Mutex.new
+    MINIMUMS = Stationery.shareable({ "en-us" => [2, 3], "de-1996" => [2, 2], "sv" => [2, 2] })
 
     # One pattern set: the patterns keyed by their letters, the longest
     # pattern's length and the exception list.
@@ -108,10 +106,10 @@ module Stationery
       end
     end
 
+    # The Patterns of a `hyphenate:` value, loaded once per Ractor.
     def patterns(language)
       tag = tag(language)
-      @sets ||= {} # rubocop:disable ThreadSafety/ClassInstanceVariable
-      LOCK.synchronize { @sets[tag] ||= Patterns.new(tag) }
+      Store.fetch(:stationery_hyphenation) { Memo.new }.fetch(tag) { Patterns.new(tag) }
     end
 
     # Indexes where `word` may be broken (before word[index]); an empty

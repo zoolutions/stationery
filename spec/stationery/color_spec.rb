@@ -25,6 +25,9 @@ RSpec.describe Stationery::Color do
     expect(described_class.parse([0, 0, 0, 100]).fill).to eq("0 0 0 1 k")
   end
 
+  # This Ractor's colours parsed from Strings.
+  def memo = described_class.send(:memo)
+
   # Objects made by the block; the first block measured in a process makes one of its own.
   def allocations
     GC.disable
@@ -44,7 +47,7 @@ RSpec.describe Stationery::Color do
   end
 
   it "is not fooled by a String changed after it was parsed" do
-    described_class.instance_variable_get(:@parsed).clear # a full memo would start over on the next miss
+    memo.clear # a full memo would start over on the next miss
     value = +"#000000"
     black = described_class.parse(value)
     value.replace("#FFFFFF")
@@ -56,13 +59,13 @@ RSpec.describe Stationery::Color do
   it "remembers a bounded number of colours" do
     (described_class::MEMO + 10).times { |index| described_class.parse(format("#%06X", index)) }
 
-    expect(described_class.instance_variable_get(:@parsed).size).to be <= described_class::MEMO
+    expect(memo.size).to be <= described_class::MEMO
     expect(described_class.parse("#000001").components).to eq([0.0, 0.0, 1 / 255.0])
   end
 
   it "does not remember what it cannot parse" do
     expect { described_class.parse("#12345") }.to raise_error(ArgumentError, /colour/)
-    expect(described_class.instance_variable_get(:@parsed)).not_to have_key("#12345")
+    expect(memo.key?("#12345")).to be(false)
   end
 
   it "parses the same colour from many threads" do

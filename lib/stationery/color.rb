@@ -8,33 +8,23 @@ module Stationery
     # The colours parsed from Strings that are remembered, by their String:
     # every fill, stroke and run of text names its colour ("#000000"), and
     # parsing it again made eleven objects. Past this many the memo starts
-    # over, as the fonts' memos do.
+    # over, as the fonts' memos do. Each Ractor keeps its own (see Store).
     MEMO = 256
-
-    @parsed = {}
-    @lock = Mutex.new
 
     attr_reader :space, :components, :fill, :stroke
 
     def self.parse(value)
       case value
       when Color then value
-      when String then @parsed[value] || remember(value)
+      when String then memo.fetch(value) { from_hex(value) }
       when Array then from_array(value)
       else invalid(value)
       end
     end
 
-    # A Hash keeps a frozen copy of a String key, so a String changed after
-    # it was parsed does not change what the memo holds.
-    def self.remember(value)
-      color = from_hex(value)
-      @lock.synchronize do
-        @parsed.clear if @parsed.size >= MEMO
-        @parsed[value] ||= color
-      end
-    end
-    private_class_method :remember
+    # This Ractor's colours parsed from Strings (a Memo).
+    def self.memo = Store.fetch(:stationery_colors) { Memo.new(limit: MEMO) }
+    private_class_method :memo
 
     def self.from_hex(value)
       hex = value[HEX, 1] || invalid(value)

@@ -15,20 +15,30 @@ module Stationery
   #     def around_render(_name, params) = I18n.with_locale(params.fetch("locale", I18n.default_locale)) { yield }
   #   end
   class Preview
-    REGISTRY_LOCK = Mutex.new
     HOOKS = %w[around_render].freeze
+
+    # The subclasses defined in one Ractor (see Store), in the order they
+    # were, behind their own lock.
+    class Registry
+      def initialize
+        @classes = []
+        @lock = Mutex.new
+      end
+
+      def <<(subclass) = @lock.synchronize { @classes << subclass }
+      def to_a = @lock.synchronize { @classes.dup }
+    end
 
     class << self
       def inherited(subclass)
         super
-        REGISTRY_LOCK.synchronize { Preview.registry << subclass }
+        Preview.registry << subclass
       end
 
       # Named subclasses with at least one preview; a name defined again (a
       # reloaded file) keeps its latest class.
       def all
-        classes = REGISTRY_LOCK.synchronize { Preview.registry.dup }
-        classes.select { it.name && it.pdfs.any? }.reverse.uniq(&:name).sort_by(&:preview_name)
+        Preview.registry.to_a.select { it.name && it.pdfs.any? }.reverse.uniq(&:name).sort_by(&:preview_name)
       end
 
       # `load`, not `require`: edited previews show up without a restart.
@@ -48,7 +58,7 @@ module Stationery
 
       protected
 
-      def registry = (@registry ||= []) # rubocop:disable ThreadSafety/ClassInstanceVariable
+      def registry = Store.fetch(:stationery_previews) { Registry.new }
 
       private
 
