@@ -15,7 +15,7 @@ GEM
       io-event (~> 1.21)
     benchmark-ips (2.15.1)
     bigdecimal (3.3.1)
-    conformance-kit (0.3.0)
+    conformance-kit (0.4.0)
     console (1.38.0)
       fiber-annotation
       fiber-local (~> 1.1)
@@ -118,7 +118,7 @@ PLATFORMS
 DEPENDENCIES
   async
   benchmark-ips
-  conformance-kit (~> 0.3)
+  conformance-kit (~> 0.4)
   pdf-inspector (~> 1.3)
   pdf-reader (~> 2.12)
   prawn
@@ -143,7 +143,7 @@ CHECKSUMS
   benchmark-ips (2.15.1) sha256=07a1a9f3c6105ecaf68c174fc3fbcddd71a0e9ada6236ae03093a0dcfd812d59
   bigdecimal (3.3.1) sha256=eaa01e228be54c4f9f53bf3cc34fe3d5e845c31963e7fcc5bedb05a4e7d52218
   bundler (4.0.21) sha256=7cbf5499b426076aa16c8d28a59e4c2c3aad5a438402abcd961f0119f29f1dd0
-  conformance-kit (0.3.0) sha256=af261d5eec80b62a20b599706847496bb488ac7b0880e626383af60cd32d6a37
+  conformance-kit (0.4.0) sha256=7062d62794247417a5bbf6563f8ecb6318ae4233fdf4a3e14299192194d3deeb
   console (1.38.0) sha256=35b82f59130e95e9be6b832d9e539c8b3988fc192e4a8e9a86ab4922f44ad5de
   diff-lcs (1.6.2) sha256=9ae0d2cba7d4df3075fe8cd8602a8604993efc0dfa934cff568969efb1909962
   fiber-annotation (0.2.0) sha256=7abfadf1d119f508867d4103bf231c0354d019cc39a5738945dec2edadaf6c03
