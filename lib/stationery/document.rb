@@ -18,15 +18,34 @@ module Stationery
     INFO_KEYS = { title: :Title, author: :Author, subject: :Subject, keywords: :Keywords, creator: :Creator,
                   producer: :Producer }.freeze
 
+    # The settings every document starts from, shareable as they are.
+    @config = Stationery.shareable(
+      { page: { size: :letter, margin: 36 }, families: {}, fallbacks: [], text: {}, metadata: {},
+        templates: [], regions: [], strict: false, tagged: false, incremental: false, images: {},
+        attachments: [], shaping: {}, print: {}, missing_glyphs: :raise }
+    )
+
     class << self
-      def config
-        @config ||= if superclass.respond_to?(:config)
-                      superclass.config.transform_values(&:dup)
-                    else
-                      { page: { size: :letter, margin: 36 }, families: {}, fallbacks: [], text: {}, metadata: {},
-                        templates: [], regions: [], strict: false, tagged: false, incremental: false, images: {},
-                        attachments: [], shaping: {}, print: {}, missing_glyphs: :raise }
-                    end
+      # The class's settings, built when the class is defined: each of its
+      # parent's copied, so a subclass's never reaches the parent, then
+      # changed by the calls of its class body, on the main Ractor. A render
+      # only reads them, and a non-main Ractor can once finalize! has run.
+      attr_reader :config
+
+      def inherited(subclass)
+        super
+        subclass.instance_variable_set(:@config, config.transform_values(&:dup))
+      end
+
+      # Makes the class renderable inside any Ractor: its settings are made
+      # Ractor-shareable (deep-frozen), so the blocks of its page templates,
+      # headers and footers may use no local variable from around them, and
+      # a shaper given to it must be shareable itself. Run once its class
+      # body has, at boot; after it the settings cannot change, and a
+      # subclass has its own. Answers the class.
+      def finalize!
+        Stationery.shareable(config)
+        self
       end
 
       # `size:` is a name of Page::SIZES, [width, height] in points or with
