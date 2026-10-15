@@ -12,7 +12,7 @@ module Stationery
         # The bits still unread when the window is refilled (never more than
         # 16), kept below the next four bytes: the window stays a Fixnum.
         KEEP = 0xFFFF
-        PAD = "\0\0\0\0".b
+        PAD = "\0\0\0\0".b.freeze
 
         def initialize
           start("".b)

@@ -19,7 +19,7 @@ module Stationery
         def trace(path) = Shapes.trace(path, element)
       end
 
-      EMPTY = new([], false, nil).freeze
+      EMPTY = Stationery.shareable(new([], false, nil))
     end
   end
 end

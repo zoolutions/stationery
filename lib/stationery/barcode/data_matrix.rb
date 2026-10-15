@@ -12,7 +12,7 @@ module Stationery
     class DataMatrix
       # Symbol size => [data codewords, error correction codewords, data
       # regions across, modules across a region, interleaved blocks].
-      SIZES = {
+      SIZES = Stationery.shareable(
         10 => [3, 5, 1, 8, 1], 12 => [5, 7, 1, 10, 1], 14 => [8, 10, 1, 12, 1], 16 => [12, 12, 1, 14, 1],
         18 => [18, 14, 1, 16, 1], 20 => [22, 18, 1, 18, 1], 22 => [30, 20, 1, 20, 1], 24 => [36, 24, 1, 22, 1],
         26 => [44, 28, 1, 24, 1], 32 => [62, 36, 2, 14, 1], 36 => [86, 42, 2, 16, 1], 40 => [114, 48, 2, 18, 1],
@@ -20,7 +20,7 @@ module Stationery
         72 => [368, 144, 4, 16, 4], 80 => [456, 192, 4, 18, 4], 88 => [576, 224, 4, 20, 4],
         96 => [696, 272, 4, 22, 4], 104 => [816, 336, 4, 24, 6], 120 => [1050, 408, 6, 18, 6],
         132 => [1304, 496, 6, 20, 8], 144 => [1558, 620, 6, 22, 10]
-      }.freeze
+      )
       PAD = 129
       UPPER_SHIFT = 235
       QUIET = 1

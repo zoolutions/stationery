@@ -15,8 +15,9 @@ module Stationery
                   "cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a", "OFL.txt"].freeze
       LIBERATION = "https://github.com/liberationfonts/liberation-fonts/files/7261482/" \
                    "liberation-fonts-ttf-2.1.5.tar.gz#liberation-fonts-ttf-2.1.5"
-      LIBERATION_OFL = ["#{LIBERATION}/LICENSE",
-                        "93fed46019c38bbe566b479d22148e2e8a1e85ada614accb0211c37b2c61c19b", "OFL.txt"].freeze
+      LIBERATION_OFL = Stationery.shareable(["#{LIBERATION}/LICENSE",
+                                             "93fed46019c38bbe566b479d22148e2e8a1e85ada614accb0211c37b2c61c19b",
+                                             "OFL.txt"])
       LIBERATION_LICENSE = 'OFL-1.1, Reserved Font Name "Liberation"'
 
       # { style => [url, sha, "Family-Style.ttf"] } with the URL built from the file name.
@@ -90,7 +91,7 @@ module Stationery
                             italic: "605c01c711b44480a7508d349dfbf3264e81fa43d69e61cfa7d10b86e764c4d1",
                             bold_italic: "79451f3c09fe25116098853b7a2ca6e2436220ccc11af022979adbcf195be130")
         )
-      ].freeze
+      ].map { Stationery.shareable(it) }.freeze
 
       def self.fetch(key)
         PACKS.find { |pack| pack.key.to_s == key.to_s } ||

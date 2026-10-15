@@ -23,8 +23,8 @@ module Stationery
       # How far over a limit the rows measured so far must be before the rest
       # is left unmeasured: more than any rounding in their sum.
       SLACK = 0.001
-      DEFAULT_CELL = { padding: 5, borders: %i[top right bottom left], border_width: 0.5,
-                       border_color: "#000000" }.freeze
+      DEFAULT_CELL = Stationery.shareable({ padding: 5, borders: %i[top right bottom left], border_width: 0.5,
+                                            border_color: "#000000" })
 
       # `tag` is the Table element its fragments share; a `continued` fragment
       # repeats header rows already read on an earlier page.

@@ -9,8 +9,8 @@ module Stationery
     # them with `text` when they are wanted).
     class EAN13
       L = %w[0001101 0011001 0010011 0111101 0100011 0110001 0101111 0111011 0110111 0001011].freeze
-      R = L.map { |code| code.tr("01", "10") }.freeze
-      G = R.map(&:reverse).freeze
+      R = Stationery.shareable(L.map { |code| code.tr("01", "10") })
+      G = Stationery.shareable(R.map(&:reverse))
       # Which of L and G the six digits on the left use, by the first digit.
       PARITY = %w[LLLLLL LLGLGG LLGGLG LLGGGL LGLLGG LGGLLG LGGGLL LGLGLG LGLGGL LGGLGL].freeze
       QUIET = 11

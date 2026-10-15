@@ -12,7 +12,7 @@ module Stationery
     # object set so far and drops it, so objects leave in the order they were
     # flushed and the first bytes leave before the last page is assembled.
     class Writer
-      HEADER = "%PDF-1.7\n%\xE2\xE3\xCF\xD3\n".b
+      HEADER = "%PDF-1.7\n%\xE2\xE3\xCF\xD3\n".b.freeze
       WRITTEN = Object.new.freeze
 
       # `encryption` (an Encryption::StandardSecurity) encrypts every string

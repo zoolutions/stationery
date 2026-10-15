@@ -17,9 +17,9 @@ module Stationery
       # class declares it.
       PDF_ONLY = %i[sign encrypt conformance attachments print tagged page_labels xmp factur_x incremental
                     missing_glyphs object_streams].freeze
-      GREY = "\x01-\xFE".b
-      DARK = "\x00-\x7F".b
-      LIGHT = "\x80-\xFF".b
+      GREY = "\x01-\xFE".b.freeze
+      DARK = "\x00-\x7F".b.freeze
+      LIGHT = "\x80-\xFF".b.freeze
 
       def self.refuse(options, output = "to_png")
         key = options.keys.first

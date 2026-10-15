@@ -10,8 +10,8 @@ module Stationery
     # written unfiltered, which deflate squeezes well enough for pages that
     # are mostly flat colour, and much faster in Ruby than a filter.
     module PNG
-      SIGNATURE = "\x89PNG\r\n\x1A\n".b
-      NO_FILTER = "\x00".b
+      SIGNATURE = "\x89PNG\r\n\x1A\n".b.freeze
+      NO_FILTER = "\x00".b.freeze
 
       module_function
 

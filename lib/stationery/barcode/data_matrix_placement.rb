@@ -9,7 +9,7 @@ module Stationery
       # where a stroke meets the edge, and the fixed pattern in the corner
       # left over.
       class Placement
-        UTAH = [[-2, -2], [-2, -1], [-1, -2], [-1, -1], [-1, 0], [0, -2], [0, -1], [0, 0]].freeze
+        UTAH = Stationery.shareable([[-2, -2], [-2, -1], [-1, -2], [-1, -1], [-1, 0], [0, -2], [0, -1], [0, 0]])
 
         attr_reader :grid
 

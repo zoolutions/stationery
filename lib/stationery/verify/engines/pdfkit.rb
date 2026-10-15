@@ -8,7 +8,7 @@ module Stationery
       class Pdfkit < Engine
         NAME = "pdfkit"
         INSTALL = "macOS only: xcode-select --install"
-        SCRIPT = File.expand_path("../scripts/pdfkit.swift", __dir__)
+        SCRIPT = File.expand_path("../scripts/pdfkit.swift", __dir__).freeze
 
         def available? = RUBY_PLATFORM.include?("darwin") && !Command.which("swift").nil?
         def version = "macOS #{run("sw_vers", "-productVersion").stdout.strip}"

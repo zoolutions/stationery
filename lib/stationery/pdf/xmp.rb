@@ -11,7 +11,7 @@ module Stationery
     # ids, so two renders of one document are byte-identical.
     module XMP
       PACKET_ID = "W5M0MpCehiHzreSzNTczkc9d"
-      PADDING = "#{" " * 63}\n" * 32 # 2 KB of whitespace, as the spec suggests
+      PADDING = ("#{" " * 63}\n" * 32).freeze # 2 KB of whitespace, as the spec suggests
       DC = "http://purl.org/dc/elements/1.1/"
       XMP_NS = "http://ns.adobe.com/xap/1.0/"
       PDF_NS = "http://ns.adobe.com/pdf/1.3/"

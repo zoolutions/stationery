@@ -8,7 +8,7 @@ module Stationery
       # row links to the entry's anchor once that anchor has painted. Tagged,
       # it is a TOCI holding the title as a Link and the number as a Reference.
       class Entry < Node
-        LEADERS = { dots: { dash: [0, 3], cap: :round, width: 1 }, line: { width: 0.5 } }.freeze
+        LEADERS = Stationery.shareable({ dots: { dash: [0, 3], cap: :round, width: 1 }, line: { width: 0.5 } })
 
         def initialize(entry, context:, options:, slot:)
           super()

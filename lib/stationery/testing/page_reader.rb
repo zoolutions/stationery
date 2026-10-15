@@ -15,7 +15,7 @@ module Stationery
                  set_text_matrix_and_text_line_matrix move_to_start_of_next_line set_text_leading
                  set_character_spacing set_word_spacing set_text_rise set_horizontal_text_scaling
                  set_text_rendering_mode].freeze
-      UTF16_BOM = "\xFE\xFF".b
+      UTF16_BOM = "\xFE\xFF".b.freeze
       SUBSET = /\A[A-Z]{6}\+/
       # A gap wider than this share of the size is a space between words;
       # one wider than the size itself starts a new run.

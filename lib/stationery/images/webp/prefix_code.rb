@@ -17,7 +17,7 @@ module Stationery
         # The order the lengths of the code-length code are stored in.
         LENGTH_ORDER = [17, 18, 0, 1, 2, 3, 4, 5, 16, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].freeze
         # Extra bits and base of the repeat codes 16, 17 and 18.
-        REPEATS = [[2, 3], [3, 3], [7, 11]].freeze
+        REPEATS = Stationery.shareable([[2, 3], [3, 3], [7, 11]])
 
         module_function
 

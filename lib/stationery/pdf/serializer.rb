@@ -14,7 +14,7 @@ module Stationery
     module Serializer
       NAME_ESCAPE = %r{[^\x21-\x7E]|[#%()/<>\[\]{}]}n
       LITERAL_ESCAPE = /[\\()\r]/n
-      UTF16_BOM = "\xFE\xFF".b
+      UTF16_BOM = "\xFE\xFF".b.freeze
       # Below it a Float times 10,000 is off by less than TIE / 8, so which
       # way it rounds is certain unless it is within TIE of a half.
       FAST_BELOW = 100_000.0

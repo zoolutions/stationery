@@ -15,8 +15,8 @@ module Stationery
   module Monochrome
     DITHERS = %i[floyd_steinberg ordered threshold].freeze
     DEFAULTS = { dpi: 203, snap: false, threshold: 0.5, dither: :floyd_steinberg }.freeze
-    ACCEPTED = { dpi: "a number above 0", snap: "true or false", threshold: "a number from 0 to 1",
-                 dither: DITHERS.map(&:inspect).join(", ").sub(/, (?=[^,]*\z)/, " or ") }.freeze
+    ACCEPTED = Stationery.shareable({ dpi: "a number above 0", snap: "true or false", threshold: "a number from 0 to 1",
+                                      dither: DITHERS.map(&:inspect).join(", ").sub(/, (?=[^,]*\z)/, " or ") })
 
     # What a monochrome render is asked for. `dot` is the size of one of the
     # printer's dots in points.

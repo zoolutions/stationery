@@ -8,7 +8,7 @@ module Stationery
       # AES as PDF uses it: object data is CBC with a random IV in front and
       # PKCS#5 padding; key material (UE, OE, Perms) is unpadded.
       module AES
-        ZERO_IV = ("\0" * 16).b
+        ZERO_IV = ("\0" * 16).b.freeze
 
         module_function
 

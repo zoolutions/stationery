@@ -10,20 +10,20 @@ module Stationery
     # conformant raises (ArgumentError for options that contradict the level,
     # ConformanceError for content), so a file is never mislabelled.
     class Conformance
-      LEVELS = {
+      LEVELS = Stationery.shareable(
         pdf_a2b: { standard: :pdf_a, part: 2, conformance: "B", label: "PDF/A-2b" },
         pdf_a3b: { standard: :pdf_a, part: 3, conformance: "B", label: "PDF/A-3b" },
         pdf_ua1: { standard: :pdf_ua, part: 1, label: "PDF/UA-1" }
-      }.freeze
+      )
       PDFA_ID = "http://www.aiim.org/pdfa/ns/id/"
       PDFUA_ID = "http://www.aiim.org/pdfua/ns/id/"
       # PDF/A knows its own schema; PDF/UA's has to be described to it.
-      PDFUA_SCHEMA = {
+      PDFUA_SCHEMA = Stationery.shareable(
         name: "PDF/UA identification schema", uri: PDFUA_ID, prefix: "pdfuaid",
         properties: [{ name: "part", type: "Integer", category: "internal",
                        description: "The part of ISO 14289 the document conforms to" }]
-      }.freeze
-      ICC_PROFILE = File.expand_path("icc/sRGB2014.icc", __dir__)
+      )
+      ICC_PROFILE = File.expand_path("icc/sRGB2014.icc", __dir__).freeze
       OUTPUT_CONDITION = "sRGB IEC61966-2.1"
       PRINT = 4
       CMYK_OPERATOR = /^(?:-?[\d.]+ ){4}[kK]$/
@@ -37,6 +37,10 @@ module Stationery
       attr_reader :levels, :missing_glyphs
 
       def self.label(level) = LEVELS.dig(level.to_sym, :label) || level.to_s
+
+      # The bytes of the sRGB profile every PDF/A file embeds, read once per
+      # Ractor (see Store).
+      def self.icc_profile = Store.fetch(:stationery_icc_profile) { File.binread(ICC_PROFILE).freeze }
 
       # The Conformance for `levels` (a Symbol, an Array or nil); nil without
       # any. `missing_glyphs:` is checked even then.
@@ -107,7 +111,7 @@ module Stationery
       def catalog_entries(writer)
         return {} unless pdf_a?
 
-        profile = writer.add(Stream.new(File.binread(ICC_PROFILE), { N: 3 }))
+        profile = writer.add(Stream.new(Conformance.icc_profile, { N: 3 }))
         { OutputIntents: [{ Type: :OutputIntent, S: :GTS_PDFA1, DestOutputProfile: profile,
                             OutputConditionIdentifier: TextString.new(OUTPUT_CONDITION),
                             Info: TextString.new(OUTPUT_CONDITION) }] }

@@ -19,7 +19,7 @@ module Stationery
         { engine: "mupdf", pattern: /\Awarning: ICC support is not available\z/,
           why: "Debian's mutool (mupdf-tools, in the verify image) is built without colour management and says so " \
                "before it opens any file, even one that is not a PDF." }
-      ].freeze
+      ].map { Stationery.shareable(it) }.freeze
 
       def self.allows?(entries, engine, message)
         entries.any? { |entry| entry[:engine] == engine && entry[:pattern].match?(message) }

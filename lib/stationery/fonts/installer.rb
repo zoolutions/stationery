@@ -9,7 +9,7 @@ module Stationery
     # `force:`. Development-time only; documents never download fonts.
     class Installer
       # Fetches an https URL, following up to five redirects.
-      HTTP = lambda do |url, redirects = 5|
+      HTTP = Stationery.shareable(lambda do |url, redirects = 5|
         require "net/http"
         uri = URI(url)
         raise Error, "refusing to download over #{uri.scheme}: #{url} (https only)" unless uri.scheme == "https"
@@ -23,7 +23,7 @@ module Stationery
           HTTP.call(uri.merge(response["location"]).to_s, redirects - 1)
         else raise Error, "HTTP #{response.code} fetching #{url}"
         end
-      end
+      end)
 
       attr_reader :into
 

@@ -16,14 +16,14 @@ module Stationery
           dl dt dd center details summary form fieldset
         ].freeze
         HEADINGS = %w[h1 h2 h3 h4 h5 h6].freeze
-        MARKS = {
+        MARKS = Stationery.shareable(
           "strong" => { bold: true }, "b" => { bold: true },
           "em" => { italic: true }, "i" => { italic: true },
           "u" => { underline: true }, "ins" => { underline: true },
           "s" => { strike: true }, "del" => { strike: true }, "strike" => { strike: true },
           "code" => { code: true }, "kbd" => { code: true }, "samp" => { code: true }, "tt" => { code: true },
           "sub" => { script: :sub }, "sup" => { script: :sup }
-        }.freeze
+        )
         ALIGN = /\A\s*(left|center|right|justify)\s*\z/i
         # What makes a container a block of its own instead of flattening into its parent.
         BOXED = %i[background padding padding_top padding_right padding_bottom padding_left margin margin_top

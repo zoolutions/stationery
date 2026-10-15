@@ -47,7 +47,7 @@ module Stationery
         @unsupported = unsupported
       end
 
-      EMPTY = new([], []).freeze
+      EMPTY = Stationery.shareable(new([], []))
 
       def empty? = @rules.empty?
 

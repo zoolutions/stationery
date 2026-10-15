@@ -10,7 +10,7 @@ module Stationery
       class Pdfjs < Engine
         NAME = "pdfjs"
         INSTALL = "npm i pdfjs-dist (STATIONERY_PDFJS names its directory)"
-        SCRIPT = File.expand_path("../scripts/pdfjs.mjs", __dir__)
+        SCRIPT = File.expand_path("../scripts/pdfjs.mjs", __dir__).freeze
         RESOLVE = "console.log(require('path').dirname(require.resolve('pdfjs-dist/package.json')))"
 
         def available? = !directory.nil?

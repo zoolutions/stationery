@@ -91,7 +91,7 @@ module Stationery
         end
       end
 
-      PASS = ->(_element = nil, &block) { block.call }
+      PASS = Stationery.shareable(->(_element = nil, &block) { block.call })
 
       private
 

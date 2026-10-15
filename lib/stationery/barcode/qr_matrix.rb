@@ -18,7 +18,7 @@ module Stationery
           ->(x, y) { (((x * y) % 2) + ((x * y) % 3)).zero? },
           ->(x, y) { (((x * y) % 2) + ((x * y) % 3)).even? },
           ->(x, y) { (((x + y) % 2) + ((x * y) % 3)).even? }
-        ].freeze
+        ].map { Stationery.shareable(it) }.freeze
 
         attr_reader :size, :modules, :mask
 

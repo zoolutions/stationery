@@ -8,7 +8,7 @@ module Stationery
       class Pdfium < Engine
         NAME = "pdfium"
         INSTALL = "pip install pypdfium2 (STATIONERY_PYTHON names the Python that has it)"
-        SCRIPT = File.expand_path("../scripts/pdfium.py", __dir__)
+        SCRIPT = File.expand_path("../scripts/pdfium.py", __dir__).freeze
         VERSION = "import pypdfium2.version as v; print(v.PYPDFIUM_INFO, v.PDFIUM_INFO)"
 
         # -P everywhere: Python loads no module from beside the script or from

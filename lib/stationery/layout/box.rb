@@ -19,8 +19,8 @@ module Stationery
     class Box < Node
       include Wrapping
 
-      BORDER = { width: 1, color: "#000000", sides: %i[top right bottom left] }.freeze
-      SHADOW = { offset: [0, 4], blur: 8, color: "#000000", opacity: 0.15 }.freeze
+      BORDER = Stationery.shareable({ width: 1, color: "#000000", sides: %i[top right bottom left] })
+      SHADOW = Stationery.shareable({ offset: [0, 4], blur: 8, color: "#000000", opacity: 0.15 })
       SHADOW_LAYERS = 8
 
       attr_reader :content, :width_spec

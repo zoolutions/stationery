@@ -20,10 +20,10 @@ module Stationery
       # value sits, its colour, and the bounds of `font_size: :auto` or `:fit`.
       BOUNDS = %i[min_font_size max_font_size].freeze
       STYLE = [:align, :color, *BOUNDS].freeze
-      OPTIONS = {
+      OPTIONS = Stationery.shareable(
         text: [:multiline, :max_length, :comb, *STYLE], checkbox: [], radio: %i[checked],
         select: [:options, :editable, *STYLE], signature: %i[label]
-      }.freeze
+      )
       VARIABLE_TEXT = %i[text select].freeze
       # The /Q (quadding) of each `align:` (PDF 32000-1, 12.7.3.3).
       ALIGNMENTS = { left: 0, center: 1, right: 2 }.freeze

@@ -16,7 +16,7 @@ module Stationery
         # restart marker or a fill byte.
         MARKER = /\xFF[^\x00\xD0-\xD7\xFF]/n
         RESTART = /\xFF[\xD0-\xD7]/n
-        STUFFED = "\xFF\x00".b
+        STUFFED = "\xFF\x00".b.freeze
         ZIGZAG = Decoder::ZIGZAG
 
         def initialize(decoder, components, restart, progressive:)

@@ -13,11 +13,11 @@ module Stationery
       class StandardSecurity
         PERMISSIONS = { print: 3, modify: 4, copy: 5, annotate: 6, fill_forms: 9, extract_accessible: 10,
                         assemble: 11, print_high: 12 }.freeze
-        ALGORITHMS = {
+        ALGORITHMS = Stationery.shareable(
           aes_256: { V: 5, R: 6, Length: 256, CFM: :AESV3, key: 32 },
           aes_128: { V: 4, R: 4, Length: 128, CFM: :AESV2, key: 16 },
           rc4_128: { V: 2, R: 3, Length: 128 }
-        }.freeze
+        )
 
         # Checks and normalizes the options without deriving any keys.
         def self.options(owner_password:, user_password: "", permissions: PERMISSIONS.keys, algorithm: :aes_256)

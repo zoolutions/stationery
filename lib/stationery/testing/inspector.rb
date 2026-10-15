@@ -14,7 +14,7 @@ module Stationery
     # `password:` opens an encrypted one. Needs the pdf-reader gem, loaded on
     # first use.
     class Inspector
-      UTF16_BOM = "\xFE\xFF".b
+      UTF16_BOM = "\xFE\xFF".b.freeze
       # id-aa-signatureTimeStampToken: a signature's RFC 3161 timestamp.
       TIMESTAMP_TOKEN = "1.2.840.113549.1.9.16.2.14"
       XMP_PROPERTY = %r{^\s*<((?!rdf:)[\w.-]+:[\w.-]+)>(.*?)</\1>$}

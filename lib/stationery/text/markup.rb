@@ -15,13 +15,13 @@ module Stationery
     class Markup
       TAG = %r{<(/?)([a-zA-Z][a-zA-Z0-9]*)((?:\s+[a-zA-Z_:-]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*/?>}
       ATTRIBUTE = /([a-zA-Z_:-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>"']+))/
-      STYLES = {
+      STYLES = Stationery.shareable(
         "b" => { weight: :bold }, "strong" => { weight: :bold },
         "i" => { style: :italic }, "em" => { style: :italic },
         "u" => { underline: true },
         "strikethrough" => { strikethrough: true }, "s" => { strikethrough: true }, "del" => { strikethrough: true },
         "sub" => { script: :sub }, "sup" => { script: :sup }
-      }.freeze
+      )
 
       def self.parse(source, style)
         new(source, style).runs

@@ -20,7 +20,7 @@ module Stationery
       DEFAULT_FILENAME = "factur-x.xml"
       DESCRIPTION = "Factur-X Invoice"
       ROOTS = ["<?xml", "<rsm:CrossIndustryInvoice"].freeze
-      SCHEMA = {
+      SCHEMA = Stationery.shareable(
         name: "Factur-X PDFA Extension Schema", uri: NAMESPACE, prefix: "fx",
         properties: [
           { name: "DocumentFileName", type: "Text", category: "external",
@@ -32,7 +32,7 @@ module Stationery
           { name: "ConformanceLevel", type: "Text", category: "external",
             description: "The conformance level of the embedded XML document" }
         ].freeze
-      }.freeze
+      )
 
       attr_reader :xml, :profile, :filename, :version
 

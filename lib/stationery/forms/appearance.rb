@@ -14,7 +14,7 @@ module Stationery
       PADDING = 2
       LEADING = 1.15
       # The check mark's corners in the unit square (y down) and its stroke.
-      CHECK = { points: [[0.22, 0.52], [0.42, 0.72], [0.78, 0.28]], stroke: 0.12 }.freeze
+      CHECK = Stationery.shareable({ points: [[0.22, 0.52], [0.42, 0.72], [0.78, 0.28]], stroke: 0.12 })
       DOT = 0.45
       # What /DA and the appearance say when the value is black.
       BLACK = "0 g"

@@ -5,7 +5,7 @@ module Stationery
     class Renderer
       # Writes inlines into a Text::RunsBuilder, nesting one builder call per mark.
       class Inlines
-        STYLE_STEPS = {
+        STYLE_STEPS = Stationery.shareable(
           weight: ->(value) { [:b] if value == :bold },
           style: ->(value) { [:i] if value == :italic },
           underline: ->(value) { [:u] if value },
@@ -13,15 +13,15 @@ module Stationery
           color: ->(value) { [:color, value] if value },
           size: ->(value) { [:size, value] if value },
           font: ->(value) { [:font, value] if value }
-        }.freeze
+        )
 
         # A true mark switches the style on, a false one (from CSS) switches it off again.
-        MARK_STEPS = {
+        MARK_STEPS = Stationery.shareable(
           bold: { true => [[:b]], false => [[:with, { weight: :regular }]] },
           italic: { true => [[:i]], false => [[:with, { style: :normal }]] },
           underline: { true => [[:u]], false => [[:with, { underline: false }]] },
           strike: { true => [[:strikethrough]], false => [[:with, { strikethrough: false }]] }
-        }.freeze
+        )
 
         def initialize(runs, styles, links = Links.new(:all, nil))
           @runs = runs

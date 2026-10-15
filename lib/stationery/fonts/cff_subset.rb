@@ -10,7 +10,7 @@ module Stationery
     # layout they describe. Charstrings are not interpreted: a deprecated
     # `seac` accent in a drawn glyph would lose its base and accent glyphs.
     module CffSubset
-      ENDCHAR = "\x0E".b
+      ENDCHAR = "\x0E".b.freeze
 
       module_function
 

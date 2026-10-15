@@ -15,8 +15,8 @@ module Stationery
   class Skill
     NAME = "stationery"
     GENERATOR = "stationery skill"
-    TEMPLATES = File.expand_path("skill", __dir__)
-    ROOT = File.expand_path("../..", __dir__)
+    TEMPLATES = File.expand_path("skill", __dir__).freeze
+    ROOT = File.expand_path("../..", __dir__).freeze
     DOCS = "https://stationery.zoolutions.llc"
 
     # The version a SKILL.md was written for, when stationery wrote it.

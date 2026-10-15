@@ -20,13 +20,13 @@ module Stationery
       HEADINGS = %w[h1 h2 h3 h4 h5 h6].freeze
       SECTIONS = %w[thead tbody tfoot].freeze
       BLOCKS = (CLOSES_P + SECTIONS + %w[tr td th caption]).freeze
-      IMPLIED = {
+      IMPLIED = Stationery.shareable(
         "li" => [%w[li], %w[ul ol]],
         "dt" => [%w[dt dd], %w[dl]], "dd" => [%w[dt dd], %w[dl]],
         "td" => [%w[td th], %w[tr table]], "th" => [%w[td th], %w[tr table]],
         "tr" => [%w[tr], %w[table]],
         "thead" => [SECTIONS, %w[table]], "tbody" => [SECTIONS, %w[table]], "tfoot" => [SECTIONS, %w[table]]
-      }.freeze
+      )
 
       # `css` is the Css::Report unsupported styles are told to.
       def self.parse(tokens, nesting = Rich::Nesting.new, css: nil)

@@ -3,8 +3,8 @@
 module Stationery
   # JPEG, PNG and lossless WebP images, embedded as image XObjects.
   module Images
-    PNG_SIGNATURE = "\x89PNG\r\n\x1A\n".b
-    JPEG_SIGNATURE = "\xFF\xD8".b
+    PNG_SIGNATURE = "\x89PNG\r\n\x1A\n".b.freeze
+    JPEG_SIGNATURE = "\xFF\xD8".b.freeze
     WEBP_SIGNATURE = /\ARIFF.{4}WEBP/mn
     UNSUPPORTED = { "GIF8" => "GIF", "II*\0" => "TIFF", "MM\0*" => "TIFF", "BM" => "BMP" }.freeze
 

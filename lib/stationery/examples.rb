@@ -5,7 +5,7 @@ module Stationery
   # each is and what each shows. `stationery examples` lists them and the
   # skill (see Skill) names them.
   module Examples
-    DIR = File.expand_path("../../examples", __dir__)
+    DIR = File.expand_path("../../examples", __dir__).freeze
 
     module_function
 

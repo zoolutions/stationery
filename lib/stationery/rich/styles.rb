@@ -7,7 +7,7 @@ module Stationery
     module Styles
       HEADING_SCALES = [2.0, 1.6, 1.3, 1.1, 1.0, 0.9].freeze
 
-      DEFAULTS = {
+      DEFAULTS = Stationery.shareable(
         **HEADING_SCALES.each_with_index.to_h do |scale, index|
           [:"h#{index + 1}", { scale:, weight: :bold, keep_with_next: true }]
         end,
@@ -22,7 +22,7 @@ module Stationery
         ol: {},
         li: {},
         img: { max_width: nil, float_margin: 8 }
-      }.freeze
+      )
 
       module_function
 

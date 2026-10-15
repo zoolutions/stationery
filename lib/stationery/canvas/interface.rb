@@ -29,7 +29,7 @@ module Stationery
       include Debug
 
       # The callable #tag_runs hands its block where nothing is marked.
-      PASS = ->(_element = nil, &block) { block.call }
+      PASS = Stationery.shareable(->(_element = nil, &block) { block.call })
 
       # The render's collector (nil on a bare canvas), for what a node
       # notices only while painting, such as an oversized image.

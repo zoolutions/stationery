@@ -19,7 +19,7 @@ module Stationery
                  set_character_spacing set_word_spacing set_text_rise set_horizontal_text_scaling
                  set_text_rendering_mode].freeze
 
-      UTF16_BOM = "\xFE\xFF".b
+      UTF16_BOM = "\xFE\xFF".b.freeze
       # The width of a character in a sequence that moves the pen nowhere, in
       # parts of its size.
       NOMINAL = 0.5

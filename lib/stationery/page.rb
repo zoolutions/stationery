@@ -22,13 +22,13 @@ module Stationery
     # Portrait, in points. Envelopes (dl, c5, c6) are written the ISO way,
     # short edge first: `layout: :landscape` is the side the address is on.
     # Label stock is width by height as its name has it.
-    SIZES = {
+    SIZES = Stationery.shareable(
       a3: [841.89, 1190.55], a4: [595.28, 841.89], a5: [419.53, 595.28], a6: [297.64, 419.53], a7: [209.76, 297.64],
       b5: [498.9, 708.66], letter: [612, 792], legal: [612, 1008], tabloid: [792, 1224],
       dl: [311.81, 623.62], c5: [459.21, 649.13], c6: [323.15, 459.21],
       label_4x6: [288, 432], label_4x3: [288, 216], label_4x2: [288, 144],
       label_100x150: [283.46, 425.2], label_100x50: [283.46, 141.73]
-    }.freeze
+    )
 
     attr_reader :size, :margin, :reserve, :content, :annotations, :anchors, :template_anchors, :slots,
                 :resource_names, :body, :background
