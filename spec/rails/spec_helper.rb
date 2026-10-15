@@ -17,6 +17,23 @@ class StationeryRailsApp < Rails::Application
   config.stationery.preview_paths = [File.expand_path("../fixtures/previews", __dir__)]
 end
 
+# Document classes the app has loaded when its boot ends, as config.eager_load
+# loads app/ before the after_initialize hooks run: the Railtie finalizes them.
+# The second holds what a Ractor cannot share (a shaper that records its
+# calls, a footer that uses a local of its class body) and boots all the same.
+BootedPdf = Class.new(SpecDocument) do
+  page size: :a6
+  footer { |page| text "#{page.number} / #{page.count}" }
+  def view_template = text("Booted")
+end
+BOOTED_SHAPER = FakeShapers::Recording.new
+BootedDraftPdf = Class.new(SpecDocument) do
+  draft = +"Draft"
+  shaper BOOTED_SHAPER
+  footer { text draft }
+  def view_template = text("Booted")
+end
+
 StationeryRailsApp.initialize!
 
 require_relative "../support/documents"

@@ -215,18 +215,31 @@ module Stationery
     # Frozen by finalize!.
     attr_reader :font_paths
 
-    # Ends boot: what the gem holds for every render becomes Ractor-shareable,
-    # so a document class finalized too (Document.finalize!) renders inside
-    # any Ractor. `font_paths` is frozen, as a frozen copy of each directory,
-    # and the instrumenter in use is kept, so one loaded later is not picked
-    # up. Run it once everything that adds a font path has; the Railtie runs
-    # it after the app has initialized. Answers Stationery; running it again
-    # changes nothing.
+    # Ends boot: what the gem holds for every render is frozen, and
+    # Ractor-shareable as far as the app's settings let it be. `font_paths`
+    # is frozen, as a frozen copy of each directory; the instrumenter in use
+    # is kept, so one loaded later is not picked up; and every document class
+    # loaded by then is finalized (Document.finalize!), with its subclasses.
+    # Nothing it cannot make shareable raises: it is kept as it is, for the
+    # main Ractor. Run it once everything that adds a font path or defines a
+    # document class at boot has; the Railtie runs it after the app has
+    # initialized. Answers Stationery; running it again finalizes only the
+    # classes loaded since.
     def finalize!
       # rubocop:disable-next ThreadSafety/ClassInstanceVariable -- written at boot on the main Ractor, before any render
       @font_paths = @font_paths.map { |path| path.to_s.dup.freeze }.freeze
       Instrumentation.finalize!
+      finalize_documents(Document)
       self
+    end
+
+    private
+
+    def finalize_documents(parent)
+      parent.subclasses.each do |document|
+        document.finalize!
+        finalize_documents(document)
+      end
     end
   end
   # Names of the font families shipped inside the gem.

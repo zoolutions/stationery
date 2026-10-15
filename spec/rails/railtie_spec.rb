@@ -40,6 +40,20 @@ RSpec.describe Stationery::Railtie do
     expect(Stationery.instrumenter).to be(ActiveSupport::Notifications)
   end
 
+  it "finalizes the document classes the app had loaded by then" do
+    expect(BootedPdf.config).to be_frozen
+    expect(Ractor.shareable?(BootedPdf.config)).to be(true) if defined?(Ractor)
+    expect { BootedPdf.page(size: :a4) }.to raise_error(FrozenError)
+  end
+
+  it "boots with a document class whose settings cannot be made shareable, keeping those as they are" do
+    expect(BootedDraftPdf.config).to be_frozen
+    expect(BootedDraftPdf.config[:shaping][:shaper]).to be(BOOTED_SHAPER)
+    expect(BOOTED_SHAPER).not_to be_frozen
+    expect(BootedDraftPdf.new.to_pdf).to start_with("%PDF")
+    expect(BOOTED_SHAPER.texts).to include("Booted", "Draft")
+  end
+
   describe "initializers" do
     let(:root) { Dir.mktmpdir }
     let(:fonts) { File.join(root, "vendor/fonts") }
