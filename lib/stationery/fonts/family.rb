@@ -28,8 +28,11 @@ module Stationery
         raise ArgumentError, "unknown font style #{unknown.join(", ")} (use #{STYLES.join(", ")})" if unknown.any?
         raise ArgumentError, "font family #{name} needs a regular face" unless paths[:regular]
 
-        @name = name.to_s
-        @paths = paths.transform_values(&:to_s).freeze
+        # Frozen copies, so a family is shareable as it is built and a
+        # document class holding it can be finalized for any Ractor.
+        @name = -name.to_s
+        @paths = paths.transform_values { -it.to_s }.freeze
+        freeze
       end
 
       def face(weight: :regular, style: :normal)

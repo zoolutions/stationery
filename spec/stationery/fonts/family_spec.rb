@@ -38,4 +38,14 @@ RSpec.describe Stationery::Fonts::Family do
     expect { described_class.new("X", regular: font_path("OpenSans-Regular.ttf"), heavy: "x") }
       .to raise_error(ArgumentError, /heavy/)
   end
+
+  it "is shareable as it is built, leaving the Strings it was given alone", if: defined?(Ractor) do
+    name = +"Open Sans"
+    path = +font_path("OpenSans-Regular.ttf")
+    family = described_class.new(name, regular: path)
+
+    expect(Ractor.shareable?(family)).to be(true)
+    expect(family.paths[:regular]).to eq(path)
+    expect([name, path]).to all(satisfy { !it.frozen? })
+  end
 end
