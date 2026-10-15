@@ -56,6 +56,7 @@ module Stationery
         @blanks = {}
         @shapes = {}.compare_by_identity
         @metrics = {}.compare_by_identity
+        @plans = {}.compare_by_identity
         @memoised = 0
         @keys = { true => {}, false => {} }
         @frozen_keys = { true => {}.compare_by_identity, false => {}.compare_by_identity }
@@ -256,7 +257,9 @@ module Stationery
 
       def substitute(gids, text, tags)
         start = 0
-        glyphs = @ttf.ligatures.substitute(gids, tags)
+        ligatures = @ttf.ligatures
+        plan = @plans.fetch(tags) { @plans[tags] = ligatures.plan(tags) }
+        glyphs = ligatures.substitute(gids, tags, plan:)
         chars = glyphs.map { |_gid, count| text[start, count].tap { start += count } }
         [glyphs.map(&:first), chars]
       end
