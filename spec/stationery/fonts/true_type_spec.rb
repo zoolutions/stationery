@@ -139,4 +139,25 @@ RSpec.describe Stationery::Fonts::TrueType do
       expect { Stationery::Fonts::Font.new(woff).build(Stationery::PDF::Writer.new) }.not_to raise_error
     end
   end
+
+  # Everything a render asks of a parse is read when it is built, so a parse
+  # can be made Ractor-shareable (deep-frozen) and handed to a Ractor as it
+  # is, and still answers what a parse that was not frozen does.
+  describe "made Ractor-shareable", if: defined?(Ractor) do
+    %w[Inter-Regular.ttf SourceSans3-Latin.otf NotoSansJP-Subset.otf].each do |name|
+      it "measures, substitutes and draws #{name} as before" do
+        fresh = described_class.new(File.binread(font_path(name)))
+        frozen = Ractor.make_shareable(described_class.new(File.binread(font_path(name))))
+        gids = "office AV".each_char.map { |char| fresh.glyph_id(char.ord) }
+        answers = lambda do |ttf|
+          [gids.each_cons(2).map { |left, right| ttf.kerning.adjust(left, right) }, ttf.ligatures.substitute(gids),
+           ttf.ligatures.substitute(gids, %w[liga onum]),
+           gids.map { |gid| ttf.outline(gid).enum_for(:each_segment).to_a }]
+        end
+
+        expect(Ractor.shareable?(frozen)).to be(true)
+        expect(answers.call(frozen)).to eq(answers.call(fresh))
+      end
+    end
+  end
 end

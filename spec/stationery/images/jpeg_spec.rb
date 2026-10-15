@@ -73,6 +73,23 @@ RSpec.describe Stationery::Images::JPEG do
       expect(described_class::Decoder).to have_received(:new).twice
     end
 
+    # One image is shared by every thread of a Ractor through Images::Cache:
+    # a scale is decoded once, under the image's lock, however many ask.
+    it "decodes a scale once however many threads ask for it" do
+      image = jpeg("ycc420")
+      allow(described_class::Decoder).to receive(:new).and_wrap_original do |build, *args|
+        3.times { Thread.pass }
+        build.call(*args)
+      end
+
+      result = ConformanceKit::Checks::ThreadContention.call(threads: 8, iterations: 3, consistent: :equal) do
+        image.pixels
+      end
+
+      expect(result).to be_passed
+      expect(described_class::Decoder).to have_received(:new).once
+    end
+
     it "leaves the EXIF orientation alone, as the PDF does" do
       width, height, = jpeg_reference("exif_rotated")
 

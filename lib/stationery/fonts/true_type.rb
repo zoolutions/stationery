@@ -10,9 +10,9 @@ module Stationery
       include SfntMetrics
 
       REQUIRED_TABLES = %w[head hhea maxp hmtx].freeze
-      OUTLINE_TABLES = { "OTTO" => ["CFF "] }.freeze
+      OUTLINE_TABLES = Stationery.shareable({ "OTTO" => ["CFF "] })
       GLYF_TABLES = %w[loca glyf].freeze
-      SFNT_VERSIONS = ["\x00\x01\x00\x00".b, "true", "OTTO"].freeze
+      SFNT_VERSIONS = Stationery.shareable(["\x00\x01\x00\x00".b, "true", "OTTO"])
       COLLECTION = "ttcf"
       SIGNATURES = {
         "wOF2" => "WOFF2 needs Brotli; convert to .ttf or .woff"
@@ -40,6 +40,7 @@ module Stationery
         parse_post
         parse_os2
         @postscript_name = NameTable.postscript_name(self)
+        read_layout
       end
 
       def self.collection?(data) = data.byteslice(0, 4) == COLLECTION
@@ -70,24 +71,14 @@ module Stationery
         end
       end
 
-      # Pair kerning, read on first use. Shared by every document using this
-      # parse; the source is immutable once built.
-      def kerning
-        @kerning ||= Kerning.for(self)
-      end
-
-      # Standard ligatures, read on first use and shared like #kerning.
-      def ligatures
-        @ligatures ||= Ligatures.for(self)
-      end
+      # Pair kerning (see Kerning), standard ligatures (see Ligatures) and
+      # the CFF table, nil for TrueType outlines: read with the rest of the
+      # parse, so it never changes once built and is shared as it is by every
+      # document and every thread using it, and can be made Ractor-shareable.
+      attr_reader :kerning, :ligatures, :cff
 
       def cff?
         @tables.key?("CFF ")
-      end
-
-      # The CFF table, read on first use; nil for TrueType outlines.
-      def cff
-        @cff ||= CFF.new(table_data("CFF ")) if cff?
       end
 
       # The contours of a glyph in font units, y up (an Outline), from the
@@ -125,6 +116,12 @@ module Stationery
       def u32(offset) = @data.byteslice(offset, 4).unpack1("N")
 
       private
+
+      def read_layout
+        @cff = CFF.new(table_data("CFF ")) if cff?
+        @kerning = Kerning.for(self)
+        @ligatures = Ligatures.for(self)
+      end
 
       # Table offsets in a collection are already absolute, so a face is read
       # from the shared data at its own table directory.

@@ -111,4 +111,22 @@ RSpec.describe Stationery::Images::PNG do
     expect { described_class.new(File.binread(image_path("interlaced.png"))) }
       .to raise_error(Stationery::UnsupportedImage, /interlaced/)
   end
+
+  # One image is shared by every thread of a Ractor through Images::Cache: a
+  # resample is built once, under the image's lock, however many ask.
+  describe "#resample from many threads" do
+    before do
+      allow(Stationery::Images::Resampled).to receive(:new).and_wrap_original do |build, *args|
+        3.times { Thread.pass }
+        build.call(*args)
+      end
+    end
+
+    let(:subject_call) do
+      image = described_class.new(PngFactory.build(width: 4, height: 1, color_type: 2, rows: [[255, 0, 0] * 4]))
+      -> { image.resample(2) }
+    end
+
+    it_behaves_like "thread-safe under contention", threads: 8, iterations: 5, consistent: :identical
+  end
 end

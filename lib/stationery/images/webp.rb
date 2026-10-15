@@ -19,6 +19,7 @@ module Stationery
       attr_reader :width, :height
 
       def initialize(data)
+        @lock = Mutex.new
         container = Container.new(data)
         lossless = Lossless.new(container.bitstream)
         @width = lossless.width
@@ -33,10 +34,10 @@ module Stationery
       def inspect = "#<#{self.class} #{@width}x#{@height}>"
 
       # This image scaled down to `width` pixels (a Resampled), memoised per
-      # width; the same instance is shared through the image cache.
+      # width under the image's lock: the same instance is shared by the
+      # threads of a Ractor through the image cache.
       def resample(width)
-        @resampled ||= {}
-        @resampled[width] ||= Resampled.new(pixels, width)
+        @lock.synchronize { (@resampled ||= {})[width] ||= Resampled.new(pixels, width) }
       end
 
       def build(writer)

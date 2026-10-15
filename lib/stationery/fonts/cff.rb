@@ -15,7 +15,7 @@ module Stationery
       FD_ARRAY = 1236
       FD_SELECT = 1237
       SUBRS = 19
-      REAL_NIBBLES = [*"0".."9", ".", "E", "E-", nil, "-"].freeze
+      REAL_NIBBLES = Stationery.shareable([*"0".."9", ".", "E", "E-", nil, "-"])
 
       # An INDEX from `start` to `stop` (exclusive); items are [offset, length].
       Index = Data.define(:start, :items, :stop)
@@ -32,6 +32,8 @@ module Stationery
         @charstrings = index_at(@top.fetch(CHARSTRINGS).first)
         @num_glyphs = @charstrings.items.size
         @charset = self.class.parse_charset(@data, @top.fetch(CHARSET).first, @num_glyphs) if cid_keyed?
+        @fd_array = index_at(@top.fetch(FD_ARRAY).first) if cid_keyed?
+        @local_subrs = (cid_keyed? ? 0...@fd_array.items.size : [0]).to_h { |fd| [fd, private_subrs(font_dict(fd))] }
       end
 
       def inspect = "#<#{self.class} glyphs=#{@num_glyphs}#{" cid" if cid_keyed?}>"
@@ -61,11 +63,9 @@ module Stationery
 
       # The local Subrs INDEX a glyph's charstring calls, or nil: the Private
       # DICT's, or in a CID-keyed font that of the Font DICT FDSelect gives
-      # the glyph. Read once per Font DICT.
-      def local_subrs(gid)
-        fd = cid_keyed? ? fd_index(gid) : 0
-        (@local_subrs ||= {}).fetch(fd) { @local_subrs[fd] = private_subrs(font_dict(fd)) }
-      end
+      # the glyph. Every Font DICT's is read with the table, so a parse never
+      # changes once built.
+      def local_subrs(gid) = @local_subrs[cid_keyed? ? fd_index(gid) : 0]
 
       def item(index, number) = @data.byteslice(*index.items.fetch(number))
 
@@ -157,7 +157,6 @@ module Stationery
       def font_dict(number)
         return @top unless cid_keyed?
 
-        @fd_array ||= index_at(@top.fetch(FD_ARRAY).first)
         self.class.parse_dict(item(@fd_array, number))
       end
 

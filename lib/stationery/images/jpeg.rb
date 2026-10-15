@@ -36,6 +36,7 @@ module Stationery
       end
 
       def initialize(data)
+        @lock = Mutex.new
         @data = data
         read_frame_header
         raise UnsupportedImage, "invalid JPEG image" unless @width
@@ -67,15 +68,17 @@ module Stationery
       # With `at_least:` [width, height] in pixels, decoded at the smallest
       # of a half, a quarter or an eighth of its size that is still that
       # large (libjpeg's scaled IDCT: far less work for a photo drawn
-      # small), else at full size. Each scale is decoded once and kept; the
-      # rows are built on every call.
+      # small), else at full size. Each scale is decoded once and kept, under
+      # the image's lock, as the threads of a Ractor share it through the
+      # image cache; the rows are built on every call.
       def pixels(at_least: nil)
         reason = unsupported
         raise UnsupportedImage, reason if reason
 
         scale = (at_least && SCALES.find { |s| large_enough?(s, *at_least) }) || 1
-        @decoded ||= {}
-        samples, channels = @decoded[scale] ||= Colors.call(Decoder.new(@data, scale).call)
+        samples, channels = @lock.synchronize do
+          (@decoded ||= {})[scale] ||= Colors.call(Decoder.new(@data, scale).call)
+        end
         width = (@width + scale - 1) / scale
         height = (@height + scale - 1) / scale
         stride = width * channels

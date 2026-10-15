@@ -107,4 +107,22 @@ RSpec.describe Stationery::Images::WebP do
       expect(pdf).to include("/Width 17").and include("/Height 14")
     end
   end
+
+  # One image is shared by every thread of a Ractor through Images::Cache: a
+  # resample is built once, under the image's lock, however many ask.
+  describe "#resample from many threads" do
+    before do
+      allow(Stationery::Images::Resampled).to receive(:new).and_wrap_original do |build, *args|
+        3.times { Thread.pass }
+        build.call(*args)
+      end
+    end
+
+    let(:subject_call) do
+      image = described_class.new(webp("photo"))
+      -> { image.resample(10) }
+    end
+
+    it_behaves_like "thread-safe under contention", threads: 8, iterations: 5, consistent: :identical
+  end
 end
