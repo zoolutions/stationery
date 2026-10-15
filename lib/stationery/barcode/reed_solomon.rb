@@ -19,7 +19,7 @@ module Stationery
         end
         (255...512).each { |power| @exp[power] = @exp[power - 255] }
         @first_root = first_root
-        @divisors = :"stationery_reed_solomon_#{polynomial}"
+        @divisors = :"stationery_reed_solomon_#{polynomial}_#{first_root}"
       end
 
       def multiply(a, b) = a.zero? || b.zero? ? 0 : @exp[@log[a] + @log[b]]
