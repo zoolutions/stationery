@@ -27,6 +27,21 @@ RSpec.describe Stationery::Document do
       expect { FinalizedSpecDocument.page(size: :a4) }.to raise_error(FrozenError)
     end
 
+    it "never raises, keeping what cannot be made shareable as it is" do
+      recording = FakeShapers::Recording.new
+      klass = Class.new(SpecDocument) { shaper recording }
+
+      expect(klass.finalize!.config).to be_frozen
+      expect(klass.config[:shaping][:shaper]).to be(recording)
+      expect(recording).not_to be_frozen
+    end
+
+    it "changes nothing when it runs again" do
+      klass = Class.new(SpecDocument).finalize!
+
+      expect { klass.finalize! }.not_to(change { klass.config.object_id })
+    end
+
     it "lets a subclass of a finalized class have settings of its own" do
       subclass = Class.new(FinalizedSpecDocument) { page size: :a5 }
 

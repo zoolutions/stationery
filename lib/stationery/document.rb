@@ -37,14 +37,19 @@ module Stationery
         subclass.instance_variable_set(:@config, config.transform_values(&:dup))
       end
 
-      # Makes the class renderable inside any Ractor: its settings are made
-      # Ractor-shareable (deep-frozen), so the blocks of its page templates,
-      # headers and footers may use no local variable from around them, and
-      # a shaper given to it must be shareable itself. Run once its class
-      # body has, at boot; after it the settings cannot change, and a
-      # subclass has its own. Answers the class.
+      # Ends the class's boot: its settings are frozen, and made
+      # Ractor-shareable as far as they can be (Stationery.settled), so the
+      # class renders inside any Ractor when all of them are. A block of its
+      # page templates, headers or footers that uses an unshareable local
+      # from around it, or a shaper that is not shareable itself, is kept as
+      # it is: the class then renders on the main Ractor only, as before.
+      # Never raises. Stationery.finalize! runs it on every class loaded by
+      # then; run it yourself on a class loaded later. After it the settings
+      # cannot change (FrozenError), and a subclass has its own. Answers the
+      # class; running it again changes nothing.
       def finalize!
-        Stationery.shareable(config)
+        # rubocop:disable-next ThreadSafety/ClassInstanceVariable -- written at boot on the main Ractor, before any render
+        @config = Stationery.settled(config) unless config.frozen?
         self
       end
 
