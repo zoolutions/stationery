@@ -1522,7 +1522,11 @@ font_family "Noto Sans"                                                # found i
 font_family "Noto Sans", **Stationery::Fonts.paths(:noto_sans, dir: "vendor/fonts") # outside Rails
 ```
 
-or append it yourself: `Stationery.font_paths << File.expand_path("vendor/fonts")`.
+or append it yourself: `Stationery.font_paths << File.expand_path("vendor/fonts")`,
+before `Stationery.finalize!` freezes the list (see
+[Threads, fibers and Ractors](#threads-fibers-and-ractors); the Railtie runs it
+once the app has initialized, so add paths in `config/application.rb` or an
+initializer).
 From Ruby: `Stationery::Fonts.install(:noto_sans, into: "vendor/fonts")`
 returns `{ regular: path, bold: path, … }`; `Stationery::Fonts.catalog` lists
 the packs. `rake fonts:verify` (development only) downloads every pack and
@@ -1937,6 +1941,53 @@ events instead (`Stationery.instrumenter = MyInstrumenter.new`), and
 spans inside a document. When you hit a slow render, a trace with these
 events attached is the most useful thing to put in an issue.
 
+## Threads, fibers and Ractors
+
+A render keeps its state to itself: a document, its fonts' glyph usage and its
+pages belong to the render. What renders share is cached once per Ractor,
+behind the cache's own lock: parsed fonts (16 files), decoded images (16),
+colours parsed from Strings, hyphenation patterns. So any number of threads,
+or fibers of one Async reactor, may render at once, and a render inside a
+non-main Ractor (Ruby 4.0) fills caches of its own. A parsed font never
+changes once it is read, so it can be made shareable and handed to a Ractor
+as it is.
+
+A Ractor can read only what is shareable, so a document class that renders
+inside one is finalized at boot, after its class body has run:
+
+```ruby
+class InvoicePdf < Stationery::Document
+  page size: :a4
+  footer { |page| text "#{page.number} / #{page.count}" }
+
+  def initialize(lines) = @lines = lines
+  def view_template = @lines.each { |line| text line }
+end
+InvoicePdf.finalize! # its settings are deep-frozen; a subclass has its own
+Stationery.finalize! # Stationery.font_paths frozen, the instrumenter kept
+
+pdfs = Array.new(4) { |i| Ractor.new(["Invoice #{i}"]) { |lines| InvoicePdf.new(lines).to_pdf } }.map(&:value)
+```
+
+- `Document.finalize!` makes the class's settings Ractor-shareable, so the
+  blocks of its page templates, headers and footers may not use a local
+  variable from around them, and a `shaper` must be shareable. After it the
+  settings cannot change (a `FrozenError`); a class not finalized renders on
+  the main Ractor as before.
+- `Stationery.finalize!` freezes `Stationery.font_paths` and keeps the
+  instrumenter in use. The Railtie runs it after the app has initialized; a
+  Rails-less app runs it once its setup is done. An instrumenter for renders
+  inside a Ractor must be shareable: a module (`ActiveSupport::Notifications`)
+  or a frozen object.
+- What a Ractor is handed (`Ractor.new(lines)`) is copied unless it is
+  shareable.
+
+The gem is held to this by [conformance-kit](https://github.com/zoolutions/conformance-kit):
+`bundle exec conformance-kit check` (on Ruby 4.0) renders a document of
+text, shapes, a JPEG, a table, a QR code and a footer inside a Ractor and
+compares its bytes with the main Ractor's, and audits every constant and
+class instance variable of the gem for state a Ractor cannot read.
+
 ## Performance
 
 `bundle exec rake bench` renders three documents with Stationery, with Prawn 2.5 +
@@ -1982,7 +2033,7 @@ without its gem.
 A lossless WebP is decoded in Ruby when it is first loaded, which a JPEG or an opaque PNG
 (both passed through) never is: a 1000 × 1000 px image takes 0.2 to 0.4 s on the machine
 above, by what is in it, and the image cache keeps it for the renders that follow. A JPEG is
-decoded only for `to_png` or a monochrome render, once per process and scale: a 1000 × 1000
+decoded only for `to_png` or a monochrome render, once per Ractor and scale: a 1000 × 1000
 px photo in 0.25 s, a 12-megapixel phone photo in 2.8 s at full size and 0.7 s at the quarter
 size a label or a preview needs (progressive: 3.4 s and 1.4 s; about four times as long
 without YJIT).

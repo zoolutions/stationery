@@ -96,6 +96,10 @@ class Views::Docs::Pages::Performance < DocsUI::Page
       md SourceMarkdown.readme_section("Instrumentation")
     end
 
+    DocsUI::Section("Threads, fibers and Ractors", description: "From the README — renders at once, and inside a Ractor.") do
+      md SourceMarkdown.readme_section("Threads, fibers and Ractors")
+    end
+
     DocsUI::Section("Why the trade-off", description: "Why not Prawn, Chrome or Typst?") do
       md SourceMarkdown.readme_section("Why not Prawn, Chrome or Typst?")
     end

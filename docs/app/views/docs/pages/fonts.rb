@@ -315,6 +315,10 @@ class Views::Docs::Pages::Fonts < DocsUI::Page
         font_family "Noto Sans", **Stationery::Fonts.paths(:noto_sans, dir: "vendor/fonts") # outside Rails
         Stationery.font_paths << File.expand_path("vendor/fonts")                           # or append it yourself
         ```
+
+        Append before `Stationery.finalize!` freezes the list: the Railtie runs it once the app has
+        initialized, so add paths in `config/application.rb` or an initializer. See
+        [Performance](/docs/performance#threads-fibers-and-ractors).
       MD
     end
   end
