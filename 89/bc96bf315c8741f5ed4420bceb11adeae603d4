@@ -1,0 +1,23 @@
+spec/stationery/settled_spec.rb
+  s_4786a62cd35147::t_8703f98c348f24 1-82
+lib/stationery/document.rb
+  s_4786a62cd35147::t_0c7317ae0449f5 40-49,51-52
+lib/stationery/shareable.rb
+  s_4786a62cd35147::t_bb0a5a5a30330b 10-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "89bc96bf315c8741f5ed4420bceb11adeae603d4",
+  "prompts": {},
+  "sessions": {
+    "s_4786a62cd35147": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d1e58604-bb1b-456c-ace0-8fe7f151dae8",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
