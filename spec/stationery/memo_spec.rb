@@ -19,6 +19,14 @@ RSpec.describe Stationery::Memo do
     expect(memo).to be_key(:c)
   end
 
+  it "keeps what a full memo holds when a block raises" do
+    memo = described_class.new(limit: 2)
+    %i[a b].each { |key| memo.fetch(key) { one } }
+
+    expect { memo.fetch(:c) { raise ArgumentError } }.to raise_error(ArgumentError)
+    expect(memo.size).to eq(2)
+  end
+
   it "stores nothing for a block that raises, and clears" do
     memo = described_class.new
 

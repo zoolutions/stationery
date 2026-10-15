@@ -13,13 +13,15 @@ module Stationery
     end
 
     # The value for `key`, built by the block the first time. A block that
-    # raises stores nothing. A Hash keeps a frozen copy of a String key, so
-    # a String changed after it was used does not change what is held.
+    # raises stores nothing and leaves what is held as it was. A Hash keeps
+    # a frozen copy of a String key, so a String changed after it was used
+    # does not change what is held.
     def fetch(key)
       @lock.synchronize do
         @values.fetch(key) do
+          value = yield
           @values.clear if @limit && @values.size >= @limit
-          @values[key] = yield
+          @values[key] = value
         end
       end
     end
