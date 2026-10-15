@@ -1983,7 +1983,10 @@ pdfs = Array.new(4) { |i| Ractor.new(["Invoice #{i}"]) { |lines| InvoicePdf.new(
   that uses an unshareable local from around it, a `shaper` or a `sign` key
   that is not shareable, is kept as it is, so the class renders on the main
   Ractor as before and not inside another one.
-  `Ractor.shareable?(InvoicePdf.config)` says whether a Ractor can render it.
+  `Ractor.shareable?(InvoicePdf.config)` says whether its settings are
+  shareable; a render inside a Ractor also needs a shareable instrumenter
+  (below), and the class's own methods (`view_template`, the methods its
+  blocks call) may reach only what a Ractor can.
   A String the app gave is copied, not frozen in place, and an object the gem
   did not build is never frozen.
 - An instrumenter for renders inside a Ractor must be shareable: a module
