@@ -20,4 +20,9 @@ RSpec.configure do |config|
   config.expect_with(:rspec) { |c| c.syntax = :expect }
   config.order = :random
   Kernel.srand config.seed
+  # The Ractor examples run in a process of their own, `bundle exec rspec
+  # --tag ractor` (what conformance-kit's gate runs): once a process has
+  # started a Ractor, ObjectSpace.each_object finds nothing on Ruby 4.0, and
+  # the specs of what a render keeps in memory count objects with it.
+  config.filter_run_excluding :ractor
 end
