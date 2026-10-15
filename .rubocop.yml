@@ -1,3 +1,9 @@
+# conformance-kit's thread-safety gate (zoolutions/phlex-reactive#363): the
+# rubocop-thread_safety cops. A file or line is excluded only with a comment
+# saying why it is safe.
+inherit_gem:
+  conformance-kit: config/rubocop.yml
+
 plugins:
   - rubocop-performance
   - rubocop-rake
@@ -91,22 +97,11 @@ RSpec/SpecFilePathFormat:
   Exclude:
     - "spec/rails/**/*" # the Rails lane lives apart from the Rails-free suite
 
-# Font and image caches are process-global by design and guarded by a Mutex.
-ThreadSafety/MutableClassInstanceVariable:
-  Exclude: &caches
-    - "lib/stationery.rb" # font_paths is appended to once, at boot
-    - "lib/stationery/color.rb" # the colours parsed from Strings
-    - "lib/stationery/fonts/registry.rb"
-    - "lib/stationery/images/cache.rb"
-# Document configuration is written while the class body is evaluated and
-# only read afterwards.
-ThreadSafety/ClassInstanceVariable:
-  Exclude:
-    - "lib/stationery/color.rb"
-    - "lib/stationery/fonts/registry.rb"
-    - "lib/stationery/images/cache.rb"
-    - "lib/stationery/document.rb"
-    - "lib/stationery/cli.rb" # commands register while their files load
 ThreadSafety/NewThread:
   Exclude:
-    - "spec/**/*"
+    # Each starts threads on purpose: to race the colour memo and the font
+    # registry from many threads, and to serve a time-stamping authority
+    # over HTTP for the signing specs.
+    - "spec/stationery/color_spec.rb"
+    - "spec/stationery/fonts/registry_spec.rb"
+    - "spec/support/timestamp_helpers.rb"
