@@ -15,7 +15,7 @@ group :development do
 end
 
 group :test do
-  gem "conformance-kit", "~> 0.1", require: false # concurrency conformance gates (zoolutions/phlex-reactive#363)
+  gem "conformance-kit", "~> 0.3", require: false # concurrency conformance gates (zoolutions/phlex-reactive#363)
   gem "pdf-inspector", "~> 1.3", require: false
   gem "pdf-reader", "~> 2.12", require: false
   gem "rspec", "~> 3.13"
