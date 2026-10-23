@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Tables take `header_columns:` (an Integer, or `true` for one), the row headers of a tagged PDF: the
+  first cells of every row are `TH` with `/Scope /Row`, and a cell in both a header row and a header
+  column is `/Scope /Both`, so a screen reader names the row with every value it reads. A row header
+  is found by the column it starts in, under spans as well. It is tagging only: nothing drawn changes,
+  header columns do not repeat, and a table without it is tagged as before (`Layout::Table`).
+- `html` tables tag the `<th>` cells that start every body row as row headers (`TH`, `/Scope /Row`),
+  as many columns as the shortest run of them: `<tr><th>Born</th><td>1815</td></tr>` reads as a label and
+  its value. A body row that starts with a `<td>` leaves the table without row headers, and the header
+  row is found as before (`Rich::Renderer`).
+
 ## 0.13.0 (2026-10-16)
 
 - Renders are safe from many threads at once, from the fibers of one Async reactor, and inside a non-main Ractor on Ruby 4.0 (#222). What renders share is kept once per Ractor, each cache behind a lock of its own (`Stationery::Store`, `Stationery::LRU`, `Stationery::Memo`): parsed fonts, decoded images, colours parsed from Strings, hyphenation patterns, the paddings of table cells and the Reed–Solomon divisors of barcodes; no lock is kept in a constant or a class instance variable any more. A parsed font reads its kerning, ligatures and CFF table with the rest of the parse, so it never changes once built and can be made shareable and handed to a Ractor as it is; a decoded image builds its resamples and JPEG scales under a lock of its own. Every constant of the gem is deep-frozen. Boot ends with `Stationery.finalize!`, which the Railtie runs once the app has initialized (a Rails-less app calls it once its setup is done): it freezes `Stationery.font_paths`, keeps the instrumenter in use and finalizes every document class loaded by then, with their subclasses. `Document.finalize!` freezes a class's settings and makes them Ractor-shareable as far as what they hold lets them be, so the class renders inside any Ractor when all of them are; it never raises: a block that uses an unshareable local from around it, a `shaper` or a `sign` key that is not shareable, is kept as it is and the class renders on the main Ractor only, as before (`Ractor.shareable?(InvoicePdf.config)` says whether its settings are; the instrumenter in use must be shareable too). A String the app gave is copied, not frozen in place, and an object the gem did not build is never frozen (`Stationery.settled`). A font family is frozen as it is built. A document class's settings are built when it is defined, not when they are first read. conformance-kit holds the gem to it: its thread-safety cops in RuboCop, a render of text, shapes, a JPEG, a table, a QR code and a footer inside a Ractor compared byte for byte with the main Ractor's, the thread and fiber examples over the same render, and an audit of every constant and class instance variable (`bundle exec conformance-kit check`). Documents render the same bytes as before. README: "Threads, fibers and Ractors". `Stationery.finalize!`, `Stationery::Document.finalize!`, `Stationery::Store`.

@@ -27,6 +27,14 @@ module Stationery
         # The same cell holding another node, as a row split into two parts needs.
         def with_content(node) = Cell.new(node, @options, colspan:, rowspan:).tagged(@tag, @row_tag)
 
+        # A TH with that /Scope when `scope` is :Column, :Row or :Both, else a TD.
+        def element(scope)
+          return Tagging::Element.new(:TD) unless scope || colspan > 1 || rowspan > 1
+
+          attributes = { Scope: scope, ColSpan: (colspan if colspan > 1), RowSpan: (rowspan if rowspan > 1) }.compact
+          Tagging::Element.new(scope ? :TH : :TD, attributes: attributes.empty? ? {} : { Table: attributes })
+        end
+
         # Its TH or TD and its row's TR in a tagged PDF; set once, by the
         # table that first paints or cuts its row.
         def tagged(tag, row_tag)

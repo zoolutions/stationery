@@ -79,6 +79,76 @@ RSpec.describe "Tagged PDF structure" do # rubocop:disable RSpec/DescribeClass
       expect(attributes_of(pdf, elements_of(pdf, :TD).first)).to eq([{ O: :Table, ColSpan: 2 }])
     end
 
+    it "tags the first cells of each row as TH with a row scope, and the corner of both headers with Both" do
+      pdf = build do
+        table([%w[Metric Q1 Q2], %w[Revenue 10 12], %w[Costs 4 5]], header: true, header_columns: 1)
+      end.to_pdf
+
+      expect(struct_types(pdf)).to eq(
+        [[:Document, [[:Table, [[:TR, [[:TH, [:P]], [:TH, [:P]], [:TH, [:P]]]],
+                                [:TR, [[:TH, [:P]], [:TD, [:P]], [:TD, [:P]]]],
+                                [:TR, [[:TH, [:P]], [:TD, [:P]], [:TD, [:P]]]]]]]]]
+      )
+      scopes = elements_of(pdf, :TH).map { |th| attributes_of(pdf, th).first[:Scope] }
+      expect(scopes).to eq(%i[Both Column Column Row Row])
+    end
+
+    it "takes header_columns: true as one column of row headers, without header rows" do
+      pdf = build { table([%w[Name Ada], %w[Born 1815]], header_columns: true) }.to_pdf
+
+      expect(struct_types(pdf)).to eq(
+        [[:Document, [[:Table, [[:TR, [[:TH, [:P]], [:TD, [:P]]]], [:TR, [[:TH, [:P]], [:TD, [:P]]]]]]]]]
+      )
+      expect(elements_of(pdf, :TH).map { |th| attributes_of(pdf, th) }).to all(eq([{ O: :Table, Scope: :Row }]))
+    end
+
+    it "finds the row header by its column when a row header spans rows" do
+      pdf = build do
+        table([[{ content: "Fruit", rowspan: 2 }, "apple"], ["pear"], %w[Nut walnut]], header_columns: 1)
+      end.to_pdf
+
+      expect(struct_types(pdf)).to eq(
+        [[:Document, [[:Table, [[:TR, [[:TH, [:P]], [:TD, [:P]]]], [:TR, [[:TD, [:P]]]],
+                                [:TR, [[:TH, [:P]], [:TD, [:P]]]]]]]]]
+      )
+      expect(attributes_of(pdf, elements_of(pdf, :TH).first)).to eq([{ O: :Table, Scope: :Row, RowSpan: 2 }])
+    end
+
+    it "tags the th that starts every body row of an html table as a row header" do
+      pdf = build do
+        html "<table><tr><th>Metric</th><th>Q1</th></tr><tr><th>Revenue</th><td>10</td></tr>" \
+             "<tr><th>Costs</th><td>4</td></tr></table>"
+      end.to_pdf
+
+      expect(struct_types(pdf)).to eq(
+        [[:Document, [[:Table, [[:TR, [[:TH, [:P]], [:TH, [:P]]]], [:TR, [[:TH, [:P]], [:TD, [:P]]]],
+                                [:TR, [[:TH, [:P]], [:TD, [:P]]]]]]]]]
+      )
+      expect(elements_of(pdf, :TH).map { |th| attributes_of(pdf, th).first[:Scope] }).to eq(%i[Both Column Row Row])
+    end
+
+    it "counts html row headers by the shortest run of leading th cells, and none when a row starts with td" do
+      leading = build do
+        html "<table><tr><th>a</th><th>b</th><td>1</td></tr><tr><th>c</th><td>2</td><td>3</td></tr></table>"
+      end.to_pdf
+      mixed = build do
+        html "<table><tr><th>Name</th><td>Ada</td></tr><tr><td>Born</td><td>1815</td></tr></table>"
+      end.to_pdf
+
+      expect(elements_of(leading, :TH).map { |th| attributes_of(leading, th).first[:Scope] }).to eq(%i[Row Row])
+      expect(elements_of(mixed, :TH)).to be_empty
+    end
+
+    it "keeps row headers on every page of a table cut across pages and read from a stream" do
+      rows = Enumerator.new { |out| 30.times { |i| out << ["row #{i}", i.to_s] } }
+      pdf = build { table(rows, widths: [120, 60], header_columns: 1) }.to_pdf
+
+      expect(page_count(pdf)).to be > 1
+      expect(elements_of(pdf, :TH).size).to eq(30)
+      expect(elements_of(pdf, :TD).size).to eq(30)
+      expect(elements_of(pdf, :TH).map { |th| attributes_of(pdf, th).first[:Scope] }.uniq).to eq([:Row])
+    end
+
     it "shares one Table across pages and paints the repeated header as an artifact" do
       rows = [%w[Item Price]] + Array.new(8) { |i| ["item #{i}", i.to_s] }
       pdf = build { table(rows, header: 1) }.to_pdf
