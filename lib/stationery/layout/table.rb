@@ -27,9 +27,11 @@ module Stationery
                                             border_color: "#000000" })
 
       # `tag` is the Table element its fragments share; a `continued` fragment
-      # repeats header rows already read on an earlier page.
-      def initialize(rows, context:, widths: nil, width: :auto, header: false, split_rows: false, cell: {},
-                     tag: context.element(:Table), continued: false)
+      # repeats header rows already read on an earlier page. `header_columns`
+      # are the first cells of every row, tagged as row headers; unlike header
+      # rows they are not repeated and are styled only through selections.
+      def initialize(rows, context:, widths: nil, width: :auto, header: false, header_columns: false, split_rows: false,
+                     cell: {}, tag: context.element(:Table), continued: false)
         super()
         @tag = tag
         @continued = continued
@@ -38,6 +40,7 @@ module Stationery
         @widths = widths
         @width = width
         @header = header == true ? 1 : (header || 0).to_i
+        @header_columns = header_columns == true ? 1 : (header_columns || 0).to_i
         defaults = DEFAULT_CELL.merge(cell)
         if Table.streams?(rows, widths)
           stream(rows, defaults)
@@ -284,15 +287,14 @@ module Stationery
         return if cells.all?(&:tag)
 
         row_tag = Tagging::Element.new(:TR)
-        cells.each { |cell| cell.tagged(cell_tag(cell, row < @header), row_tag) }
-      end
+        column_scope = (:Column if row < @header)
+        return cells.each { |cell| cell.tagged(cell.element(column_scope), row_tag) } if @header_columns.zero?
 
-      def cell_tag(cell, header)
-        return Tagging::Element.new(:TD) unless header || cell.colspan > 1 || cell.rowspan > 1
-
-        attributes = { Scope: (:Column if header), ColSpan: (cell.colspan if cell.colspan > 1),
-                       RowSpan: (cell.rowspan if cell.rowspan > 1) }.compact
-        Tagging::Element.new(header ? :TH : :TD, attributes: attributes.empty? ? {} : { Table: attributes })
+        row_scope = column_scope ? :Both : :Row
+        placements_in(row).each do |placement|
+          scope = placement.column < @header_columns ? row_scope : column_scope
+          placement.cell.tagged(placement.cell.element(scope), row_tag)
+        end
       end
 
       def split_before(count, width)

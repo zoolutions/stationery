@@ -136,14 +136,15 @@ module Stationery
     # Cells are strings, layout nodes, procs built with the DSL (`-> { image … }`)
     # or components. Rows given as an Enumerator to a table whose every
     # column has a width are read as pages reach them (Layout::Table.streams?).
-    def table(rows, widths: nil, width: :auto, header: false, split_rows: false, cell: {}, anchor: nil, bookmark: nil,
-              &)
+    def table(rows, widths: nil, width: :auto, header: false, header_columns: false, split_rows: false, cell: {},
+              anchor: nil, bookmark: nil, &)
       rows = if Layout::Table.streams?(rows, widths)
                streamed_rows(rows)
              else
                rows.map { |row| row.map { |content| cell_content(content) } }
              end
-      node = Layout::Table.new(rows, context: @_builder.context, widths:, width:, header:, split_rows:, cell:, &)
+      node = Layout::Table.new(rows, context: @_builder.context, widths:, width:, header:, header_columns:, split_rows:,
+                                     cell:, &)
       @_builder.add(mark(node, anchor, bookmark))
     end
 
