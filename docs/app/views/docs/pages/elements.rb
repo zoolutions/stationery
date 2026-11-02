@@ -113,7 +113,7 @@ class Views::Docs::Pages::Elements < DocsUI::Page
           [ "link", "String", "nil", [ :md, "Makes the whole box clickable (a URL or `\"#anchor\"`)." ] ],
           [ "outset", "Box", "0", "Bleeds the background past the box, e.g. into the page margins." ],
           [ "break_inside", "nil, :auto, :avoid", "nil", [ :md, "See [Layout rules](/docs/layout-rules#break-inside)." ] ],
-          [ "decoration", ":slice, :clone", ":slice", "At a page cut: drop padding and border, or keep the padding." ],
+          [ "decoration", ":slice, :clone", ":slice", "At a page cut: drop padding and border, or keep padding, border and rounded corners." ],
           [ "rotate", "degrees", "0", [ :md, "Turns the painted box clockwise around its centre, like CSS `rotate()`. The layout rectangle is unchanged, the box never splits, and a `link:` keeps its unrotated rectangle (annotations live in page space)." ] ],
           [ "shadow", "true or Hash", "nil", [ :md, "A soft drop shadow under the box: `{ offset: [0, 4], blur: 8, color: \"#000000\", opacity: 0.15 }`, merged over those defaults. Painted as stacked, fading rounded rectangles (an artifact), it takes no layout space and is skipped on a fragment cut by a page break." ] ],
           [ "align / gap", "Symbol / Numeric", ":left / 0", "Horizontal alignment of the children and space between them." ]
