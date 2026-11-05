@@ -44,8 +44,11 @@ module Stationery
 
     def self.preview_paths(root, dirs) = dirs.map { root.join(it).to_s }.select { File.directory?(it) }
 
+    # The controller is autoloaded when the router first asks for it, after
+    # boot: defined while the app boots, its `helper :all` would constantize
+    # the app's helpers before the autoloader can find them.
     def self.add_previews(routes)
-      ActiveSupport.on_load(:action_controller_base) { require "stationery/rails/previews_controller" }
+      Stationery.autoload :PreviewsController, "stationery/rails/previews_controller"
       routes.prepend do
         get "/rails/stationery/previews" => "stationery/previews#index", :as => :stationery_previews
         get "/rails/stationery/previews/*path" => "stationery/previews#show"
