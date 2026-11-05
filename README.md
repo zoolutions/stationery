@@ -1917,7 +1917,9 @@ Every render reports its phases as events named `<phase>.stationery`, so an
 APM that subscribes to `ActiveSupport::Notifications` (AppSignal, Skylight,
 Rails' own log subscribers) shows where a slow PDF spends its time with no
 setup: AppSignal groups them under "stationery" in the event tree. Outside
-Rails the events go to a null instrumenter that costs one method call.
+Rails the events go to a null instrumenter that costs one method call. Renders
+inside a Ractor other than the main one report none (see
+[Threads, fibers and Ractors](#threads-fibers-and-ractors)).
 
 | Event | Around | Payload |
 |---|---|---|
@@ -1928,6 +1930,7 @@ Rails the events go to a null instrumenter that costs one method call.
 | `image.stationery` | decoding one image (cache misses only) | `format:`, `width:`, `height:`, `bytes:` |
 | `font.stationery` | parsing a font file (`action: :parse`, cache misses only) or subsetting one for a document (`action: :subset`, `glyphs:`) | `path:` or `font:`, `action:` |
 | `parse.stationery` | parsing an `html` or `markdown` source | `format:`, `bytes:` |
+| `render_all.stationery` | the whole `Stationery.render_all` | `documents:` (count), `ractors:` (started), `main_ractor:` (indexes of the documents rendered on the main Ractor) |
 
 Payload values known only afterwards (`pages:`, `bytes:`) are filled in
 before the event finishes, so subscribers always see them. Log every phase
@@ -1989,16 +1992,51 @@ pdfs = Array.new(4) { |i| Ractor.new(["Invoice #{i}"]) { |lines| InvoicePdf.new(
   that is not shareable, is kept as it is, so the class renders on the main
   Ractor as before and not inside another one.
   `Ractor.shareable?(InvoicePdf.config)` says whether its settings are
-  shareable; a render inside a Ractor also needs a shareable instrumenter
-  (below), and the class's own methods (`view_template`, the methods its
+  shareable, and the class's own methods (`view_template`, the methods its
   blocks call) may reach only what a Ractor can.
   A String the app gave is copied, not frozen in place, and an object the gem
   did not build is never frozen.
-- An instrumenter for renders inside a Ractor must be shareable: a module
-  (`ActiveSupport::Notifications`) or a frozen object. Another one is kept,
-  for the main Ractor.
+- Only renders on the main Ractor report events: inside another Ractor the
+  instrumenter is the null one, as subscribers live on the main Ractor and
+  `ActiveSupport::Notifications` cannot be called from another one.
 - What a Ractor is handed (`Ractor.new(lines)`) is copied unless it is
   shareable.
+
+`Stationery.render_all` renders many documents at once across Ractors and
+answers their PDFs in the documents' order, the bytes `to_pdf` writes for
+each:
+
+```ruby
+invoices = orders.map { InvoicePdf.new(it.lines) }
+pdfs = Stationery.render_all(invoices, ractors: 4) # four Ractors
+pdfs = Stationery.render_all(invoices, tagged: true) # one Ractor per processor; options go to every to_pdf
+```
+
+- The documents are dealt in turn to the Ractors, each of which renders its
+  share with caches of its own: it parses the fonts and decodes the images
+  again, so a batch pays off when each Ractor has several documents to
+  render. `benchmark/ractors.rb` renders a batch of 48 invoices: on an
+  Apple M2 Max (12 cores, shared, about 1.3× load per core), Ruby 4.0.9
+  +YJIT, 5 November 2026, the best of three whole batches, 4 Ractors
+  rendered it 2.5× as fast as one render after another and 8 Ractors 3.0×,
+  where 4 or 8 threads rendered it 1.05×.
+- Each Ractor renders a copy of its documents, so what a render leaves on a
+  document (`warnings`, `page_count`) stays on the copy; render a document
+  whose warnings you need with `to_pdf`.
+- A document a Ractor cannot render is rendered on the main Ractor once the
+  others are done, the same bytes: its class's settings are not shareable,
+  it cannot be copied (it holds a Proc, a Method, a Thread), its view reads
+  what a Ractor cannot (a constant holding an unfrozen String), or its
+  render raised, in which case it raises there what `to_pdf` raises (an
+  error that is not a `StandardError`, such as a `SystemStackError`, also
+  prints the Ractor's backtrace). The `render_all.stationery` event,
+  reported from the main Ractor, names them (`main_ractor:`).
+- Below Ruby 4.0 (no `Ractor#value`), with `ractors: 1` or with options
+  that cannot be copied into a Ractor (a `shaper:` that is a Proc, unless
+  `Ractor.make_shareable` was run on it), every document is rendered on the
+  main Ractor, one after another.
+- Ruby warns that the Ractor API is experimental the first time a Ractor
+  starts; `Warning[:experimental] = false` silences it.
 
 The gem is held to this by [conformance-kit](https://github.com/zoolutions/conformance-kit):
 `bundle exec conformance-kit check` (on Ruby 4.0) renders a document of

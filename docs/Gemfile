@@ -57,7 +57,7 @@ group :development, :test do
   gem "rubocop-rake", require: false
   gem "rubocop-rspec", require: false
   gem "rubocop-thread_safety", require: false
-  gem "conformance-kit", "~> 0.4", require: false # its config/rubocop.yml, which the gem-level config inherits
+  gem "conformance-kit", "~> 0.5", require: false # its config/rubocop.yml, which the gem-level config inherits
 
   gem "rspec-rails"
 end

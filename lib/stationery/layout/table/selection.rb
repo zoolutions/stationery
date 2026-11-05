@@ -31,11 +31,13 @@ module Stationery
           self
         end
 
+        # Shareable, so a selection is styled inside any Ractor: a method
+        # defined with a block that is not runs on the main Ractor only.
         ATTRIBUTES.each do |name|
-          define_method(:"#{name}=") do |value|
+          define_method(:"#{name}=", &Stationery.shareable(proc do |value|
             cells.each { |cell| cell[name] = value }
             @table.invalidate!
-          end
+          end))
         end
 
         def self.indexes(spec, count)
