@@ -113,7 +113,7 @@ class Views::Docs::Pages::Elements < DocsUI::Page
           [ "link", "String", "nil", [ :md, "Makes the whole box clickable (a URL or `\"#anchor\"`)." ] ],
           [ "outset", "Box", "0", "Bleeds the background past the box, e.g. into the page margins." ],
           [ "break_inside", "nil, :auto, :avoid", "nil", [ :md, "See [Layout rules](/docs/layout-rules#break-inside)." ] ],
-          [ "decoration", ":slice, :clone", ":slice", "At a page cut: drop padding and border, or keep the padding." ],
+          [ "decoration", ":slice, :clone", ":slice", "At a page cut: drop padding and border, or keep padding, border and rounded corners." ],
           [ "rotate", "degrees", "0", [ :md, "Turns the painted box clockwise around its centre, like CSS `rotate()`. The layout rectangle is unchanged, the box never splits, and a `link:` keeps its unrotated rectangle (annotations live in page space)." ] ],
           [ "shadow", "true or Hash", "nil", [ :md, "A soft drop shadow under the box: `{ offset: [0, 4], blur: 8, color: \"#000000\", opacity: 0.15 }`, merged over those defaults. Painted as stacked, fading rounded rectangles (an artifact), it takes no layout space and is skipped on a fragment cut by a page break." ] ],
           [ "align / gap", "Symbol / Numeric", ":left / 0", "Horizontal alignment of the children and space between them." ]
@@ -232,13 +232,16 @@ class Views::Docs::Pages::Elements < DocsUI::Page
   def tables
     DocsUI::Section("table", description: "Selections, spans, DSL cells, repeating headers.") do
       md <<~'MD'
-        `table(rows, widths: nil, width: :auto, header: false, split_rows: false, cell: {}, anchor:, bookmark:) { |t| … }`
+        `table(rows, widths: nil, width: :auto, header: false, header_columns: false, split_rows: false, cell: {}, anchor:, bookmark:) { |t| … }`
 
         - **`rows`** is an Array or any Enumerable of rows. An Enumerator (lazy or not) whose table has a
           width for every column is read as pages reach it (below).
         - **Cells** are strings, layout nodes, procs built with the DSL (`-> { image logo }`) or components.
         - **`widths:`** per column: points, a fraction of the table (`0.25`), or `nil` for a share of the rest. **`width:`** `:auto`, `:full` or points.
         - **`header:`** `true` (one row) or a row count; header rows repeat after every page break.
+        - **`header_columns:`** `true` (one column) or a column count: the first cells of every row are row
+          headers in a tagged PDF (`TH`, `/Scope /Row`), as a label and value table needs. Nothing drawn
+          changes and they do not repeat; style them with `t.columns(0)`.
         - **`cell:`** defaults for every cell: `padding` (5), `borders` (all four), `border_width` (0.5),
           `border_color`, plus `background`, `color`, `weight`, `style`, `size`, `font`, `align`, `valign`,
           `letter_spacing`, `leading` and `markup`.
