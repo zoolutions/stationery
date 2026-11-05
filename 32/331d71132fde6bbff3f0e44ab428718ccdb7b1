@@ -1,0 +1,39 @@
+spec/integration/render_all_spec.rb
+  s_637ef0f8bd49d8::t_f9906885bd4ba7 110,112,116-118,121
+  s_637ef0f8bd49d8::t_3a6149c57cf266 119
+  s_637ef0f8bd49d8::t_323d017eb84a07 59-62,65-69,76,78-82,85,90-96
+  s_637ef0f8bd49d8::t_c8a442d72d9d1d 70
+  s_637ef0f8bd49d8::t_39684c3b6491be 114-115
+CHANGELOG.md
+  s_637ef0f8bd49d8::t_d3d31434b82879 6
+  s_637ef0f8bd49d8::t_4c925b7890ea65 5
+spec/stationery/render_all_spec.rb
+  s_637ef0f8bd49d8::t_c8a442d72d9d1d 53
+  s_637ef0f8bd49d8::t_323d017eb84a07 49-52
+lib/stationery/parallel.rb
+  s_637ef0f8bd49d8::t_9187d7b7e0761c 20-22,53
+  s_637ef0f8bd49d8::t_4c925b7890ea65 118
+  s_637ef0f8bd49d8::t_f1efb7aed280be 16-19,64,83-98,106-114,116-117
+lib/stationery/instrumentation.rb
+  s_637ef0f8bd49d8::t_9187d7b7e0761c 25,30-33,35,39
+README.md
+  s_637ef0f8bd49d8::t_d3d31434b82879 1915-1917,1990,1994-1996
+  s_637ef0f8bd49d8::t_4c925b7890ea65 2023-2024,2029-2031
+  s_637ef0f8bd49d8::t_a5def6b52348a2 2025-2028
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "32331d71132fde6bbff3f0e44ab428718ccdb7b1",
+  "prompts": {},
+  "sessions": {
+    "s_637ef0f8bd49d8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dc75878b-0aa1-4f2e-9358-9fe9c0694a0c",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
