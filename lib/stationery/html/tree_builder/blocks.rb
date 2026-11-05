@@ -140,19 +140,26 @@ module Stationery
 
         def dimension(value) = value&.[](/\A\s*(\d+)/, 1)&.to_i
 
+        # The rows of a `<tfoot>` come after the body's, wherever it is written, as a browser draws them.
         def table(element, marks, inherited, style)
-          rows = rows_of(element).filter_map do |row|
+          rows = []
+          footer = nil
+          each_row(element) do |row, in_footer|
             cells = elements(row).select { |cell| %w[td th].include?(cell.name) }
-            cells.map { |cell| cell(cell, marks, inherited) } unless cells.empty?
+            next if cells.empty?
+
+            cells.map! { |cell| cell(cell, marks, inherited) }
+            in_footer ? (footer ||= []) << cells : rows << cells
           end
-          Rich::Table.new(rows:, style:) unless rows.empty?
+          rows.concat(footer) if footer
+          Rich::Table.new(rows:, footer: footer ? footer.size : 0, style:) unless rows.empty?
         end
 
-        def rows_of(element)
-          elements(element).flat_map do |child|
-            next [child] if child.name == "tr"
-
-            TreeBuilder::SECTIONS.include?(child.name) ? rows_of(child) : []
+        def each_row(element, in_footer: false, &)
+          elements(element).each do |child|
+            if child.name == "tr" then yield child, in_footer
+            elsif TreeBuilder::SECTIONS.include?(child.name) then each_row(child, in_footer: child.name == "tfoot", &)
+            end
           end
         end
 
