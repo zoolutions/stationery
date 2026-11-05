@@ -1,0 +1,27 @@
+lib/stationery/layout/box.rb
+  s_637ef0f8bd49d8::t_b97b314d1a469e 11-13,158,160,162,166-170,178,219,225-227,229,274
+docs/app/views/docs/pages/elements.rb
+  s_637ef0f8bd49d8::t_b97b314d1a469e 116
+README.md
+  s_637ef0f8bd49d8::t_b97b314d1a469e 124
+docs/app/views/docs/pages/layout_rules.rb
+  s_637ef0f8bd49d8::t_b97b314d1a469e 102-105,108-109,114-119
+spec/stationery/layout/box_spec.rb
+  s_637ef0f8bd49d8::t_b97b314d1a469e 184,188-211
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "98436abb037ad27b25ea741627d576a923dbd083",
+  "prompts": {},
+  "sessions": {
+    "s_637ef0f8bd49d8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dc75878b-0aa1-4f2e-9358-9fe9c0694a0c",
+        "model": "unknown"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
