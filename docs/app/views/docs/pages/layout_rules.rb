@@ -99,12 +99,24 @@ class Views::Docs::Pages::LayoutRules < DocsUI::Page
     DocsUI::Section("Decoration at a cut", description: "slice or clone.") do
       md <<~'MD'
         When a box splits, each fragment's cut side is open. `decoration: :slice` (default) drops the padding
-        and border on that side, like CSS `box-decoration-break: slice`; `:clone` keeps the padding. Borders
-        are left open and rounded corners are cut square at the break.
+        and border on that side and cuts rounded corners square at the break, like CSS
+        `box-decoration-break: slice`. `:clone` draws every fragment as a whole box, like
+        `box-decoration-break: clone`: the padding, the border and the rounded corners are on the cut sides
+        too. The shadow is painted only under a box that is not split.
 
         ```ruby
-        box(background: "#F0FDFA", padding: 16, radius: 8, break_inside: :auto, decoration: :clone) do
+        box(background: "#F0FDFA", padding: 16, radius: 8, border: { color: "#0F766E" },
+            break_inside: :auto, decoration: :clone) do
           text long_callout
+        end
+        ```
+
+        A table inside a `:clone` box gets a frame that closes under its last row on every page, with the
+        header rows repeated above:
+
+        ```ruby
+        box(border: { color: "#4F46E5", sides: %i[left right bottom] }, break_inside: :auto, decoration: :clone) do
+          table(rows, width: :full, header: true, cell: { borders: [] })
         end
         ```
 
