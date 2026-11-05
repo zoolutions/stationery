@@ -2027,8 +2027,9 @@ pdfs = Stationery.render_all(invoices, tagged: true) # options are passed to eve
   prints the Ractor's backtrace). The `render_all.stationery` event,
   reported from the main Ractor, names them (`main_ractor:`).
 - Below Ruby 4.0 (no `Ractor#value`), with `ractors: 1` or with options
-  that cannot be copied into a Ractor (a `shaper:` that keeps state), every
-  document is rendered on the main Ractor, one after another.
+  that cannot be copied into a Ractor (a `shaper:` that is a Proc, unless
+  `Ractor.make_shareable` was run on it), every document is rendered on the
+  main Ractor, one after another.
 - Ruby warns that the Ractor API is experimental the first time a Ractor
   starts; `Warning[:experimental] = false` silences it.
 

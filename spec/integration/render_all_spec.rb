@@ -115,6 +115,12 @@ RSpec.describe "Stationery.render_all across Ractors", :ractor do
       expect(pdfs.map { text_of(it) }).to eq([ractor, ractor, "on the main Ractor", ractor, ractor])
     end
 
+    it "renders in a Ractor once it has been rendered with a shaper that cannot be copied" do
+      rendered = where.new.tap { it.to_pdf(shaper: FakeShapers::Recording.new) }
+
+      expect(text_of(Stationery.render_all([rendered, where.new], ractors: 2).first)).to eq("on another Ractor")
+    end
+
     it "is rendered on the main Ractor with every other document when the options cannot be copied" do
       pdfs = Stationery.render_all([where.new, where.new], ractors: 2, shaper: FakeShapers::Recording.new)
 

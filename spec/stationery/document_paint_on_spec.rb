@@ -9,6 +9,15 @@ RSpec.describe Stationery::Document, "#paint_on" do
     pages.all? { |page| page.content.empty? && page.annotations.empty? && page.resource_names.empty? && !page.sealed? }
   end
 
+  it "leaves the document holding what the render reports, not its layout" do
+    document = CanaryDocuments::Letter.new(%w[One Two])
+    held = -> { document.instance_variables.reject { document.instance_variable_get(it).nil? } }
+    before = held.call
+    document.to_pdf(shaper: FakeShapers::Recording.new)
+
+    expect(held.call - before).to contain_exactly(:@warnings, :@page_count, :@fields)
+  end
+
   it "covers every example" do
     expect(Dir[File.join(RenderDigests::ROOT, "examples/*.rb")].size).to eq(RenderDigests::EXAMPLES.size)
   end

@@ -326,7 +326,10 @@ module Stationery
     # `canvases` makes (see PDF::Canvases and Canvas::Interface): what a
     # render does before its output is written, whatever the output is.
     # Answers the pages, hands each to `each_page` as soon as its content is
-    # painted, and yields the bookmarks whose anchors were painted.
+    # painted, and yields the bookmarks whose anchors were painted. The
+    # document keeps its warnings and page count, not the layout: a rendered
+    # document is as light to keep, and to copy into a Ractor
+    # (Stationery.render_all), as one never rendered.
     def paint_on(canvases, warnings: Warnings.new, shaper: self.class.config[:shaping][:shaper], each_page: nil,
                  stand_ins: false, max_pages: self.class.config[:max_pages])
       book = book_for(warnings, shaper, stand_ins)
@@ -338,6 +341,8 @@ module Stationery
       @warnings = warnings
       @page_count = pages.size
       pages
+    ensure
+      @_builder = nil
     end
 
     # Used by page templates to build nodes into their own root.

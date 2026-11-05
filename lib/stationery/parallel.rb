@@ -109,13 +109,15 @@ module Stationery
       # a port, which copies it as Ractor.new does.
       def copyable?(document)
         port = ::Ractor::Port.new
-        port.send(document)
-        port.receive
-        true
-      rescue TypeError, ::Ractor::Error
-        false
-      ensure
-        port.close
+        begin
+          port.send(document)
+          port.receive
+          true
+        rescue TypeError, ::Ractor::Error
+          false
+        ensure
+          port.close
+        end
       end
     end
   end
