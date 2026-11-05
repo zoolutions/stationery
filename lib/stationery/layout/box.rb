@@ -210,7 +210,7 @@ module Stationery
 
         stroke = @border[:width]
         area = Rect.new(x, y, width, height)
-        if @border[:sides].size == 4 && @radius.positive?
+        if @border[:sides].size == 4 && rounded?
           half = stroke / 2.0
           cut(canvas, area, area.inset(half, half, half, half)) do |shape|
             canvas.rounded_rect(*shape.to_h.values, radius: @radius, stroke: @border[:color], line_width: stroke)
@@ -222,13 +222,16 @@ module Stationery
 
       def open?(index) = @open.include?(Geometry::SIDES.key(index))
 
+      # One radius for every corner or `[top_left, top_right, bottom_right, bottom_left]`.
+      def rounded? = Array(@radius).any?(&:positive?)
+
       # Under `decoration: :slice` cut edges are square: the rounded shape runs
       # past them by its radius and stroke, clipped to the fragment. Under
       # `:clone` every fragment keeps its own rounded shape.
       def cut(canvas, area, shape)
-        return yield(shape) if sliced.empty? || !@radius.positive?
+        return yield(shape) if sliced.empty? || !rounded?
 
-        reach = @radius + (@border ? @border[:width] : 0)
+        reach = Array(@radius).max + (@border ? @border[:width] : 0)
         top = @open.include?(:top) ? reach : 0
         bottom = @open.include?(:bottom) ? reach : 0
         canvas.clip(area.x, area.y, area.width, area.height) do
@@ -273,7 +276,7 @@ module Stationery
       # `overflow: :hidden` keeps the content inside the rounded outline; cut
       # sides are square or rounded like the background's.
       def clip_outline(canvas, area, &)
-        return yield unless @overflow == :hidden && @radius.positive?
+        return yield unless @overflow == :hidden && rounded?
 
         cut(canvas, area, area) do |shape|
           canvas.clip(shape.x, shape.y, shape.width, shape.height, radius: @radius, &)
