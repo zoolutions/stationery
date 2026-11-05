@@ -10,7 +10,14 @@
 - `html` tables tag the `<th>` cells that start every body row as row headers (`TH`, `/Scope /Row`),
   as many columns as the shortest run of them: `<tr><th>Born</th><td>1815</td></tr>` reads as a label and
   its value. A body row that starts with a `<td>` leaves the table without row headers, and the header
-  row is found as before (`Rich::Renderer`).
+  row is found as before. A `<tfoot>` row is not a body row and does not set the count, so the usual
+  `<tfoot><tr><td>Total</td>…` keeps the body's row headers; it takes the count as every row of the
+  table does, so its first cells are tagged `TH` too, a `<td>Total</td>` among them. A table of a
+  header row alone, or of header and footer rows, has none (`Rich::Renderer`).
+- `html` tables draw the rows of a `<tfoot>` after the body's wherever it is written, as browsers do,
+  and the rich-text table knows them (`Rich::Table#footer`, how many of its last rows are a footer).
+  **Behaviour change:** a `<tfoot>` written before `<tbody>`, the order HTML 4 asked for, drew first and
+  now draws last.
 
 ## 0.13.0 (2026-10-16)
 

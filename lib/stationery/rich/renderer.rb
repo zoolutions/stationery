@@ -103,7 +103,7 @@ module Stationery
 
       def table(table)
         header = table.rows.first&.all?(&:header) ? 1 : 0
-        header_columns = header_columns(table.rows, header)
+        header_columns = header_columns(table.rows, header, table.rows.size - table.footer)
         rows = table.rows.map { |row| row.map { |cell| cell_content(cell) } }
         cell = @styles[:table][:cell].merge(border_options(table.style[:border]))
         sized(table.style[:width]) do |width|
@@ -112,14 +112,13 @@ module Stationery
       end
 
       # The th cells every body row starts with, as many as the shortest run
-      # of them; none when a body row starts with a td.
-      def header_columns(rows, header)
-        return 0 unless rows[header]&.first&.header
-
+      # of them; none when a body row starts with a td, and none without a
+      # body row (a table of a header row, or of header and footer rows). A
+      # footer row is not a body row: it takes the count, it does not set it.
+      def header_columns(rows, header, footer_start)
         count = nil
-        rows.each_with_index do |row, index|
-          next if index < header
-
+        header.upto(footer_start - 1) do |index|
+          row = rows[index]
           run = row.index { |cell| !cell.header } || row.size
           return 0 if run.zero?
 

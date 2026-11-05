@@ -119,7 +119,16 @@ RSpec.describe Stationery::HTML::TreeBuilder do
           [cell(para("H1"), header: true, align: :right), cell(para("H2"), header: true, align: :center)],
           [cell(para(txt("a", color: "#FF0000"))), cell(para(txt("b", bold: true)), align: :left)],
           [cell(para("f")), cell]
-        )]
+        ).with(footer: 1)]
+      )
+    end
+
+    it "puts the footer rows after the body, as many as there are, wherever the tfoot is written" do
+      html = "<table><tfoot><tr><td>f1</td></tr><tr><td>f2</td></tr></tfoot>" \
+             "<tbody><tr><td>a</td></tr></tbody><tr><td>b</td></tr></table>"
+
+      expect(parse(html)).to eq(
+        [table([cell(para("a"))], [cell(para("b"))], [cell(para("f1"))], [cell(para("f2"))]).with(footer: 2)]
       )
     end
 

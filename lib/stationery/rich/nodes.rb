@@ -35,8 +35,9 @@ module Stationery
       def initialize(text:, language:, style: {}) = super
     end
     Rule = Data.define
-    Table = Data.define(:rows, :style) do
-      def initialize(rows:, style: {}) = super
+    # `footer` is how many of the last rows are a footer (`<tfoot>` in HTML).
+    Table = Data.define(:rows, :footer, :style) do
+      def initialize(rows:, footer: 0, style: {}) = super
     end
     Cell = Data.define(:header, :align, :blocks, :style) do
       def initialize(header:, align:, blocks:, style: {}) = super

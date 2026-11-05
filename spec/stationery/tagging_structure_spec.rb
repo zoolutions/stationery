@@ -139,6 +139,32 @@ RSpec.describe "Tagged PDF structure" do # rubocop:disable RSpec/DescribeClass
       expect(elements_of(mixed, :TH)).to be_empty
     end
 
+    it "leaves a footer row out of the html row-header count and tags its first cell with the body's" do
+      pdf = build do
+        html "<table><thead><tr><th>Item</th><th>Price</th></tr></thead>" \
+             "<tfoot><tr><td>Total</td><td>7</td></tr></tfoot>" \
+             "<tbody><tr><th>Tea</th><td>3</td></tr><tr><th>Cake</th><td>4</td></tr></tbody></table>"
+      end.to_pdf
+
+      expect(elements_of(pdf, :TH).map { |th| attributes_of(pdf, th).first[:Scope] })
+        .to eq(%i[Both Column Row Row Row])
+      expect(text_of(pdf)).to match(/Cake.*Total/m)
+    end
+
+    it "gives an html table of only a header row, or of a header and a footer row, no row headers" do
+      header_only = build { html "<table><tr><th>Item</th><th>Price</th></tr></table>" }.to_pdf
+      with_footer = build do
+        html "<table><thead><tr><th>Item</th><th>Price</th></tr></thead>" \
+             "<tfoot><tr><th>Total</th><td>7</td></tr></tfoot></table>"
+      end.to_pdf
+
+      expect(elements_of(header_only, :TH).map { |th| attributes_of(header_only, th).first[:Scope] })
+        .to eq(%i[Column Column])
+      expect(elements_of(with_footer, :TH).map { |th| attributes_of(with_footer, th).first[:Scope] })
+        .to eq(%i[Column Column])
+      expect(elements_of(with_footer, :TD).size).to eq(2)
+    end
+
     it "keeps row headers on every page of a table cut across pages and read from a stream" do
       rows = Enumerator.new { |out| 30.times { |i| out << ["row #{i}", i.to_s] } }
       pdf = build { table(rows, widths: [120, 60], header_columns: 1) }.to_pdf
