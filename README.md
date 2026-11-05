@@ -1923,6 +1923,7 @@ Rails the events go to a null instrumenter that costs one method call.
 | `image.stationery` | decoding one image (cache misses only) | `format:`, `width:`, `height:`, `bytes:` |
 | `font.stationery` | parsing a font file (`action: :parse`, cache misses only) or subsetting one for a document (`action: :subset`, `glyphs:`) | `path:` or `font:`, `action:` |
 | `parse.stationery` | parsing an `html` or `markdown` source | `format:`, `bytes:` |
+| `render_all.stationery` | the whole `Stationery.render_all` | `documents:` (count), `ractors:` (started), `main_ractor:` (indexes of the documents rendered on the main Ractor) |
 
 Payload values known only afterwards (`pages:`, `bytes:`) are filled in
 before the event finishes, so subscribers always see them. Log every phase
@@ -1994,6 +1995,36 @@ pdfs = Array.new(4) { |i| Ractor.new(["Invoice #{i}"]) { |lines| InvoicePdf.new(
   for the main Ractor.
 - What a Ractor is handed (`Ractor.new(lines)`) is copied unless it is
   shareable.
+
+`Stationery.render_all` renders many documents at once across Ractors and
+answers their PDFs in the documents' order, the bytes `to_pdf` writes for
+each:
+
+```ruby
+invoices = orders.map { InvoicePdf.new(it.lines) }
+pdfs = Stationery.render_all(invoices, ractors: 4) # one Ractor per processor without ractors:
+pdfs = Stationery.render_all(invoices, tagged: true) # options are passed to every to_pdf
+```
+
+- The documents are dealt in turn to the Ractors, each of which renders its
+  share with caches of its own: it parses the fonts and decodes the images
+  again, so a batch pays off when each Ractor has several documents to
+  render. Over 48 invoices (`benchmark/ractors.rb`, Ruby 4.0.9, a whole
+  batch each) 4 Ractors rendered 2.9× as fast as one after another and 8
+  Ractors 3.7×, where 4 or 8 threads rendered 1.1×.
+- Each Ractor renders a copy of its documents, so what a render leaves on a
+  document (`warnings`, `page_count`) stays on the copy; render a document
+  whose warnings you need with `to_pdf`.
+- A document a Ractor cannot render is rendered on the main Ractor once the
+  others are done, the same bytes: its class's settings are not shareable,
+  it cannot be copied (it holds a Proc, a Method, a Thread; the documents
+  dealt to the same Ractor go with it), its view reads what a Ractor cannot
+  (a constant holding an unfrozen String), or its render raised, in which
+  case it raises there what `to_pdf` raises. The `render_all.stationery`
+  event names them (`main_ractor:`).
+- Below Ruby 4.0 (no `Ractor#value`), with `ractors: 1` or with an
+  instrumenter that is not shareable, every document is rendered on the main
+  Ractor, one after another.
 
 The gem is held to this by [conformance-kit](https://github.com/zoolutions/conformance-kit):
 `bundle exec conformance-kit check` (on Ruby 4.0) renders a document of

@@ -113,8 +113,10 @@ module Stationery
             self
           end
 
+          # Shareable, as Table::Selection's are.
           Table::Selection::ATTRIBUTES.each do |name|
-            define_method(:"#{name}=") { |value| @stream.style(@rows, @columns, name, value) }
+            setter = proc { |value| @stream.style(@rows, @columns, name, value) }
+            define_method(:"#{name}=", &Stationery.shareable(setter))
           end
         end
       end

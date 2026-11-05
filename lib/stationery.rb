@@ -203,6 +203,7 @@ require_relative "stationery/regions"
 require_relative "stationery/page_templates"
 require_relative "stationery/structure"
 require_relative "stationery/document"
+require_relative "stationery/parallel"
 
 # Pure-Ruby PDF documents built from Phlex-style components.
 module Stationery

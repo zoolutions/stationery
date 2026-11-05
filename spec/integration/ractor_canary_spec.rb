@@ -19,6 +19,12 @@ RSpec.describe "a render inside a non-main Ractor" do
     end
   end
 
+  describe "of tables styled through selections, one of them streamed" do
+    let(:subject_call) { -> { CanaryDocuments.pinned { CanaryDocuments::Styled.new.to_pdf } } }
+
+    it_behaves_like "runs inside a non-main Ractor"
+  end
+
   # A parse never changes once built, so it can be made shareable at boot and
   # handed to a Ractor as it is, not copied.
   describe "with a font parsed on the main Ractor" do
