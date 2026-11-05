@@ -2009,9 +2009,11 @@ pdfs = Stationery.render_all(invoices, tagged: true) # options are passed to eve
 - The documents are dealt in turn to the Ractors, each of which renders its
   share with caches of its own: it parses the fonts and decodes the images
   again, so a batch pays off when each Ractor has several documents to
-  render. Over 48 invoices (`benchmark/ractors.rb`, Ruby 4.0.9, a whole
-  batch each) 4 Ractors rendered 2.9× as fast as one after another and 8
-  Ractors 3.7×, where 4 or 8 threads rendered 1.1×.
+  render. `benchmark/ractors.rb` renders a batch of 48 invoices: on an
+  Apple M2 Max (12 cores, shared, about 1.3× load per core), Ruby 4.0.9
+  +YJIT, 5 November 2026, the best of three whole batches, 4 Ractors
+  rendered it 2.5× as fast as one render after another and 8 Ractors 3.0×,
+  where 4 or 8 threads rendered it 1.05×.
 - Each Ractor renders a copy of its documents, so what a render leaves on a
   document (`warnings`, `page_count`) stays on the copy; render a document
   whose warnings you need with `to_pdf`.
@@ -2025,6 +2027,8 @@ pdfs = Stationery.render_all(invoices, tagged: true) # options are passed to eve
 - Below Ruby 4.0 (no `Ractor#value`), with `ractors: 1` or with an
   instrumenter that is not shareable, every document is rendered on the main
   Ractor, one after another.
+- Ruby warns that the Ractor API is experimental the first time a Ractor
+  starts; `Warning[:experimental] = false` silences it.
 
 The gem is held to this by [conformance-kit](https://github.com/zoolutions/conformance-kit):
 `bundle exec conformance-kit check` (on Ruby 4.0) renders a document of

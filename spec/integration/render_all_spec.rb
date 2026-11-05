@@ -125,6 +125,13 @@ RSpec.describe "Stationery.render_all across Ractors", :ractor do
     end
   end
 
+  it "raises an error that is not a StandardError from the main Ractor, not as a Ractor::RemoteError" do
+    deep = Class.new(Stationery::Document) { def view_template = raise(SystemStackError, "too deep") }.finalize!
+
+    expect { Stationery.render_all([documents.first, deep.new], ractors: 2) }
+      .to raise_error(SystemStackError, "too deep")
+  end
+
   it "raises what to_pdf raises, from the main Ractor" do
     broken = Class.new(Stationery::Document) { def view_template = raise(ArgumentError, "no lines") }.finalize!
 

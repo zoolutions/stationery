@@ -62,10 +62,19 @@ module Stationery
         shares = Array.new(count) { |share| indexes.select.with_index { |_, position| position % count == share } }
         workers = shares.map { |share| [share, start(share.map { documents[it] }, options)] }
         workers.each do |share, ractor|
-          rendered = ractor&.value
+          rendered = rendered(ractor)
           share.each_with_index { |index, position| pdfs[index] = rendered[position] } if rendered
         end
         workers.count { |_, ractor| ractor }
+      end
+
+      # What a Ractor rendered, nil when none was started or it ended on an
+      # error that is not a StandardError (a SystemStackError): the main
+      # Ractor renders its share and raises that error itself.
+      def rendered(ractor)
+        ractor&.value
+      rescue ::Ractor::RemoteError
+        nil
       end
 
       def shareable?(document) = document.is_a?(Document) && ::Ractor.shareable?(document.class.config)
