@@ -4,8 +4,9 @@ require "erb"
 require "stationery/preview"
 
 module Stationery
-  # Serves Stationery::Preview classes at /rails/stationery/previews. Loaded
-  # by the Railtie when config.stationery.show_previews is on.
+  # Serves Stationery::Preview classes at /rails/stationery/previews.
+  # Autoloaded, on the first request to that route, when the Railtie has
+  # config.stationery.show_previews on.
   class PreviewsController < ActionController::Base
     before_action :require_previews
     before_action :load_previews
