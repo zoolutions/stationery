@@ -2007,8 +2007,8 @@ each:
 
 ```ruby
 invoices = orders.map { InvoicePdf.new(it.lines) }
-pdfs = Stationery.render_all(invoices, ractors: 4) # one Ractor per processor without ractors:
-pdfs = Stationery.render_all(invoices, tagged: true) # options are passed to every to_pdf
+pdfs = Stationery.render_all(invoices, ractors: 4) # four Ractors
+pdfs = Stationery.render_all(invoices, tagged: true) # one Ractor per processor; options go to every to_pdf
 ```
 
 - The documents are dealt in turn to the Ractors, each of which renders its
