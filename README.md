@@ -871,6 +871,9 @@ and across page breaks: a paragraph continued on the next page stays one `P`.
   `BlockQuote`, and give images their `alt`. In `html`, `<img alt="">` is decoration as `alt: false`
   is (an `<img>` without the attribute is a description missing). Markdown has no way to say so:
   `![](photo.png)` is a description missing, and decoration goes through `html` or `image`.
+- In `html` tables, a first row of `<th>` cells is the header row, and the `<th>` cells every other row
+  starts with are row headers (`header_columns:`, as many as the shortest run of them); a row that
+  starts with a `<td>` leaves the table without row headers.
 - Headers, footers and page templates are pagination artifacts, but for their links: a `link:` one
   paints (`text(link:)`, markup, `html`, `markdown`, `box(link:)`) is a `Link` of the `Document`
   holding its text and its annotation, read after the content of its page, in the order header,

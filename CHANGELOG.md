@@ -7,6 +7,10 @@
   column is `/Scope /Both`, so a screen reader names the row with every value it reads. A row header
   is found by the column it starts in, under spans as well. It is tagging only: nothing drawn changes,
   header columns do not repeat, and a table without it is tagged as before (`Layout::Table`).
+- `html` tables tag the `<th>` cells that start every body row as row headers (`TH`, `/Scope /Row`),
+  as many columns as the shortest run of them: `<tr><th>Born</th><td>1815</td></tr>` reads as a label and
+  its value. A body row that starts with a `<td>` leaves the table without row headers, and the header
+  row is found as before (`Rich::Renderer`).
 
 ## 0.13.0 (2026-10-16)
 

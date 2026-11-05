@@ -103,9 +103,29 @@ module Stationery
 
       def table(table)
         header = table.rows.first&.all?(&:header) ? 1 : 0
+        header_columns = header_columns(table.rows, header)
         rows = table.rows.map { |row| row.map { |cell| cell_content(cell) } }
         cell = @styles[:table][:cell].merge(border_options(table.style[:border]))
-        sized(table.style[:width]) { |width| @component.table(rows, header:, cell:, **width, **column_widths(table)) }
+        sized(table.style[:width]) do |width|
+          @component.table(rows, header:, header_columns:, cell:, **width, **column_widths(table))
+        end
+      end
+
+      # The th cells every body row starts with, as many as the shortest run
+      # of them; none when a body row starts with a td.
+      def header_columns(rows, header)
+        return 0 unless rows[header]&.first&.header
+
+        count = nil
+        rows.each_with_index do |row, index|
+          next if index < header
+
+          run = row.index { |cell| !cell.header } || row.size
+          return 0 if run.zero?
+
+          count = run if count.nil? || run < count
+        end
+        count || 0
       end
 
       def cell_content(cell)
