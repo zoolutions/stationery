@@ -1,0 +1,13 @@
+docs/Gemfile.lock
+  ai_agent 4,513
+lib/stationery/version.rb
+  ai_agent 4
+Gemfile.lock
+  ai_agent 4,188
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "8d2e60f2ea7868d9311a8c4aafab156c8410a1bf",
+  "prompts": {}
+}
