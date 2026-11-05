@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Tables take `header_columns:` (an Integer, or `true` for one), the row headers of a tagged PDF: the
+  first cells of every row are `TH` with `/Scope /Row`, and a cell in both a header row and a header
+  column is `/Scope /Both`, so a screen reader names the row with every value it reads. A row header
+  is found by the column it starts in, under spans as well. It is tagging only: nothing drawn changes,
+  header columns do not repeat, and a table without it is tagged as before (`Layout::Table`).
+- `html` tables tag the `<th>` cells that start every body row as row headers (`TH`, `/Scope /Row`),
+  as many columns as the shortest run of them: `<tr><th>Born</th><td>1815</td></tr>` reads as a label and
+  its value. A body row that starts with a `<td>` leaves the table without row headers, and the header
+  row is found as before (`Rich::Renderer`).
 - A box split across pages with `decoration: :clone` draws every fragment as a whole box, as CSS `box-decoration-break: clone` does: the border is drawn on the cut sides too, with room kept for it, and a rounded box keeps its rounded corners at the break, its background and an `overflow: :hidden` clip included. A table inside such a box gets a frame that closes under the last row on every page: `box(border: { sides: %i[left right bottom] }, decoration: :clone) { table(rows, header: true, cell: { borders: [] }) }`. The shadow is still painted only under a box that is not split, and `outset:` still bleeds only on closed sides. `decoration: :slice`, the default, is unchanged, and so is every document that does not use `:clone`. `Layout::Box`.
 - **Behaviour changes:** a split box with `decoration: :clone` and a `border:` draws the border on its cut sides, and its content there moves in by the border's width; with a `radius:`, the cut corners are rounded instead of square. Without a border or a radius, a `:clone` box renders as before.
 

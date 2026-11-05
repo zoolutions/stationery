@@ -232,13 +232,16 @@ class Views::Docs::Pages::Elements < DocsUI::Page
   def tables
     DocsUI::Section("table", description: "Selections, spans, DSL cells, repeating headers.") do
       md <<~'MD'
-        `table(rows, widths: nil, width: :auto, header: false, split_rows: false, cell: {}, anchor:, bookmark:) { |t| … }`
+        `table(rows, widths: nil, width: :auto, header: false, header_columns: false, split_rows: false, cell: {}, anchor:, bookmark:) { |t| … }`
 
         - **`rows`** is an Array or any Enumerable of rows. An Enumerator (lazy or not) whose table has a
           width for every column is read as pages reach it (below).
         - **Cells** are strings, layout nodes, procs built with the DSL (`-> { image logo }`) or components.
         - **`widths:`** per column: points, a fraction of the table (`0.25`), or `nil` for a share of the rest. **`width:`** `:auto`, `:full` or points.
         - **`header:`** `true` (one row) or a row count; header rows repeat after every page break.
+        - **`header_columns:`** `true` (one column) or a column count: the first cells of every row are row
+          headers in a tagged PDF (`TH`, `/Scope /Row`), as a label and value table needs. Nothing drawn
+          changes and they do not repeat; style them with `t.columns(0)`.
         - **`cell:`** defaults for every cell: `padding` (5), `borders` (all four), `border_width` (0.5),
           `border_color`, plus `background`, `color`, `weight`, `style`, `size`, `font`, `align`, `valign`,
           `letter_spacing`, `leading` and `markup`.
