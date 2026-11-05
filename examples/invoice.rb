@@ -9,8 +9,8 @@
 require "stationery"
 
 class ExampleInvoice < Stationery::Document
-  FONTS = File.expand_path("../spec/fixtures/fonts", __dir__)
-  LOGO = File.expand_path("assets/logo.png", __dir__)
+  FONTS = File.expand_path("../spec/fixtures/fonts", __dir__).freeze
+  LOGO = File.expand_path("assets/logo.png", __dir__).freeze
 
   ACCENT = "#4F46E5"
   INK = "#1F2937"
