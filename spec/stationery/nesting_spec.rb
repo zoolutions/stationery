@@ -160,10 +160,12 @@ RSpec.describe "nesting limits" do # rubocop:disable RSpec/DescribeClass
     def parse(source) = Stationery::Markdown.parse(source)
 
     # Generous: each of these took 6 to 17 seconds before it was bounded.
+    # CPU time, not wall time: on a loaded machine the wait for a CPU is not
+    # the parser's.
     def within(seconds)
-      started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      started = Process.clock_gettime(Process::CLOCK_PROCESS_CPUTIME_ID)
       yield
-      expect(Process.clock_gettime(Process::CLOCK_MONOTONIC) - started).to be < seconds
+      expect(Process.clock_gettime(Process::CLOCK_PROCESS_CPUTIME_ID) - started).to be < seconds
     end
 
     it "nests emphasis as deep as it is typed, without recursing" do
