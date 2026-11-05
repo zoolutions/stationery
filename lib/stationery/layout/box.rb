@@ -175,7 +175,7 @@ module Stationery
       # Stacked rounded rectangles under the box, the outermost grown by the
       # blur and each fainter, so the centre sums to the opacity and the edge
       # fades. An artifact: decoration, not content. Skipped on a fragment
-      # with cut sides, whose corners are square anyway.
+      # with cut sides.
       def paint_shadow(canvas, x, y, width, height)
         return unless @shadow && @open.empty?
 

@@ -115,7 +115,7 @@ class Views::Docs::Pages::LayoutRules < DocsUI::Page
         header rows repeated above:
 
         ```ruby
-        box(border: { color: "#4F46E5", sides: %i[left right bottom] }, decoration: :clone) do
+        box(border: { color: "#4F46E5", sides: %i[left right bottom] }, break_inside: :auto, decoration: :clone) do
           table(rows, width: :full, header: true, cell: { borders: [] })
         end
         ```
