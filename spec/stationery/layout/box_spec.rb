@@ -181,11 +181,34 @@ RSpec.describe Stationery::Layout::Box do
       expect(top_y(pdf, 1)).to be_within(0.01).of(top_y(plain, 0))
     end
 
-    it "keeps padding but not the border at the cut with decoration: :clone" do
+    it "keeps padding and border at the cut with decoration: :clone" do
       plain, = render_layout(lines_of(20))
       pdf, = render_layout(box(lines_of(20), padding: 10, border: { width: 2 }, decoration: :clone))
 
-      expect(top_y(pdf, 1)).to be_within(0.01).of(top_y(plain, 0) - 10)
+      expect(top_y(pdf, 1)).to be_within(0.01).of(top_y(plain, 0) - 12)
+      expect([lines_on(pdf, 0), lines_on(pdf, 1)]).to eq([4, 4])
+    end
+
+    it "closes every fragment with its bottom border under decoration: :clone, inside the page" do
+      pdf, = render_layout(box(lines_of(20), padding: 4, border: { width: 2, sides: %i[left right bottom] },
+                                             decoration: :clone))
+      bottoms = page_contents(pdf).map { |content| content.scan(/\S+ (\S+) m\n\S+ (\S+) l\nS/) }
+                                  .map { |segments| segments.select { |(y1, y2)| y1 == y2 }.map { |(y, _)| y.to_f } }
+      lowest = (0..1).map { |page| reader_for(pdf).pages[page].runs.map(&:y).min }
+
+      expect([lines_on(pdf, 0), lines_on(pdf, 1)]).to eq([3, 3])
+      expect(bottoms.map(&:size)).to eq([1, 1])
+      expect(bottoms.flatten).to all(be >= 20 + 1 - 0.01)
+      expect(lowest.zip(bottoms.flatten)).to all(satisfy { |text, line| text > line + 1 })
+    end
+
+    it "rounds every fragment's corners under decoration: :clone instead of cutting them square" do
+      pdf, paginator = render_layout(box(lines_of(20), background: "#EEEEEE", radius: 6, border: { width: 1 },
+                                                       decoration: :clone))
+
+      expect(page_contents(pdf)).to all(satisfy { |content| !content.include?("W n") })
+      expect(page_contents(pdf).map { |content| content.scan(" c\n").size }).to eq([8, 8])
+      expect(paginator.warnings).to be_empty
     end
 
     it "cuts rounded corners square by clipping the fragment" do

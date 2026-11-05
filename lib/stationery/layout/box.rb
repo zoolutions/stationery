@@ -8,7 +8,9 @@ module Stationery
     # moves to the next page whole when it fits there and continues across
     # pages when it does not (`break_inside: :auto` splits at any break,
     # `:avoid` never). A fragment's cut sides are `open`: `decoration: :slice`
-    # drops their padding and border, `:clone` keeps the padding. A
+    # drops their padding and border and cuts rounded corners square there,
+    # `:clone` draws each fragment as a whole box, its padding, border and
+    # rounded corners on the cut sides too (CSS `box-decoration-break`). A
     # fixed-height box can truncate or shrink text that does not fit
     # (`overflow:`) and never splits. `min_height:` is a floor that does split:
     # the first fragment keeps as much of it as the page holds and the next
@@ -153,12 +155,18 @@ module Stationery
       end
 
       def insets(open = @open)
+        cut = sliced(open)
         border = @border ? @border[:width] : 0
-        sides = @border ? @border[:sides] - open : []
+        sides = @border ? @border[:sides] - cut : []
         Geometry::SIDES.keys.zip(@padding).map do |side, padding|
-          (open.include?(side) && @decoration == :slice ? 0 : padding) + (sides.include?(side) ? border : 0)
+          (cut.include?(side) ? 0 : padding) + (sides.include?(side) ? border : 0)
         end
       end
+
+      # The open sides that lose their padding, border and rounded corners:
+      # all of them under `decoration: :slice`, none under `:clone`, which
+      # decorates every fragment as a whole box.
+      def sliced(open = @open) = @decoration == :slice ? open : []
 
       def horizontal = insets[1] + insets[3]
       def vertical(open = @open) = insets(open).values_at(0, 2).sum
@@ -167,7 +175,7 @@ module Stationery
       # Stacked rounded rectangles under the box, the outermost grown by the
       # blur and each fainter, so the centre sums to the opacity and the edge
       # fades. An artifact: decoration, not content. Skipped on a fragment
-      # with cut sides, whose corners are square anyway.
+      # with cut sides.
       def paint_shadow(canvas, x, y, width, height)
         return unless @shadow && @open.empty?
 
@@ -208,16 +216,17 @@ module Stationery
             canvas.rounded_rect(*shape.to_h.values, radius: @radius, stroke: @border[:color], line_width: stroke)
           end
         else
-          (@border[:sides] - @open).each { |side| border_side(canvas, side, area, stroke) }
+          (@border[:sides] - sliced).each { |side| border_side(canvas, side, area, stroke) }
         end
       end
 
       def open?(index) = @open.include?(Geometry::SIDES.key(index))
 
-      # Cut edges are square: the rounded shape runs past them by its radius
-      # and stroke, clipped to the fragment.
+      # Under `decoration: :slice` cut edges are square: the rounded shape runs
+      # past them by its radius and stroke, clipped to the fragment. Under
+      # `:clone` every fragment keeps its own rounded shape.
       def cut(canvas, area, shape)
-        return yield(shape) if @open.empty? || !@radius.positive?
+        return yield(shape) if sliced.empty? || !@radius.positive?
 
         reach = @radius + (@border ? @border[:width] : 0)
         top = @open.include?(:top) ? reach : 0
@@ -262,7 +271,7 @@ module Stationery
       end
 
       # `overflow: :hidden` keeps the content inside the rounded outline; cut
-      # sides stay square like the background's.
+      # sides are square or rounded like the background's.
       def clip_outline(canvas, area, &)
         return yield unless @overflow == :hidden && @radius.positive?
 
