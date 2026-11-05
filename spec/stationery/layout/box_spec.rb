@@ -229,7 +229,15 @@ RSpec.describe Stationery::Layout::Box do
       pdf, = render_layout(box(lines_of(20), background: "#EEEEEE", radius: [6, 0, 6, 0], border: { width: 1 },
                                              decoration: :clone))
 
+      expect(page_contents(pdf)).to all(satisfy { |content| !content.include?("W n") })
       expect(page_contents(pdf).map { |content| content.scan(" c\n").size }).to eq([4, 4])
+    end
+
+    it "clips the content to per-corner radii under overflow: :hidden" do
+      pdf, = render_layout(box(lines_of(20), radius: [6, 0, 6, 0], overflow: :hidden, decoration: :clone))
+
+      expect(page_contents(pdf).map { |content| content.scan("W n").size }).to eq([1, 1])
+      expect(page_contents(pdf).map { |content| content.scan(" c\n").size }).to eq([2, 2])
     end
 
     it "cuts rounded corners square by clipping the fragment" do

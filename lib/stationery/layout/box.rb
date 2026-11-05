@@ -223,7 +223,7 @@ module Stationery
       def open?(index) = @open.include?(Geometry::SIDES.key(index))
 
       # One radius for every corner or `[top_left, top_right, bottom_right, bottom_left]`.
-      def rounded? = Array(@radius).any?(&:positive?)
+      def rounded? = @radius.is_a?(Array) ? @radius.any?(&:positive?) : @radius.positive?
 
       # Under `decoration: :slice` cut edges are square: the rounded shape runs
       # past them by its radius and stroke, clipped to the fragment. Under
@@ -231,7 +231,7 @@ module Stationery
       def cut(canvas, area, shape)
         return yield(shape) if sliced.empty? || !rounded?
 
-        reach = Array(@radius).max + (@border ? @border[:width] : 0)
+        reach = (@radius.is_a?(Array) ? @radius.max : @radius) + (@border ? @border[:width] : 0)
         top = @open.include?(:top) ? reach : 0
         bottom = @open.include?(:bottom) ? reach : 0
         canvas.clip(area.x, area.y, area.width, area.height) do
