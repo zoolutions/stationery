@@ -223,7 +223,7 @@ module Stationery
       def open?(index) = @open.include?(Geometry::SIDES.key(index))
 
       # One radius for every corner or `[top_left, top_right, bottom_right, bottom_left]`.
-      def rounded? = @radius.is_a?(Array) ? @radius.any?(&:positive?) : @radius.positive?
+      def rounded? = @radius.is_a?(Numeric) ? @radius.positive? : Array(@radius).any?(&:positive?)
 
       # Under `decoration: :slice` cut edges are square: the rounded shape runs
       # past them by its radius and stroke, clipped to the fragment. Under

@@ -211,6 +211,12 @@ RSpec.describe Stationery::Layout::Box do
       expect(paginator.warnings).to be_empty
     end
 
+    it "draws a border and an overflow: :hidden clip square under radius: nil" do
+      pdf, = render_layout(box(lines_of(2), radius: nil, border: { width: 1 }, overflow: :hidden))
+
+      expect(page_contents(pdf).first).not_to match(/ c\n/)
+    end
+
     it "rounds a full border with per-corner radii" do
       pdf, = render_layout(box(lines_of(2), background: "#EEEEEE", radius: [6, 0, 6, 0], border: { width: 1 }))
 
