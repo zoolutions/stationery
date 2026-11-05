@@ -32,12 +32,23 @@ RSpec.describe Stationery::Verify::Command do
 
   it "kills the child's children too when it runs past its timeout" do
     pidfile = File.join(Dir.mktmpdir, "grandchild")
-    # sh starts in milliseconds; a Ruby child (bundler/setup in RUBYOPT) can
-    # take longer than the timeout on a loaded machine and be killed before
-    # it has spawned the grandchild this example is about.
-    described_class.run("sh", "-c", 'sleep 30 & echo $! > "$1"; wait', "sh", pidfile, timeout: 1)
+    script = "pid = spawn('sleep', '30'); File.write(#{pidfile.inspect}, pid.to_s); Process.wait(pid)"
+    # Without bundler/setup from RUBYOPT the child starts in milliseconds, not
+    # the tenths of a second that, on a loaded machine, ran past the timeout
+    # before it had spawned the grandchild this example is about.
+    described_class.run("ruby", "--disable-gems", "-e", script, env: { "RUBYOPT" => nil }, timeout: 1)
+    grandchild = File.read(pidfile).to_i
 
-    expect { Process.kill(0, File.read(pidfile).to_i) }.to raise_error(Errno::ESRCH)
+    # Killed, the orphaned grandchild lingers until init reaps it; one the
+    # kill missed sleeps on for 30 seconds.
+    gone = 50.times.any? do
+      Process.kill(0, grandchild)
+      sleep 0.1
+      false
+    rescue Errno::ESRCH
+      true
+    end
+    expect(gone).to be(true)
   end
 
   it "runs in the temporary directory unless asked, and replaces bytes that are not UTF-8" do
