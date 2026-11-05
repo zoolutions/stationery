@@ -13,12 +13,13 @@ module Stationery
   # document (#warnings, #page_count) stays on the copy. A document a Ractor
   # cannot render is rendered on the main Ractor once the others are done:
   # one whose class's settings are not shareable (see Document.finalize!),
-  # one that cannot be copied (it holds a Proc, a Method, a Thread), with
-  # the documents dealt to the same Ractor; one whose render reaches what a
-  # Ractor cannot; or one whose render raised, which raises there what
-  # #to_pdf raises. Below Ruby 4.0, with one Ractor, or with an instrumenter
-  # that is not shareable, every document is rendered on the main Ractor, in
-  # order.
+  # one that cannot be copied (it holds a Proc, a Method, a Thread); one
+  # whose render reaches what a Ractor cannot; or one whose render raised,
+  # which raises there what #to_pdf raises. Options that cannot be copied
+  # send every document to the main Ractor. Below Ruby 4.0, or with one Ractor, every document is
+  # rendered on the main Ractor, in order. The Ractors' renders report no
+  # events (see Instrumentation.instrumenter); the main Ractor reports the
+  # batch.
   module Parallel
     class << self
       # One `render_all.stationery` event: `documents:` (how many),
@@ -49,7 +50,7 @@ module Stationery
       end
 
       def parallel?(ractors, documents)
-        ractors > 1 && documents.size > 1 && available? && ::Ractor.shareable?(Stationery.instrumenter)
+        ractors > 1 && documents.size > 1 && available?
       end
 
       # Fills `pdfs` with what the Ractors rendered, dealing the documents
@@ -60,7 +61,7 @@ module Stationery
         indexes = documents.each_index.select { shareable?(documents[it]) }
         count = [ractors, indexes.size].min
         shares = Array.new(count) { |share| indexes.select.with_index { |_, position| position % count == share } }
-        workers = shares.map { |share| [share, start(share.map { documents[it] }, options)] }
+        workers = shares.map { |share| start(share, documents, options) }
         workers.each do |share, ractor|
           rendered = rendered(ractor)
           share.each_with_index { |index, position| pdfs[index] = rendered[position] } if rendered
@@ -79,11 +80,22 @@ module Stationery
 
       def shareable?(document) = document.is_a?(Document) && ::Ractor.shareable?(document.class.config)
 
-      # A Ractor rendering `documents`, or nil when they or the options
-      # cannot be copied into one (the main Ractor renders that share). It
-      # answers a nil for a render that failed: the main Ractor renders that
-      # document again and raises what to_pdf raises.
-      def start(documents, options)
+      # The indexes of `share` a Ractor renders, and that Ractor. A document
+      # that cannot be copied into one is left out of the share, for the
+      # main Ractor, and the Ractor is started with the rest; when the
+      # options cannot be copied, no Ractor is (nil), and the main Ractor
+      # renders the whole share.
+      def start(share, documents, options)
+        [share, launch(share.map { documents[it] }, options)]
+      rescue TypeError, ::Ractor::Error
+        copyable = share.select { copyable?(documents[it]) }
+        copyable.empty? || copyable.size == share.size ? [share, nil] : start(copyable, documents, options)
+      end
+
+      # A Ractor rendering `documents`. It answers a nil for a render that
+      # failed: the main Ractor renders that document again and raises what
+      # to_pdf raises.
+      def launch(documents, options)
         ::Ractor.new(documents, options) do |share, settings|
           share.map do |document|
             document.to_pdf(**settings)
@@ -91,8 +103,19 @@ module Stationery
             nil
           end
         end
+      end
+
+      # Whether `document` can be copied into another Ractor: sent through
+      # a port, which copies it as Ractor.new does.
+      def copyable?(document)
+        port = ::Ractor::Port.new
+        port.send(document)
+        port.receive
+        true
       rescue TypeError, ::Ractor::Error
-        nil
+        false
+      ensure
+        port.close
       end
     end
   end

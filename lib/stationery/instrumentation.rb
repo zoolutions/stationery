@@ -22,18 +22,21 @@ module Stationery
 
     class << self
       # Any object answering `instrument(name, payload) { |payload| }`; nil
-      # gives the default back. A render inside a non-main Ractor can reach
-      # only a shareable one: a module (ActiveSupport::Notifications) or a
-      # frozen object.
+      # gives the default back. Renders on the main Ractor report to it.
       # Set at boot, on the main Ractor, so a plain module attribute is enough.
       attr_writer :instrumenter # rubocop:disable ThreadSafety/ClassAndModuleAttributes
 
       # The one set, else ActiveSupport::Notifications when it is loaded,
-      # else NULL.
+      # else NULL; NULL inside any other Ractor than the main one, whose
+      # renders report nothing: subscribers live on the main Ractor, and
+      # ActiveSupport::Notifications cannot be called from another one (its
+      # notifier is not shareable).
       # rubocop:disable-next ThreadSafety/ClassInstanceVariable -- only read here; written at boot on the main Ractor
-      def instrumenter = @instrumenter || default
+      def instrumenter = main_ractor? ? (@instrumenter || default) : NULL
 
       def default = defined?(::ActiveSupport::Notifications) ? ::ActiveSupport::Notifications : NULL
+
+      def main_ractor? = !defined?(::Ractor) || ::Ractor.main?
 
       # Keeps the instrumenter in use, so one loaded after boot is not picked
       # up (Stationery.finalize!).

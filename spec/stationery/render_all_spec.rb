@@ -46,7 +46,11 @@ RSpec.describe Stationery, ".render_all" do
       end
     end
 
-    before { described_class.instrumenter = recorder }
+    before do
+      allow(Stationery::Parallel).to receive(:available?).and_return(false)
+      described_class.instrumenter = recorder
+    end
+
     after { described_class.instrumenter = nil }
 
     it "is render_all.stationery, around the renders, naming the documents rendered on the main Ractor" do

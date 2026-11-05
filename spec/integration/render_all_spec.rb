@@ -56,29 +56,44 @@ RSpec.describe "Stationery.render_all across Ractors", :ractor do
       .to eq(documents.map { it.to_pdf(tagged: true) })
   end
 
-  describe "its event" do
-    # Shareable, so the Ractors may render; it keeps the main Ractor's event.
+  # Keeps what it records in a module instance variable, as
+  # ActiveSupport::Notifications keeps its notifier: a Module, so shareable,
+  # whose state no Ractor but the main one can read.
+  describe "under an instrumenter only the main Ractor can call" do
     let(:recorder) do
       Module.new do
-        def self.instrument(name, payload = {})
-          yield(payload).tap { Thread.current[:render_all_event] = payload if name == "render_all.stationery" }
+        @events = []
+
+        class << self
+          attr_reader :events
+
+          def instrument(name, payload = {}) = yield(payload).tap { events << [name, payload] }
         end
       end
     end
 
     before { Stationery.instrumenter = recorder }
+    after { Stationery.instrumenter = nil }
 
-    after do
-      Stationery.instrumenter = nil
-      Thread.current[:render_all_event] = nil
+    it "renders in the Ractors, which report nothing, and reports the batch from the main Ractor" do
+      pdfs = Stationery.render_all([where.new, where.new], ractors: 2)
+
+      expect(pdfs.map { text_of(it) }).to all(eq("on another Ractor"))
+      expect(recorder.events).to eq([["render_all.stationery", { documents: 2, ractors: 2, main_ractor: [] }]])
     end
 
-    it "says how many Ractors were started and which documents the main Ractor rendered" do
+    it "says which documents the main Ractor rendered" do
       stamp = +"draft"
       main_only = Class.new(where) { footer { |_page| text stamp } }.finalize!
       Stationery.render_all([where.new, main_only.new, where.new, where.new], ractors: 2)
 
-      expect(Thread.current[:render_all_event]).to eq(documents: 4, ractors: 2, main_ractor: [1])
+      expect(recorder.events.last).to eq(["render_all.stationery", { documents: 4, ractors: 2, main_ractor: [1] }])
+    end
+
+    it "lets a render inside a Ractor started by hand report nothing either" do
+      pdf = Ractor.new { CanaryDocuments::Letter.new(["By hand"]).to_pdf }.value
+
+      expect(pdf).to eq(CanaryDocuments::Letter.new(["By hand"]).to_pdf)
     end
   end
 
@@ -92,11 +107,18 @@ RSpec.describe "Stationery.render_all across Ractors", :ractor do
       expect(pdfs.map { text_of(it) }).to eq(["on another Ractor", "on the main Ractor draft", "on another Ractor"])
     end
 
-    it "is rendered on the main Ractor, with the rest of its share, when it cannot be copied" do
+    it "is rendered on the main Ractor when it cannot be copied, and the rest of its share in the Ractor" do
       uncopyable = where.new.tap { it.instance_variable_set(:@hook, -> { :never_called }) }
-      pdfs = Stationery.render_all([where.new, where.new, uncopyable], ractors: 2)
+      pdfs = Stationery.render_all([where.new, where.new, uncopyable, where.new, where.new], ractors: 2)
 
-      expect(pdfs.map { text_of(it) }).to eq(["on the main Ractor", "on another Ractor", "on the main Ractor"])
+      ractor = "on another Ractor"
+      expect(pdfs.map { text_of(it) }).to eq([ractor, ractor, "on the main Ractor", ractor, ractor])
+    end
+
+    it "is rendered on the main Ractor with every other document when the options cannot be copied" do
+      pdfs = Stationery.render_all([where.new, where.new], ractors: 2, shaper: FakeShapers::Recording.new)
+
+      expect(pdfs.map { text_of(it) }).to all(eq("on the main Ractor"))
     end
 
     it "is rendered on the main Ractor when its view reaches what a Ractor cannot" do
@@ -111,17 +133,6 @@ RSpec.describe "Stationery.render_all across Ractors", :ractor do
 
       expect(pdfs.map { text_of(it) })
         .to eq(["on another Ractor", "on another Ractor", "on the main Ractor from a constant"])
-    end
-
-    context "with an instrumenter that is not shareable" do
-      before { Stationery.instrumenter = Stationery::Instrumentation::Null.new }
-      after { Stationery.instrumenter = nil }
-
-      it "renders every document on the main Ractor" do
-        pdfs = Stationery.render_all([where.new, where.new], ractors: 2)
-
-        expect(pdfs.map { text_of(it) }).to all(eq("on the main Ractor"))
-      end
     end
   end
 
